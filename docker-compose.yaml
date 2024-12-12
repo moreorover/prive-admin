@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:17.0
+    container_name: prive_admin_pg
+    restart: always
+    env_file:
+      - ./.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  adminer:
+    image: adminer:latest
+    restart: always
+    ports:
+      - "7071:8080"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
+    driver: local
