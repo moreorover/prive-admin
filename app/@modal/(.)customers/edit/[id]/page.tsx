@@ -1,6 +1,6 @@
-import CustomerForm from "@/app/customers/CustomerForm";
-import { Modal } from "@/components/Modal";
-import { getCustomer } from "@/data-access/customer";
+import CustomerForm from "@/app/dashboard/customers/CustomerForm";
+import {Modal} from "@/components/Modal";
+import {getCustomer} from "@/data-access/customer";
 
 export default async function EditCustomerModal({
   params,

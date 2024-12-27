@@ -8,23 +8,23 @@ import {
   DialogOverlay,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
-import { useMediaQuery } from "@/hooks/use-media-query";
-import { useRouter } from "next/navigation";
+import {Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle,} from "@/components/ui/drawer";
+import {useMediaQuery} from "@/hooks/use-media-query";
+import {useRouter} from "next/navigation";
 
 type Props = {
   title: string;
   description: string;
   children: React.ReactNode;
+  dialogContentClassName?: string;
 };
 
-export function Modal({ title, description, children }: Props) {
+export function Modal({
+                        title,
+                        description,
+                        children,
+                        dialogContentClassName = "sm:max-w-[425px]",
+                      }: Props) {
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const router = useRouter();
 
@@ -36,7 +36,7 @@ export function Modal({ title, description, children }: Props) {
     return (
       <Dialog open={true} onOpenChange={handleOpenChange}>
         <DialogOverlay>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className={dialogContentClassName}>
             <DialogHeader>
               <DialogTitle>{title}</DialogTitle>
               <DialogDescription>{description}</DialogDescription>

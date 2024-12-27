@@ -1,8 +1,8 @@
 "use client";
-import { TableCell, TableRow } from "@/components/ui/table";
-import { Customer } from "@/lib/schemas";
-import { Pencil, Trash } from "lucide-react";
-import { useRouter } from "next/navigation";
+import {TableCell, TableRow} from "@/components/ui/table";
+import {Customer} from "@/lib/schemas";
+import {Pencil, Trash} from "lucide-react";
+import {useRouter} from "next/navigation";
 
 type Props = {
   customer: Customer;

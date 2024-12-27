@@ -1,6 +1,5 @@
-import Navbar from "@/components/navbar";
-import { Toaster } from "@/components/ui/toaster";
-import type { Metadata } from "next";
+import {Toaster} from "@/components/ui/toaster";
+import type {Metadata} from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,7 +17,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased`}>
-        <Navbar />
         {children}
         {modal}
         <Toaster />

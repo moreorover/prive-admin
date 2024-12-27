@@ -1,5 +1,5 @@
-import CustomerForm from "@/app/customers/CustomerForm";
-import { Modal } from "@/components/Modal";
+import CustomerForm from "@/app/dashboard/customers/CustomerForm";
+import {Modal} from "@/components/Modal";
 
 export default async function NewCustomerModal() {
   const customer = { name: "" };
