@@ -34,7 +34,10 @@ export async function getProduct(id: string) {
     return redirect("/");
   }
 
-  return await prisma.product.findFirst({ where: { id } });
+  return await prisma.product.findFirst({
+    where: { id },
+    include: { variants: true },
+  });
 }
 
 export async function createProduct(product: Product): Promise<ActionResponse> {

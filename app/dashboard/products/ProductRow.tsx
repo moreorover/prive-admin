@@ -1,7 +1,7 @@
 "use client";
 import { TableCell, TableRow } from "@/components/ui/table";
 import type { Product } from "@/lib/schemas";
-import { Pencil, Trash } from "lucide-react";
+import { ArrowUpRight, Pencil, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type Props = {
@@ -10,6 +10,10 @@ type Props = {
 
 export default function UserRow({ product }: Props) {
   const router = useRouter();
+
+  const handleClickView = () => {
+    router.push(`/dashboard/products/${product.id}`);
+  };
 
   const handleClickEdit = () => {
     router.push(`/products/edit/${product.id}`);
@@ -23,6 +27,9 @@ export default function UserRow({ product }: Props) {
     <TableRow>
       <TableCell>{product.name}</TableCell>
       <TableCell>{product.description}</TableCell>
+      <TableCell onClick={handleClickView}>
+        <ArrowUpRight />
+      </TableCell>
       <TableCell onClick={handleClickEdit}>
         <Pencil />
       </TableCell>

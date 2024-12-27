@@ -96,9 +96,9 @@ model Product {
 model ProductVariant {
   id        String      @id @default(cuid())
   productId String
-  product   Product     @relation(fields: [productId], references: [id])
+  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   size      String // e.g., "250ml", "50g"
-  price     Int         @db.Integer
+  price     Int
   stock     Int         @default(0) // Tracks inventory
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt

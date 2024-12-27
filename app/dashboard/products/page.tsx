@@ -32,6 +32,7 @@ export default async function ProductsPage() {
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Description</TableHead>
+            <TableHead>View</TableHead>
             <TableHead>Edit</TableHead>
             <TableHead>Delete</TableHead>
           </TableRow>
