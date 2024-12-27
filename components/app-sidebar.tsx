@@ -1,12 +1,20 @@
 "use client";
 
-import {Frame, LifeBuoy, Map as map_icon, PieChart, Send, Settings2, SquareTerminal,} from "lucide-react";
+import {
+  Frame,
+  LifeBuoy,
+  PieChart,
+  Send,
+  Settings2,
+  SquareTerminal,
+  Map as map_icon,
+} from "lucide-react";
 import type * as React from "react";
 
-import {NavMain} from "@/components/nav-main";
-import {NavProjects} from "@/components/nav-projects";
-import {NavSecondary} from "@/components/nav-secondary";
-import {NavUser} from "@/components/nav-user";
+import { NavMain } from "@/components/nav-main";
+import { NavProjects } from "@/components/nav-projects";
+import { NavSecondary } from "@/components/nav-secondary";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -135,8 +143,8 @@ const data = {
 };
 
 export function AppSidebar({
-                             ...props
-                           }: React.ComponentProps<typeof Sidebar> & {
+  ...props
+}: React.ComponentProps<typeof Sidebar> & {
   user: {
     id: string;
     createdAt: Date;
@@ -155,7 +163,7 @@ export function AppSidebar({
             <SidebarMenuButton size="lg" asChild>
               <a href="/dashboard">
                 {/* <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"> */}
-                <Image src={logoSvg} alt="Sense Pro logo" className="size-8"/>
+                <Image src={logoSvg} alt="Sense Pro logo" className="size-8" />
                 {/* </div> */}
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Sense Pro</span>
@@ -167,12 +175,12 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain}/>
-        <NavProjects projects={data.projects}/>
-        <NavSecondary items={data.navSecondary} className="mt-auto"/>
+        <NavMain items={data.navMain} />
+        <NavProjects projects={data.projects} />
+        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={props.user}/>
+        <NavUser user={props.user} />
       </SidebarFooter>
     </Sidebar>
   );

@@ -1,13 +1,13 @@
 import ProductDeleteForm from "@/app/dashboard/products/ProductDeleteForm";
-import {Modal} from "@/components/Modal";
-import {getProduct} from "@/data-access/product";
+import { Modal } from "@/components/Modal";
+import { getProduct } from "@/data-access/product";
 
 export default async function EditProductModal({
-                                                 params,
-                                               }: {
+  params,
+}: {
   params: Promise<{ id: string }>;
 }) {
-  const {id} = await params;
+  const { id } = await params;
 
   const product = await getProduct(id);
 
@@ -24,7 +24,7 @@ export default async function EditProductModal({
   return (
     <Modal title="Delete product" description="Deleted product as needed.">
       <div className="p-2 max-w-md">
-        <ProductDeleteForm product={product}/>
+        <ProductDeleteForm product={product} />
       </div>
     </Modal>
   );

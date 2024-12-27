@@ -1,13 +1,13 @@
 import ProductForm from "@/app/dashboard/products/ProductForm";
-import {Modal} from "@/components/Modal";
-import {getProduct} from "@/data-access/product";
+import { Modal } from "@/components/Modal";
+import { getProduct } from "@/data-access/product";
 
 export default async function EditProductModal({
-                                                 params,
-                                               }: {
+  params,
+}: {
   params: Promise<{ id: string }>;
 }) {
-  const {id} = await params;
+  const { id } = await params;
 
   const product = await getProduct(id);
 
@@ -24,7 +24,7 @@ export default async function EditProductModal({
   return (
     <Modal title="Update product" description="Update product as needed.">
       <div className="p-2 max-w-md">
-        <ProductForm product={product}/>
+        <ProductForm product={product} />
       </div>
     </Modal>
   );
