@@ -2,11 +2,15 @@
 
 import "server-only";
 
-import {auth} from "@/lib/auth";
-import {type ActionResponse, type Product, productSchema,} from "@/lib/schemas";
-import {revalidatePath} from "next/cache";
-import {headers} from "next/headers";
-import {redirect} from "next/navigation";
+import { auth } from "@/lib/auth";
+import {
+  type ActionResponse,
+  type Product,
+  productSchema,
+} from "@/lib/schemas";
+import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import prisma from "../lib/prisma";
 
 export async function getProducts() {
@@ -30,7 +34,7 @@ export async function getProduct(id: string) {
     return redirect("/");
   }
 
-  return await prisma.product.findFirst({where: {id}});
+  return await prisma.product.findFirst({ where: { id } });
 }
 
 export async function createProduct(product: Product): Promise<ActionResponse> {
@@ -52,7 +56,7 @@ export async function createProduct(product: Product): Promise<ActionResponse> {
       };
     }
     const c = await prisma.product.create({
-      data: {name: product.name, description: product.description},
+      data: { name: product.name, description: product.description },
     });
     revalidatePath("/products");
     return {
@@ -87,8 +91,8 @@ export async function updateProduct(product: Product): Promise<ActionResponse> {
       };
     }
     const c = await prisma.product.update({
-      data: {name: product.name, description: product.description},
-      where: {id: product.id},
+      data: { name: product.name, description: product.description },
+      where: { id: product.id },
     });
     revalidatePath("/products");
     return {
@@ -123,7 +127,7 @@ export async function deleteProduct(product: Product): Promise<ActionResponse> {
       };
     }
     const c = await prisma.product.delete({
-      where: {id: product.id},
+      where: { id: product.id },
     });
     revalidatePath("/products");
     return {
