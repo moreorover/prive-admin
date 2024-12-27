@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { createProduct, updateProduct } from "@/data-access/product";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
@@ -101,7 +102,7 @@ export default function ProductForm({ product, className }: Props) {
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Input placeholder="Product description" {...field} />
+                <Textarea placeholder="Product description" {...field} />
                 {/* <ZodErrors error={state?.zodErrors?.name} /> */}
               </FormControl>
               <FormMessage />
