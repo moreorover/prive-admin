@@ -1,6 +1,6 @@
 import {auth} from "@/lib/auth";
 import {PrismaClient} from "@prisma/client";
-import {customers} from "./data";
+import {customers, products} from "./data";
 
 const prisma = new PrismaClient();
 
@@ -29,13 +29,22 @@ async function seedCustomers() {
   }
 }
 
+async function seedProducts() {
+  for (const product of products) {
+    await prisma.product.create({
+      data: {...product.product},
+    })
+  }
+}
+
 async function main() {
   console.log("Seeding database...");
 
   await prisma.customer.deleteMany();
 
   await seedUsers();
-  await seedCustomers()
+  await seedCustomers();
+  await seedProducts();
 
   console.log("Database seeded successfully!");
 }

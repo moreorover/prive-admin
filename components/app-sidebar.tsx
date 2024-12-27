@@ -1,7 +1,7 @@
 "use client";
 
-import {Frame, LifeBuoy, Map, PieChart, Send, Settings2, SquareTerminal,} from "lucide-react";
-import * as React from "react";
+import {Frame, LifeBuoy, Map as map_icon, PieChart, Send, Settings2, SquareTerminal,} from "lucide-react";
+import type * as React from "react";
 
 import {NavMain} from "@/components/nav-main";
 import {NavProjects} from "@/components/nav-projects";
@@ -30,6 +30,10 @@ const data = {
         {
           title: "Customers",
           url: "/dashboard/customers",
+        },
+        {
+          title: "Products",
+          url: "/dashboard/products",
         },
       ],
     },
@@ -125,7 +129,7 @@ const data = {
     {
       name: "Travel",
       url: "#",
-      icon: Map,
+      icon: map_icon,
     },
   ],
 };

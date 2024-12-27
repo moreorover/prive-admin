@@ -2,7 +2,6 @@ import {faker} from "@faker-js/faker";
 
 faker.seed(628533);
 
-// Customers with locations, controllers, and devices
 export const customers = [
   {
     customer: {
@@ -20,3 +19,36 @@ export const customers = [
     },
   },
 ];
+
+export const products = [
+  {
+    product: {
+      name: faker.commerce.productName(),
+      description: faker.commerce.productDescription(),
+    }
+  },
+  {
+    product: {
+      name: faker.commerce.productName(),
+      description: faker.commerce.productDescription(),
+    }
+  },
+  {
+    product: {
+      name: faker.commerce.productName(),
+      description: faker.commerce.productDescription(),
+    }
+  },
+  {
+    product: {
+      name: faker.commerce.productName(),
+      description: faker.commerce.productDescription(),
+    }
+  },
+  {
+    product: {
+      name: faker.commerce.productName(),
+      description: faker.commerce.productDescription(),
+    }
+  },
+]

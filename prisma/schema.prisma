@@ -77,7 +77,7 @@ model Customer {
   name      String    @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
-  Order Order[]
+  Order     Order[]
 
   @@map("customers")
 }
@@ -85,7 +85,7 @@ model Customer {
 model Product {
   id          String           @id @default(cuid())
   name        String
-  description String?
+  description String
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   variants    ProductVariant[]
