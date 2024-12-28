@@ -22,95 +22,50 @@ export const customers = [
 
 const sizes = ["250ml", "500ml", "50g", "100g", "1L"];
 
+function generateUniqueVariants(variantCount: number) {
+  const uniqueCount = Math.min(sizes.length, variantCount); // Ensure we don't exceed available sizes
+  const selectedSizes = faker.helpers.arrayElements(sizes, uniqueCount);
+  return selectedSizes.map((size) => ({
+    size,
+    price: faker.number.int({ min: 500, max: 20000 }),
+    stock: faker.number.int({ min: 0, max: 100 }),
+  }));
+}
+
 export const products = [
   {
     product: {
       name: faker.commerce.productName(),
       description: faker.commerce.productDescription(),
-      variants: [
-        {
-          size: faker.helpers.arrayElement(sizes),
-          price: faker.number.int({ min: 5, max: 200 }),
-          stock: faker.number.int({ min: 0, max: 100 }),
-        },
-        {
-          size: faker.helpers.arrayElement(sizes),
-          price: faker.number.int({ min: 5, max: 200 }),
-          stock: faker.number.int({ min: 0, max: 100 }),
-        },
-      ],
+      variants: generateUniqueVariants(2),
     },
   },
   {
     product: {
       name: faker.commerce.productName(),
       description: faker.commerce.productDescription(),
-      variants: [
-        {
-          size: faker.helpers.arrayElement(sizes),
-          price: faker.number.int({ min: 5, max: 200 }),
-          stock: faker.number.int({ min: 0, max: 100 }),
-        },
-        {
-          size: faker.helpers.arrayElement(sizes),
-          price: faker.number.int({ min: 5, max: 200 }),
-          stock: faker.number.int({ min: 0, max: 100 }),
-        },
-      ],
+      variants: generateUniqueVariants(3),
     },
   },
   {
     product: {
       name: faker.commerce.productName(),
       description: faker.commerce.productDescription(),
-      variants: [
-        {
-          size: faker.helpers.arrayElement(sizes),
-          price: faker.number.int({ min: 5, max: 200 }),
-          stock: faker.number.int({ min: 0, max: 100 }),
-        },
-        {
-          size: faker.helpers.arrayElement(sizes),
-          price: faker.number.int({ min: 5, max: 200 }),
-          stock: faker.number.int({ min: 0, max: 100 }),
-        },
-      ],
+      variants: generateUniqueVariants(1),
     },
   },
   {
     product: {
       name: faker.commerce.productName(),
       description: faker.commerce.productDescription(),
-      variants: [
-        {
-          size: faker.helpers.arrayElement(sizes),
-          price: faker.number.int({ min: 5, max: 200 }),
-          stock: faker.number.int({ min: 0, max: 100 }),
-        },
-        {
-          size: faker.helpers.arrayElement(sizes),
-          price: faker.number.int({ min: 5, max: 200 }),
-          stock: faker.number.int({ min: 0, max: 100 }),
-        },
-      ],
+      variants: generateUniqueVariants(2),
     },
   },
   {
     product: {
       name: faker.commerce.productName(),
       description: faker.commerce.productDescription(),
-      variants: [
-        {
-          size: faker.helpers.arrayElement(sizes),
-          price: faker.number.int({ min: 5, max: 200 }),
-          stock: faker.number.int({ min: 0, max: 100 }),
-        },
-        {
-          size: faker.helpers.arrayElement(sizes),
-          price: faker.number.int({ min: 5, max: 200 }),
-          stock: faker.number.int({ min: 0, max: 100 }),
-        },
-      ],
+      variants: generateUniqueVariants(3),
     },
   },
 ];
