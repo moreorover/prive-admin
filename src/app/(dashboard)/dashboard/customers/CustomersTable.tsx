@@ -22,7 +22,7 @@ export default function CustomersTable({ customers }: Props) {
     </Table.Tr>
   ));
   return (
-    <Table>
+    <Table striped highlightOnHover>
       <Table.Thead>
         <Table.Tr>
           <Table.Th>ID</Table.Th>
