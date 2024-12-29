@@ -5,9 +5,9 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { auth } from "../../lib/auth";
-import prisma from "../../lib/prisma";
-import { ActionResponse, Customer, customerSchema } from "../../lib/schemas";
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import { ActionResponse, Customer, customerSchema } from "@/lib/schemas";
 
 export async function getCustomers() {
   const session = await auth.api.getSession({
@@ -34,7 +34,7 @@ export async function getCustomer(id: string) {
 }
 
 export async function createCustomer(
-  customer: Customer
+  customer: Customer,
 ): Promise<ActionResponse> {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -71,7 +71,7 @@ export async function createCustomer(
 }
 
 export async function updateCustomer(
-  customer: Customer
+  customer: Customer,
 ): Promise<ActionResponse> {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -109,7 +109,7 @@ export async function updateCustomer(
 }
 
 export async function deleteCustomer(
-  customer: Customer
+  customer: Customer,
 ): Promise<ActionResponse> {
   const session = await auth.api.getSession({
     headers: await headers(),
