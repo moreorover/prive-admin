@@ -12,6 +12,7 @@ import {
   PasswordInput,
   TextInput,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { useForm } from "@mantine/form";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { redirect } from "next/navigation";
@@ -53,13 +54,13 @@ export function LoginForm() {
         onSuccess: () => {
           form.reset();
         },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onError: (ctx) => {
-          console.log({ ctx });
-          // alert(ctx.error.message);
-          // toast({
-          //   title: ctx.error.message,
-          //   variant: "destructive",
-          // });
+          notifications.show({
+            color: "red",
+            title: "Sign In Failed",
+            message: "Please make sure your email and password is correct.",
+          });
         },
       },
     );
