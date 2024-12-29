@@ -8,15 +8,30 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "migrate": "prisma migrate deploy",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:seed": "prisma db seed",
+    "db:dev": "prisma generate && prisma db push && prisma db seed",
+    "db:studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed/seed.ts"
   },
   "dependencies": {
+    "@faker-js/faker": "^9.3.0",
     "@mantine/core": "^7.13.4",
     "@mantine/hooks": "^7.13.4",
+    "@prisma/client": "^6.1.0",
+    "better-auth": "^1.1.4",
+    "mantine-form-zod-resolver": "^1.1.0",
     "next": "^15.0.1",
+    "prisma": "^6.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "tailwind-preset-mantine": "^1.2.1"
+    "tailwind-preset-mantine": "^1.2.1",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22.7.9",
