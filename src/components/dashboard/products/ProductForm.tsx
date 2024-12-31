@@ -4,7 +4,7 @@ import { useForm } from "@mantine/form";
 import { IconTrash } from "@tabler/icons-react";
 import { Product, productSchema, type ActionResponse } from "@/lib/schemas";
 import { zodResolver } from "mantine-form-zod-resolver";
-import { Button, Textarea, TextInput } from "@mantine/core";
+import { Button, Stack, Textarea, TextInput } from "@mantine/core";
 
 type Props = {
   product: Product;
@@ -33,33 +33,36 @@ export default function ProductForm({
 
   return (
     <form onSubmit={form.onSubmit(handleSubmit)}>
-      <TextInput
-        label="Name"
-        placeholder="Jon Doe"
-        required
-        key={form.key("name")}
-        {...form.getInputProps("name")}
-      />
-      <Textarea
-        resize="vertical"
-        placeholder="Product description..."
-        key={form.key("description")}
-        {...form.getInputProps("description")}
-      />
-      <Button fullWidth mt="xl" type="submit">
-        {product.id ? "Update" : "Create"}
-      </Button>
-      {product.id && (
-        <Button
-          leftSection={<IconTrash />}
-          fullWidth
-          mt="xl"
-          type="button"
-          onClick={() => handleDelete()}
-        >
-          Delete
+      <Stack gap="md">
+        <TextInput
+          label="Name"
+          placeholder="Jon Doe"
+          required
+          key={form.key("name")}
+          {...form.getInputProps("name")}
+        />
+        <Textarea
+          label="Description"
+          resize="vertical"
+          placeholder="Product description..."
+          key={form.key("description")}
+          {...form.getInputProps("description")}
+        />
+        <Button fullWidth type="submit">
+          {product.id ? "Update" : "Create"}
         </Button>
-      )}
+        {product.id && (
+          <Button
+            leftSection={<IconTrash />}
+            fullWidth
+            color="red"
+            type="button"
+            onClick={() => handleDelete()}
+          >
+            Delete
+          </Button>
+        )}
+      </Stack>
     </form>
   );
 }

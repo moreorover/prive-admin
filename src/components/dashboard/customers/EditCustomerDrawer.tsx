@@ -45,7 +45,7 @@ export default function EditCustomerDrawer() {
       <CustomerForm
         onSubmitAction={onSubmit}
         onDelete={onDelete}
-        customer={{ name: value.customer.name }}
+        customer={{ ...value.customer }}
       />
     </Drawer>
   );

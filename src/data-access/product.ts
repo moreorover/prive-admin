@@ -87,7 +87,7 @@ export async function updateProduct(product: Product): Promise<ActionResponse> {
       };
     }
     const c = await prisma.product.update({
-      data: { name: product.name },
+      data: { name: product.name, description: product.description },
       where: { id: product.id },
     });
     revalidatePath("/products");

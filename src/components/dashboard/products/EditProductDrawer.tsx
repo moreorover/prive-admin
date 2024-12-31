@@ -48,8 +48,7 @@ export default function EditProductDrawer() {
         onSubmitAction={onSubmit}
         onDelete={onDelete}
         product={{
-          name: value.product.name,
-          description: value.product.description,
+          ...value.product,
         }}
       />
     </Drawer>
