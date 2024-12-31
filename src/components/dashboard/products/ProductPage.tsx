@@ -9,16 +9,18 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { Product } from "@/lib/schemas";
+import { Product, ProductVariant } from "@/lib/schemas";
 import { PageContainer } from "@/components/page_container/PageContainer";
 import { useSetAtom } from "jotai";
 import { editProductDrawerAtom } from "@/lib/atoms";
+import ProductVariantsTable from "@/components/dashboard/products/ProductVariantsTable";
 
 interface Props {
   product: Product;
+  productVariants: ProductVariant[];
 }
 
-export default function ProductPage({ product }: Props) {
+export default function ProductPage({ product, productVariants }: Props) {
   const showEditProductDrawer = useSetAtom(editProductDrawerAtom);
 
   return (
@@ -59,6 +61,9 @@ export default function ProductPage({ product }: Props) {
               </Text>
             </Stack>
           </Paper>
+        </GridCol>
+        <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
+          <ProductVariantsTable productVariants={productVariants} />
         </GridCol>
       </Grid>
     </PageContainer>

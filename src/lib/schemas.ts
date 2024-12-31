@@ -13,11 +13,7 @@ export const customerSchema = z.object({
     .max(50, { message: "Name cannot exceed 50 characters" }),
 });
 
-export const createCustomerSchema = customerSchema.pick({ name: true });
-
 export type Customer = z.infer<typeof customerSchema>;
-
-export type CreateCustomer = z.infer<typeof createCustomerSchema>;
 
 export const productSchema = z.object({
   id: z.string().cuid().optional(),
@@ -28,9 +24,14 @@ export const productSchema = z.object({
   description: z.string(),
 });
 
-export const createProductSchema = productSchema.pick({
-  name: true,
-  description: true,
+export type Product = z.infer<typeof productSchema>;
+
+export const productVariantSchema = z.object({
+  id: z.string().cuid().optional(),
+  productId: z.string().cuid(),
+  size: z.string(),
+  price: z.number(),
+  stock: z.number(),
 });
 
-export type Product = z.infer<typeof productSchema>;
+export type ProductVariant = z.infer<typeof productVariantSchema>;

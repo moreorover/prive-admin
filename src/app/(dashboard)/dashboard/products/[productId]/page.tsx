@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getProduct } from "@/data-access/product";
+import { getProductVariants } from "@/data-access/productVariant";
 import ProductPage from "@/components/dashboard/products/ProductPage";
 
 type Props = {
@@ -25,5 +26,7 @@ export default async function Page({ params }: Props) {
     return redirect("/dashboard/products");
   }
 
-  return <ProductPage product={product} />;
+  const productVariants = await getProductVariants(productId);
+
+  return <ProductPage product={product} productVariants={productVariants} />;
 }
