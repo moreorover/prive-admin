@@ -1,5 +1,5 @@
 import React from "react";
-import DashboardShell from "@/components/dashboard_shell/DashboardShell";
+import DashboardShell from "@/components/dashboard/DashboardShell";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";

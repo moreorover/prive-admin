@@ -2,22 +2,19 @@
 
 import { Table, Paper } from "@mantine/core";
 import { Customer } from "@/lib/schemas";
-// import { useRouter } from "next/navigation";
-import { useSetAtom } from "jotai/index";
-import { editCustomerDrawerAtom } from "@/lib/atoms";
+import { useRouter } from "next/navigation";
 
 interface Props {
   customers: Customer[];
 }
 
 export default function CustomersTable({ customers }: Props) {
-  const showNewCustomerDrawer = useSetAtom(editCustomerDrawerAtom);
-  // const router = useRouter();
+  const router = useRouter();
   const rows = customers.map((customer) => (
     <Table.Tr
       key={customer.id}
       onClick={() => {
-        showNewCustomerDrawer({ isOpen: true, customer: customer });
+        router.push(`/dashboard/customers/${customer.id}`);
       }}
     >
       <Table.Td>{customer.id}</Table.Td>
