@@ -17,6 +17,10 @@ export const navLinks: NavItem[] = [
         label: "Customers",
         link: "/dashboard/customers",
       },
+      {
+        label: "Products",
+        link: "/dashboard/products",
+      },
     ],
   },
   {

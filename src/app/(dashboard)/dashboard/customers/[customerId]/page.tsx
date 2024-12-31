@@ -8,7 +8,7 @@ type Props = {
   params: Promise<{ customerId: string }>;
 };
 
-export default async function DashboardContent({ params }: Props) {
+export default async function Page({ params }: Props) {
   const { customerId } = await params;
 
   const session = await auth.api.getSession({

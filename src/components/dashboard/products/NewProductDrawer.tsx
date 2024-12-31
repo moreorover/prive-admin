@@ -1,23 +1,23 @@
 "use client";
 
-import CustomerForm from "@/components/customers/CustomerForm";
-import { Customer } from "@/lib/schemas";
+import ProductForm from "@/components/dashboard/products/ProductForm";
+import { Product } from "@/lib/schemas";
 import { notifications } from "@mantine/notifications";
-import { createCustomer } from "@/data-access/customer";
+import { createProduct } from "@/data-access/product";
 import { Drawer } from "@mantine/core";
 import { useAtom } from "jotai";
-import { newCustomerDrawerAtom } from "@/lib/atoms";
+import { newProductDrawerAtom } from "@/lib/atoms";
 
-export default function NewCustomerDrawer() {
-  const [value, setOpen] = useAtom(newCustomerDrawerAtom);
+export default function NewProductDrawer() {
+  const [value, setOpen] = useAtom(newProductDrawerAtom);
 
-  async function onSubmit(data: Customer) {
-    const response = await createCustomer(data);
+  async function onSubmit(data: Product) {
+    const response = await createProduct(data);
 
     if (response.type === "ERROR") {
       notifications.show({
         color: "red",
-        title: "Failed to create Customer",
+        title: "Failed to create Product",
         message: "Please try again.",
       });
     } else {
@@ -25,7 +25,7 @@ export default function NewCustomerDrawer() {
       notifications.show({
         color: "green",
         title: "Success!",
-        message: "Customer created.",
+        message: "Product created.",
       });
     }
     return response;
@@ -40,12 +40,12 @@ export default function NewCustomerDrawer() {
       opened={value.isOpen}
       onClose={() => setOpen({ isOpen: false })}
       position="right"
-      title="Create Customer"
+      title="Create Product"
     >
-      <CustomerForm
+      <ProductForm
         onSubmitAction={onSubmit}
         onDelete={onDelete}
-        customer={{ name: "" }}
+        product={{ name: "", description: "" }}
       />
     </Drawer>
   );

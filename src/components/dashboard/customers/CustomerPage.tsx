@@ -29,12 +29,12 @@ export default function CustomerPage({ customer }: Props) {
                 showEditCustomerDrawer({ isOpen: true, customer });
               }}
             >
-              New
+              Edit
             </Button>
           </Paper>
         </GridCol>
         <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
-          {/*<CustomersTable customers={customers} />*/}
+          {/*<ProductsTable customers={customers} />*/}
         </GridCol>
       </Grid>
     </PageContainer>

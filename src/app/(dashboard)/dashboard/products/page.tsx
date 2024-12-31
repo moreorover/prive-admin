@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getCustomers } from "@/data-access/customer";
-import CustomersPage from "@/components/dashboard/customers/CustomersPage";
+import { getProducts } from "@/data-access/product";
+import ProductsPage from "@/components/dashboard/products/ProductsPage";
 
 export default async function Page() {
   const session = await auth.api.getSession({
@@ -13,6 +13,6 @@ export default async function Page() {
     return redirect("/");
   }
 
-  const customers = await getCustomers();
-  return <CustomersPage customers={customers} />;
+  const products = await getProducts();
+  return <ProductsPage products={products} />;
 }

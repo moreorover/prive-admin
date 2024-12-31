@@ -1,21 +1,20 @@
 "use client";
 
 import { Button, Grid, GridCol, Paper } from "@mantine/core";
-import { Customer } from "@/lib/schemas";
+import { Product } from "@/lib/schemas";
 import { PageContainer } from "@/components/page_container/PageContainer";
-import CustomersTable from "@/components/dashboard/customers/CustomersTable";
 import { useSetAtom } from "jotai";
-import { newCustomerDrawerAtom } from "@/lib/atoms";
+import { editProductDrawerAtom } from "@/lib/atoms";
 
 interface Props {
-  customers: Customer[];
+  product: Product;
 }
 
-export default function CustomersPage({ customers }: Props) {
-  const showNewCustomerDrawer = useSetAtom(newCustomerDrawerAtom);
+export default function ProductPage({ product }: Props) {
+  const showEditProductDrawer = useSetAtom(editProductDrawerAtom);
 
   return (
-    <PageContainer title="Customers">
+    <PageContainer title={product.name}>
       <Grid>
         <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
           <Paper
@@ -27,15 +26,15 @@ export default function CustomersPage({ customers }: Props) {
           >
             <Button
               onClick={() => {
-                showNewCustomerDrawer({ isOpen: true });
+                showEditProductDrawer({ isOpen: true, product });
               }}
             >
-              New
+              Edit
             </Button>
           </Paper>
         </GridCol>
         <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
-          <CustomersTable customers={customers} />
+          {/*<ProductsTable products={products} />*/}
         </GridCol>
       </Grid>
     </PageContainer>

@@ -1,6 +1,6 @@
 "use client";
 
-import CustomerForm from "@/components/customers/CustomerForm";
+import CustomerForm from "@/components/dashboard/customers/CustomerForm";
 import { Customer } from "@/lib/schemas";
 import { notifications } from "@mantine/notifications";
 import { updateCustomer } from "@/data-access/customer";
