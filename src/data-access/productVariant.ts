@@ -34,7 +34,14 @@ export async function getProductVariants(productId: string) {
     return redirect("/");
   }
 
-  return prisma.productVariant.findMany({ where: { productId } });
+  const productVariants = await prisma.productVariant.findMany({
+    where: { productId },
+  });
+
+  return productVariants.map((productVariant) => ({
+    ...productVariant,
+    price: productVariant.price / 100,
+  }));
 }
 
 export async function createProductVariant(
@@ -61,7 +68,7 @@ export async function createProductVariant(
       data: {
         productId: productVariant.productId,
         size: productVariant.size,
-        price: productVariant.price,
+        price: productVariant.price * 100,
         stock: productVariant.stock,
       },
     });
@@ -103,7 +110,7 @@ export async function updateProductVariant(
       data: {
         productId: productVariant.productId,
         size: productVariant.size,
-        price: productVariant.price,
+        price: productVariant.price * 100,
         stock: productVariant.stock,
       },
       where: { id: productVariant.id },

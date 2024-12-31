@@ -1,6 +1,6 @@
 "use client";
 
-import { Table, Paper } from "@mantine/core";
+import { Table } from "@mantine/core";
 import { Product } from "@/lib/schemas";
 import { useRouter } from "next/navigation";
 
@@ -23,17 +23,15 @@ export default function ProductsTable({ products }: Props) {
     </Table.Tr>
   ));
   return (
-    <Paper shadow="xs" p="sm">
-      <Table striped highlightOnHover>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>ID</Table.Th>
-            <Table.Th>Name</Table.Th>
-            <Table.Th>Description</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
-      </Table>
-    </Paper>
+    <Table striped highlightOnHover>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>ID</Table.Th>
+          <Table.Th>Name</Table.Th>
+          <Table.Th>Description</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>{rows}</Table.Tbody>
+    </Table>
   );
 }
