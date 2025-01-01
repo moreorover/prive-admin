@@ -35,3 +35,12 @@ export const productVariantSchema = z.object({
 });
 
 export type ProductVariant = z.infer<typeof productVariantSchema>;
+
+export const orderSchema = z.object({
+  id: z.string().cuid().optional(),
+  customerId: z.string().cuid(),
+  status: z.enum(["PENDING", "COMPLETED", "CANCELLED"]),
+  placedAt: z.date(),
+});
+
+export type Order = z.infer<typeof orderSchema>;

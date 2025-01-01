@@ -113,6 +113,7 @@ model Order {
   customerId String
   customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
   status     OrderStatus @default(PENDING)
+  placedAt   DateTime    @db.Date
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   items      OrderItem[]

@@ -1,18 +1,20 @@
 "use client";
 
-import { Button, Grid, GridCol, Paper } from "@mantine/core";
-import { Customer } from "@/lib/schemas";
+import { Button, Grid, GridCol, Paper, Title } from "@mantine/core";
+import { Customer, Order } from "@/lib/schemas";
 import { PageContainer } from "@/components/page_container/PageContainer";
 import { useSetAtom } from "jotai";
-import { editCustomerDrawerAtom } from "@/lib/atoms";
+import { editCustomerDrawerAtom, newOrderDrawerAtom } from "@/lib/atoms";
+import SimpleOrdersTable from "@/components/dashboard/orders/SimpleOrdersTable";
 
 interface Props {
   customer: Customer;
+  orders: Order[];
 }
 
-export default function CustomerPage({ customer }: Props) {
+export default function CustomerPage({ customer, orders }: Props) {
   const showEditCustomerDrawer = useSetAtom(editCustomerDrawerAtom);
-
+  const showNewOrderDrawer = useSetAtom(newOrderDrawerAtom);
   return (
     <PageContainer title={customer.name}>
       <Grid>
@@ -34,7 +36,34 @@ export default function CustomerPage({ customer }: Props) {
           </Paper>
         </GridCol>
         <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
-          {/*<ProductsTable customers={customers} />*/}
+          <Paper
+            style={{
+              padding: "16px",
+              borderRadius: "8px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "16px",
+              }}
+            >
+              <Title order={4}>Orders</Title>
+              <Button
+                onClick={() => {
+                  showNewOrderDrawer({
+                    isOpen: true,
+                    customerId: customer.id!,
+                  });
+                }}
+              >
+                New
+              </Button>
+            </div>
+            <SimpleOrdersTable orders={orders} />
+          </Paper>
         </GridCol>
       </Grid>
     </PageContainer>

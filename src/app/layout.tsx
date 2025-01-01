@@ -10,6 +10,7 @@ import { Notifications } from "@mantine/notifications";
 import localFont from "next/font/local";
 import Head from "next/head";
 import "./globals.css";
+import "@mantine/dates/styles.css";
 import "@mantine/notifications/styles.css";
 import { breakpoints, colors } from "./theme";
 

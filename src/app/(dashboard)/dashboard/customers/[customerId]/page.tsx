@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCustomer } from "@/data-access/customer";
 import CustomerPage from "@/components/dashboard/customers/CustomerPage";
+import { getOrdersByCustomerId } from "@/data-access/order";
 
 type Props = {
   params: Promise<{ customerId: string }>;
@@ -25,5 +26,7 @@ export default async function Page({ params }: Props) {
     return redirect("/dashboard/customers");
   }
 
-  return <CustomerPage customer={customer} />;
+  const orders = await getOrdersByCustomerId(customerId);
+
+  return <CustomerPage customer={customer} orders={orders} />;
 }
