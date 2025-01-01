@@ -6,6 +6,7 @@ import { IconSearch, IconSettings } from "@tabler/icons-react";
 import classes from "./AdminHeader.module.css";
 import { Logo } from "@/components/logo/Logo";
 import { ThemeSwitcher } from "@/components/theme_switcher/ThemeSwitcher";
+import React from "react";
 
 interface Props {
   burger?: React.ReactNode;

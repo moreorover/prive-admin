@@ -11,7 +11,7 @@ import {
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import React, { useState } from "react";
 import classes from "./NavLinksGroup.module.css";
 
 interface LinksGroupProps {

@@ -7,9 +7,9 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { ActionResponse, Customer, customerSchema } from "@/lib/schemas";
+import { ActionResponse, OrderItem, orderItemSchema } from "@/lib/schemas";
 
-export async function getCustomers() {
+export async function getOrderItems() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -18,10 +18,10 @@ export async function getCustomers() {
     return redirect("/");
   }
 
-  return prisma.customer.findMany();
+  return prisma.orderItem.findMany();
 }
 
-export async function getCustomer(id: string) {
+export async function getOrderItemsByOrderId(orderId: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -30,11 +30,26 @@ export async function getCustomer(id: string) {
     return redirect("/");
   }
 
-  return prisma.customer.findFirst({ where: { id } });
+  return prisma.orderItem.findMany({
+    where: { orderId: orderId },
+    include: { productVariant: { include: { product: true } } },
+  });
 }
 
-export async function createCustomer(
-  customer: Customer,
+export async function getOrderItem(id: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return redirect("/");
+  }
+
+  return prisma.orderItem.findFirst({ where: { id } });
+}
+
+export async function createOrderItem(
+  orderItem: OrderItem,
 ): Promise<ActionResponse> {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -45,7 +60,7 @@ export async function createCustomer(
   }
 
   try {
-    const parse = customerSchema.safeParse(customer);
+    const parse = orderItemSchema.safeParse(orderItem);
 
     if (!parse.success) {
       return {
@@ -53,12 +68,17 @@ export async function createCustomer(
         message: "Incorrect data received.",
       };
     }
-    const c = await prisma.customer.create({
-      data: { name: customer.name },
+    const c = await prisma.orderItem.create({
+      data: {
+        orderId: orderItem.orderId,
+        productVariantId: orderItem.productVariantId,
+        quantity: orderItem.quantity,
+        totalPrice: orderItem.totalPrice,
+      },
     });
-    revalidatePath("/customers");
+    revalidatePath("/orderItems");
     return {
-      message: `Created customer: ${c.name}`,
+      message: `Created orderItem: ${c.quantity}`,
       type: "SUCCESS",
     };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -70,8 +90,8 @@ export async function createCustomer(
   }
 }
 
-export async function updateCustomer(
-  customer: Customer,
+export async function updateOrderItem(
+  orderItem: OrderItem,
 ): Promise<ActionResponse> {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -82,7 +102,7 @@ export async function updateCustomer(
   }
 
   try {
-    const parse = customerSchema.safeParse(customer);
+    const parse = orderItemSchema.safeParse(orderItem);
 
     if (!parse.success) {
       return {
@@ -90,13 +110,18 @@ export async function updateCustomer(
         message: "Incorrect data received.",
       };
     }
-    const c = await prisma.customer.update({
-      data: { name: customer.name },
-      where: { id: customer.id },
+    const c = await prisma.orderItem.update({
+      data: {
+        orderId: orderItem.orderId,
+        productVariantId: orderItem.productVariantId,
+        quantity: orderItem.quantity,
+        totalPrice: orderItem.totalPrice,
+      },
+      where: { id: orderItem.id },
     });
-    revalidatePath("/customers");
+    revalidatePath("/orderItems");
     return {
-      message: `Updated customer: ${c.name}`,
+      message: `Updated orderItem: ${c.quantity}`,
       type: "SUCCESS",
     };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -108,8 +133,8 @@ export async function updateCustomer(
   }
 }
 
-export async function deleteCustomer(
-  customer: Customer,
+export async function deleteOrderItem(
+  orderItem: OrderItem,
 ): Promise<ActionResponse> {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -120,7 +145,7 @@ export async function deleteCustomer(
   }
 
   try {
-    const parse = customerSchema.safeParse(customer);
+    const parse = orderItemSchema.safeParse(orderItem);
 
     if (!parse.success) {
       return {
@@ -128,12 +153,12 @@ export async function deleteCustomer(
         message: "Incorrect data received.",
       };
     }
-    const c = await prisma.customer.delete({
-      where: { id: customer.id },
+    const c = await prisma.orderItem.delete({
+      where: { id: orderItem.id },
     });
-    revalidatePath("/customers");
+    revalidatePath("/orderItems");
     return {
-      message: `Deleted customer: ${c.name}`,
+      message: `Deleted orderItem: ${c.quantity}`,
       type: "SUCCESS",
     };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

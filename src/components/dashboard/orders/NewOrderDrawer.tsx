@@ -33,10 +33,6 @@ export default function NewOrderDrawer() {
     return response;
   }
 
-  function onDelete() {
-    console.log("onDelete");
-  }
-
   return (
     <Drawer
       opened={value.isOpen}
@@ -46,7 +42,6 @@ export default function NewOrderDrawer() {
     >
       <OrderForm
         onSubmitAction={onSubmit}
-        onDelete={onDelete}
         order={{
           customerId: value.customerId,
           status: "PENDING",

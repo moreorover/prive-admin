@@ -44,3 +44,13 @@ export const orderSchema = z.object({
 });
 
 export type Order = z.infer<typeof orderSchema>;
+
+export const orderItemSchema = z.object({
+  id: z.string().cuid().optional(),
+  orderId: z.string().cuid(),
+  productVariantId: z.string().cuid(),
+  quantity: z.number(),
+  totalPrice: z.number(),
+});
+
+export type OrderItem = z.infer<typeof orderItemSchema>;

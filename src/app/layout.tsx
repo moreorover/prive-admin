@@ -13,6 +13,7 @@ import "./globals.css";
 import "@mantine/dates/styles.css";
 import "@mantine/notifications/styles.css";
 import { breakpoints, colors } from "./theme";
+import React from "react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",

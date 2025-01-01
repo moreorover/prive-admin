@@ -1,5 +1,11 @@
 import { atom } from "jotai";
-import { Customer, Order, Product, ProductVariant } from "@/lib/schemas";
+import {
+  Customer,
+  Order,
+  OrderItem,
+  Product,
+  ProductVariant,
+} from "@/lib/schemas";
 import dayjs from "dayjs";
 
 export const newCustomerDrawerAtom = atom<{
@@ -44,4 +50,18 @@ export const editOrderDrawerAtom = atom<{
 }>({
   isOpen: false,
   order: { customerId: "", status: "PENDING", placedAt: dayjs().toDate() },
+});
+
+export const newOrderItemDrawerAtom = atom<{
+  isOpen: boolean;
+  orderId: string;
+  productOptions: { value: string; label: string }[];
+}>({ isOpen: false, orderId: "", productOptions: [] });
+
+export const editOrderItemDrawerAtom = atom<{
+  isOpen: boolean;
+  orderItem: OrderItem;
+}>({
+  isOpen: false,
+  orderItem: { orderId: "", quantity: 0, totalPrice: 0, productVariantId: "" },
 });

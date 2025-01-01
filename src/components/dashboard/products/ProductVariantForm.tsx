@@ -1,7 +1,6 @@
 "use client";
 
 import { useForm } from "@mantine/form";
-import { IconTrash } from "@tabler/icons-react";
 import {
   ProductVariant,
   productVariantSchema,

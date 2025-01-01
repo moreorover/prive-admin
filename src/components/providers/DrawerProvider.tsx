@@ -8,6 +8,7 @@ import NewProductVariantDrawer from "@/components/dashboard/products/NewProductV
 import EditProductVariantDrawer from "@/components/dashboard/products/EditProductVariantDrawer";
 import NewOrderDrawer from "@/components/dashboard/orders/NewOrderDrawer";
 import EditOrderDrawer from "@/components/dashboard/orders/EditOrderDrawer";
+import NewOrderItemDrawer from "@/components/dashboard/orders/NewOrderItemDrawer";
 
 export default function DrawerProvider() {
   return (
@@ -23,6 +24,8 @@ export default function DrawerProvider() {
 
       <NewOrderDrawer />
       <EditOrderDrawer />
+
+      <NewOrderItemDrawer />
     </>
   );
 }

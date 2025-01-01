@@ -1,6 +1,7 @@
 import { Flex, Text } from "@mantine/core";
 import Link from "next/link";
 import classes from "./Logo.module.css";
+import React from "react";
 
 interface Props {
   width?: string;

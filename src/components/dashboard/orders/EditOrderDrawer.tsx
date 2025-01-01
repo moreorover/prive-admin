@@ -39,10 +39,6 @@ export default function EditOrderDrawer() {
     return response;
   }
 
-  function onDelete() {
-    console.log("onDelete");
-  }
-
   return (
     <Drawer
       opened={value.isOpen}
@@ -59,11 +55,7 @@ export default function EditOrderDrawer() {
       position="right"
       title="Update Order"
     >
-      <OrderForm
-        onSubmitAction={onSubmit}
-        onDelete={onDelete}
-        order={{ ...value.order }}
-      />
+      <OrderForm onSubmitAction={onSubmit} order={{ ...value.order }} />
     </Drawer>
   );
 }

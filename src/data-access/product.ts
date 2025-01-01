@@ -18,7 +18,7 @@ export async function getProducts() {
     return redirect("/");
   }
 
-  return prisma.product.findMany();
+  return prisma.product.findMany({ include: { variants: true } });
 }
 
 export async function getProduct(id: string) {

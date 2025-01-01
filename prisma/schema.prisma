@@ -132,6 +132,7 @@ model OrderItem {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
+  @@unique([orderId, productVariantId])
   @@map("order_items")
 }
 
