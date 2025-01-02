@@ -40,6 +40,7 @@ export const orderSchema = z.object({
   id: z.string().cuid().optional(),
   customerId: z.string().cuid(),
   status: z.enum(["PENDING", "COMPLETED", "CANCELLED"]),
+  type: z.enum(["PURCHASE", "SALE"]),
   placedAt: z.date(),
 });
 

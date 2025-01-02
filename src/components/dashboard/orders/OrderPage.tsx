@@ -90,6 +90,9 @@ export default function OrderPage({
                 <strong>Status:</strong> {order.status}
               </Text>
               <Text>
+                <strong>Type:</strong> {order.type}
+              </Text>
+              <Text>
                 <strong>Customer:</strong> {customer.name}
               </Text>
             </Stack>

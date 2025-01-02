@@ -68,6 +68,7 @@ export async function createOrder(order: Order): Promise<ActionResponse> {
         customerId: parse.data.customerId,
         placedAt: order.placedAt,
         status: order.status,
+        type: order.type,
       },
     });
     revalidatePath("/orders");
@@ -107,6 +108,7 @@ export async function updateOrder(order: Order): Promise<ActionResponse> {
         customerId: parse.data.customerId,
         placedAt: order.placedAt,
         status: order.status,
+        type: order.type,
       },
       where: { id: order.id },
     });

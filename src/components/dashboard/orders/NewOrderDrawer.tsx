@@ -13,7 +13,6 @@ export default function NewOrderDrawer() {
   const [value, setOpen] = useAtom(newOrderDrawerAtom);
 
   async function onSubmit(data: Order) {
-    console.log(data);
     const response = await createOrder(data);
 
     if (response.type === "ERROR") {
@@ -45,6 +44,7 @@ export default function NewOrderDrawer() {
         order={{
           customerId: value.customerId,
           status: "PENDING",
+          type: "SALE",
           placedAt: dayjs().toDate(),
         }}
       />
