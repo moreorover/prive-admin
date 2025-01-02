@@ -27,8 +27,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Next App Mantine Tailwind Template",
-  description: "Next App Mantine Tailwind Template",
+  title: "PRIVÉ Admin dashboard",
+  description: "PRIVÉ Admin dashboard",
 };
 
 const theme = mergeMantineTheme(
