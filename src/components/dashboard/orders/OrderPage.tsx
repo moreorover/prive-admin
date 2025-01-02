@@ -13,7 +13,11 @@ import {
 import { Customer, Order, OrderItem } from "@/lib/schemas";
 import { PageContainer } from "@/components/page_container/PageContainer";
 import { useSetAtom } from "jotai";
-import { editOrderDrawerAtom, newOrderItemDrawerAtom } from "@/lib/atoms";
+import {
+  editOrderDrawerAtom,
+  newOrderItemDrawerAtom,
+  newTransactionDrawerAtom,
+} from "@/lib/atoms";
 import dayjs from "dayjs";
 import OrderItemsTable from "@/components/dashboard/orders/OrderItemsTable";
 
@@ -42,6 +46,7 @@ export default function OrderPage({
 }: Props) {
   const showEditOrderDrawer = useSetAtom(editOrderDrawerAtom);
   const showNewOrderItemDrawer = useSetAtom(newOrderItemDrawerAtom);
+  const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
 
   const productVariants = orderItems.flatMap((orderItem) => [
     orderItem.orderItem.productVariantId,
@@ -139,6 +144,36 @@ export default function OrderPage({
               orderItems={orderItems}
               productOptions={editOrderItemProductOptions}
             />
+          </Paper>
+        </GridCol>
+        <GridCol span={12}>
+          <Paper
+            style={{
+              padding: "16px",
+              borderRadius: "8px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "16px",
+              }}
+            >
+              <Title order={4}>Order Transaction</Title>
+              <Button
+                onClick={() => {
+                  showNewTransactionDrawer({
+                    isOpen: true,
+                    orderId: order.id!,
+                  });
+                }}
+              >
+                New
+              </Button>
+            </div>
+            table here
           </Paper>
         </GridCol>
       </Grid>
