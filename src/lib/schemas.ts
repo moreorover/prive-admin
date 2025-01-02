@@ -56,3 +56,15 @@ export const orderItemSchema = z.object({
 });
 
 export type OrderItem = z.infer<typeof orderItemSchema>;
+
+export const transactionSchema = z.object({
+  id: z.string().cuid().optional(),
+  name: z.string(),
+  type: z.enum(["BANK", "CASH"]),
+  direction: z.enum(["IN", "OUT"]),
+  orderId: z.string().cuid(),
+  total: z.number(),
+  isProductCost: z.boolean(),
+});
+
+export type Transaction = z.infer<typeof transactionSchema>;

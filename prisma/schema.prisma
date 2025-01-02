@@ -114,15 +114,16 @@ enum OrderType {
 }
 
 model Order {
-  id         String      @id @default(cuid())
-  customerId String
-  customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  type       OrderType   @default(PURCHASE)
-  status     OrderStatus @default(PENDING)
-  placedAt   DateTime    @db.Date
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  items      OrderItem[]
+  id           String        @id @default(cuid())
+  customerId   String
+  customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  type         OrderType     @default(PURCHASE)
+  status       OrderStatus   @default(PENDING)
+  placedAt     DateTime      @db.Date
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  items        OrderItem[]
+  transactions Transaction[]
 
   @@map("orders")
 }
@@ -130,9 +131,9 @@ model Order {
 model OrderItem {
   id               String         @id @default(cuid())
   orderId          String
-  order            Order          @relation(fields: [orderId], references: [id])
+  order            Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productVariantId String
-  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
   quantity         Int            @db.Integer
   unitPrice        Int            @db.Integer
   totalPrice       Int            @db.Integer
@@ -147,4 +148,27 @@ enum OrderStatus {
   PENDING
   COMPLETED
   CANCELLED
+}
+
+enum TransactionType {
+  BANK
+  CASH
+}
+
+enum TransactionDirection {
+  IN
+  OUT
+}
+
+model Transaction {
+  id            String               @id @default(cuid())
+  name          String
+  type          TransactionType      @default(BANK)
+  direction     TransactionDirection @default(IN)
+  orderId       String
+  order         Order                @relation(fields: [orderId], references: [id])
+  total         Int                  @db.Integer
+  isProductCost Boolean              @default(false)
+
+  @@map("transactions")
 }
