@@ -80,7 +80,7 @@ export async function createOrderItem(
         productVariantId: orderItem.productVariantId,
         quantity: orderItem.quantity,
         unitPrice: orderItem.unitPrice * 100,
-        totalPrice: orderItem.totalPrice * 100,
+        totalPrice: orderItem.quantity * orderItem.unitPrice * 100,
       },
     });
     revalidatePath("/orderItems");
@@ -123,7 +123,7 @@ export async function updateOrderItem(
         productVariantId: orderItem.productVariantId,
         quantity: orderItem.quantity,
         unitPrice: orderItem.unitPrice * 100,
-        totalPrice: orderItem.totalPrice * 100,
+        totalPrice: orderItem.quantity * orderItem.unitPrice * 100,
       },
       where: { id: orderItem.id },
     });
