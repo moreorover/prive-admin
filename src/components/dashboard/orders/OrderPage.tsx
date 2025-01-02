@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Badge,
   Button,
   Grid,
   GridCol,
@@ -18,6 +19,7 @@ import OrderItemsTable from "@/components/dashboard/orders/OrderItemsTable";
 
 interface Props {
   order: Order;
+  orderTotal: number;
   customer: Customer;
   orderItems: {
     id: string;
@@ -33,6 +35,7 @@ interface Props {
 
 export default function OrderPage({
   order,
+  orderTotal,
   customer,
   orderItems,
   productOptions,
@@ -90,10 +93,16 @@ export default function OrderPage({
                 <strong>Status:</strong> {order.status}
               </Text>
               <Text>
-                <strong>Type:</strong> {order.type}
+                <strong>Type:</strong>{" "}
+                <Badge color={order.type == "SALE" ? "green" : "red"}>
+                  {order.type}
+                </Badge>
               </Text>
               <Text>
                 <strong>Customer:</strong> {customer.name}
+              </Text>
+              <Text>
+                <strong>Total:</strong>£ {orderTotal}
               </Text>
             </Stack>
           </Paper>

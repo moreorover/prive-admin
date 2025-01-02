@@ -6,7 +6,7 @@ import { PageContainer } from "@/components/page_container/PageContainer";
 import FullOrdersTable from "@/components/dashboard/orders/FullOrdersTable";
 
 interface Props {
-  orders: (Order & { customer: Customer })[];
+  orders: (Order & { customer: Customer; total: number })[];
 }
 
 export default function OrdersPage({ orders }: Props) {

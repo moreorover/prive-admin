@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 
 interface Props {
-  orders: (Order & { customer: Customer })[];
+  orders: (Order & { customer: Customer; total: number })[];
 }
 
 export default function SimpleOrdersTable({ orders }: Props) {
@@ -27,6 +27,7 @@ export default function SimpleOrdersTable({ orders }: Props) {
           {order.type}
         </Badge>
       </Table.Td>
+      <Table.Td>£ {order.total}</Table.Td>
     </Table.Tr>
   ));
   return (
@@ -39,6 +40,7 @@ export default function SimpleOrdersTable({ orders }: Props) {
             <Table.Th>Placed At</Table.Th>
             <Table.Th>Status</Table.Th>
             <Table.Th>Type</Table.Th>
+            <Table.Th>Total</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>

@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getOrder } from "@/data-access/order";
+import { getOrder, getOrderTotal } from "@/data-access/order";
 import OrderPage from "@/components/dashboard/orders/OrderPage";
 import { getCustomer } from "@/data-access/customer";
 import { getOrderItemsByOrderId } from "@/data-access/orderItem";
@@ -27,6 +27,8 @@ export default async function Page({ params }: Props) {
   if (!order) {
     return redirect("/dashboard/orders");
   }
+
+  const orderTotal = await getOrderTotal(orderId);
 
   const customer = await getCustomer(order.customerId);
 
@@ -54,6 +56,7 @@ export default async function Page({ params }: Props) {
   return (
     <OrderPage
       order={order}
+      orderTotal={orderTotal}
       customer={customer!}
       orderItems={orderItemsShaped}
       productOptions={productOptionsShaped}
