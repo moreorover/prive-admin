@@ -47,6 +47,7 @@ export default function NewOrderItemDrawer() {
           orderId: value.orderId,
           productVariantId: "",
           quantity: 0,
+          unitPrice: 0,
           totalPrice: 0,
         }}
         productOptions={value.productOptions}

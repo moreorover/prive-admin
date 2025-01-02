@@ -1,6 +1,6 @@
 "use client";
 
-import { Table, Paper } from "@mantine/core";
+import { Table, Paper, Badge } from "@mantine/core";
 import { Order } from "@/lib/schemas";
 import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
@@ -21,6 +21,11 @@ export default function SimpleOrdersTable({ orders }: Props) {
       <Table.Td>{order.id}</Table.Td>
       <Table.Td>{dayjs(order.placedAt).format("DD MMM YYYY")}</Table.Td>
       <Table.Td>{order.status}</Table.Td>
+      <Table.Td>
+        <Badge color={order.type == "SALE" ? "green" : "red"}>
+          {order.type}
+        </Badge>
+      </Table.Td>
     </Table.Tr>
   ));
   return (
@@ -31,6 +36,7 @@ export default function SimpleOrdersTable({ orders }: Props) {
             <Table.Th>ID</Table.Th>
             <Table.Th>Placed At</Table.Th>
             <Table.Th>Status</Table.Th>
+            <Table.Th>Type</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>

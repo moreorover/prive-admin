@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getOrder } from "@/data-access/order";
+import { getOrder, getOrderTotal } from "@/data-access/order";
 import OrderPage from "@/components/dashboard/orders/OrderPage";
 import { getCustomer } from "@/data-access/customer";
 import { getOrderItemsByOrderId } from "@/data-access/orderItem";
@@ -28,6 +28,8 @@ export default async function Page({ params }: Props) {
     return redirect("/dashboard/orders");
   }
 
+  const orderTotal = await getOrderTotal(orderId);
+
   const customer = await getCustomer(order.customerId);
 
   const orderItems = await getOrderItemsByOrderId(orderId);
@@ -37,29 +39,24 @@ export default async function Page({ params }: Props) {
     product: orderItem.productVariant.product.name,
     productVariant: orderItem.productVariant.size,
     quantity: orderItem.quantity,
+    unitPrice: orderItem.unitPrice,
     totalPrice: orderItem.totalPrice,
+    orderItem: orderItem,
   }));
-
-  const productVariants = orderItems.flatMap((orderItem) => [
-    orderItem.productVariantId,
-  ]);
 
   const productOptions = await getProducts();
 
   const productOptionsShaped = productOptions.flatMap((product) =>
-    product.variants
-      .map((variant) => ({
-        value: variant.id,
-        label: `${product.name} ${variant.size}`,
-      }))
-      .filter(
-        (productOption) => !productVariants.includes(productOption.value),
-      ),
+    product.variants.map((variant) => ({
+      value: variant.id,
+      label: `${product.name} ${variant.size}`,
+    })),
   );
 
   return (
     <OrderPage
       order={order}
+      orderTotal={orderTotal}
       customer={customer!}
       orderItems={orderItemsShaped}
       productOptions={productOptionsShaped}

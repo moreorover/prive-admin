@@ -18,7 +18,16 @@ export async function getOrders() {
     return redirect("/");
   }
 
-  return prisma.order.findMany({ include: { customer: true } });
+  const orders = await prisma.order.findMany({
+    include: { customer: true },
+  });
+
+  return Promise.all(
+    orders.map(async (order) => ({
+      ...order,
+      total: await getOrderTotal(order.id),
+    })),
+  );
 }
 
 export async function getOrdersByCustomerId(customerId: string) {
@@ -45,6 +54,23 @@ export async function getOrder(id: string) {
   return prisma.order.findFirst({ where: { id } });
 }
 
+export async function getOrderTotal(id: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return redirect("/");
+  }
+
+  const orderItems = await prisma.orderItem.findMany({
+    where: { orderId: id },
+  });
+
+  const total = orderItems.reduce((n, { totalPrice }) => n + totalPrice, 0);
+  return total / 100;
+}
+
 export async function createOrder(order: Order): Promise<ActionResponse> {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -68,6 +94,7 @@ export async function createOrder(order: Order): Promise<ActionResponse> {
         customerId: parse.data.customerId,
         placedAt: order.placedAt,
         status: order.status,
+        type: order.type,
       },
     });
     revalidatePath("/orders");
@@ -107,6 +134,7 @@ export async function updateOrder(order: Order): Promise<ActionResponse> {
         customerId: parse.data.customerId,
         placedAt: order.placedAt,
         status: order.status,
+        type: order.type,
       },
       where: { id: order.id },
     });

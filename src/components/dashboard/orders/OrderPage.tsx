@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Badge,
   Button,
   Grid,
   GridCol,
@@ -9,7 +10,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { Customer, Order } from "@/lib/schemas";
+import { Customer, Order, OrderItem } from "@/lib/schemas";
 import { PageContainer } from "@/components/page_container/PageContainer";
 import { useSetAtom } from "jotai";
 import { editOrderDrawerAtom, newOrderItemDrawerAtom } from "@/lib/atoms";
@@ -18,25 +19,42 @@ import OrderItemsTable from "@/components/dashboard/orders/OrderItemsTable";
 
 interface Props {
   order: Order;
+  orderTotal: number;
   customer: Customer;
   orderItems: {
     id: string;
     product: string;
     productVariant: string;
     quantity: number;
+    unitPrice: number;
     totalPrice: number;
+    orderItem: OrderItem;
   }[];
   productOptions: { value: string; label: string }[];
 }
 
 export default function OrderPage({
   order,
+  orderTotal,
   customer,
   orderItems,
   productOptions,
 }: Props) {
   const showEditOrderDrawer = useSetAtom(editOrderDrawerAtom);
   const showNewOrderItemDrawer = useSetAtom(newOrderItemDrawerAtom);
+
+  const productVariants = orderItems.flatMap((orderItem) => [
+    orderItem.orderItem.productVariantId,
+  ]);
+
+  const newOrderItemProductOptions = productOptions.filter(
+    (productOption) => !productVariants.includes(productOption.value),
+  );
+
+  const editOrderItemProductOptions = productOptions.filter((productOption) =>
+    productVariants.includes(productOption.value),
+  );
+
   return (
     <PageContainer title="Order Details">
       <Grid>
@@ -75,7 +93,16 @@ export default function OrderPage({
                 <strong>Status:</strong> {order.status}
               </Text>
               <Text>
+                <strong>Type:</strong>{" "}
+                <Badge color={order.type == "SALE" ? "green" : "red"}>
+                  {order.type}
+                </Badge>
+              </Text>
+              <Text>
                 <strong>Customer:</strong> {customer.name}
+              </Text>
+              <Text>
+                <strong>Total:</strong>£ {orderTotal}
               </Text>
             </Stack>
           </Paper>
@@ -101,14 +128,17 @@ export default function OrderPage({
                   showNewOrderItemDrawer({
                     isOpen: true,
                     orderId: order.id!,
-                    productOptions: productOptions,
+                    productOptions: newOrderItemProductOptions,
                   });
                 }}
               >
                 New
               </Button>
             </div>
-            <OrderItemsTable orderItems={orderItems} />
+            <OrderItemsTable
+              orderItems={orderItems}
+              productOptions={editOrderItemProductOptions}
+            />
           </Paper>
         </GridCol>
       </Grid>

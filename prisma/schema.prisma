@@ -108,10 +108,16 @@ model ProductVariant {
   @@map("product_variants")
 }
 
+enum OrderType {
+  PURCHASE
+  SALE
+}
+
 model Order {
   id         String      @id @default(cuid())
   customerId String
   customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  type       OrderType   @default(PURCHASE)
   status     OrderStatus @default(PENDING)
   placedAt   DateTime    @db.Date
   createdAt  DateTime    @default(now())
@@ -127,7 +133,8 @@ model OrderItem {
   order            Order          @relation(fields: [orderId], references: [id])
   productVariantId String
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
-  quantity         Int
+  quantity         Int            @db.Integer
+  unitPrice        Int            @db.Integer
   totalPrice       Int            @db.Integer
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt

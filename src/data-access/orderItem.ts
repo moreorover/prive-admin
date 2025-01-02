@@ -30,10 +30,16 @@ export async function getOrderItemsByOrderId(orderId: string) {
     return redirect("/");
   }
 
-  return prisma.orderItem.findMany({
+  const orderItems = await prisma.orderItem.findMany({
     where: { orderId: orderId },
     include: { productVariant: { include: { product: true } } },
   });
+
+  return orderItems.map((orderItem) => ({
+    ...orderItem,
+    unitPrice: orderItem.unitPrice / 100,
+    totalPrice: orderItem.totalPrice / 100,
+  }));
 }
 
 export async function getOrderItem(id: string) {
@@ -73,7 +79,8 @@ export async function createOrderItem(
         orderId: orderItem.orderId,
         productVariantId: orderItem.productVariantId,
         quantity: orderItem.quantity,
-        totalPrice: orderItem.totalPrice,
+        unitPrice: orderItem.unitPrice * 100,
+        totalPrice: orderItem.quantity * orderItem.unitPrice * 100,
       },
     });
     revalidatePath("/orderItems");
@@ -115,7 +122,8 @@ export async function updateOrderItem(
         orderId: orderItem.orderId,
         productVariantId: orderItem.productVariantId,
         quantity: orderItem.quantity,
-        totalPrice: orderItem.totalPrice,
+        unitPrice: orderItem.unitPrice * 100,
+        totalPrice: orderItem.quantity * orderItem.unitPrice * 100,
       },
       where: { id: orderItem.id },
     });
