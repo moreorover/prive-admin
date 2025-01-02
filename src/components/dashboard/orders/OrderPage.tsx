@@ -39,6 +39,19 @@ export default function OrderPage({
 }: Props) {
   const showEditOrderDrawer = useSetAtom(editOrderDrawerAtom);
   const showNewOrderItemDrawer = useSetAtom(newOrderItemDrawerAtom);
+
+  const productVariants = orderItems.flatMap((orderItem) => [
+    orderItem.orderItem.productVariantId,
+  ]);
+
+  const newOrderItemProductOptions = productOptions.filter(
+    (productOption) => !productVariants.includes(productOption.value),
+  );
+
+  const editOrderItemProductOptions = productOptions.filter((productOption) =>
+    productVariants.includes(productOption.value),
+  );
+
   return (
     <PageContainer title="Order Details">
       <Grid>
@@ -103,7 +116,7 @@ export default function OrderPage({
                   showNewOrderItemDrawer({
                     isOpen: true,
                     orderId: order.id!,
-                    productOptions: productOptions,
+                    productOptions: newOrderItemProductOptions,
                   });
                 }}
               >
@@ -112,7 +125,7 @@ export default function OrderPage({
             </div>
             <OrderItemsTable
               orderItems={orderItems}
-              productOptions={productOptions}
+              productOptions={editOrderItemProductOptions}
             />
           </Paper>
         </GridCol>

@@ -31,7 +31,7 @@ export default function OrderItemForm({
   return (
     <form onSubmit={form.onSubmit(handleSubmit)}>
       <Select
-        // disabled={isItemSelectDisabled}
+        disabled={isItemSelectDisabled}
         searchable
         limit={5}
         data={productOptions}

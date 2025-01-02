@@ -42,21 +42,13 @@ export default async function Page({ params }: Props) {
     orderItem: orderItem,
   }));
 
-  const productVariants = orderItems.flatMap((orderItem) => [
-    orderItem.productVariantId,
-  ]);
-
   const productOptions = await getProducts();
 
   const productOptionsShaped = productOptions.flatMap((product) =>
-    product.variants
-      .map((variant) => ({
-        value: variant.id,
-        label: `${product.name} ${variant.size}`,
-      }))
-      .filter(
-        (productOption) => !productVariants.includes(productOption.value),
-      ),
+    product.variants.map((variant) => ({
+      value: variant.id,
+      label: `${product.name} ${variant.size}`,
+    })),
   );
 
   return (
