@@ -9,7 +9,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { Customer, Order } from "@/lib/schemas";
+import { Customer, Order, OrderItem } from "@/lib/schemas";
 import { PageContainer } from "@/components/page_container/PageContainer";
 import { useSetAtom } from "jotai";
 import { editOrderDrawerAtom, newOrderItemDrawerAtom } from "@/lib/atoms";
@@ -24,7 +24,9 @@ interface Props {
     product: string;
     productVariant: string;
     quantity: number;
+    unitPrice: number;
     totalPrice: number;
+    orderItem: OrderItem;
   }[];
   productOptions: { value: string; label: string }[];
 }
@@ -108,7 +110,10 @@ export default function OrderPage({
                 New
               </Button>
             </div>
-            <OrderItemsTable orderItems={orderItems} />
+            <OrderItemsTable
+              orderItems={orderItems}
+              productOptions={productOptions}
+            />
           </Paper>
         </GridCol>
       </Grid>

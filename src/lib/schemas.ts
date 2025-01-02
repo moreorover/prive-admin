@@ -50,6 +50,7 @@ export const orderItemSchema = z.object({
   orderId: z.string().cuid(),
   productVariantId: z.string().cuid(),
   quantity: z.number(),
+  unitPrice: z.number(),
   totalPrice: z.number(),
 });
 

@@ -37,7 +37,9 @@ export default async function Page({ params }: Props) {
     product: orderItem.productVariant.product.name,
     productVariant: orderItem.productVariant.size,
     quantity: orderItem.quantity,
+    unitPrice: orderItem.unitPrice,
     totalPrice: orderItem.totalPrice,
+    orderItem: orderItem,
   }));
 
   const productVariants = orderItems.flatMap((orderItem) => [

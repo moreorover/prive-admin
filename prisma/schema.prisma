@@ -127,7 +127,8 @@ model OrderItem {
   order            Order          @relation(fields: [orderId], references: [id])
   productVariantId String
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
-  quantity         Int
+  quantity         Int            @db.Integer
+  unitPrice        Int            @db.Integer
   totalPrice       Int            @db.Integer
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt

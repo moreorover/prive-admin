@@ -61,7 +61,15 @@ export const newOrderItemDrawerAtom = atom<{
 export const editOrderItemDrawerAtom = atom<{
   isOpen: boolean;
   orderItem: OrderItem;
+  productOptions: { value: string; label: string }[];
 }>({
   isOpen: false,
-  orderItem: { orderId: "", quantity: 0, totalPrice: 0, productVariantId: "" },
+  orderItem: {
+    orderId: "",
+    quantity: 0,
+    totalPrice: 0,
+    unitPrice: 0,
+    productVariantId: "",
+  },
+  productOptions: [],
 });
