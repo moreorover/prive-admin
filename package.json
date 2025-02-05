@@ -27,7 +27,7 @@
     "@mantine/notifications": "^7.15.2",
     "@prisma/client": "^6.1.0",
     "@tabler/icons-react": "^3.26.0",
-    "better-auth": "^1.1.8",
+    "better-auth": "^1.1.16",
     "dayjs": "^1.11.13",
     "jotai": "^2.11.0",
     "mantine-form-zod-resolver": "^1.1.0",
