@@ -5,6 +5,7 @@ import {
   Button,
   Grid,
   GridCol,
+  Group,
   Paper,
   Stack,
   Text,
@@ -17,10 +18,12 @@ import {
   editOrderDrawerAtom,
   newOrderItemDrawerAtom,
   newTransactionDrawerAtom,
+  transactionPickerModalAtom,
 } from "@/lib/atoms";
 import dayjs from "dayjs";
 import OrderItemsTable from "@/components/dashboard/orders/OrderItemsTable";
 import TransactionsTable from "@/components/dashboard/transactions/TransactionsTable";
+import TransactionPickerModal from "@/components/dashboard/transactions/TransactionPickerModal";
 
 interface Props {
   order: Order;
@@ -50,6 +53,7 @@ export default function OrderPage({
   const showEditOrderDrawer = useSetAtom(editOrderDrawerAtom);
   const showNewOrderItemDrawer = useSetAtom(newOrderItemDrawerAtom);
   const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
+  const showPickTransactionModal = useSetAtom(transactionPickerModalAtom);
 
   const productVariants = orderItems.flatMap((orderItem) => [
     orderItem.orderItem.productVariantId,
@@ -165,21 +169,36 @@ export default function OrderPage({
               }}
             >
               <Title order={4}>Order Transactions</Title>
-              <Button
-                onClick={() => {
-                  showNewTransactionDrawer({
-                    isOpen: true,
-                    orderId: order.id!,
-                  });
-                }}
-              >
-                New
-              </Button>
+              <Group gap="sm">
+                <Button
+                  onClick={() => {
+                    showNewTransactionDrawer({
+                      isOpen: true,
+                      orderId: order.id!,
+                    });
+                  }}
+                >
+                  New
+                </Button>
+                <Button
+                  onClick={() => {
+                    showPickTransactionModal({
+                      isOpen: true,
+                    });
+                  }}
+                >
+                  Pick transactions
+                </Button>
+              </Group>
             </div>
             <TransactionsTable transactions={transactions} />
           </Paper>
         </GridCol>
       </Grid>
+      <TransactionPickerModal
+        transactions={transactions}
+        onConfirm={() => {}}
+      />
     </PageContainer>
   );
 }

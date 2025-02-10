@@ -100,3 +100,7 @@ export const editTransactionDrawerAtom = atom<{
     customerId: null,
   },
 });
+
+export const transactionPickerModalAtom = atom<{
+  isOpen: boolean;
+}>({ isOpen: false });
