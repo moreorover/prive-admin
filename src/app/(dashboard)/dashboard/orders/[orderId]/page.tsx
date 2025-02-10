@@ -55,6 +55,7 @@ export default async function Page({ params }: Props) {
   );
 
   const orderTransactions = await getTransactionsByOrderId(orderId);
+  const transactionOptions = await getTransactionsByOrderId(null);
 
   return (
     <OrderPage
@@ -64,6 +65,7 @@ export default async function Page({ params }: Props) {
       orderItems={orderItemsShaped}
       productOptions={productOptionsShaped}
       transactions={orderTransactions}
+      transactionOptions={transactionOptions}
     />
   );
 }

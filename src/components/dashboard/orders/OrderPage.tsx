@@ -40,6 +40,7 @@ interface Props {
   }[];
   productOptions: { value: string; label: string }[];
   transactions: Transaction[];
+  transactionOptions: Transaction[];
 }
 
 export default function OrderPage({
@@ -49,6 +50,7 @@ export default function OrderPage({
   orderItems,
   productOptions,
   transactions,
+  transactionOptions,
 }: Props) {
   const showEditOrderDrawer = useSetAtom(editOrderDrawerAtom);
   const showNewOrderItemDrawer = useSetAtom(newOrderItemDrawerAtom);
@@ -66,6 +68,10 @@ export default function OrderPage({
   const editOrderItemProductOptions = productOptions.filter((productOption) =>
     productVariants.includes(productOption.value),
   );
+
+  async function onConfirmAction(selectedRows: string[]) {
+    console.log({ selectedRows });
+  }
 
   return (
     <PageContainer title="Order Details">
@@ -196,8 +202,8 @@ export default function OrderPage({
         </GridCol>
       </Grid>
       <TransactionPickerModal
-        transactions={transactions}
-        onConfirm={() => {}}
+        transactions={transactionOptions}
+        onConfirmAction={onConfirmAction}
       />
     </PageContainer>
   );

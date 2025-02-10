@@ -38,7 +38,7 @@ export async function getTransaction(id: string) {
   return prisma.transaction.findFirst({ where: { id } });
 }
 
-export async function getTransactionsByOrderId(orderId: string) {
+export async function getTransactionsByOrderId(orderId: string | null) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
