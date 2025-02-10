@@ -97,17 +97,17 @@ export default function OrderPage({
               <Text>
                 <strong>Status:</strong> {order.status}
               </Text>
-              <Text>
+              <div>
                 <strong>Type:</strong>{" "}
-                <Badge color={order.type == "SALE" ? "green" : "red"}>
+                <Badge color={order.type === "SALE" ? "green" : "red"}>
                   {order.type}
                 </Badge>
-              </Text>
+              </div>
               <Text>
                 <strong>Customer:</strong> {customer.name}
               </Text>
               <Text>
-                <strong>Total:</strong>£ {orderTotal}
+                <strong>Total:</strong> £ {orderTotal}
               </Text>
             </Stack>
           </Paper>
@@ -161,7 +161,7 @@ export default function OrderPage({
                 marginBottom: "16px",
               }}
             >
-              <Title order={4}>Order Transaction</Title>
+              <Title order={4}>Order Transactions</Title>
               <Button
                 onClick={() => {
                   showNewTransactionDrawer({

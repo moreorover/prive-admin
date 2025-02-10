@@ -6,7 +6,7 @@ export type ActionResponse = {
 };
 
 export const customerSchema = z.object({
-  id: z.string().cuid().optional(),
+  id: z.string().cuid2().optional(),
   name: z
     .string()
     .min(5, { message: "Name must be at least 5 characters long" })
@@ -16,7 +16,7 @@ export const customerSchema = z.object({
 export type Customer = z.infer<typeof customerSchema>;
 
 export const productSchema = z.object({
-  id: z.string().cuid().optional(),
+  id: z.string().cuid2().optional(),
   name: z
     .string()
     .min(5, { message: "Name must be at least 5 characters long" })
@@ -27,8 +27,8 @@ export const productSchema = z.object({
 export type Product = z.infer<typeof productSchema>;
 
 export const productVariantSchema = z.object({
-  id: z.string().cuid().optional(),
-  productId: z.string().cuid(),
+  id: z.string().cuid2().optional(),
+  productId: z.string().cuid2(),
   size: z.string(),
   price: z.number(),
   stock: z.number(),
@@ -37,8 +37,8 @@ export const productVariantSchema = z.object({
 export type ProductVariant = z.infer<typeof productVariantSchema>;
 
 export const orderSchema = z.object({
-  id: z.string().cuid().optional(),
-  customerId: z.string().cuid(),
+  id: z.string().cuid2().optional(),
+  customerId: z.string().cuid2(),
   status: z.enum(["PENDING", "COMPLETED", "CANCELLED"]),
   type: z.enum(["PURCHASE", "SALE"]),
   placedAt: z.date(),
@@ -47,9 +47,9 @@ export const orderSchema = z.object({
 export type Order = z.infer<typeof orderSchema>;
 
 export const orderItemSchema = z.object({
-  id: z.string().cuid().optional(),
-  orderId: z.string().cuid(),
-  productVariantId: z.string().cuid(),
+  id: z.string().cuid2().optional(),
+  orderId: z.string().cuid2(),
+  productVariantId: z.string().cuid2(),
   quantity: z.number(),
   unitPrice: z.number(),
   totalPrice: z.number(),
@@ -58,13 +58,27 @@ export const orderItemSchema = z.object({
 export type OrderItem = z.infer<typeof orderItemSchema>;
 
 export const transactionSchema = z.object({
-  id: z.string().cuid().optional(),
-  name: z.string(),
+  id: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val) return true; // Allow undefined
+        // Check if it's a valid cuid2 or starts with "mm_"
+        return (
+          z.string().cuid2().safeParse(val).success || val.startsWith("mm_")
+        );
+      },
+      { message: "id must be a valid cuid2 or start with 'mm_'" },
+    ),
+  name: z.string().nullable(),
+  notes: z.string().nullable(),
+  amount: z.number(),
   type: z.enum(["BANK", "CASH"]),
-  direction: z.enum(["IN", "OUT"]),
-  orderId: z.string().cuid(),
-  total: z.number(),
-  isProductCost: z.boolean(),
+  orderId: z.string().cuid2().nullish(),
+  customerId: z.string().cuid2().nullish(),
 });
+
+export const transactionsSchema = z.array(transactionSchema);
 
 export type Transaction = z.infer<typeof transactionSchema>;

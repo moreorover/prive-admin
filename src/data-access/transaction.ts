@@ -7,7 +7,12 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { ActionResponse, Transaction, transactionSchema } from "@/lib/schemas";
+import {
+  ActionResponse,
+  Transaction,
+  transactionSchema,
+  transactionsSchema,
+} from "@/lib/schemas";
 
 export async function getTransactions() {
   const session = await auth.api.getSession({
@@ -53,20 +58,61 @@ export async function createTransaction(
         message: "Incorrect data received.",
       };
     }
-    console.log({ transaction });
+
     const c = await prisma.transaction.create({
       data: {
         name: transaction.name,
+        notes: transaction.notes,
+        amount: transaction.amount * 100,
         type: transaction.type,
-        direction: transaction.direction,
         orderId: transaction.orderId,
-        total: transaction.total * 100,
-        isProductCost: transaction.isProductCost,
+        customerId: transaction.customerId,
       },
     });
     revalidatePath("/transactions");
     return {
       message: `Created transaction: ${c.name}`,
+      type: "SUCCESS",
+    };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (e) {
+    return {
+      type: "ERROR",
+      message: "Something went wrong!",
+    };
+  }
+}
+
+export async function createTransactions(
+  transactions: Transaction[],
+): Promise<ActionResponse> {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return redirect("/");
+  }
+
+  try {
+    const parse = transactionsSchema.safeParse(transactions);
+
+    // console.log({ e: parse.error });
+
+    if (!parse.success) {
+      return {
+        type: "ERROR",
+        message: "Incorrect data received.",
+      };
+    }
+
+    const c = await prisma.transaction.createMany({
+      data: transactions,
+      skipDuplicates: true,
+    });
+    revalidatePath("/transactions");
+    return {
+      message: `Created transactions: ${c.count}`,
       type: "SUCCESS",
     };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -101,11 +147,11 @@ export async function updateTransaction(
     const c = await prisma.transaction.update({
       data: {
         name: transaction.name,
+        notes: transaction.notes,
+        amount: transaction.amount * 100,
         type: transaction.type,
-        direction: transaction.direction,
         orderId: transaction.orderId,
-        total: transaction.total * 100,
-        isProductCost: transaction.isProductCost,
+        customerId: transaction.customerId,
       },
       where: { id: transaction.id },
     });
