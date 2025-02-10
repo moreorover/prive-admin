@@ -104,20 +104,21 @@ export default function TransactionPickerModal({
       title="Pick a transaction"
       size="lg"
     >
-      <ScrollArea>
-        <Paper shadow="sm" radius="md" withBorder p="md">
-          {/* Search field with bottom margin for spacing */}
-          <TextInput
-            size="sm"
-            radius="sm"
-            label="Search"
-            description="Search by transaction name"
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.currentTarget.value)}
-            mb="md"
-          />
+      <Paper shadow="sm" radius="md" withBorder p="md">
+        {/* Search field with bottom margin for spacing */}
+        <TextInput
+          size="sm"
+          radius="sm"
+          label="Search"
+          description="Search by transaction name"
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.currentTarget.value)}
+          mb="md"
+        />
 
+        {/* Wrap only the table in the ScrollArea with a fixed height */}
+        <ScrollArea style={{ height: 300 }}>
           <Table striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
@@ -139,24 +140,24 @@ export default function TransactionPickerModal({
               )}
             </Table.Tbody>
           </Table>
+        </ScrollArea>
 
-          {/* Confirm button at the bottom */}
-          <Group justify="flex-end" mt="md">
-            <Button
-              onClick={() => {
-                setModalState({ isOpen: false });
-                if (selectedRows.length > 0) {
-                  onConfirmAction(selectedRows);
-                }
-                setSelectedRows([]);
-                setSearchTerm("");
-              }}
-            >
-              Confirm
-            </Button>
-          </Group>
-        </Paper>
-      </ScrollArea>
+        {/* Confirm button always visible outside of the ScrollArea */}
+        <Group justify="flex-end" mt="md">
+          <Button
+            onClick={() => {
+              setModalState({ isOpen: false });
+              if (selectedRows.length > 0) {
+                onConfirmAction(selectedRows);
+              }
+              setSelectedRows([]);
+              setSearchTerm("");
+            }}
+          >
+            Confirm
+          </Button>
+        </Group>
+      </Paper>
     </Modal>
   );
 }
