@@ -24,6 +24,11 @@ import dayjs from "dayjs";
 import OrderItemsTable from "@/components/dashboard/orders/OrderItemsTable";
 import TransactionsTable from "@/components/dashboard/transactions/TransactionsTable";
 import TransactionPickerModal from "@/components/dashboard/transactions/TransactionPickerModal";
+import {
+  createTransactions,
+  linkTransactionsWithOrders,
+} from "@/data-access/transaction";
+import { notifications } from "@mantine/notifications";
 
 interface Props {
   order: Order;
@@ -70,7 +75,21 @@ export default function OrderPage({
   );
 
   async function onConfirmAction(selectedRows: string[]) {
-    console.log({ selectedRows });
+    const response = await linkTransactionsWithOrders(selectedRows, order.id!);
+
+    if (response.type === "ERROR") {
+      notifications.show({
+        color: "red",
+        title: "Failed to link Transactions",
+        message: response.message,
+      });
+    } else {
+      notifications.show({
+        color: "green",
+        title: "Success!",
+        message: response.message,
+      });
+    }
   }
 
   return (

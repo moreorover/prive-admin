@@ -14,6 +14,8 @@ import {
   transactionsSchema,
 } from "@/lib/schemas";
 
+import { z } from "zod";
+
 export async function getTransactions() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -125,6 +127,55 @@ export async function createTransactions(
     revalidatePath("/transactions");
     return {
       message: `Created transactions: ${c.count}`,
+      type: "SUCCESS",
+    };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (e) {
+    return {
+      type: "ERROR",
+      message: "Something went wrong!",
+    };
+  }
+}
+
+export async function linkTransactionsWithOrders(
+  transactions: string[],
+  orderId: string,
+): Promise<ActionResponse> {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return redirect("/");
+  }
+
+  if (!orderId) {
+    return {
+      type: "ERROR",
+      message: "Order ID is required.",
+    };
+  }
+
+  try {
+    const parse = z.array(z.string()).safeParse(transactions);
+
+    if (!parse.success) {
+      return {
+        type: "ERROR",
+        message: "Incorrect data received.",
+      };
+    }
+
+    const c = await prisma.transaction.updateMany({
+      where: { id: { in: transactions } },
+      data: {
+        orderId,
+      },
+    });
+    revalidatePath("/transactions");
+    return {
+      message: `Updated transactions: ${c.count}`,
       type: "SUCCESS",
     };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
