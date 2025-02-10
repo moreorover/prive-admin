@@ -38,6 +38,18 @@ export async function getTransaction(id: string) {
   return prisma.transaction.findFirst({ where: { id } });
 }
 
+export async function getTransactionsByOrderId(orderId: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return redirect("/");
+  }
+
+  return prisma.transaction.findMany({ where: { orderId: orderId } });
+}
+
 export async function createTransaction(
   transaction: Transaction,
 ): Promise<ActionResponse> {

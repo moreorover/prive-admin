@@ -7,7 +7,14 @@ import {
   transactionSchema,
 } from "@/lib/schemas";
 import { zodResolver } from "mantine-form-zod-resolver";
-import { Button, NumberInput, Select, Switch, TextInput } from "@mantine/core";
+import {
+  Button,
+  NumberInput,
+  Select,
+  Switch,
+  Textarea,
+  TextInput,
+} from "@mantine/core";
 
 type Props = {
   transaction: Transaction;
@@ -28,11 +35,16 @@ export default function OrderItemForm({ transaction, onSubmitAction }: Props) {
   return (
     <form onSubmit={form.onSubmit(handleSubmit)}>
       <TextInput
-        label="Title"
-        placeholder="Transaction Title"
-        required
+        label="Name"
+        placeholder="Transaction Name"
         key={form.key("name")}
         {...form.getInputProps("name")}
+      />
+      <Textarea
+        label="Notes"
+        placeholder="Transaction Notes"
+        key={form.key("notes")}
+        {...form.getInputProps("notes")}
       />
       <Select
         label="Transaction Type"
@@ -40,25 +52,14 @@ export default function OrderItemForm({ transaction, onSubmitAction }: Props) {
         data={["BANK", "CASH"]}
         key={form.key("type")}
         {...form.getInputProps("type")}
-      />
-      <Select
-        label="Transaction Direction"
-        placeholder="Select direction"
-        data={["IN", "OUT"]}
-        key={form.key("direction")}
-        {...form.getInputProps("direction")}
+        disabled={transaction.type === "CASH"}
       />
       <NumberInput
-        label="Total"
+        label="Amount"
         placeholder="0.99"
         prefix="£"
-        key={form.key("total")}
-        {...form.getInputProps("total")}
-      />
-      <Switch
-        label="Add the total of the transaction to product cost?"
-        key={form.key("isProductCost")}
-        {...form.getInputProps("isProductCost")}
+        key={form.key("amount")}
+        {...form.getInputProps("amount")}
       />
       <Button fullWidth mt="xl" type="submit">
         {transaction.id ? "Update" : "Create"}

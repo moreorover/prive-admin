@@ -5,15 +5,15 @@ import { Transaction } from "@/lib/schemas";
 import { PageContainer } from "@/components/page_container/PageContainer";
 import TransactionsTable from "@/components/dashboard/transactions/TransactionsTable";
 import { MonzoUpload } from "@/components/dashboard/transactions/MonzoUpload";
-// import { useSetAtom } from "jotai";
-// import { newTransactionDrawerAtom } from "@/lib/atoms";
+import { useSetAtom } from "jotai";
+import { newTransactionDrawerAtom } from "@/lib/atoms";
 
 interface Props {
   transactions: Transaction[];
 }
 
 export default function TransactionsPage({ transactions }: Props) {
-  // const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
+  const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
 
   return (
     <PageContainer title="Transactions">
@@ -29,7 +29,7 @@ export default function TransactionsPage({ transactions }: Props) {
           >
             <Button
               onClick={() => {
-                // showNewTransactionDrawer({ isOpen: true });
+                showNewTransactionDrawer({ isOpen: true });
               }}
             >
               New

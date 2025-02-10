@@ -10,7 +10,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { Customer, Order, OrderItem } from "@/lib/schemas";
+import { Customer, Order, OrderItem, Transaction } from "@/lib/schemas";
 import { PageContainer } from "@/components/page_container/PageContainer";
 import { useSetAtom } from "jotai";
 import {
@@ -20,6 +20,7 @@ import {
 } from "@/lib/atoms";
 import dayjs from "dayjs";
 import OrderItemsTable from "@/components/dashboard/orders/OrderItemsTable";
+import TransactionsTable from "@/components/dashboard/transactions/TransactionsTable";
 
 interface Props {
   order: Order;
@@ -35,6 +36,7 @@ interface Props {
     orderItem: OrderItem;
   }[];
   productOptions: { value: string; label: string }[];
+  transactions: Transaction[];
 }
 
 export default function OrderPage({
@@ -43,6 +45,7 @@ export default function OrderPage({
   customer,
   orderItems,
   productOptions,
+  transactions,
 }: Props) {
   const showEditOrderDrawer = useSetAtom(editOrderDrawerAtom);
   const showNewOrderItemDrawer = useSetAtom(newOrderItemDrawerAtom);
@@ -173,7 +176,7 @@ export default function OrderPage({
                 New
               </Button>
             </div>
-            table here
+            <TransactionsTable transactions={transactions} />
           </Paper>
         </GridCol>
       </Grid>

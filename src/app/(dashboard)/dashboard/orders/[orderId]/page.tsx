@@ -6,6 +6,7 @@ import OrderPage from "@/components/dashboard/orders/OrderPage";
 import { getCustomer } from "@/data-access/customer";
 import { getOrderItemsByOrderId } from "@/data-access/orderItem";
 import { getProducts } from "@/data-access/product";
+import { getTransactionsByOrderId } from "@/data-access/transaction";
 
 type Props = {
   params: Promise<{ orderId: string }>;
@@ -53,6 +54,8 @@ export default async function Page({ params }: Props) {
     })),
   );
 
+  const orderTransactions = await getTransactionsByOrderId(orderId);
+
   return (
     <OrderPage
       order={order}
@@ -60,6 +63,7 @@ export default async function Page({ params }: Props) {
       customer={customer!}
       orderItems={orderItemsShaped}
       productOptions={productOptionsShaped}
+      transactions={orderTransactions}
     />
   );
 }

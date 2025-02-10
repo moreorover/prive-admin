@@ -42,11 +42,11 @@ export default function NewTransactionDrawer() {
         onSubmitAction={onSubmit}
         transaction={{
           orderId: value.orderId,
+          customerId: value.customerId,
           name: "",
-          type: "BANK",
-          direction: "IN",
-          total: 0,
-          isProductCost: false,
+          notes: "",
+          amount: 0,
+          type: "CASH",
         }}
       />
     </Drawer>

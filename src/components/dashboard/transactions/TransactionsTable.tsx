@@ -1,6 +1,6 @@
 "use client";
 
-import { Table, Text, Group, Badge, ScrollArea, Paper } from "@mantine/core";
+import { Table, Text, Badge, ScrollArea, Paper } from "@mantine/core";
 import { Transaction } from "@/lib/schemas";
 import { useRouter } from "next/navigation";
 import { IconArrowRight } from "@tabler/icons-react";
@@ -22,15 +22,15 @@ export default function TransactionsTable({ transactions }: Props) {
   const rows = transactions.map((transaction) => (
     <Table.Tr key={transaction.id}>
       <Table.Td>
-        <Group gap="sm">
-          <Text>{transaction.name || "No Name"}</Text>
-          <Badge
-            color={transaction.type === "BANK" ? "blue" : "green"}
-            variant="light"
-          >
-            {transaction.type}
-          </Badge>
-        </Group>
+        <Text>{transaction.name}</Text>
+      </Table.Td>
+      <Table.Td>
+        <Badge
+          color={transaction.type === "BANK" ? "blue" : "green"}
+          variant="light"
+        >
+          {transaction.type}
+        </Badge>
       </Table.Td>
       <Table.Td>
         <Text>{formatAmount(transaction.amount)}</Text>
@@ -49,7 +49,8 @@ export default function TransactionsTable({ transactions }: Props) {
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Name / Type</Table.Th>
+              <Table.Th>Name</Table.Th>
+              <Table.Th>Type</Table.Th>
               <Table.Th>Amount</Table.Th>
               <Table.Th />
             </Table.Tr>
