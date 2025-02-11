@@ -7,6 +7,7 @@ import TransactionsTable from "@/components/dashboard/transactions/TransactionsT
 import { MonzoUpload } from "@/components/dashboard/transactions/MonzoUpload";
 import { useSetAtom } from "jotai";
 import { newTransactionDrawerAtom } from "@/lib/atoms";
+import { PayPalUpload } from "@/components/dashboard/transactions/PayPalUpload";
 
 interface Props {
   transactions: Transaction[];
@@ -35,6 +36,7 @@ export default function TransactionsPage({ transactions }: Props) {
               New
             </Button>
             <MonzoUpload />
+            <PayPalUpload />
           </Paper>
         </GridCol>
         <GridCol span={{ sm: 12, md: 12, lg: 12 }}>

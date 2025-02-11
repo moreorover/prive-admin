@@ -26,7 +26,7 @@ export default function TransactionsTable({ transactions }: Props) {
       </Table.Td>
       <Table.Td>
         <Badge
-          color={transaction.type === "BANK" ? "blue" : "green"}
+          color={transaction.type === "CASH" ? "blue" : "green"}
           variant="light"
         >
           {transaction.type}

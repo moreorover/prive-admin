@@ -66,7 +66,9 @@ export const transactionSchema = z.object({
         if (!val) return true; // Allow undefined
         // Check if it's a valid cuid2 or starts with "mm_"
         return (
-          z.string().cuid2().safeParse(val).success || val.startsWith("mm_")
+          z.string().cuid2().safeParse(val).success ||
+          val.startsWith("mm_") ||
+          val.startsWith("pp_")
         );
       },
       { message: "id must be a valid cuid2 or start with 'mm_'" },
@@ -74,7 +76,7 @@ export const transactionSchema = z.object({
   name: z.string().nullable(),
   notes: z.string().nullable(),
   amount: z.number(),
-  type: z.enum(["BANK", "CASH"]),
+  type: z.enum(["BANK", "CASH", "PAYPAL"]),
   orderId: z.string().cuid2().nullish(),
   customerId: z.string().cuid2().nullish(),
 });
