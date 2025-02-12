@@ -21,7 +21,7 @@ export const productSchema = z.object({
     .string()
     .min(5, { message: "Name must be at least 5 characters long" })
     .max(50, { message: "Name cannot exceed 50 characters" }),
-  description: z.string(),
+  description: z.string().nullish(),
 });
 
 export type Product = z.infer<typeof productSchema>;
