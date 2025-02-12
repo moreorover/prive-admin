@@ -5,7 +5,6 @@ import { UploadButton } from "./UploadButton";
 import { Transaction } from "@/lib/schemas";
 import { createTransactions } from "@/data-access/transaction";
 import { notifications } from "@mantine/notifications";
-import { MonzoTransaction } from "@/components/dashboard/transactions/MonzoUpload"; // adjust the import path as needed
 
 // Define the type for CSV upload results.
 interface CSVUploadResults {
@@ -273,8 +272,6 @@ export const PayPalUpload = () => {
       .filter((ppt) => ppt.type !== "Reversal of General Account Hold")
       .filter((ppt) => ppt.type !== "User Initiated Withdrawal");
 
-    console.log({ parsedTransactions });
-
     const transactions: Transaction[] = parsedTransactions.map((t) => ({
       id: `pp_${t.transactionId}`,
       name: t.name,
@@ -284,8 +281,6 @@ export const PayPalUpload = () => {
       orderId: null,
       customerId: null,
     }));
-
-    console.log({ transactions });
 
     const response = await createTransactions(transactions);
 

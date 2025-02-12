@@ -47,6 +47,29 @@ function isNumericKey(key: keyof MonzoTransaction): key is NumericKey {
   );
 }
 
+const expectedHeaders = [
+  "Transaction ID",
+  "Date",
+  "Time",
+  "Type",
+  "Name",
+  "Emoji",
+  "Category",
+  "Amount",
+  "Currency",
+  "Local amount",
+  "Local currency",
+  "Notes and #tags",
+  "Address",
+  "Receipt",
+  "Description",
+  "Category split",
+  "Money Out",
+  "Money In",
+  "Balance",
+  "Balance currency",
+];
+
 // Map CSV header strings to the keys of our transaction object.
 const headerMap: Record<string, keyof MonzoTransaction> = {
   "Transaction ID": "transactionId",
@@ -71,26 +94,40 @@ const headerMap: Record<string, keyof MonzoTransaction> = {
   "Balance currency": "balanceCurrency",
 };
 
+const areArraysIdentical = (arr1: string[], arr2: string[]): boolean => {
+  if (arr1.length !== arr2.length) return false;
+  return arr1.every((value, index) => {
+    if (value !== arr2[index]) {
+      console.log(
+        `Header mismatch at position ${index}: Expected '${arr1[index]}', but got '${arr2[index]}'`,
+      );
+      return false;
+    }
+    return true;
+  });
+};
+
+const buildNotes = (t: {
+  notesAndTags: string;
+  description: string;
+  currency: string;
+}): string => {
+  const parts: string[] = [];
+
+  if (t.notesAndTags.trim()) {
+    parts.push(`Notes:\n${t.notesAndTags}`);
+  }
+  if (t.description.trim()) {
+    parts.push(`Description:\n${t.description}`);
+  }
+  if (t.currency.trim()) {
+    parts.push(`Currency:\n${t.currency}`);
+  }
+
+  return parts.join("\n\n"); // join with double line breaks for clarity
+};
+
 export const MonzoUpload = () => {
-  const buildNotes = (t: {
-    notesAndTags: string;
-    description: string;
-    currency: string;
-  }): string => {
-    const parts: string[] = [];
-
-    if (t.notesAndTags.trim()) {
-      parts.push(`Notes:\n${t.notesAndTags}`);
-    }
-    if (t.description.trim()) {
-      parts.push(`Description:\n${t.description}`);
-    }
-    if (t.currency.trim()) {
-      parts.push(`Currency:\n${t.currency}`);
-    }
-
-    return parts.join("\n\n"); // join with double line breaks for clarity
-  };
   /**
    * Callback passed to the UploadButton.
    * Processes CSVUploadResults by mapping each row into a MonzoTransaction.
@@ -119,6 +156,15 @@ export const MonzoUpload = () => {
 
     // The first row is assumed to be the header row.
     const headerRow: string[] = allRows[0];
+
+    if (!areArraysIdentical(expectedHeaders, headerRow)) {
+      notifications.show({
+        color: "red",
+        title: "Header row does not match the expected...",
+        message: "Please check if you are uploading correct file.",
+      });
+      return;
+    }
 
     // Filter out empty rows.
     const dataRows: string[][] = allRows
