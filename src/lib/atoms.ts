@@ -5,6 +5,7 @@ import {
   OrderItem,
   Product,
   ProductVariant,
+  Transaction,
 } from "@/lib/schemas";
 import dayjs from "dayjs";
 
@@ -49,7 +50,12 @@ export const editOrderDrawerAtom = atom<{
   order: Order;
 }>({
   isOpen: false,
-  order: { customerId: "", status: "PENDING", placedAt: dayjs().toDate() },
+  order: {
+    customerId: "",
+    type: "PURCHASE",
+    status: "PENDING",
+    placedAt: dayjs().toDate(),
+  },
 });
 
 export const newOrderItemDrawerAtom = atom<{
@@ -73,3 +79,28 @@ export const editOrderItemDrawerAtom = atom<{
   },
   productOptions: [],
 });
+
+export const newTransactionDrawerAtom = atom<{
+  isOpen: boolean;
+  orderId?: string | null;
+  customerId?: string | null;
+}>({ isOpen: false, orderId: undefined, customerId: undefined });
+
+export const editTransactionDrawerAtom = atom<{
+  isOpen: boolean;
+  transaction: Transaction;
+}>({
+  isOpen: false,
+  transaction: {
+    name: "",
+    notes: "",
+    amount: 0,
+    type: "CASH",
+    orderId: null,
+    customerId: null,
+  },
+});
+
+export const transactionPickerModalAtom = atom<{
+  isOpen: boolean;
+}>({ isOpen: false });

@@ -73,19 +73,20 @@ model Verification {
 }
 
 model Customer {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime? @updatedAt
-  Order     Order[]
+  id          String        @id @default(cuid(2))
+  name        String        @unique
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime?     @updatedAt
+  Order       Order[]
+  Transaction Transaction[]
 
   @@map("customers")
 }
 
 model Product {
-  id          String           @id @default(cuid())
+  id          String           @id @default(cuid(2))
   name        String
-  description String
+  description String?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   variants    ProductVariant[]
@@ -94,7 +95,7 @@ model Product {
 }
 
 model ProductVariant {
-  id        String      @id @default(cuid())
+  id        String      @id @default(cuid(2))
   productId String
   product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   size      String // e.g., "250ml", "50g"
@@ -114,25 +115,26 @@ enum OrderType {
 }
 
 model Order {
-  id         String      @id @default(cuid())
-  customerId String
-  customer   Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  type       OrderType   @default(PURCHASE)
-  status     OrderStatus @default(PENDING)
-  placedAt   DateTime    @db.Date
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  items      OrderItem[]
+  id           String        @id @default(cuid(2))
+  customerId   String
+  customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  type         OrderType     @default(PURCHASE)
+  status       OrderStatus   @default(PENDING)
+  placedAt     DateTime      @db.Date
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  items        OrderItem[]
+  transactions Transaction[]
 
   @@map("orders")
 }
 
 model OrderItem {
-  id               String         @id @default(cuid())
+  id               String         @id @default(cuid(2))
   orderId          String
-  order            Order          @relation(fields: [orderId], references: [id])
+  order            Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productVariantId String
-  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id])
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
   quantity         Int            @db.Integer
   unitPrice        Int            @db.Integer
   totalPrice       Int            @db.Integer
@@ -147,4 +149,25 @@ enum OrderStatus {
   PENDING
   COMPLETED
   CANCELLED
+}
+
+enum TransactionType {
+  BANK
+  CASH
+  PAYPAL
+}
+
+model Transaction {
+  id         String          @id @default(cuid(2))
+  name       String?
+  notes      String?
+  amount     Int             @db.Integer
+  type       TransactionType @default(BANK)
+  orderId    String?
+  order      Order?          @relation(fields: [orderId], references: [id])
+  customerId String?
+  customer   Customer?       @relation(fields: [customerId], references: [id])
+  createdAt  DateTime        @default(now())
+
+  @@map("transactions")
 }
