@@ -11,6 +11,8 @@ import EditOrderDrawer from "@/components/dashboard/orders/EditOrderDrawer";
 import NewOrderItemDrawer from "@/components/dashboard/orders/NewOrderItemDrawer";
 import EditOrderItemDrawer from "@/components/dashboard/orders/EditOrderItemDrawer";
 import NewTransactionDrawer from "@/components/dashboard/transactions/NewTransactionDrawer";
+import NewAppointmentDrawer from "@/components/dashboard/appointments/NewAppointmentDrawer";
+import EditAppointmentDrawer from "@/components/dashboard/appointments/EditAppointmentDrawer";
 
 export default function DrawerProvider() {
   return (
@@ -31,6 +33,9 @@ export default function DrawerProvider() {
       <EditOrderItemDrawer />
 
       <NewTransactionDrawer />
+
+      <NewAppointmentDrawer />
+      <EditAppointmentDrawer />
     </>
   );
 }

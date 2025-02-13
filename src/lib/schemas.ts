@@ -84,3 +84,12 @@ export const transactionSchema = z.object({
 export const transactionsSchema = z.array(transactionSchema);
 
 export type Transaction = z.infer<typeof transactionSchema>;
+
+export const appointmentSchema = z.object({
+  id: z.string().cuid2().optional(),
+  name: z.string(),
+  notes: z.string().nullable(),
+  startsAt: z.date(),
+});
+
+export type Appointment = z.infer<typeof appointmentSchema>;
