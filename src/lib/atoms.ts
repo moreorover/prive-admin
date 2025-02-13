@@ -1,5 +1,6 @@
 import { atom } from "jotai";
 import {
+  Appointment,
   Customer,
   Order,
   OrderItem,
@@ -104,3 +105,16 @@ export const editTransactionDrawerAtom = atom<{
 export const transactionPickerModalAtom = atom<{
   isOpen: boolean;
 }>({ isOpen: false });
+
+export const newAppointmentDrawerAtom = atom<{
+  isOpen: boolean;
+  clientId: string;
+}>({ isOpen: false, clientId: "" });
+
+export const editAppointmentDrawerAtom = atom<{
+  isOpen: boolean;
+  appointment: Appointment;
+}>({
+  isOpen: false,
+  appointment: { name: "", notes: "", startsAt: dayjs().toDate() },
+});

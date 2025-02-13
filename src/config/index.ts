@@ -29,6 +29,10 @@ export const navLinks: NavItem[] = [
         label: "Transactions",
         link: "/dashboard/transactions",
       },
+      {
+        label: "Appointments",
+        link: "/dashboard/appointments",
+      },
     ],
   },
   {

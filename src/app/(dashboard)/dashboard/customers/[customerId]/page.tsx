@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getCustomer } from "@/data-access/customer";
 import CustomerPage from "@/components/dashboard/customers/CustomerPage";
 import { getOrdersByCustomerId } from "@/data-access/order";
+import { getAppointmentsByCustomerId } from "@/data-access/appointment";
 
 type Props = {
   params: Promise<{ customerId: string }>;
@@ -27,6 +28,13 @@ export default async function Page({ params }: Props) {
   }
 
   const orders = await getOrdersByCustomerId(customerId);
+  const appointments = await getAppointmentsByCustomerId(customerId);
 
-  return <CustomerPage customer={customer} orders={orders} />;
+  return (
+    <CustomerPage
+      customer={customer}
+      orders={orders}
+      appointments={appointments}
+    />
+  );
 }
