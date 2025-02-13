@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAppointment } from "@/data-access/appointment";
+import { getCustomer } from "@/data-access/customer";
 import AppointmentPage from "@/components/dashboard/appointments/AppointmentPage";
 
 type Props = {
@@ -25,5 +26,13 @@ export default async function Page({ params }: Props) {
     return redirect("/dashboard/appointments");
   }
 
-  return <AppointmentPage appointment={appointment} />;
+  const client = await getCustomer(appointmentId.clientId);
+
+  return (
+    <AppointmentPage
+      appointment={appointment}
+      client={client}
+      transactions={[]}
+    />
+  );
 }

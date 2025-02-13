@@ -121,7 +121,11 @@ export async function updateAppointment(
       };
     }
     const c = await prisma.appointment.update({
-      data: { name: appointment.name },
+      data: {
+        name: appointment.name,
+        notes: appointment.notes,
+        startsAt: appointment.startsAt,
+      },
       where: { id: appointment.id },
     });
     revalidatePath("/appointments");
