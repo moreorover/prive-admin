@@ -41,6 +41,7 @@ export default function NewTransactionDrawer() {
       <TransactionForm
         onSubmitAction={onSubmit}
         transaction={{
+          appointmentId: value.appointmentId,
           orderId: value.orderId,
           customerId: value.customerId,
           name: "",

@@ -25,6 +25,7 @@ import { linkPersonnelWithAppointment } from "@/data-access/appointmentPersonnel
 import CustomersTable from "@/components/dashboard/customers/CustomersTable";
 import { linkTransactionsWithAppointment } from "@/data-access/transaction";
 import TransactionPickerModal from "@/components/dashboard/transactions/TransactionPickerModal";
+import PersonnelTable from "@/components/dashboard/appointments/PersonnelTable";
 
 interface Props {
   appointment: Appointment;
@@ -174,7 +175,10 @@ export default function AppointmentPage({
                     Pick
                   </Button>
                 </div>
-                <CustomersTable customers={personnel} />
+                <PersonnelTable
+                  personnel={personnel}
+                  appointmentId={appointment.id!}
+                />
               </Paper>
             </GridCol>
           </Grid>

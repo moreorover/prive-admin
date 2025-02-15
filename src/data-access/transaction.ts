@@ -97,7 +97,7 @@ export async function createTransaction(
     if (!parse.success) {
       return {
         type: "ERROR",
-        message: "Incorrect data received.",
+        message: parse.error,
       };
     }
 
@@ -107,6 +107,7 @@ export async function createTransaction(
         notes: transaction.notes,
         amount: transaction.amount * 100,
         type: transaction.type,
+        appointmentId: transaction.appointmentId,
         orderId: transaction.orderId,
         customerId: transaction.customerId,
       },
