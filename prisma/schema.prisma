@@ -160,16 +160,18 @@ enum TransactionType {
 }
 
 model Transaction {
-  id         String          @id @default(cuid(2))
-  name       String?
-  notes      String?
-  amount     Int             @db.Integer
-  type       TransactionType @default(BANK)
-  orderId    String?
-  order      Order?          @relation(fields: [orderId], references: [id])
-  customerId String?
-  customer   Customer?       @relation(fields: [customerId], references: [id])
-  createdAt  DateTime        @default(now())
+  id            String          @id @default(cuid(2))
+  name          String?
+  notes         String?
+  amount        Int             @db.Integer
+  type          TransactionType @default(BANK)
+  orderId       String?
+  order         Order?          @relation(fields: [orderId], references: [id])
+  appointmentId String?
+  appointment   Appointment?    @relation(fields: [appointmentId], references: [id])
+  customerId    String?
+  customer      Customer?       @relation(fields: [customerId], references: [id])
+  createdAt     DateTime        @default(now())
 
   @@map("transactions")
 }
@@ -184,8 +186,11 @@ model Appointment {
 
   personnel PersonnelOnAppointments[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Transaction Transaction[]
+
+  @@map("appointments")
 }
 
 model PersonnelOnAppointments {
@@ -197,4 +202,5 @@ model PersonnelOnAppointments {
   createdAt DateTime @default(now())
 
   @@id([personnelId, appointmentId])
+  @@map("appointment_personnel")
 }

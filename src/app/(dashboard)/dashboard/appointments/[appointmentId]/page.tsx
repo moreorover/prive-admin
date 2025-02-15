@@ -2,8 +2,13 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getAppointment } from "@/data-access/appointment";
-import { getCustomer } from "@/data-access/customer";
+import { getCustomer, getCustomers } from "@/data-access/customer";
+import {
+  getTransactionsByAppointmentId,
+  getTransactionsOptions,
+} from "@/data-access/transaction";
 import AppointmentPage from "@/components/dashboard/appointments/AppointmentPage";
+import { getAppointmentPersonnel } from "@/data-access/appointmentPersonnel";
 
 type Props = {
   params: Promise<{ appointmentId: string }>;
@@ -26,13 +31,31 @@ export default async function Page({ params }: Props) {
     return redirect("/dashboard/appointments");
   }
 
-  const client = await getCustomer(appointmentId.clientId);
+  const client = await getCustomer(appointment.clientId);
+
+  const appointmentPersonnel = await getAppointmentPersonnel(appointmentId);
+  const appointmentPersonnelIds = appointmentPersonnel.map(
+    (personnel) => personnel.id,
+  );
+
+  const personnelOptions = await getCustomers();
+
+  const filteredPersonnel = personnelOptions
+    .filter((p) => p.id !== appointment.clientId)
+    .filter((p) => !appointmentPersonnelIds.includes(p.id));
+
+  const transactions = await getTransactionsByAppointmentId(appointmentId);
+
+  const transactionOptions = await getTransactionsOptions();
 
   return (
     <AppointmentPage
       appointment={appointment}
-      client={client}
-      transactions={[]}
+      client={client!}
+      transactions={transactions}
+      personnelOptions={filteredPersonnel}
+      personnel={appointmentPersonnel}
+      transactionOptions={transactionOptions}
     />
   );
 }

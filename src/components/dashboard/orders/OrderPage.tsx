@@ -24,10 +24,7 @@ import dayjs from "dayjs";
 import OrderItemsTable from "@/components/dashboard/orders/OrderItemsTable";
 import TransactionsTable from "@/components/dashboard/transactions/TransactionsTable";
 import TransactionPickerModal from "@/components/dashboard/transactions/TransactionPickerModal";
-import {
-  createTransactions,
-  linkTransactionsWithOrders,
-} from "@/data-access/transaction";
+import { linkTransactionsWithOrders } from "@/data-access/transaction";
 import { notifications } from "@mantine/notifications";
 
 interface Props {

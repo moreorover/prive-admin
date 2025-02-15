@@ -12,23 +12,82 @@ import {
 import { Appointment, Customer, Transaction } from "@/lib/schemas";
 import { PageContainer } from "@/components/page_container/PageContainer";
 import { useSetAtom } from "jotai";
-import { editAppointmentDrawerAtom } from "@/lib/atoms";
-// import PersonnelTable from "@/components/dashboard/personnel/PersonnelTable";
+import {
+  editAppointmentDrawerAtom,
+  personnelPickerModalAtom,
+  transactionPickerModalAtom,
+} from "@/lib/atoms";
 import TransactionsTable from "@/components/dashboard/transactions/TransactionsTable";
 import dayjs from "dayjs";
+import PersonnelPickerModal from "@/components/dashboard/customers/PersonnelPickerModal";
+import { notifications } from "@mantine/notifications";
+import { linkPersonnelWithAppointment } from "@/data-access/appointmentPersonnel";
+import CustomersTable from "@/components/dashboard/customers/CustomersTable";
+import { linkTransactionsWithAppointment } from "@/data-access/transaction";
+import TransactionPickerModal from "@/components/dashboard/transactions/TransactionPickerModal";
 
 interface Props {
   appointment: Appointment;
   client: Customer;
   transactions: Transaction[];
+  personnelOptions: Customer[];
+  personnel: Customer[];
+  transactionOptions: Transaction[];
 }
 
 export default function AppointmentPage({
   appointment,
   transactions,
   client,
+  personnelOptions,
+  personnel,
+  transactionOptions,
 }: Props) {
   const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
+  const showPersonnelPickerModal = useSetAtom(personnelPickerModalAtom);
+  const showPickTransactionModal = useSetAtom(transactionPickerModalAtom);
+
+  async function onConfirmActionPersonnel(selectedRows: string[]) {
+    const response = await linkPersonnelWithAppointment(
+      selectedRows,
+      appointment.id!,
+    );
+
+    if (response.type === "ERROR") {
+      notifications.show({
+        color: "red",
+        title: "Failed to link Transactions",
+        message: response.message,
+      });
+    } else {
+      notifications.show({
+        color: "green",
+        title: "Success!",
+        message: response.message,
+      });
+    }
+  }
+
+  async function onConfirmActionTransactions(selectedRows: string[]) {
+    const response = await linkTransactionsWithAppointment(
+      selectedRows,
+      appointment.id!,
+    );
+
+    if (response.type === "ERROR") {
+      notifications.show({
+        color: "red",
+        title: "Failed to link Transactions",
+        message: response.message,
+      });
+    } else {
+      notifications.show({
+        color: "green",
+        title: "Success!",
+        message: response.message,
+      });
+    }
+  }
 
   return (
     <PageContainer title={appointment.name}>
@@ -107,9 +166,15 @@ export default function AppointmentPage({
                   }}
                 >
                   <Title order={4}>Personnel Involved</Title>
+                  <Button
+                    onClick={() => {
+                      showPersonnelPickerModal({ isOpen: true });
+                    }}
+                  >
+                    Pick
+                  </Button>
                 </div>
-                {/*<PersonnelTable personnel={personnel} />*/}
-                Personnel Table..
+                <CustomersTable customers={personnel} />
               </Paper>
             </GridCol>
           </Grid>
@@ -129,11 +194,28 @@ export default function AppointmentPage({
               }}
             >
               <Title order={4}>Transactions</Title>
+              <Button
+                onClick={() => {
+                  showPickTransactionModal({
+                    isOpen: true,
+                  });
+                }}
+              >
+                Pick
+              </Button>
             </div>
             <TransactionsTable transactions={transactions} />
           </Paper>
         </GridCol>
       </Grid>
+      <PersonnelPickerModal
+        personnel={personnelOptions}
+        onConfirmAction={onConfirmActionPersonnel}
+      />
+      <TransactionPickerModal
+        transactions={transactionOptions}
+        onConfirmAction={onConfirmActionTransactions}
+      />
     </PageContainer>
   );
 }

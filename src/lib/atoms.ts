@@ -118,3 +118,7 @@ export const editAppointmentDrawerAtom = atom<{
   isOpen: false,
   appointment: { name: "", notes: "", startsAt: dayjs().toDate() },
 });
+
+export const personnelPickerModalAtom = atom<{
+  isOpen: boolean;
+}>({ isOpen: false });
