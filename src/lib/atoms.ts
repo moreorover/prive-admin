@@ -124,4 +124,6 @@ export const editAppointmentDrawerAtom = atom<{
 
 export const personnelPickerModalAtom = atom<{
   isOpen: boolean;
-}>({ isOpen: false });
+  personnel: Customer[];
+  onConfirmAction: (selectedTransactions: string[]) => void;
+}>({ isOpen: false, personnel: [], onConfirmAction: () => {} });

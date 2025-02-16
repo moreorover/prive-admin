@@ -19,7 +19,6 @@ import {
 } from "@/lib/atoms";
 import TransactionsTable from "@/components/dashboard/transactions/TransactionsTable";
 import dayjs from "dayjs";
-import PersonnelPickerModal from "@/components/dashboard/customers/PersonnelPickerModal";
 import { notifications } from "@mantine/notifications";
 import { linkPersonnelWithAppointment } from "@/data-access/appointmentPersonnel";
 import { linkTransactionsWithAppointment } from "@/data-access/transaction";
@@ -167,7 +166,11 @@ export default function AppointmentPage({
                   <Title order={4}>Personnel Involved</Title>
                   <Button
                     onClick={() => {
-                      showPersonnelPickerModal({ isOpen: true });
+                      showPersonnelPickerModal({
+                        isOpen: true,
+                        personnel: personnelOptions,
+                        onConfirmAction: onConfirmActionPersonnel,
+                      });
                     }}
                   >
                     Pick
@@ -212,10 +215,6 @@ export default function AppointmentPage({
           </Paper>
         </GridCol>
       </Grid>
-      <PersonnelPickerModal
-        personnel={personnelOptions}
-        onConfirmAction={onConfirmActionPersonnel}
-      />
     </PageContainer>
   );
 }

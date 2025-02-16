@@ -11,25 +11,16 @@ import {
   Button,
   Group,
 } from "@mantine/core";
-import { Customer } from "@/lib/schemas";
 import { useAtom } from "jotai";
 import { personnelPickerModalAtom } from "@/lib/atoms";
 import { useState } from "react";
 
-interface Props {
-  personnel: Customer[];
-  onConfirmAction: (selectedTransactions: string[]) => void;
-}
-
-export default function PersonnelPickerModal({
-  personnel,
-  onConfirmAction,
-}: Props) {
+export default function PersonnelPickerModal() {
   const [modalState, setModalState] = useAtom(personnelPickerModalAtom);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredTransactions = personnel.filter((p) => {
+  const filteredTransactions = modalState.personnel.filter((p) => {
     const searchLower = searchTerm.toLowerCase();
 
     return (
@@ -75,7 +66,13 @@ export default function PersonnelPickerModal({
   return (
     <Modal
       opened={modalState.isOpen}
-      onClose={() => setModalState({ isOpen: false })}
+      onClose={() =>
+        setModalState({
+          isOpen: false,
+          personnel: [],
+          onConfirmAction: () => {},
+        })
+      }
       title="Pick personnel"
       size="lg"
     >
@@ -119,9 +116,13 @@ export default function PersonnelPickerModal({
         <Group justify="flex-end" mt="md">
           <Button
             onClick={() => {
-              setModalState({ isOpen: false });
+              setModalState({
+                isOpen: false,
+                personnel: [],
+                onConfirmAction: () => {},
+              });
               if (selectedRows.length > 0) {
-                onConfirmAction(selectedRows);
+                modalState.onConfirmAction(selectedRows);
               }
               setSelectedRows([]);
               setSearchTerm("");
