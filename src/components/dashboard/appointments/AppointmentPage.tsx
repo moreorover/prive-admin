@@ -51,7 +51,7 @@ export default function AppointmentPage({
   const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
   const showPickTransactionModal = useSetAtom(transactionPickerModalAtom);
 
-  const aa = trpc.appointments.getOne.useSuspenseQuery({
+  const [aa] = trpc.appointments.getOne.useSuspenseQuery({
     id: appointment.id!,
   });
 

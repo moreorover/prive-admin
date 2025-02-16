@@ -12,14 +12,14 @@ export const appointmentsRouter = createTRPCRouter({
 
       const { id } = input;
 
-      const transaction = await prisma.appointment.findUnique({
+      const appointment = await prisma.appointment.findUnique({
         where: { id },
       });
 
-      if (!transaction) {
+      if (!appointment) {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
-      return transaction;
+      return appointment;
     }),
 });
