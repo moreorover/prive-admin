@@ -25,6 +25,9 @@ import { notifications } from "@mantine/notifications";
 import { linkPersonnelWithAppointment } from "@/data-access/appointmentPersonnel";
 import PersonnelTable from "@/components/dashboard/appointments/PersonnelTable";
 import { linkTransactionsWithAppointment } from "@/data-access/transaction";
+import { ErrorBoundary } from "react-error-boundary";
+import { Suspense } from "react";
+import { trpc } from "@/trpc/client";
 
 interface Props {
   appointment: Appointment;
@@ -47,6 +50,12 @@ export default function AppointmentPage({
   const showPersonnelPickerModal = useSetAtom(personnelPickerModalAtom);
   const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
   const showPickTransactionModal = useSetAtom(transactionPickerModalAtom);
+
+  const aa = trpc.appointments.getOne.useSuspenseQuery({
+    id: appointment.id!,
+  });
+
+  console.log({ aa });
 
   async function onConfirmActionPersonnel(selectedRows: string[]) {
     const response = await linkPersonnelWithAppointment(
@@ -92,100 +101,143 @@ export default function AppointmentPage({
   }
 
   return (
-    <PageContainer title={appointment.name}>
-      <Grid>
-        {/* Header and Actions */}
-        <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
-          <Paper
-            style={{
-              // display: "flex",
-              // justifyContent: "flex-end",
-              width: "100%",
-              padding: "16px",
-            }}
-          >
-            <Group justify="space-between" gap="sm">
-              <Title order={4}>{appointment.name}</Title>
-              <Button
-                onClick={() => {
-                  showEditAppointmentDrawer({ isOpen: true, appointment });
-                }}
-              >
-                Edit
-              </Button>
-            </Group>
-          </Paper>
-        </GridCol>
-
-        {/* Appointment Details */}
-        <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
-          <Paper style={{ padding: "16px", borderRadius: "8px" }}>
-            <Title order={4}>Appointment Details</Title>
-            <Text size="sm" mt="xs">
-              <strong>Notes:</strong> {appointment.notes || "No notes provided"}
-            </Text>
-            <Text size="sm" mt="xs">
-              <strong>Start Time:</strong>{" "}
-              {dayjs(appointment.startsAt).format("DD MMM YYYY HH:mm")}
-            </Text>
-          </Paper>
-        </GridCol>
-
-        {/* Client and Personnel */}
-        <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
+    <Suspense fallback={"Loading..."}>
+      <ErrorBoundary fallback={<p>Error</p>}>
+        <PageContainer title={appointment.name}>
           <Grid>
-            {/* Client Card */}
-            <GridCol span={{ sm: 12, md: 3, lg: 3 }}>
+            {/* Header and Actions */}
+            <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
               <Paper
                 style={{
+                  // display: "flex",
+                  // justifyContent: "flex-end",
+                  width: "100%",
                   padding: "16px",
-                  borderRadius: "8px",
-                  marginTop: "16px",
                 }}
               >
                 <Group justify="space-between" gap="sm">
-                  <Title order={4}>Client</Title>
-                  <Menu shadow="md" width={200}>
-                    <Menu.Target>
-                      <Button>Manage</Button>
-                    </Menu.Target>
-
-                    <Menu.Dropdown>
-                      <Menu.Label>Transactions</Menu.Label>
-                      <Menu.Item
-                        onClick={() => {
-                          showNewTransactionDrawer({
-                            isOpen: true,
-                            orderId: null,
-                            appointmentId: appointment.id!,
-                            customerId: client.id!,
-                          });
-                        }}
-                      >
-                        New Cash Transaction
-                      </Menu.Item>
-                      <Menu.Item
-                        onClick={() => {
-                          showPickTransactionModal({
-                            isOpen: true,
-                            transactions: transactionOptions,
-                            onConfirmAction: onConfirmActionTransactions,
-                          });
-                        }}
-                      >
-                        Pick Transaction
-                      </Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
+                  <Title order={4}>{appointment.name}</Title>
+                  <Button
+                    onClick={() => {
+                      showEditAppointmentDrawer({ isOpen: true, appointment });
+                    }}
+                  >
+                    Edit
+                  </Button>
                 </Group>
+              </Paper>
+            </GridCol>
+
+            {/* Appointment Details */}
+            <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
+              <Paper style={{ padding: "16px", borderRadius: "8px" }}>
+                <Title order={4}>Appointment Details</Title>
                 <Text size="sm" mt="xs">
-                  <strong>Name:</strong> {client.name}
+                  <strong>Notes:</strong>{" "}
+                  {appointment.notes || "No notes provided"}
+                </Text>
+                <Text size="sm" mt="xs">
+                  <strong>Start Time:</strong>{" "}
+                  {dayjs(appointment.startsAt).format("DD MMM YYYY HH:mm")}
                 </Text>
               </Paper>
             </GridCol>
 
-            {/* Personnel Involved */}
-            <GridCol span={{ sm: 12, md: 9, lg: 9 }}>
+            {/* Client and Personnel */}
+            <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
+              <Grid>
+                {/* Client Card */}
+                <GridCol span={{ sm: 12, md: 3, lg: 3 }}>
+                  <Paper
+                    style={{
+                      padding: "16px",
+                      borderRadius: "8px",
+                      marginTop: "16px",
+                    }}
+                  >
+                    <Group justify="space-between" gap="sm">
+                      <Title order={4}>Client</Title>
+                      <Menu shadow="md" width={200}>
+                        <Menu.Target>
+                          <Button>Manage</Button>
+                        </Menu.Target>
+
+                        <Menu.Dropdown>
+                          <Menu.Label>Transactions</Menu.Label>
+                          <Menu.Item
+                            onClick={() => {
+                              showNewTransactionDrawer({
+                                isOpen: true,
+                                orderId: null,
+                                appointmentId: appointment.id!,
+                                customerId: client.id!,
+                              });
+                            }}
+                          >
+                            New Cash Transaction
+                          </Menu.Item>
+                          <Menu.Item
+                            onClick={() => {
+                              showPickTransactionModal({
+                                isOpen: true,
+                                transactions: transactionOptions,
+                                onConfirmAction: onConfirmActionTransactions,
+                              });
+                            }}
+                          >
+                            Pick Transaction
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                    </Group>
+                    <Text size="sm" mt="xs">
+                      <strong>Name:</strong> {client.name}
+                    </Text>
+                  </Paper>
+                </GridCol>
+
+                {/* Personnel Involved */}
+                <GridCol span={{ sm: 12, md: 9, lg: 9 }}>
+                  <Paper
+                    style={{
+                      padding: "16px",
+                      borderRadius: "8px",
+                      marginTop: "16px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "16px",
+                      }}
+                    >
+                      <Title order={4}>Personnel Involved</Title>
+                      <Button
+                        onClick={() => {
+                          showPersonnelPickerModal({
+                            isOpen: true,
+                            personnel: personnelOptions,
+                            onConfirmAction: onConfirmActionPersonnel,
+                          });
+                        }}
+                      >
+                        Pick
+                      </Button>
+                    </div>
+                    <PersonnelTable
+                      personnel={personnel}
+                      transactionOptions={transactionOptions}
+                      appointmentId={appointment.id!}
+                    />
+                  </Paper>
+                </GridCol>
+              </Grid>
+            </GridCol>
+
+            {/* Transactions Related to Appointment */}
+            <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
               <Paper
                 style={{
                   padding: "16px",
@@ -201,48 +253,14 @@ export default function AppointmentPage({
                     marginBottom: "16px",
                   }}
                 >
-                  <Title order={4}>Personnel Involved</Title>
-                  <Button
-                    onClick={() => {
-                      showPersonnelPickerModal({
-                        isOpen: true,
-                        personnel: personnelOptions,
-                        onConfirmAction: onConfirmActionPersonnel,
-                      });
-                    }}
-                  >
-                    Pick
-                  </Button>
+                  <Title order={4}>Transactions</Title>
                 </div>
-                <PersonnelTable
-                  personnel={personnel}
-                  transactionOptions={transactionOptions}
-                  appointmentId={appointment.id!}
-                />
+                <TransactionsTable transactions={transactions} />
               </Paper>
             </GridCol>
           </Grid>
-        </GridCol>
-
-        {/* Transactions Related to Appointment */}
-        <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
-          <Paper
-            style={{ padding: "16px", borderRadius: "8px", marginTop: "16px" }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "16px",
-              }}
-            >
-              <Title order={4}>Transactions</Title>
-            </div>
-            <TransactionsTable transactions={transactions} />
-          </Paper>
-        </GridCol>
-      </Grid>
-    </PageContainer>
+        </PageContainer>
+      </ErrorBoundary>
+    </Suspense>
   );
 }

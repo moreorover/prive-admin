@@ -9,6 +9,7 @@ import {
 } from "@/data-access/transaction";
 import AppointmentPage from "@/components/dashboard/appointments/AppointmentPage";
 import { getAppointmentPersonnel } from "@/data-access/appointmentPersonnel";
+import { HydrateClient, trpc } from "@/trpc/server";
 
 type Props = {
   params: Promise<{ appointmentId: string }>;
@@ -16,6 +17,8 @@ type Props = {
 
 export default async function Page({ params }: Props) {
   const { appointmentId } = await params;
+
+  void trpc.appointments.getOne.prefetch({ id: appointmentId });
 
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -49,13 +52,15 @@ export default async function Page({ params }: Props) {
   const transactionOptions = await getTransactionsOptions();
 
   return (
-    <AppointmentPage
-      appointment={appointment}
-      client={client!}
-      transactions={transactions}
-      personnelOptions={filteredPersonnel}
-      personnel={appointmentPersonnel}
-      transactionOptions={transactionOptions}
-    />
+    <HydrateClient>
+      <AppointmentPage
+        appointment={appointment}
+        client={client!}
+        transactions={transactions}
+        personnelOptions={filteredPersonnel}
+        personnel={appointmentPersonnel}
+        transactionOptions={transactionOptions}
+      />
+    </HydrateClient>
   );
 }
