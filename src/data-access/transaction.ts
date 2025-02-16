@@ -140,8 +140,6 @@ export async function createTransactions(
   try {
     const parse = transactionsSchema.safeParse(transactions);
 
-    // console.log({ e: parse.error });
-
     if (!parse.success) {
       return {
         type: "ERROR",

@@ -8,8 +8,6 @@ export const appointmentsRouter = createTRPCRouter({
   getOne: protectedProcedure
     .input(z.object({ id: z.string().cuid2() }))
     .query(async ({ input, ctx }) => {
-      console.log({ ctx });
-
       const { id } = input;
 
       const appointment = await prisma.appointment.findUnique({

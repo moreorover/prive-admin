@@ -63,8 +63,6 @@ export async function linkPersonnelWithAppointment(
       personnelId: p,
     }));
 
-    console.log({ data });
-
     const c = await prisma.personnelOnAppointments.createMany({ data });
 
     return {
