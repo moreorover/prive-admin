@@ -106,8 +106,17 @@ export const editTransactionDrawerAtom = atom<{
 export const transactionPickerModalAtom = atom<{
   isOpen: boolean;
   transactions: Transaction[];
-  onConfirmAction: (selectedTransactions: string[]) => void;
-}>({ isOpen: false, transactions: [], onConfirmAction: () => {} });
+  customerId: string | null;
+  onConfirmAction: (
+    selectedTransactions: string[],
+    customerId: string | null,
+  ) => void;
+}>({
+  isOpen: false,
+  transactions: [],
+  customerId: null,
+  onConfirmAction: () => {},
+});
 
 export const newAppointmentDrawerAtom = atom<{
   isOpen: boolean;

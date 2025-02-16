@@ -8,12 +8,14 @@ import {
   Paper,
   Title,
   Text,
+  Menu,
 } from "@mantine/core";
 import { Appointment, Customer, Transaction } from "@/lib/schemas";
 import { PageContainer } from "@/components/page_container/PageContainer";
 import { useSetAtom } from "jotai";
 import {
   editAppointmentDrawerAtom,
+  newTransactionDrawerAtom,
   personnelPickerModalAtom,
   transactionPickerModalAtom,
 } from "@/lib/atoms";
@@ -21,8 +23,8 @@ import TransactionsTable from "@/components/dashboard/transactions/TransactionsT
 import dayjs from "dayjs";
 import { notifications } from "@mantine/notifications";
 import { linkPersonnelWithAppointment } from "@/data-access/appointmentPersonnel";
-import { linkTransactionsWithAppointment } from "@/data-access/transaction";
 import PersonnelTable from "@/components/dashboard/appointments/PersonnelTable";
+import { linkTransactionsWithAppointment } from "@/data-access/transaction";
 
 interface Props {
   appointment: Appointment;
@@ -43,6 +45,7 @@ export default function AppointmentPage({
 }: Props) {
   const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
   const showPersonnelPickerModal = useSetAtom(personnelPickerModalAtom);
+  const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
   const showPickTransactionModal = useSetAtom(transactionPickerModalAtom);
 
   async function onConfirmActionPersonnel(selectedRows: string[]) {
@@ -70,6 +73,7 @@ export default function AppointmentPage({
     const response = await linkTransactionsWithAppointment(
       selectedRows,
       appointment.id!,
+      client.id!,
     );
 
     if (response.type === "ERROR") {
@@ -139,7 +143,41 @@ export default function AppointmentPage({
                   marginTop: "16px",
                 }}
               >
-                <Title order={4}>Client</Title>
+                <Group justify="space-between" gap="sm">
+                  <Title order={4}>Client</Title>
+                  <Menu shadow="md" width={200}>
+                    <Menu.Target>
+                      <Button>Manage</Button>
+                    </Menu.Target>
+
+                    <Menu.Dropdown>
+                      <Menu.Label>Transactions</Menu.Label>
+                      <Menu.Item
+                        onClick={() => {
+                          showNewTransactionDrawer({
+                            isOpen: true,
+                            orderId: null,
+                            appointmentId: appointment.id!,
+                            customerId: client.id!,
+                          });
+                        }}
+                      >
+                        New Cash Transaction
+                      </Menu.Item>
+                      <Menu.Item
+                        onClick={() => {
+                          showPickTransactionModal({
+                            isOpen: true,
+                            transactions: transactionOptions,
+                            onConfirmAction: onConfirmActionTransactions,
+                          });
+                        }}
+                      >
+                        Pick Transaction
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </Group>
                 <Text size="sm" mt="xs">
                   <strong>Name:</strong> {client.name}
                 </Text>
@@ -178,6 +216,7 @@ export default function AppointmentPage({
                 </div>
                 <PersonnelTable
                   personnel={personnel}
+                  transactionOptions={transactionOptions}
                   appointmentId={appointment.id!}
                 />
               </Paper>
@@ -199,17 +238,6 @@ export default function AppointmentPage({
               }}
             >
               <Title order={4}>Transactions</Title>
-              <Button
-                onClick={() => {
-                  showPickTransactionModal({
-                    isOpen: true,
-                    transactions: transactionOptions,
-                    onConfirmAction: onConfirmActionTransactions,
-                  });
-                }}
-              >
-                Pick
-              </Button>
             </div>
             <TransactionsTable transactions={transactions} />
           </Paper>

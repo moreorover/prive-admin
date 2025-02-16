@@ -219,6 +219,7 @@ export async function linkTransactionsWithOrders(
 export async function linkTransactionsWithAppointment(
   transactions: string[],
   appointmentId: string,
+  customerId: string | null,
 ): Promise<ActionResponse> {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -249,6 +250,7 @@ export async function linkTransactionsWithAppointment(
       where: { id: { in: transactions } },
       data: {
         appointmentId,
+        customerId,
       },
     });
     revalidatePath("/transactions");

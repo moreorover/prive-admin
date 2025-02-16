@@ -95,6 +95,7 @@ export default function TransactionPickerModal() {
         setModalState({
           isOpen: false,
           transactions: [],
+          customerId: null,
           onConfirmAction: () => {},
         })
       }
@@ -146,10 +147,11 @@ export default function TransactionPickerModal() {
               setModalState({
                 isOpen: false,
                 transactions: [],
+                customerId: null,
                 onConfirmAction: () => {},
               });
               if (selectedRows.length > 0) {
-                modalState.onConfirmAction(selectedRows);
+                modalState.onConfirmAction(selectedRows, modalState.customerId);
               }
               setSelectedRows([]);
               setSearchTerm("");
