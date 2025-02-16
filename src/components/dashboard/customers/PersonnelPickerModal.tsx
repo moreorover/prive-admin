@@ -3,7 +3,6 @@
 import {
   Table,
   Text,
-  Badge,
   ScrollArea,
   Paper,
   Modal,
@@ -13,37 +12,24 @@ import {
   Group,
 } from "@mantine/core";
 import { useAtom } from "jotai";
-import { transactionPickerModalAtom } from "@/lib/atoms";
+import { personnelPickerModalAtom } from "@/lib/atoms";
 import { useState } from "react";
 
-export default function TransactionPickerModal() {
-  const [modalState, setModalState] = useAtom(transactionPickerModalAtom);
+export default function PersonnelPickerModal() {
+  const [modalState, setModalState] = useAtom(personnelPickerModalAtom);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredTransactions = modalState.transactions.filter((transaction) => {
+  const filteredTransactions = modalState.personnel.filter((p) => {
     const searchLower = searchTerm.toLowerCase();
 
     return (
-      (transaction.name &&
-        transaction.name.toLowerCase().includes(searchLower)) ||
-      (transaction.type &&
-        transaction.type.toLowerCase().includes(searchLower)) ||
-      String(transaction.amount / 100)
-        .toLowerCase()
-        .includes(searchLower) ||
-      (transaction.id && transaction.id.toLowerCase() === searchLower)
+      (p.name && p.name.toLowerCase().includes(searchLower)) ||
+      (p.id && p.id.toLowerCase() === searchLower)
     );
   });
 
-  // Helper to format the amount (assuming amount is stored in cents)
-  const formatAmount = (amount: number) =>
-    new Intl.NumberFormat("en-UK", {
-      style: "currency",
-      currency: "GBP",
-    }).format(amount / 100);
-
-  // Toggle selection for a given transaction ID
+  // Toggle selection for a given personnel ID
   const toggleRowSelection = (id: string) => {
     setSelectedRows((prevSelected) =>
       prevSelected.includes(id)
@@ -52,38 +38,27 @@ export default function TransactionPickerModal() {
     );
   };
 
-  const rows = filteredTransactions.map((transaction) => (
+  const rows = filteredTransactions.map((client) => (
     <Table.Tr
-      key={transaction.id}
+      key={client.id}
       style={{
-        backgroundColor: selectedRows.includes(transaction.id as string)
+        backgroundColor: selectedRows.includes(client.id as string)
           ? "var(--mantine-color-blue-light)"
           : undefined,
         cursor: "pointer",
       }}
-      onClick={() => toggleRowSelection(transaction.id as string)}
+      onClick={() => toggleRowSelection(client.id as string)}
     >
       <Table.Td style={{ width: 40 }}>
         <Checkbox
-          aria-label="Select transaction"
-          checked={selectedRows.includes(transaction.id as string)}
+          aria-label="Select personnel"
+          checked={selectedRows.includes(client.id as string)}
           onClick={(e) => e.stopPropagation()}
-          onChange={() => toggleRowSelection(transaction.id as string)}
+          onChange={() => toggleRowSelection(client.id as string)}
         />
       </Table.Td>
       <Table.Td>
-        <Text>{transaction.name}</Text>
-      </Table.Td>
-      <Table.Td>
-        <Badge
-          color={transaction.type === "BANK" ? "blue" : "green"}
-          variant="light"
-        >
-          {transaction.type}
-        </Badge>
-      </Table.Td>
-      <Table.Td>
-        <Text>{formatAmount(transaction.amount)}</Text>
+        <Text>{client.name}</Text>
       </Table.Td>
     </Table.Tr>
   ));
@@ -94,12 +69,11 @@ export default function TransactionPickerModal() {
       onClose={() =>
         setModalState({
           isOpen: false,
-          transactions: [],
-          customerId: null,
+          personnel: [],
           onConfirmAction: () => {},
         })
       }
-      title="Pick a transaction"
+      title="Pick personnel"
       size="lg"
     >
       <Paper shadow="sm" radius="md" withBorder p="md">
@@ -108,7 +82,7 @@ export default function TransactionPickerModal() {
           size="sm"
           radius="sm"
           label="Search"
-          description="Search by transaction name"
+          description="Search by personnel name"
           placeholder="Search..."
           value={searchTerm}
           onChange={(event) => setSearchTerm(event.currentTarget.value)}
@@ -122,8 +96,6 @@ export default function TransactionPickerModal() {
               <Table.Tr>
                 <Table.Th style={{ width: 40 }} />
                 <Table.Th>Name</Table.Th>
-                <Table.Th>Type</Table.Th>
-                <Table.Th>Amount</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -146,12 +118,11 @@ export default function TransactionPickerModal() {
             onClick={() => {
               setModalState({
                 isOpen: false,
-                transactions: [],
-                customerId: null,
+                personnel: [],
                 onConfirmAction: () => {},
               });
               if (selectedRows.length > 0) {
-                modalState.onConfirmAction(selectedRows, modalState.customerId);
+                modalState.onConfirmAction(selectedRows);
               }
               setSelectedRows([]);
               setSearchTerm("");

@@ -1,5 +1,6 @@
 import { atom } from "jotai";
 import {
+  Appointment,
   Customer,
   Order,
   OrderItem,
@@ -83,6 +84,7 @@ export const editOrderItemDrawerAtom = atom<{
 export const newTransactionDrawerAtom = atom<{
   isOpen: boolean;
   orderId?: string | null;
+  appointmentId?: string | null;
   customerId?: string | null;
 }>({ isOpen: false, orderId: undefined, customerId: undefined });
 
@@ -103,4 +105,34 @@ export const editTransactionDrawerAtom = atom<{
 
 export const transactionPickerModalAtom = atom<{
   isOpen: boolean;
-}>({ isOpen: false });
+  transactions: Transaction[];
+  customerId: string | null;
+  onConfirmAction: (
+    selectedTransactions: string[],
+    customerId: string | null,
+  ) => void;
+}>({
+  isOpen: false,
+  transactions: [],
+  customerId: null,
+  onConfirmAction: () => {},
+});
+
+export const newAppointmentDrawerAtom = atom<{
+  isOpen: boolean;
+  clientId: string;
+}>({ isOpen: false, clientId: "" });
+
+export const editAppointmentDrawerAtom = atom<{
+  isOpen: boolean;
+  appointment: Appointment;
+}>({
+  isOpen: false,
+  appointment: { name: "", notes: "", startsAt: dayjs().toDate() },
+});
+
+export const personnelPickerModalAtom = atom<{
+  isOpen: boolean;
+  personnel: Customer[];
+  onConfirmAction: (selectedTransactions: string[]) => void;
+}>({ isOpen: false, personnel: [], onConfirmAction: () => {} });

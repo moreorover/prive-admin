@@ -23,11 +23,7 @@ import {
 import dayjs from "dayjs";
 import OrderItemsTable from "@/components/dashboard/orders/OrderItemsTable";
 import TransactionsTable from "@/components/dashboard/transactions/TransactionsTable";
-import TransactionPickerModal from "@/components/dashboard/transactions/TransactionPickerModal";
-import {
-  createTransactions,
-  linkTransactionsWithOrders,
-} from "@/data-access/transaction";
+import { linkTransactionsWithOrders } from "@/data-access/transaction";
 import { notifications } from "@mantine/notifications";
 
 interface Props {
@@ -209,6 +205,8 @@ export default function OrderPage({
                   onClick={() => {
                     showPickTransactionModal({
                       isOpen: true,
+                      transactions: transactionOptions,
+                      onConfirmAction: onConfirmAction,
                     });
                   }}
                 >
@@ -220,10 +218,6 @@ export default function OrderPage({
           </Paper>
         </GridCol>
       </Grid>
-      <TransactionPickerModal
-        transactions={transactionOptions}
-        onConfirmAction={onConfirmAction}
-      />
     </PageContainer>
   );
 }

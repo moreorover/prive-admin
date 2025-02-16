@@ -10,7 +10,6 @@ export function useSession() {
     async function fetchSession() {
       try {
         const currentSession = await authClient.getSession();
-        console.log(currentSession);
         setSession(currentSession.data?.session);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {

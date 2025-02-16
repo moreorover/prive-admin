@@ -73,12 +73,14 @@ model Verification {
 }
 
 model Customer {
-  id          String        @id @default(cuid(2))
-  name        String        @unique
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime?     @updatedAt
-  Order       Order[]
-  Transaction Transaction[]
+  id                      String                    @id @default(cuid(2))
+  name                    String                    @unique
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime?                 @updatedAt
+  orders                  Order[]
+  transactions            Transaction[]
+  appointmentsAsCustomer  Appointment[]
+  appointmentsAsPersonnel PersonnelOnAppointments[]
 
   @@map("customers")
 }
@@ -158,16 +160,47 @@ enum TransactionType {
 }
 
 model Transaction {
-  id         String          @id @default(cuid(2))
-  name       String?
-  notes      String?
-  amount     Int             @db.Integer
-  type       TransactionType @default(BANK)
-  orderId    String?
-  order      Order?          @relation(fields: [orderId], references: [id])
-  customerId String?
-  customer   Customer?       @relation(fields: [customerId], references: [id])
-  createdAt  DateTime        @default(now())
+  id            String          @id @default(cuid(2))
+  name          String?
+  notes         String?
+  amount        Int             @db.Integer
+  type          TransactionType @default(BANK)
+  orderId       String?
+  order         Order?          @relation(fields: [orderId], references: [id])
+  appointmentId String?
+  appointment   Appointment?    @relation(fields: [appointmentId], references: [id])
+  customerId    String?
+  customer      Customer?       @relation(fields: [customerId], references: [id])
+  createdAt     DateTime        @default(now())
 
   @@map("transactions")
+}
+
+model Appointment {
+  id       String   @id @default(cuid(2))
+  name     String
+  notes    String?
+  startsAt DateTime
+  clientId String
+  client   Customer @relation(fields: [clientId], references: [id])
+
+  personnel PersonnelOnAppointments[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Transaction Transaction[]
+
+  @@map("appointments")
+}
+
+model PersonnelOnAppointments {
+  appointmentId String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  personnelId   String
+  personnel     Customer    @relation(fields: [personnelId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([personnelId, appointmentId])
+  @@map("appointment_personnel")
 }

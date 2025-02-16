@@ -52,6 +52,34 @@ export async function getTransactionsByOrderId(orderId: string | null) {
   return prisma.transaction.findMany({ where: { orderId: orderId } });
 }
 
+export async function getTransactionsByAppointmentId(
+  appointmentId: string | null,
+) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return redirect("/");
+  }
+
+  return prisma.transaction.findMany({ where: { appointmentId } });
+}
+
+export async function getTransactionsOptions() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return redirect("/");
+  }
+
+  return prisma.transaction.findMany({
+    where: { appointmentId: null, orderId: null },
+  });
+}
+
 export async function createTransaction(
   transaction: Transaction,
 ): Promise<ActionResponse> {
@@ -69,7 +97,7 @@ export async function createTransaction(
     if (!parse.success) {
       return {
         type: "ERROR",
-        message: "Incorrect data received.",
+        message: parse.error.message[0],
       };
     }
 
@@ -79,6 +107,7 @@ export async function createTransaction(
         notes: transaction.notes,
         amount: transaction.amount * 100,
         type: transaction.type,
+        appointmentId: transaction.appointmentId,
         orderId: transaction.orderId,
         customerId: transaction.customerId,
       },
@@ -171,6 +200,57 @@ export async function linkTransactionsWithOrders(
       where: { id: { in: transactions } },
       data: {
         orderId,
+      },
+    });
+    revalidatePath("/transactions");
+    return {
+      message: `Updated transactions: ${c.count}`,
+      type: "SUCCESS",
+    };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (e) {
+    return {
+      type: "ERROR",
+      message: "Something went wrong!",
+    };
+  }
+}
+
+export async function linkTransactionsWithAppointment(
+  transactions: string[],
+  appointmentId: string,
+  customerId: string | null,
+): Promise<ActionResponse> {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return redirect("/");
+  }
+
+  if (!appointmentId) {
+    return {
+      type: "ERROR",
+      message: "Appointment ID is required.",
+    };
+  }
+
+  try {
+    const parse = z.array(z.string()).safeParse(transactions);
+
+    if (!parse.success) {
+      return {
+        type: "ERROR",
+        message: "Incorrect data received.",
+      };
+    }
+
+    const c = await prisma.transaction.updateMany({
+      where: { id: { in: transactions } },
+      data: {
+        appointmentId,
+        customerId,
       },
     });
     revalidatePath("/transactions");
