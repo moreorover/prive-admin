@@ -97,7 +97,7 @@ export async function createTransaction(
     if (!parse.success) {
       return {
         type: "ERROR",
-        message: parse.error,
+        message: parse.error.message[0],
       };
     }
 

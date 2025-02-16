@@ -22,9 +22,7 @@ import dayjs from "dayjs";
 import PersonnelPickerModal from "@/components/dashboard/customers/PersonnelPickerModal";
 import { notifications } from "@mantine/notifications";
 import { linkPersonnelWithAppointment } from "@/data-access/appointmentPersonnel";
-import CustomersTable from "@/components/dashboard/customers/CustomersTable";
 import { linkTransactionsWithAppointment } from "@/data-access/transaction";
-import TransactionPickerModal from "@/components/dashboard/transactions/TransactionPickerModal";
 import PersonnelTable from "@/components/dashboard/appointments/PersonnelTable";
 
 interface Props {
@@ -202,6 +200,8 @@ export default function AppointmentPage({
                 onClick={() => {
                   showPickTransactionModal({
                     isOpen: true,
+                    transactions: transactionOptions,
+                    onConfirmAction: onConfirmActionTransactions,
                   });
                 }}
               >
@@ -215,10 +215,6 @@ export default function AppointmentPage({
       <PersonnelPickerModal
         personnel={personnelOptions}
         onConfirmAction={onConfirmActionPersonnel}
-      />
-      <TransactionPickerModal
-        transactions={transactionOptions}
-        onConfirmAction={onConfirmActionTransactions}
       />
     </PageContainer>
   );

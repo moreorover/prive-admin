@@ -12,25 +12,16 @@ import {
   Button,
   Group,
 } from "@mantine/core";
-import { Transaction } from "@/lib/schemas";
 import { useAtom } from "jotai";
 import { transactionPickerModalAtom } from "@/lib/atoms";
 import { useState } from "react";
 
-interface Props {
-  transactions: Transaction[];
-  onConfirmAction: (selectedTransactions: string[]) => void;
-}
-
-export default function TransactionPickerModal({
-  transactions,
-  onConfirmAction,
-}: Props) {
+export default function TransactionPickerModal() {
   const [modalState, setModalState] = useAtom(transactionPickerModalAtom);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredTransactions = transactions.filter((transaction) => {
+  const filteredTransactions = modalState.transactions.filter((transaction) => {
     const searchLower = searchTerm.toLowerCase();
 
     return (
@@ -100,7 +91,13 @@ export default function TransactionPickerModal({
   return (
     <Modal
       opened={modalState.isOpen}
-      onClose={() => setModalState({ isOpen: false })}
+      onClose={() =>
+        setModalState({
+          isOpen: false,
+          transactions: [],
+          onConfirmAction: () => {},
+        })
+      }
       title="Pick a transaction"
       size="lg"
     >
@@ -146,9 +143,13 @@ export default function TransactionPickerModal({
         <Group justify="flex-end" mt="md">
           <Button
             onClick={() => {
-              setModalState({ isOpen: false });
+              setModalState({
+                isOpen: false,
+                transactions: [],
+                onConfirmAction: () => {},
+              });
               if (selectedRows.length > 0) {
-                onConfirmAction(selectedRows);
+                modalState.onConfirmAction(selectedRows);
               }
               setSelectedRows([]);
               setSearchTerm("");

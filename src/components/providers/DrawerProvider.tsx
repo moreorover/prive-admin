@@ -13,6 +13,7 @@ import EditOrderItemDrawer from "@/components/dashboard/orders/EditOrderItemDraw
 import NewTransactionDrawer from "@/components/dashboard/transactions/NewTransactionDrawer";
 import NewAppointmentDrawer from "@/components/dashboard/appointments/NewAppointmentDrawer";
 import EditAppointmentDrawer from "@/components/dashboard/appointments/EditAppointmentDrawer";
+import TransactionPickerModal from "@/components/dashboard/transactions/TransactionPickerModal";
 
 export default function DrawerProvider() {
   return (
@@ -36,6 +37,8 @@ export default function DrawerProvider() {
 
       <NewAppointmentDrawer />
       <EditAppointmentDrawer />
+
+      <TransactionPickerModal />
     </>
   );
 }
