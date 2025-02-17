@@ -10,7 +10,6 @@ import {
   Text,
   Menu,
 } from "@mantine/core";
-import { Appointment, Customer, Transaction } from "@/lib/schemas";
 import { PageContainer } from "@/components/page_container/PageContainer";
 import { useSetAtom } from "jotai";
 import {
@@ -30,32 +29,37 @@ import { Suspense } from "react";
 import { trpc } from "@/trpc/client";
 
 interface Props {
-  appointment: Appointment;
-  client: Customer;
-  transactions: Transaction[];
-  personnelOptions: Customer[];
-  personnel: Customer[];
-  transactionOptions: Transaction[];
+  appointmentId: string;
 }
 
-export default function AppointmentPage({
-  appointment,
-  transactions,
-  client,
-  personnelOptions,
-  personnel,
-  transactionOptions,
-}: Props) {
+export default function AppointmentPage({ appointmentId }: Props) {
   const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
   const showPersonnelPickerModal = useSetAtom(personnelPickerModalAtom);
   const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
   const showPickTransactionModal = useSetAtom(transactionPickerModalAtom);
 
-  const [aa] = trpc.appointments.getOne.useSuspenseQuery({
-    id: appointment.id!,
+  const [appointment] = trpc.appointments.getOne.useSuspenseQuery({
+    id: appointmentId,
   });
-
-  console.log({ aa });
+  const [client] = trpc.customers.getClientByAppointmentId.useSuspenseQuery({
+    appointmentId,
+  });
+  const [transactions] =
+    trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
+      appointmentId,
+    });
+  const [personnel] =
+    trpc.customers.getPersonnelByAppointmentId.useSuspenseQuery({
+      appointmentId,
+    });
+  const [personnelOptions] =
+    trpc.customers.getAvailablePersonnelByAppointmentId.useSuspenseQuery({
+      appointmentId,
+    });
+  const [transactionOptions] =
+    trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
+      appointmentId: null,
+    });
 
   async function onConfirmActionPersonnel(selectedRows: string[]) {
     const response = await linkPersonnelWithAppointment(
@@ -101,7 +105,7 @@ export default function AppointmentPage({
   }
 
   return (
-    <Suspense fallback={"Loading..."}>
+    <Suspense fallback={<p>Loading...</p>}>
       <ErrorBoundary fallback={<p>Error</p>}>
         <PageContainer title={appointment.name}>
           <Grid>
@@ -181,6 +185,7 @@ export default function AppointmentPage({
                               showPickTransactionModal({
                                 isOpen: true,
                                 transactions: transactionOptions,
+                                customerId: client.id,
                                 onConfirmAction: onConfirmActionTransactions,
                               });
                             }}

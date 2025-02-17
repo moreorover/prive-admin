@@ -31,7 +31,7 @@
     "@trpc/client": "^11.0.0-rc.768",
     "@trpc/react-query": "^11.0.0-rc.768",
     "@trpc/server": "^11.0.0-rc.768",
-    "better-auth": "^1.1.18",
+    "better-auth": "^1.2.0-beta.9",
     "client-only": "^0.0.1",
     "dayjs": "^1.11.13",
     "jotai": "^2.12.0",
