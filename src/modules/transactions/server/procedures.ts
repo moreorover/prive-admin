@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import prisma from "@/lib/prisma";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { transactionSchema } from "@/lib/schemas";
 
 export const transactionsRouter = createTRPCRouter({
   getOne: protectedProcedure
@@ -27,6 +28,28 @@ export const transactionsRouter = createTRPCRouter({
 
       return prisma.transaction.findMany({
         where: { appointmentId },
+        include: { customer: true },
       });
+    }),
+  createTransaction: protectedProcedure
+    .input(z.object({ transaction: transactionSchema }))
+    .mutation(async ({ input, ctx }) => {
+      const { transaction } = input;
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const c = await prisma.transaction.create({
+        data: {
+          name: transaction.name,
+          notes: transaction.notes,
+          amount: transaction.amount * 100,
+          type: transaction.type,
+          appointmentId: transaction.appointmentId,
+          orderId: transaction.orderId,
+          customerId: transaction.customerId,
+        },
+      });
+
+      return c;
     }),
 });

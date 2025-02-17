@@ -38,16 +38,14 @@ export default function AppointmentPage({ appointmentId }: Props) {
   const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
   const showPickTransactionModal = useSetAtom(transactionPickerModalAtom);
 
+  const utils = trpc.useUtils();
+
   const [appointment] = trpc.appointments.getOne.useSuspenseQuery({
     id: appointmentId,
   });
   const [client] = trpc.customers.getClientByAppointmentId.useSuspenseQuery({
     appointmentId,
   });
-  const [transactions] =
-    trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
-      appointmentId,
-    });
   const [personnel] =
     trpc.customers.getPersonnelByAppointmentId.useSuspenseQuery({
       appointmentId,
@@ -175,6 +173,13 @@ export default function AppointmentPage({ appointmentId }: Props) {
                                 orderId: null,
                                 appointmentId: appointment.id!,
                                 customerId: client.id!,
+                                onCreated: () => {
+                                  utils.transactions.getManyByAppointmentId.invalidate(
+                                    {
+                                      appointmentId: appointmentId,
+                                    },
+                                  );
+                                },
                               });
                             }}
                           >
@@ -260,7 +265,7 @@ export default function AppointmentPage({ appointmentId }: Props) {
                 >
                   <Title order={4}>Transactions</Title>
                 </div>
-                <TransactionsTable transactions={transactions} />
+                <TransactionsTable appointmentId={appointmentId} />
               </Paper>
             </GridCol>
           </Grid>

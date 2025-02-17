@@ -86,7 +86,14 @@ export const newTransactionDrawerAtom = atom<{
   orderId?: string | null;
   appointmentId?: string | null;
   customerId?: string | null;
-}>({ isOpen: false, orderId: undefined, customerId: undefined });
+  onCreated: () => void;
+}>({
+  isOpen: false,
+  appointmentId: undefined,
+  orderId: undefined,
+  customerId: undefined,
+  onCreated: () => {},
+});
 
 export const editTransactionDrawerAtom = atom<{
   isOpen: boolean;

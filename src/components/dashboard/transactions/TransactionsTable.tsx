@@ -1,16 +1,21 @@
 "use client";
 
 import { Table, Text, Badge, ScrollArea, Paper } from "@mantine/core";
-import { Transaction } from "@/lib/schemas";
 import { useRouter } from "next/navigation";
 import { IconArrowRight } from "@tabler/icons-react";
+import { trpc } from "@/trpc/client";
 
 interface Props {
-  transactions: Transaction[];
+  appointmentId: string;
 }
 
-export default function TransactionsTable({ transactions }: Props) {
+export default function TransactionsTable({ appointmentId }: Props) {
   const router = useRouter();
+
+  const [transactions] =
+    trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
+      appointmentId,
+    });
 
   // Helper to format the amount (assuming amount is stored in cents)
   const formatAmount = (amount: number) =>
@@ -21,6 +26,9 @@ export default function TransactionsTable({ transactions }: Props) {
 
   const rows = transactions.map((transaction) => (
     <Table.Tr key={transaction.id}>
+      <Table.Td>
+        <Text>{transaction.customer?.name}</Text>
+      </Table.Td>
       <Table.Td>
         <Text>{transaction.name}</Text>
       </Table.Td>
@@ -49,7 +57,8 @@ export default function TransactionsTable({ transactions }: Props) {
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Name</Table.Th>
+              <Table.Th>Person Name</Table.Th>
+              <Table.Th>Transaction Name</Table.Th>
               <Table.Th>Type</Table.Th>
               <Table.Th>Amount</Table.Th>
               <Table.Th />
