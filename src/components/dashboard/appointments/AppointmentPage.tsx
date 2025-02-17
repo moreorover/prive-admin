@@ -8,25 +8,22 @@ import {
   Paper,
   Title,
   Text,
-  Menu,
 } from "@mantine/core";
 import { PageContainer } from "@/components/page_container/PageContainer";
 import { useSetAtom } from "jotai";
 import {
   editAppointmentDrawerAtom,
-  newTransactionDrawerAtom,
   personnelPickerModalAtom,
-  transactionPickerModalAtom,
 } from "@/lib/atoms";
 import TransactionsTable from "@/components/dashboard/transactions/TransactionsTable";
 import dayjs from "dayjs";
 import { notifications } from "@mantine/notifications";
 import { linkPersonnelWithAppointment } from "@/data-access/appointmentPersonnel";
 import PersonnelTable from "@/components/dashboard/appointments/PersonnelTable";
-import { linkTransactionsWithAppointment } from "@/data-access/transaction";
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense } from "react";
 import { trpc } from "@/trpc/client";
+import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
 
 interface Props {
   appointmentId: string;
@@ -35,10 +32,6 @@ interface Props {
 export default function AppointmentPage({ appointmentId }: Props) {
   const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
   const showPersonnelPickerModal = useSetAtom(personnelPickerModalAtom);
-  const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
-  const showPickTransactionModal = useSetAtom(transactionPickerModalAtom);
-
-  const utils = trpc.useUtils();
 
   const [appointment] = trpc.appointments.getOne.useSuspenseQuery({
     id: appointmentId,
@@ -46,45 +39,15 @@ export default function AppointmentPage({ appointmentId }: Props) {
   const [client] = trpc.customers.getClientByAppointmentId.useSuspenseQuery({
     appointmentId,
   });
-  const [personnel] =
-    trpc.customers.getPersonnelByAppointmentId.useSuspenseQuery({
-      appointmentId,
-    });
   const [personnelOptions] =
     trpc.customers.getAvailablePersonnelByAppointmentId.useSuspenseQuery({
       appointmentId,
-    });
-  const [transactionOptions] =
-    trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
-      appointmentId: null,
     });
 
   async function onConfirmActionPersonnel(selectedRows: string[]) {
     const response = await linkPersonnelWithAppointment(
       selectedRows,
       appointment.id!,
-    );
-
-    if (response.type === "ERROR") {
-      notifications.show({
-        color: "red",
-        title: "Failed to link Transactions",
-        message: response.message,
-      });
-    } else {
-      notifications.show({
-        color: "green",
-        title: "Success!",
-        message: response.message,
-      });
-    }
-  }
-
-  async function onConfirmActionTransactions(selectedRows: string[]) {
-    const response = await linkTransactionsWithAppointment(
-      selectedRows,
-      appointment.id!,
-      client.id!,
     );
 
     if (response.type === "ERROR") {
@@ -159,46 +122,10 @@ export default function AppointmentPage({ appointmentId }: Props) {
                   >
                     <Group justify="space-between" gap="sm">
                       <Title order={4}>Client</Title>
-                      <Menu shadow="md" width={200}>
-                        <Menu.Target>
-                          <Button>Manage</Button>
-                        </Menu.Target>
-
-                        <Menu.Dropdown>
-                          <Menu.Label>Transactions</Menu.Label>
-                          <Menu.Item
-                            onClick={() => {
-                              showNewTransactionDrawer({
-                                isOpen: true,
-                                orderId: null,
-                                appointmentId: appointment.id!,
-                                customerId: client.id!,
-                                onCreated: () => {
-                                  utils.transactions.getManyByAppointmentId.invalidate(
-                                    {
-                                      appointmentId: appointmentId,
-                                    },
-                                  );
-                                },
-                              });
-                            }}
-                          >
-                            New Cash Transaction
-                          </Menu.Item>
-                          <Menu.Item
-                            onClick={() => {
-                              showPickTransactionModal({
-                                isOpen: true,
-                                transactions: transactionOptions,
-                                customerId: client.id,
-                                onConfirmAction: onConfirmActionTransactions,
-                              });
-                            }}
-                          >
-                            Pick Transaction
-                          </Menu.Item>
-                        </Menu.Dropdown>
-                      </Menu>
+                      <AppointmentTransactionMenu
+                        appointmentId={appointmentId}
+                        customerId={client.id}
+                      />
                     </Group>
                     <Text size="sm" mt="xs">
                       <strong>Name:</strong> {client.name}
@@ -236,11 +163,7 @@ export default function AppointmentPage({ appointmentId }: Props) {
                         Pick
                       </Button>
                     </div>
-                    <PersonnelTable
-                      personnel={personnel}
-                      transactionOptions={transactionOptions}
-                      appointmentId={appointment.id!}
-                    />
+                    <PersonnelTable appointmentId={appointmentId} />
                   </Paper>
                 </GridCol>
               </Grid>

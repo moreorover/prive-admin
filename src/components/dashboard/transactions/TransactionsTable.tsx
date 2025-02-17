@@ -15,6 +15,7 @@ export default function TransactionsTable({ appointmentId }: Props) {
   const [transactions] =
     trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
       appointmentId,
+      includeCustomer: true,
     });
 
   // Helper to format the amount (assuming amount is stored in cents)
