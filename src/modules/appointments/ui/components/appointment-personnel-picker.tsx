@@ -34,6 +34,11 @@ export const AppointmentPersonnelPicker = ({ appointmentId }: Props) => {
         utils.customers.getPersonnelByAppointmentId.invalidate({
           appointmentId,
         });
+        showPersonnelPickerModal({
+          isOpen: false,
+          personnel: [],
+          onConfirmAction: () => {},
+        });
       },
       onError: () => {
         notifications.show({
