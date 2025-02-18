@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import prisma from "@/lib/prisma";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { appointmentSchema } from "@/lib/schemas";
 
 export const appointmentsRouter = createTRPCRouter({
   getOne: protectedProcedure
@@ -19,6 +20,21 @@ export const appointmentsRouter = createTRPCRouter({
       }
 
       return appointment;
+    }),
+  update: protectedProcedure
+    .input(z.object({ appointment: appointmentSchema }))
+    .mutation(async ({ input, ctx }) => {
+      const { appointment } = input;
+
+      const c = await prisma.appointment.update({
+        data: {
+          name: appointment.name,
+          notes: appointment.notes,
+          startsAt: appointment.startsAt,
+        },
+        where: { id: appointment.id },
+      });
+      return c;
     }),
   linkPersonnelWithAppointment: protectedProcedure
     .input(

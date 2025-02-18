@@ -13,7 +13,7 @@ import { DateTimePicker } from "@mantine/dates";
 
 type Props = {
   appointment: Appointment;
-  onSubmitAction: (values: Appointment) => Promise<ActionResponse>;
+  onSubmitAction: (values: Appointment) => void;
   onDelete?: () => void;
 };
 
