@@ -76,4 +76,21 @@ export const transactionsRouter = createTRPCRouter({
 
       return c;
     }),
+  setAppointmentId: protectedProcedure
+    .input(
+      z.object({
+        transactionId: z.string(),
+        appointmentId: z.string().nullable(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { transactionId, appointmentId } = input;
+
+      const c = await prisma.transaction.update({
+        where: { id: transactionId },
+        data: { appointmentId },
+      });
+
+      return c;
+    }),
 });
