@@ -66,13 +66,15 @@ export default function PersonnelPickerModal() {
   return (
     <Modal
       opened={modalState.isOpen}
-      onClose={() =>
+      onClose={() => {
         setModalState({
           isOpen: false,
           personnel: [],
           onConfirmAction: () => {},
-        })
-      }
+        });
+        setSelectedRows([]);
+        setSearchTerm("");
+      }}
       title="Pick personnel"
       size="lg"
     >
@@ -116,14 +118,7 @@ export default function PersonnelPickerModal() {
         <Group justify="flex-end" mt="md">
           <Button
             onClick={() => {
-              setModalState({
-                isOpen: false,
-                personnel: [],
-                onConfirmAction: () => {},
-              });
-              if (selectedRows.length > 0) {
-                modalState.onConfirmAction(selectedRows);
-              }
+              modalState.onConfirmAction(selectedRows);
               setSelectedRows([]);
               setSearchTerm("");
             }}

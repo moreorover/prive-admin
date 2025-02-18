@@ -7,12 +7,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import {
-  ActionResponse,
-  Transaction,
-  transactionSchema,
-  transactionsSchema,
-} from "@/lib/schemas";
+import { ActionResponse, Transaction, transactionsSchema } from "@/lib/schemas";
 
 import { z } from "zod";
 
@@ -112,57 +107,6 @@ export async function linkTransactionsWithOrders(
       where: { id: { in: transactions } },
       data: {
         orderId,
-      },
-    });
-    revalidatePath("/transactions");
-    return {
-      message: `Updated transactions: ${c.count}`,
-      type: "SUCCESS",
-    };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {
-    return {
-      type: "ERROR",
-      message: "Something went wrong!",
-    };
-  }
-}
-
-export async function linkTransactionsWithAppointment(
-  transactions: string[],
-  appointmentId: string,
-  customerId: string | null,
-): Promise<ActionResponse> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return redirect("/");
-  }
-
-  if (!appointmentId) {
-    return {
-      type: "ERROR",
-      message: "Appointment ID is required.",
-    };
-  }
-
-  try {
-    const parse = z.array(z.string()).safeParse(transactions);
-
-    if (!parse.success) {
-      return {
-        type: "ERROR",
-        message: "Incorrect data received.",
-      };
-    }
-
-    const c = await prisma.transaction.updateMany({
-      where: { id: { in: transactions } },
-      data: {
-        appointmentId,
-        customerId,
       },
     });
     revalidatePath("/transactions");

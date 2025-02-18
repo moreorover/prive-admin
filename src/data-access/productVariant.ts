@@ -13,18 +13,6 @@ import {
   productVariantSchema,
 } from "@/lib/schemas";
 
-export async function getProductVariant(id: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return redirect("/");
-  }
-
-  return prisma.productVariant.findFirst({ where: { id } });
-}
-
 export async function getProductVariants(productId: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -118,43 +106,6 @@ export async function updateProductVariant(
     revalidatePath("/productVariants");
     return {
       message: `Updated productVariant: ${c.size}`,
-      type: "SUCCESS",
-    };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {
-    return {
-      type: "ERROR",
-      message: "Something went wrong!",
-    };
-  }
-}
-
-export async function deleteProductVariant(
-  productVariant: ProductVariant,
-): Promise<ActionResponse> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return redirect("/");
-  }
-
-  try {
-    const parse = productVariantSchema.safeParse(productVariant);
-
-    if (!parse.success) {
-      return {
-        type: "ERROR",
-        message: "Incorrect data received.",
-      };
-    }
-    const c = await prisma.productVariant.delete({
-      where: { id: productVariant.id },
-    });
-    revalidatePath("/productVariants");
-    return {
-      message: `Deleted productVariant: ${c.size}`,
       type: "SUCCESS",
     };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -20,4 +20,20 @@ export const appointmentsRouter = createTRPCRouter({
 
       return appointment;
     }),
+  linkPersonnelWithAppointment: protectedProcedure
+    .input(
+      z.object({ personnel: z.array(z.string()), appointmentId: z.string() }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { personnel, appointmentId } = input;
+
+      const data = personnel.map((p) => ({
+        appointmentId,
+        personnelId: p,
+      }));
+
+      const c = await prisma.personnelOnAppointments.createMany({ data });
+
+      return c;
+    }),
 });

@@ -91,13 +91,15 @@ export default function TransactionPickerModal() {
   return (
     <Modal
       opened={modalState.isOpen}
-      onClose={() =>
+      onClose={() => {
         setModalState({
           isOpen: false,
           transactions: [],
           onConfirmAction: () => {},
-        })
-      }
+        });
+        setSelectedRows([]);
+        setSearchTerm("");
+      }}
       title="Pick a transaction"
       size="lg"
     >
@@ -145,6 +147,7 @@ export default function TransactionPickerModal() {
             onClick={() => {
               modalState.onConfirmAction(selectedRows);
               setSelectedRows([]);
+              setSearchTerm("");
             }}
           >
             Confirm

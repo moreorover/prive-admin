@@ -11,19 +11,15 @@ import {
 } from "@mantine/core";
 import { PageContainer } from "@/components/page_container/PageContainer";
 import { useSetAtom } from "jotai";
-import {
-  editAppointmentDrawerAtom,
-  personnelPickerModalAtom,
-} from "@/lib/atoms";
+import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import TransactionsTable from "@/components/dashboard/transactions/TransactionsTable";
 import dayjs from "dayjs";
-import { notifications } from "@mantine/notifications";
-import { linkPersonnelWithAppointment } from "@/data-access/appointmentPersonnel";
 import PersonnelTable from "@/components/dashboard/appointments/PersonnelTable";
 import { ErrorBoundary } from "react-error-boundary";
 import { Suspense } from "react";
 import { trpc } from "@/trpc/client";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
+import { AppointmentPersonnelPicker } from "@/modules/appointments/ui/components/appointment-personnel-picker";
 
 interface Props {
   appointmentId: string;
@@ -31,7 +27,6 @@ interface Props {
 
 export default function AppointmentPage({ appointmentId }: Props) {
   const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
-  const showPersonnelPickerModal = useSetAtom(personnelPickerModalAtom);
 
   const [appointment] = trpc.appointments.getOne.useSuspenseQuery({
     id: appointmentId,
@@ -39,31 +34,6 @@ export default function AppointmentPage({ appointmentId }: Props) {
   const [client] = trpc.customers.getClientByAppointmentId.useSuspenseQuery({
     appointmentId,
   });
-  const [personnelOptions] =
-    trpc.customers.getAvailablePersonnelByAppointmentId.useSuspenseQuery({
-      appointmentId,
-    });
-
-  async function onConfirmActionPersonnel(selectedRows: string[]) {
-    const response = await linkPersonnelWithAppointment(
-      selectedRows,
-      appointment.id!,
-    );
-
-    if (response.type === "ERROR") {
-      notifications.show({
-        color: "red",
-        title: "Failed to link Transactions",
-        message: response.message,
-      });
-    } else {
-      notifications.show({
-        color: "green",
-        title: "Success!",
-        message: response.message,
-      });
-    }
-  }
 
   return (
     <Suspense fallback={<p>Loading...</p>}>
@@ -151,17 +121,9 @@ export default function AppointmentPage({ appointmentId }: Props) {
                       }}
                     >
                       <Title order={4}>Personnel Involved</Title>
-                      <Button
-                        onClick={() => {
-                          showPersonnelPickerModal({
-                            isOpen: true,
-                            personnel: personnelOptions,
-                            onConfirmAction: onConfirmActionPersonnel,
-                          });
-                        }}
-                      >
-                        Pick
-                      </Button>
+                      <AppointmentPersonnelPicker
+                        appointmentId={appointmentId}
+                      />
                     </div>
                     <PersonnelTable appointmentId={appointmentId} />
                   </Paper>
