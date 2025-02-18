@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import AppointmentPage from "@/components/dashboard/appointments/AppointmentPage";
+import { AppointmentPage } from "@/components/dashboard/appointments/AppointmentPage";
 import { HydrateClient, trpc } from "@/trpc/server";
 
 type Props = {

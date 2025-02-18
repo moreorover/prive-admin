@@ -20,12 +20,23 @@ import { Suspense } from "react";
 import { trpc } from "@/trpc/client";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
 import { AppointmentPersonnelPicker } from "@/modules/appointments/ui/components/appointment-personnel-picker";
+import { LoaderSkeleton } from "@/components/loader-skeleton";
 
 interface Props {
   appointmentId: string;
 }
 
-export default function AppointmentPage({ appointmentId }: Props) {
+export const AppointmentPage = ({ appointmentId }: Props) => {
+  return (
+    <Suspense fallback={<LoaderSkeleton />}>
+      <ErrorBoundary fallback={<p>Error</p>}>
+        <AppointmentPageSuspense appointmentId={appointmentId} />
+      </ErrorBoundary>
+    </Suspense>
+  );
+};
+
+function AppointmentPageSuspense({ appointmentId }: Props) {
   const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
 
   const [appointment] = trpc.appointments.getOne.useSuspenseQuery({
@@ -36,103 +47,72 @@ export default function AppointmentPage({ appointmentId }: Props) {
   });
 
   return (
-    <Suspense fallback={<p>Loading...</p>}>
-      <ErrorBoundary fallback={<p>Error</p>}>
-        <PageContainer title={appointment.name}>
+    <PageContainer title={appointment.name}>
+      <Grid>
+        {/* Header and Actions */}
+        <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
+          <Paper
+            style={{
+              // display: "flex",
+              // justifyContent: "flex-end",
+              width: "100%",
+              padding: "16px",
+            }}
+          >
+            <Group justify="space-between" gap="sm">
+              <Title order={4}>{appointment.name}</Title>
+              <Button
+                onClick={() => {
+                  showEditAppointmentDrawer({ isOpen: true, appointment });
+                }}
+              >
+                Edit
+              </Button>
+            </Group>
+          </Paper>
+        </GridCol>
+
+        {/* Appointment Details */}
+        <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
+          <Paper style={{ padding: "16px", borderRadius: "8px" }}>
+            <Title order={4}>Appointment Details</Title>
+            <Text size="sm" mt="xs">
+              <strong>Notes:</strong> {appointment.notes || "No notes provided"}
+            </Text>
+            <Text size="sm" mt="xs">
+              <strong>Start Time:</strong>{" "}
+              {dayjs(appointment.startsAt).format("DD MMM YYYY HH:mm")}
+            </Text>
+          </Paper>
+        </GridCol>
+
+        {/* Client and Personnel */}
+        <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
           <Grid>
-            {/* Header and Actions */}
-            <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
+            {/* Client Card */}
+            <GridCol span={{ sm: 12, md: 3, lg: 3 }}>
               <Paper
                 style={{
-                  // display: "flex",
-                  // justifyContent: "flex-end",
-                  width: "100%",
                   padding: "16px",
+                  borderRadius: "8px",
+                  marginTop: "16px",
                 }}
               >
                 <Group justify="space-between" gap="sm">
-                  <Title order={4}>{appointment.name}</Title>
-                  <Button
-                    onClick={() => {
-                      showEditAppointmentDrawer({ isOpen: true, appointment });
-                    }}
-                  >
-                    Edit
-                  </Button>
+                  <Title order={4}>Client</Title>
+                  <AppointmentTransactionMenu
+                    appointmentId={appointmentId}
+                    customerId={client.id}
+                  />
                 </Group>
-              </Paper>
-            </GridCol>
-
-            {/* Appointment Details */}
-            <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
-              <Paper style={{ padding: "16px", borderRadius: "8px" }}>
-                <Title order={4}>Appointment Details</Title>
                 <Text size="sm" mt="xs">
-                  <strong>Notes:</strong>{" "}
-                  {appointment.notes || "No notes provided"}
-                </Text>
-                <Text size="sm" mt="xs">
-                  <strong>Start Time:</strong>{" "}
-                  {dayjs(appointment.startsAt).format("DD MMM YYYY HH:mm")}
+                  <strong>Name:</strong> {client.name}
                 </Text>
               </Paper>
             </GridCol>
 
-            {/* Client and Personnel */}
-            <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
-              <Grid>
-                {/* Client Card */}
-                <GridCol span={{ sm: 12, md: 3, lg: 3 }}>
-                  <Paper
-                    style={{
-                      padding: "16px",
-                      borderRadius: "8px",
-                      marginTop: "16px",
-                    }}
-                  >
-                    <Group justify="space-between" gap="sm">
-                      <Title order={4}>Client</Title>
-                      <AppointmentTransactionMenu
-                        appointmentId={appointmentId}
-                        customerId={client.id}
-                      />
-                    </Group>
-                    <Text size="sm" mt="xs">
-                      <strong>Name:</strong> {client.name}
-                    </Text>
-                  </Paper>
-                </GridCol>
-
-                {/* Personnel Involved */}
-                <GridCol span={{ sm: 12, md: 9, lg: 9 }}>
-                  <Paper
-                    style={{
-                      padding: "16px",
-                      borderRadius: "8px",
-                      marginTop: "16px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: "16px",
-                      }}
-                    >
-                      <Title order={4}>Personnel Involved</Title>
-                      <AppointmentPersonnelPicker
-                        appointmentId={appointmentId}
-                      />
-                    </div>
-                    <PersonnelTable appointmentId={appointmentId} />
-                  </Paper>
-                </GridCol>
-              </Grid>
-            </GridCol>
-
-            {/* Transactions Related to Appointment */}
-            <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
+            {/* Personnel Involved */}
+            <GridCol span={{ sm: 12, md: 9, lg: 9 }}>
               <Paper
                 style={{
                   padding: "16px",
@@ -148,14 +128,38 @@ export default function AppointmentPage({ appointmentId }: Props) {
                     marginBottom: "16px",
                   }}
                 >
-                  <Title order={4}>Transactions</Title>
+                  <Title order={4}>Personnel Involved</Title>
+                  <AppointmentPersonnelPicker appointmentId={appointmentId} />
                 </div>
-                <TransactionsTable appointmentId={appointmentId} />
+                <PersonnelTable appointmentId={appointmentId} />
               </Paper>
             </GridCol>
           </Grid>
-        </PageContainer>
-      </ErrorBoundary>
-    </Suspense>
+        </GridCol>
+
+        {/* Transactions Related to Appointment */}
+        <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
+          <Paper
+            style={{
+              padding: "16px",
+              borderRadius: "8px",
+              marginTop: "16px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "16px",
+              }}
+            >
+              <Title order={4}>Transactions</Title>
+            </div>
+            <TransactionsTable appointmentId={appointmentId} />
+          </Paper>
+        </GridCol>
+      </Grid>
+    </PageContainer>
   );
 }
