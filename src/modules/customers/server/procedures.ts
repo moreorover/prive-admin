@@ -5,6 +5,9 @@ import prisma from "@/lib/prisma";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 
 export const customersRouter = createTRPCRouter({
+  getAll: protectedProcedure.query(async ({ ctx }) => {
+    return prisma.customer.findMany();
+  }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string().cuid2() }))
     .query(async ({ input, ctx }) => {
