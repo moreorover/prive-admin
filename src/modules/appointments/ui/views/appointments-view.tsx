@@ -76,7 +76,7 @@ function AppointmentsSuspense({ weekOffset }: Props) {
     });
 
   return (
-    <GridCol span={12}>
+    <>
       {appointments.length > 0 ? (
         <AppointmentsTable appointments={appointments} />
       ) : (
@@ -84,6 +84,6 @@ function AppointmentsSuspense({ weekOffset }: Props) {
           <Text c="gray">No appointments found for this week.</Text>
         </Paper>
       )}
-    </GridCol>
+    </>
   );
 }
