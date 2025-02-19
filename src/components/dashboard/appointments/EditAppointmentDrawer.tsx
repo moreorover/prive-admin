@@ -3,35 +3,43 @@
 import AppointmentForm from "@/components/dashboard/appointments/AppointmentForm";
 import { Appointment } from "@/lib/schemas";
 import { notifications } from "@mantine/notifications";
-import { updateAppointment } from "@/data-access/appointment";
 import { Drawer } from "@mantine/core";
 import { useAtom } from "jotai";
 import { editAppointmentDrawerAtom } from "@/lib/atoms";
+import { trpc } from "@/trpc/client";
+import dayjs from "dayjs";
 
 export default function EditAppointmentDrawer() {
   const [value, setOpen] = useAtom(editAppointmentDrawerAtom);
 
-  async function onSubmit(data: Appointment) {
-    const response = await updateAppointment({
-      ...data,
-      id: value.appointment.id,
-    });
+  const utils = trpc.useUtils();
 
-    if (response.type === "ERROR") {
-      notifications.show({
-        color: "red",
-        title: "Failed to update Appointment",
-        message: "Please try again.",
+  const editAppointment = trpc.appointments.update.useMutation({
+    onSuccess: () => {
+      utils.appointments.getOne.invalidate({
+        id: value.appointment.id,
       });
-    } else {
-      setOpen({ isOpen: false, appointment: { name: "" } });
       notifications.show({
         color: "green",
         title: "Success!",
         message: "Appointment updated.",
       });
-    }
-    return response;
+      setOpen({
+        isOpen: false,
+        appointment: { name: "", notes: "", startsAt: dayjs().toDate() },
+      });
+    },
+    onError: () => {
+      notifications.show({
+        color: "red",
+        title: "Failed to update Appointment.",
+        message: "Please try again.",
+      });
+    },
+  });
+
+  async function onSubmit(data: Appointment) {
+    editAppointment.mutate({ appointment: data });
   }
 
   function onDelete() {
@@ -41,7 +49,12 @@ export default function EditAppointmentDrawer() {
   return (
     <Drawer
       opened={value.isOpen}
-      onClose={() => setOpen({ isOpen: false, appointment: { name: "" } })}
+      onClose={() =>
+        setOpen({
+          isOpen: false,
+          appointment: { name: "", notes: "", startsAt: dayjs().toDate() },
+        })
+      }
       position="right"
       title="Update Appointment"
     >

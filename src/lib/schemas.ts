@@ -76,7 +76,9 @@ export const transactionSchema = z
       ),
     name: z.string().nullable(),
     notes: z.string().nullable(),
-    amount: z.number(),
+    amount: z.number().refine((value) => value !== 0, {
+      message: "Amount cannot be zero",
+    }),
     type: z.enum(["BANK", "CASH", "PAYPAL"]),
     appointmentId: z.string().cuid2().nullish(),
     orderId: z.string().cuid2().nullish(),

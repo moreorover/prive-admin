@@ -91,14 +91,15 @@ export default function TransactionPickerModal() {
   return (
     <Modal
       opened={modalState.isOpen}
-      onClose={() =>
+      onClose={() => {
         setModalState({
           isOpen: false,
           transactions: [],
-          customerId: null,
           onConfirmAction: () => {},
-        })
-      }
+        });
+        setSelectedRows([]);
+        setSearchTerm("");
+      }}
       title="Pick a transaction"
       size="lg"
     >
@@ -144,15 +145,7 @@ export default function TransactionPickerModal() {
         <Group justify="flex-end" mt="md">
           <Button
             onClick={() => {
-              setModalState({
-                isOpen: false,
-                transactions: [],
-                customerId: null,
-                onConfirmAction: () => {},
-              });
-              if (selectedRows.length > 0) {
-                modalState.onConfirmAction(selectedRows, modalState.customerId);
-              }
+              modalState.onConfirmAction(selectedRows);
               setSelectedRows([]);
               setSearchTerm("");
             }}

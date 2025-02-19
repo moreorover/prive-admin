@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getCustomers } from "@/data-access/customer";
-import CustomersPage from "@/components/dashboard/customers/CustomersPage";
+import { HydrateClient, trpc } from "@/trpc/server";
+import { CustomersView } from "@/modules/customers/ui/views/customers-view";
 
 export default async function Page() {
   const session = await auth.api.getSession({
@@ -13,6 +13,11 @@ export default async function Page() {
     return redirect("/");
   }
 
-  const customers = await getCustomers();
-  return <CustomersPage customers={customers} />;
+  void trpc.customers.getAll.prefetch();
+
+  return (
+    <HydrateClient>
+      <CustomersView />
+    </HydrateClient>
+  );
 }

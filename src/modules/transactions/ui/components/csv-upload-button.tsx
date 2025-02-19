@@ -16,7 +16,7 @@ type Props = {
   onUploadAction: (results: typeof INITIAL_IMPORT_RESULTS) => void;
 };
 
-export const UploadButton = ({ text, onUploadAction }: Props) => {
+export const CsvUploadButton = ({ text, onUploadAction }: Props) => {
   const { CSVReader } = useCSVReader();
 
   return (

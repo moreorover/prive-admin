@@ -12,7 +12,6 @@ export default function NewOrderItemDrawer() {
   const [value, setOpen] = useAtom(newOrderItemDrawerAtom);
 
   async function onSubmit(data: OrderItem) {
-    console.log(data);
     const response = await createOrderItem(data);
 
     if (response.type === "ERROR") {

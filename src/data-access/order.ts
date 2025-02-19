@@ -151,38 +151,3 @@ export async function updateOrder(order: Order): Promise<ActionResponse> {
     };
   }
 }
-
-export async function deleteOrder(order: Order): Promise<ActionResponse> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return redirect("/");
-  }
-
-  try {
-    const parse = orderSchema.safeParse(order);
-
-    if (!parse.success) {
-      return {
-        type: "ERROR",
-        message: "Incorrect data received.",
-      };
-    }
-    const c = await prisma.order.delete({
-      where: { id: order.id },
-    });
-    revalidatePath("/orders");
-    return {
-      message: `Deleted order: ${c.placedAt}`,
-      type: "SUCCESS",
-    };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {
-    return {
-      type: "ERROR",
-      message: "Something went wrong!",
-    };
-  }
-}

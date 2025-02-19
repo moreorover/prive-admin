@@ -1,39 +1,35 @@
 "use client";
 
 import { useForm } from "@mantine/form";
-import {
-  type ActionResponse,
-  Transaction,
-  transactionSchema,
-} from "@/lib/schemas";
+import { Transaction, transactionSchema } from "@/lib/schemas";
 import { zodResolver } from "mantine-form-zod-resolver";
 import {
   Button,
   NumberInput,
   Select,
-  Switch,
   Textarea,
   TextInput,
 } from "@mantine/core";
 
 type Props = {
   transaction: Transaction;
-  onSubmitAction: (values: Transaction) => Promise<ActionResponse>;
+  onSubmitAction: (values: Transaction) => void;
+  disabled: boolean;
 };
 
-export default function OrderItemForm({ transaction, onSubmitAction }: Props) {
+export default function TransactionForm({
+  transaction,
+  onSubmitAction,
+  disabled,
+}: Props) {
   const form = useForm({
     mode: "uncontrolled",
     initialValues: transaction,
     validate: zodResolver(transactionSchema),
   });
 
-  async function handleSubmit(values: Transaction) {
-    await onSubmitAction(values);
-  }
-
   return (
-    <form onSubmit={form.onSubmit(handleSubmit)}>
+    <form onSubmit={form.onSubmit(onSubmitAction)}>
       <TextInput
         label="Name"
         placeholder="Transaction Name"
@@ -61,7 +57,7 @@ export default function OrderItemForm({ transaction, onSubmitAction }: Props) {
         key={form.key("amount")}
         {...form.getInputProps("amount")}
       />
-      <Button fullWidth mt="xl" type="submit">
+      <Button disabled={disabled} fullWidth mt="xl" type="submit">
         {transaction.id ? "Update" : "Create"}
       </Button>
     </form>

@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
-import { UploadButton } from "./UploadButton";
 import { Transaction } from "@/lib/schemas";
 import { createTransactions } from "@/data-access/transaction";
-import { notifications } from "@mantine/notifications"; // adjust the import path as needed
+import { notifications } from "@mantine/notifications";
+import { CsvUploadButton } from "@/modules/transactions/ui/components/csv-upload-button"; // adjust the import path as needed
 
 // Define the type for CSV upload results.
 interface CSVUploadResults {
@@ -226,5 +226,5 @@ export const MonzoUpload = () => {
     }
   };
 
-  return <UploadButton text="Monzo" onUploadAction={handleUploadAction} />;
+  return <CsvUploadButton text="Monzo" onUploadAction={handleUploadAction} />;
 };

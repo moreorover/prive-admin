@@ -103,38 +103,3 @@ export async function updateProduct(product: Product): Promise<ActionResponse> {
     };
   }
 }
-
-export async function deleteProduct(product: Product): Promise<ActionResponse> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return redirect("/");
-  }
-
-  try {
-    const parse = productSchema.safeParse(product);
-
-    if (!parse.success) {
-      return {
-        type: "ERROR",
-        message: "Incorrect data received.",
-      };
-    }
-    const c = await prisma.product.delete({
-      where: { id: product.id },
-    });
-    revalidatePath("/products");
-    return {
-      message: `Deleted product: ${c.name}`,
-      type: "SUCCESS",
-    };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {
-    return {
-      type: "ERROR",
-      message: "Something went wrong!",
-    };
-  }
-}
