@@ -9,45 +9,6 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { ActionResponse, Appointment, appointmentSchema } from "@/lib/schemas";
 
-export async function getAppointments() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return redirect("/");
-  }
-
-  return prisma.appointment.findMany();
-}
-
-export async function getAppointment(id: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return redirect("/");
-  }
-
-  return prisma.appointment.findFirst({ where: { id } });
-}
-
-export async function getAppointmentsByCustomerId(customerId: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return redirect("/");
-  }
-
-  return prisma.appointment.findMany({
-    where: { clientId: customerId },
-    orderBy: [{ startsAt: "desc" }],
-  });
-}
-
 export async function createAppointment(
   appointment: Appointment,
   clientId: string,

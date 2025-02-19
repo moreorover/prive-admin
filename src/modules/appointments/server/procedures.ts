@@ -79,4 +79,17 @@ export const appointmentsRouter = createTRPCRouter({
 
       return appointments;
     }),
+  getAppointmentsByCustomerId: protectedProcedure
+    .input(z.object({ customerId: z.string().cuid2() }))
+    .query(async ({ input, ctx }) => {
+      const { customerId } = input;
+
+      const appointments = await prisma.appointment.findMany({
+        where: {
+          clientId: customerId,
+        },
+      });
+
+      return appointments;
+    }),
 });

@@ -9,18 +9,6 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { ActionResponse, Customer, customerSchema } from "@/lib/schemas";
 
-export async function getCustomers() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return redirect("/");
-  }
-
-  return prisma.customer.findMany();
-}
-
 export async function getCustomer(id: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
