@@ -25,24 +25,8 @@ interface Props {
   weekOffset: number;
 }
 
-export const AppointmentsView = () => {
-  return (
-    <Suspense fallback={<LoaderSkeleton />}>
-      <ErrorBoundary fallback={<p>Error</p>}>
-        <AppointmentsSuspense weekOffset={0} />
-      </ErrorBoundary>
-    </Suspense>
-  );
-};
-
-function AppointmentsSuspense({ weekOffset }: Props) {
+export const AppointmentsView = ({ weekOffset }: Props) => {
   const [offset, setOffset] = useState(weekOffset);
-
-  const [appointments] =
-    trpc.appointments.getAppointmentsForWeek.useSuspenseQuery({
-      offset: offset,
-    });
-
   const startOfWeek = dayjs().isoWeekday(1).add(offset, "week").startOf("day");
   const endOfWeek = dayjs().isoWeekday(7).add(offset, "week").endOf("day");
 
@@ -79,9 +63,32 @@ function AppointmentsSuspense({ weekOffset }: Props) {
           </Paper>
         </GridCol>
         <GridCol span={12}>
-          <AppointmentsTable appointments={appointments} />
+          <Suspense fallback={<LoaderSkeleton />}>
+            <ErrorBoundary fallback={<p>Error</p>}>
+              <AppointmentsSuspense weekOffset={offset} />
+            </ErrorBoundary>
+          </Suspense>
         </GridCol>
       </Grid>
     </Container>
+  );
+};
+
+function AppointmentsSuspense({ weekOffset }: Props) {
+  const [appointments] =
+    trpc.appointments.getAppointmentsForWeek.useSuspenseQuery({
+      offset: weekOffset,
+    });
+
+  return (
+    <GridCol span={12}>
+      {appointments.length > 0 ? (
+        <AppointmentsTable appointments={appointments} />
+      ) : (
+        <Paper shadow="xs" p="xl">
+          <Text c="gray">No appointments found for this week.</Text>
+        </Paper>
+      )}
+    </GridCol>
   );
 }

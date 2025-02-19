@@ -13,11 +13,15 @@ export default async function Page() {
     return redirect("/");
   }
 
-  void trpc.appointments.getAppointmentsForWeek.prefetch({ offset: 0 });
+  const weekOffset = 0;
+
+  void trpc.appointments.getAppointmentsForWeek.prefetch({
+    offset: weekOffset,
+  });
 
   return (
     <HydrateClient>
-      <AppointmentsView />
+      <AppointmentsView weekOffset={weekOffset} />
     </HydrateClient>
   );
 }
