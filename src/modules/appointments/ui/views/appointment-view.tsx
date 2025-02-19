@@ -15,9 +15,9 @@ import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import dayjs from "dayjs";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
-import { AppointmentPersonnelPicker } from "@/modules/appointments/ui/components/appointment-personnel-picker";
 import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
 import TransactionsTable from "@/modules/appointments/ui/components/transactions-table";
+import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 
 interface Props {
   appointmentId: string;
@@ -46,6 +46,11 @@ function AppointmentSuspense({ appointmentId }: Props) {
     trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
       appointmentId,
       includeCustomer: true,
+    });
+
+  const [personnelOptions] =
+    trpc.customers.getAvailablePersonnelByAppointmentId.useSuspenseQuery({
+      appointmentId,
     });
 
   return (
@@ -95,7 +100,10 @@ function AppointmentSuspense({ appointmentId }: Props) {
             <Paper withBorder p="md" radius="md" shadow="sm">
               <Group justify="space-between" gap="sm">
                 <Title order={4}>Personnel Involved</Title>
-                <AppointmentPersonnelPicker appointmentId={appointmentId} />
+                <PersonnelPickerModal
+                  appointmentId={appointmentId}
+                  personnelOptions={personnelOptions}
+                />
               </Group>
               <PersonnelTable
                 appointmentId={appointmentId}
