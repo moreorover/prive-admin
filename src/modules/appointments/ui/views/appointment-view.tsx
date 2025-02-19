@@ -53,6 +53,12 @@ function AppointmentSuspense({ appointmentId }: Props) {
       appointmentId,
     });
 
+  const [transactionOptions] =
+    trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
+      appointmentId: null,
+      includeCustomer: false,
+    });
+
   return (
     <Grid>
       <GridCol span={12}>
@@ -87,6 +93,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
                 <AppointmentTransactionMenu
                   appointmentId={appointmentId}
                   customerId={appointment.client.id}
+                  transactionOptions={transactionOptions}
                 />
               </Group>
               <Text size="sm" mt="xs">
@@ -108,6 +115,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
               <PersonnelTable
                 appointmentId={appointmentId}
                 personnel={personnel}
+                transactionOptions={transactionOptions}
               />
             </Paper>
           </GridCol>

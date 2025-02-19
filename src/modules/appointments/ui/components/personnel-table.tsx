@@ -1,22 +1,23 @@
 "use client";
 
 import { Table } from "@mantine/core";
-import { GetPersonnelByAppointmentId } from "@/modules/appointments/types";
+import {
+  GetPersonnelByAppointmentId,
+  GetTransactionOptions,
+} from "@/modules/appointments/types";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
-import { trpc } from "@/trpc/client";
 
 interface Props {
   appointmentId: string;
   personnel: GetPersonnelByAppointmentId;
+  transactionOptions: GetTransactionOptions;
 }
 
-export default function PersonnelTable({ appointmentId, personnel }: Props) {
-  const [transactionOptions] =
-    trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
-      appointmentId: null,
-      includeCustomer: false,
-    });
-
+export default function PersonnelTable({
+  appointmentId,
+  personnel,
+  transactionOptions,
+}: Props) {
   const rows = personnel.map((customer) => (
     <Table.Tr key={customer.id}>
       <Table.Td>{customer.name}</Table.Td>

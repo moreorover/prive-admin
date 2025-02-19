@@ -6,6 +6,7 @@ import { useSetAtom } from "jotai/index";
 import { newTransactionDrawerAtom } from "@/lib/atoms";
 import { GetTransactionOptions } from "@/modules/appointments/types";
 import { modals } from "@mantine/modals";
+import { IconDotsVertical } from "@tabler/icons-react";
 
 interface Props {
   appointmentId: string;
@@ -37,7 +38,9 @@ export const AppointmentTransactionMenu = ({
     <>
       <Menu shadow="md" width={200}>
         <Menu.Target>
-          <Button>Manage</Button>
+          <Button size={"xs"}>
+            <IconDotsVertical size={14} />
+          </Button>
         </Menu.Target>
 
         <Menu.Dropdown>
