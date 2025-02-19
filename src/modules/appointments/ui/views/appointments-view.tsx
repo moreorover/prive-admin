@@ -15,23 +15,36 @@ import AppointmentsTable from "@/components/dashboard/appointments/AppointmentsT
 import { trpc } from "@/trpc/client";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { LoaderSkeleton } from "@/components/loader-skeleton";
 
 dayjs.extend(isoWeek);
 
-export default function AppointmentsView() {
-  const [weekOffset, setWeekOffset] = useState(0);
+interface Props {
+  weekOffset: number;
+}
+
+export const AppointmentsView = () => {
+  return (
+    <Suspense fallback={<LoaderSkeleton />}>
+      <ErrorBoundary fallback={<p>Error</p>}>
+        <AppointmentsSuspense weekOffset={0} />
+      </ErrorBoundary>
+    </Suspense>
+  );
+};
+
+function AppointmentsSuspense({ weekOffset }: Props) {
+  const [offset, setOffset] = useState(weekOffset);
 
   const [appointments] =
     trpc.appointments.getAppointmentsForWeek.useSuspenseQuery({
-      offset: weekOffset,
+      offset: offset,
     });
 
-  const startOfWeek = dayjs()
-    .isoWeekday(1)
-    .add(weekOffset, "week")
-    .startOf("day");
-  const endOfWeek = dayjs().isoWeekday(7).add(weekOffset, "week").endOf("day");
+  const startOfWeek = dayjs().isoWeekday(1).add(offset, "week").startOf("day");
+  const endOfWeek = dayjs().isoWeekday(7).add(offset, "week").endOf("day");
 
   return (
     <Container px={0} fluid>
@@ -42,29 +55,23 @@ export default function AppointmentsView() {
             <Group justify="space-between">
               <Title order={4}>Appointments</Title>
               <Group>
-                {weekOffset != 0 && (
+                {offset != 0 && (
                   <Button
                     variant="light"
-                    onClick={() => setWeekOffset(0)}
+                    onClick={() => setOffset(0)}
                     color="cyan"
                   >
                     Current Week
                   </Button>
                 )}
-                <Button
-                  variant="light"
-                  onClick={() => setWeekOffset(weekOffset - 1)}
-                >
+                <Button variant="light" onClick={() => setOffset(offset - 1)}>
                   Previous Week
                 </Button>
                 <Text>
                   {startOfWeek.format("MMM D, YYYY")} -{" "}
                   {endOfWeek.format("MMM D, YYYY")}
                 </Text>
-                <Button
-                  variant="light"
-                  onClick={() => setWeekOffset(weekOffset + 1)}
-                >
+                <Button variant="light" onClick={() => setOffset(offset + 1)}>
                   Next Week
                 </Button>
               </Group>
