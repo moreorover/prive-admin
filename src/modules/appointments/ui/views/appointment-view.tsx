@@ -16,8 +16,8 @@ import { LoaderSkeleton } from "@/components/loader-skeleton";
 import dayjs from "dayjs";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
 import { AppointmentPersonnelPicker } from "@/modules/appointments/ui/components/appointment-personnel-picker";
-import PersonnelTable from "@/components/dashboard/appointments/PersonnelTable";
 import TransactionsTable from "@/components/dashboard/transactions/TransactionsTable";
+import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
 
 interface Props {
   appointmentId: string;
@@ -36,6 +36,11 @@ function AppointmentSuspense({ appointmentId }: Props) {
   const [appointment] = trpc.appointments.getOne.useSuspenseQuery({
     id: appointmentId,
   });
+
+  const [personnel] =
+    trpc.customers.getPersonnelByAppointmentId.useSuspenseQuery({
+      appointmentId,
+    });
 
   return (
     <Grid>
@@ -86,7 +91,10 @@ function AppointmentSuspense({ appointmentId }: Props) {
                 <Title order={4}>Personnel Involved</Title>
                 <AppointmentPersonnelPicker appointmentId={appointmentId} />
               </Group>
-              <PersonnelTable appointmentId={appointmentId} />
+              <PersonnelTable
+                appointmentId={appointmentId}
+                personnel={personnel}
+              />
             </Paper>
           </GridCol>
         </Grid>
