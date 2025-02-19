@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import prisma from "@/lib/prisma";
+import dayjs from "dayjs";
+import isoWeek from "dayjs/plugin/isoWeek";
+
+dayjs.extend(isoWeek);
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { appointmentSchema } from "@/lib/schemas";
@@ -51,5 +55,26 @@ export const appointmentsRouter = createTRPCRouter({
       const c = await prisma.personnelOnAppointments.createMany({ data });
 
       return c;
+    }),
+  getAppointmentsForWeek: protectedProcedure
+    .input(z.object({ offset: z.number().int() }))
+    .query(async ({ input, ctx }) => {
+      const { offset } = input;
+      const startOfWeek = dayjs()
+        .isoWeekday(1)
+        .add(offset, "week")
+        .startOf("day"); // Monday start
+      const endOfWeek = dayjs().isoWeekday(7).add(offset, "week").endOf("day"); // Sunday end
+
+      const appointments = await prisma.appointment.findMany({
+        where: {
+          startsAt: {
+            gte: startOfWeek.toDate(),
+            lte: endOfWeek.toDate(),
+          },
+        },
+      });
+
+      return appointments;
     }),
 });
