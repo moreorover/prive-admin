@@ -7,3 +7,6 @@ export type GetAppointmentsForWeek =
 
 export type GetPersonnelByAppointmentId =
   inferRouterOutputs<AppRouter>["customers"]["getPersonnelByAppointmentId"];
+
+export type GetTransactionByAppointmentId =
+  inferRouterOutputs<AppRouter>["transactions"]["getManyByAppointmentId"];
