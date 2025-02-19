@@ -3,11 +3,10 @@ import { TRPCError } from "@trpc/server";
 import prisma from "@/lib/prisma";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
-
-dayjs.extend(isoWeek);
-
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { appointmentSchema } from "@/lib/schemas";
+
+dayjs.extend(isoWeek);
 
 export const appointmentsRouter = createTRPCRouter({
   getOne: protectedProcedure
@@ -72,6 +71,9 @@ export const appointmentsRouter = createTRPCRouter({
             gte: startOfWeek.toDate(),
             lte: endOfWeek.toDate(),
           },
+        },
+        include: {
+          client: true,
         },
       });
 

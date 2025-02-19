@@ -5,19 +5,19 @@ import {
   Container,
   Grid,
   GridCol,
+  Group,
   Paper,
   Space,
-  Title,
-  Group,
   Text,
+  Title,
 } from "@mantine/core";
-import AppointmentsTable from "@/components/dashboard/appointments/AppointmentsTable";
 import { trpc } from "@/trpc/client";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
+import { AppointmentsTable } from "@/modules/appointments/ui/components/appointments-table";
 
 dayjs.extend(isoWeek);
 
