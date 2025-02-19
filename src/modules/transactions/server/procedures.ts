@@ -6,6 +6,15 @@ import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { transactionSchema } from "@/lib/schemas";
 
 export const transactionsRouter = createTRPCRouter({
+  getAll: protectedProcedure.query(async ({ ctx }) => {
+    const transactions = await prisma.transaction.findMany({
+      include: {
+        customer: true,
+      },
+    });
+
+    return transactions;
+  }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string().cuid2() }))
     .query(async ({ input, ctx }) => {

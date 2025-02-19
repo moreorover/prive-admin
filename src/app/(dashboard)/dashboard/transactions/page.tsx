@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getTransactions } from "@/data-access/transaction";
-import TransactionsPage from "@/components/dashboard/transactions/TransactionsPage";
+import { HydrateClient, trpc } from "@/trpc/server";
+import { TransactionsView } from "@/modules/transactions/ui/views/transactions-view";
 
 export default async function Page() {
   const session = await auth.api.getSession({
@@ -13,6 +13,11 @@ export default async function Page() {
     return redirect("/");
   }
 
-  const transactions = await getTransactions();
-  return <TransactionsPage transactions={transactions} />;
+  void trpc.transactions.getAll.prefetch();
+
+  return (
+    <HydrateClient>
+      <TransactionsView />
+    </HydrateClient>
+  );
 }
