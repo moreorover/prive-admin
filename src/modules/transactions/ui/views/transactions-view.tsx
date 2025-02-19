@@ -45,6 +45,7 @@ function TransactionsSuspense() {
               <MonzoUpload />
               <PayPalUpload />
               <Button
+                className="w-full lg:w-auto"
                 onClick={() => {
                   showNewTransactionDrawer({
                     isOpen: true,
