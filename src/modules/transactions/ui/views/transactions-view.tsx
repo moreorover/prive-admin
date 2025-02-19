@@ -13,11 +13,11 @@ import { trpc } from "@/trpc/client";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { MonzoUpload } from "@/components/dashboard/transactions/MonzoUpload";
-import { PayPalUpload } from "@/components/dashboard/transactions/PayPalUpload";
 import TransactionsTable from "@/modules/transactions/ui/components/transactions-table";
 import { useSetAtom } from "jotai/index";
 import { newTransactionDrawerAtom } from "@/lib/atoms";
+import { MonzoUpload } from "@/modules/transactions/ui/components/monzo-upload";
+import { PayPalUpload } from "@/modules/transactions/ui/components/paypal-upload";
 
 export const TransactionsView = () => {
   return (
