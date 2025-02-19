@@ -29,7 +29,7 @@ export function AppointmentsTable({ appointments }: Props) {
   ));
 
   return (
-    <Paper shadow="xs" p="sm">
+    <Paper withBorder p="md" radius="md" shadow="sm">
       <Table striped highlightOnHover>
         <Table.Thead>
           <Table.Tr>

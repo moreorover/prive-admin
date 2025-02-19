@@ -2,12 +2,10 @@
 
 import {
   Button,
-  Container,
   Grid,
   GridCol,
   Group,
   Paper,
-  Space,
   Text,
   Title,
 } from "@mantine/core";
@@ -31,46 +29,43 @@ export const AppointmentsView = ({ weekOffset }: Props) => {
   const endOfWeek = dayjs().isoWeekday(7).add(offset, "week").endOf("day");
 
   return (
-    <Container px={0} fluid>
-      <Space h="lg" />
-      <Grid>
-        <GridCol span={12}>
-          <Paper withBorder p="md" radius="md" shadow="sm">
-            <Group justify="space-between">
-              <Title order={4}>Appointments</Title>
-              <Group>
-                {offset != 0 && (
-                  <Button
-                    variant="light"
-                    onClick={() => setOffset(0)}
-                    color="cyan"
-                  >
-                    Current Week
-                  </Button>
-                )}
-                <Button variant="light" onClick={() => setOffset(offset - 1)}>
-                  Previous Week
+    <Grid>
+      <GridCol span={12}>
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          <Group justify="space-between">
+            <Title order={4}>Appointments</Title>
+            <Group>
+              {offset != 0 && (
+                <Button
+                  variant="light"
+                  onClick={() => setOffset(0)}
+                  color="cyan"
+                >
+                  Current Week
                 </Button>
-                <Text>
-                  {startOfWeek.format("MMM D, YYYY")} -{" "}
-                  {endOfWeek.format("MMM D, YYYY")}
-                </Text>
-                <Button variant="light" onClick={() => setOffset(offset + 1)}>
-                  Next Week
-                </Button>
-              </Group>
+              )}
+              <Button variant="light" onClick={() => setOffset(offset - 1)}>
+                Previous Week
+              </Button>
+              <Text>
+                {startOfWeek.format("MMM D, YYYY")} -{" "}
+                {endOfWeek.format("MMM D, YYYY")}
+              </Text>
+              <Button variant="light" onClick={() => setOffset(offset + 1)}>
+                Next Week
+              </Button>
             </Group>
-          </Paper>
-        </GridCol>
-        <GridCol span={12}>
-          <Suspense fallback={<LoaderSkeleton />}>
-            <ErrorBoundary fallback={<p>Error</p>}>
-              <AppointmentsSuspense weekOffset={offset} />
-            </ErrorBoundary>
-          </Suspense>
-        </GridCol>
-      </Grid>
-    </Container>
+          </Group>
+        </Paper>
+      </GridCol>
+      <GridCol span={12}>
+        <Suspense fallback={<LoaderSkeleton />}>
+          <ErrorBoundary fallback={<p>Error</p>}>
+            <AppointmentsSuspense weekOffset={offset} />
+          </ErrorBoundary>
+        </Suspense>
+      </GridCol>
+    </Grid>
   );
 };
 
@@ -85,7 +80,7 @@ function AppointmentsSuspense({ weekOffset }: Props) {
       {appointments.length > 0 ? (
         <AppointmentsTable appointments={appointments} />
       ) : (
-        <Paper shadow="xs" p="xl">
+        <Paper withBorder p="md" radius="md" shadow="sm">
           <Text c="gray">No appointments found for this week.</Text>
         </Paper>
       )}
