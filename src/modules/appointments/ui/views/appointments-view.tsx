@@ -8,6 +8,8 @@ import {
   Paper,
   Space,
   Title,
+  Group,
+  Text,
 } from "@mantine/core";
 import AppointmentsTable from "@/components/dashboard/appointments/AppointmentsTable";
 import { trpc } from "@/trpc/client";
@@ -17,9 +19,7 @@ import { useState } from "react";
 
 dayjs.extend(isoWeek);
 
-interface Props {}
-
-export default function AppointmentsView({}: Props) {
+export default function AppointmentsView() {
   const [weekOffset, setWeekOffset] = useState(0);
 
   const [appointments] =
@@ -30,31 +30,48 @@ export default function AppointmentsView({}: Props) {
   const startOfWeek = dayjs()
     .isoWeekday(1)
     .add(weekOffset, "week")
-    .startOf("day"); // Monday start
-  const endOfWeek = dayjs().isoWeekday(7).add(weekOffset, "week").endOf("day"); // Sunday end
+    .startOf("day");
+  const endOfWeek = dayjs().isoWeekday(7).add(weekOffset, "week").endOf("day");
 
   return (
-    <Container px={0} fluid={true}>
+    <Container px={0} fluid>
       <Space h="lg" />
       <Grid>
-        <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
-          <Paper
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              width: "100%",
-            }}
-          >
-            <Title order={4}>Appointments</Title>
-            <div>
-              <Button onClick={() => setWeekOffset(weekOffset - 1)}>-1</Button>
-              <p>{startOfWeek.format("YYYY-MM-DD HH:mm:ss")}</p>
-              <p>{endOfWeek.format("YYYY-MM-DD HH:mm:ss")}</p>
-              <Button onClick={() => setWeekOffset(weekOffset + 1)}>+1</Button>
-            </div>
+        <GridCol span={12}>
+          <Paper withBorder p="md" radius="md" shadow="sm">
+            <Group justify="space-between">
+              <Title order={4}>Appointments</Title>
+              <Group>
+                {weekOffset != 0 && (
+                  <Button
+                    variant="light"
+                    onClick={() => setWeekOffset(0)}
+                    color="cyan"
+                  >
+                    Current Week
+                  </Button>
+                )}
+                <Button
+                  variant="light"
+                  onClick={() => setWeekOffset(weekOffset - 1)}
+                >
+                  Previous Week
+                </Button>
+                <Text>
+                  {startOfWeek.format("MMM D, YYYY")} -{" "}
+                  {endOfWeek.format("MMM D, YYYY")}
+                </Text>
+                <Button
+                  variant="light"
+                  onClick={() => setWeekOffset(weekOffset + 1)}
+                >
+                  Next Week
+                </Button>
+              </Group>
+            </Group>
           </Paper>
         </GridCol>
-        <GridCol span={{ sm: 12, md: 12, lg: 12 }}>
+        <GridCol span={12}>
           <AppointmentsTable appointments={appointments} />
         </GridCol>
       </Grid>
