@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { AppointmentPage } from "@/components/dashboard/appointments/AppointmentPage";
 import { HydrateClient, trpc } from "@/trpc/server";
+import { AppointmentView } from "@/modules/appointments/ui/views/appointment-view";
 
 type Props = {
   params: Promise<{ appointmentId: string }>;
@@ -36,7 +36,7 @@ export default async function Page({ params }: Props) {
 
   return (
     <HydrateClient>
-      <AppointmentPage appointmentId={appointmentId} />
+      <AppointmentView appointmentId={appointmentId} />
     </HydrateClient>
   );
 }

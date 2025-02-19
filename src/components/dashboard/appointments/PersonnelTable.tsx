@@ -1,6 +1,6 @@
 "use client";
 
-import { Table, Paper } from "@mantine/core";
+import { Table } from "@mantine/core";
 import { trpc } from "@/trpc/client";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
 
@@ -15,12 +15,7 @@ export default function PersonnelTable({ appointmentId }: Props) {
     });
 
   const rows = personnel.map((customer) => (
-    <Table.Tr
-      key={customer.id}
-      // onClick={() => {
-      //   router.push(`/dashboard/customers/${customer.id}`);
-      // }}
-    >
+    <Table.Tr key={customer.id}>
       <Table.Td>{customer.name}</Table.Td>
       <Table.Td>
         <AppointmentTransactionMenu
@@ -31,16 +26,14 @@ export default function PersonnelTable({ appointmentId }: Props) {
     </Table.Tr>
   ));
   return (
-    <Paper shadow="xs" p="sm">
-      <Table striped highlightOnHover>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Name</Table.Th>
-            <Table.Th></Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
-      </Table>
-    </Paper>
+    <Table striped highlightOnHover>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>Name</Table.Th>
+          <Table.Th></Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>{rows}</Table.Tbody>
+    </Table>
   );
 }

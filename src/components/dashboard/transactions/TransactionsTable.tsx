@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Table,
-  Text,
-  Badge,
-  ScrollArea,
-  Paper,
-  Menu,
-  Button,
-} from "@mantine/core";
+import { Badge, Button, Menu, ScrollArea, Table, Text } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/trpc/client";
 import { notifications } from "@mantine/notifications";
@@ -129,20 +121,18 @@ export default function TransactionsTable({ appointmentId }: Props) {
 
   return (
     <ScrollArea>
-      <Paper shadow="sm" radius="md" withBorder>
-        <Table striped highlightOnHover>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Person Name</Table.Th>
-              <Table.Th>Transaction Name</Table.Th>
-              <Table.Th>Type</Table.Th>
-              <Table.Th>Amount</Table.Th>
-              <Table.Th />
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>{rows}</Table.Tbody>
-        </Table>
-      </Paper>
+      <Table striped highlightOnHover>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Person Name</Table.Th>
+            <Table.Th>Transaction Name</Table.Th>
+            <Table.Th>Type</Table.Th>
+            <Table.Th>Amount</Table.Th>
+            <Table.Th />
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>{rows}</Table.Tbody>
+      </Table>
     </ScrollArea>
   );
 }
