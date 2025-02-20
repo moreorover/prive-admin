@@ -17,11 +17,11 @@ type Props = {
   disabled: boolean;
 };
 
-export default function TransactionForm({
+export const TransactionForm = ({
   transaction,
   onSubmitAction,
   disabled,
-}: Props) {
+}: Props) => {
   const form = useForm({
     mode: "uncontrolled",
     initialValues: transaction,
@@ -62,4 +62,4 @@ export default function TransactionForm({
       </Button>
     </form>
   );
-}
+};
