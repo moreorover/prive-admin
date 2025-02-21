@@ -149,4 +149,36 @@ export const transactionsRouter = createTRPCRouter({
 
       return c;
     }),
+  delete: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().cuid2(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { id } = input;
+
+      const transaction = await prisma.transaction.findUnique({
+        where: { id },
+      });
+
+      if (!transaction) {
+        new TRPCError({ code: "NOT_FOUND" });
+        return;
+      }
+
+      if (transaction.type !== "CASH") {
+        new TRPCError({
+          code: "CONFLICT",
+          message: "Can not delete transaction that is no type of CASH!",
+        });
+        return;
+      }
+
+      const c = await prisma.transaction.delete({
+        where: { id },
+      });
+
+      return c;
+    }),
 });

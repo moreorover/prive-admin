@@ -64,7 +64,12 @@ function TransactionsSuspense() {
       <GridCol span={12}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           {transactions.length > 0 ? (
-            <TransactionsTable transactions={transactions} />
+            <TransactionsTable
+              transactions={transactions}
+              onUpdateAction={() => {
+                utils.transactions.getAll.invalidate();
+              }}
+            />
           ) : (
             <Text c="gray">No transactions found.</Text>
           )}
