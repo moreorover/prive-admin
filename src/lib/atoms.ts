@@ -113,7 +113,8 @@ export const editTransactionDrawerAtom = atom<{
 export const newAppointmentDrawerAtom = atom<{
   isOpen: boolean;
   clientId: string;
-}>({ isOpen: false, clientId: "" });
+  onCreated: () => void;
+}>({ isOpen: false, clientId: "", onCreated: () => {} });
 
 export const editAppointmentDrawerAtom = atom<{
   isOpen: boolean;

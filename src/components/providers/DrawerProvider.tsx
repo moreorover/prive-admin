@@ -10,9 +10,9 @@ import NewOrderDrawer from "@/components/dashboard/orders/NewOrderDrawer";
 import EditOrderDrawer from "@/components/dashboard/orders/EditOrderDrawer";
 import NewOrderItemDrawer from "@/components/dashboard/orders/NewOrderItemDrawer";
 import EditOrderItemDrawer from "@/components/dashboard/orders/EditOrderItemDrawer";
-import NewAppointmentDrawer from "@/components/dashboard/appointments/NewAppointmentDrawer";
-import EditAppointmentDrawer from "@/components/dashboard/appointments/EditAppointmentDrawer";
 import { NewTransactionDrawer } from "@/modules/transactions/ui/components/new-transaction-drawer";
+import { NewAppointmentDrawer } from "@/modules/appointments/ui/components/new-appointment-drawer";
+import { EditAppointmentDrawer } from "@/modules/appointments/ui/components/edit-appointment-drawer";
 
 export default function DrawerProvider() {
   return (

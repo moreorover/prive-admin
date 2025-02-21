@@ -18,6 +18,8 @@ import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components
 import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
 import TransactionsTable from "@/modules/appointments/ui/components/transactions-table";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
+import { editAppointmentDrawerAtom } from "@/lib/atoms";
+import { useSetAtom } from "jotai";
 
 interface Props {
   appointmentId: string;
@@ -59,6 +61,8 @@ function AppointmentSuspense({ appointmentId }: Props) {
       includeCustomer: false,
     });
 
+  const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
+
   return (
     <Grid>
       <GridCol span={12}>
@@ -66,7 +70,13 @@ function AppointmentSuspense({ appointmentId }: Props) {
           <Group justify="space-between">
             <Title order={4}>{appointment.name}</Title>
             <Group>
-              <Button disabled>Edit</Button>
+              <Button
+                onClick={() => {
+                  showEditAppointmentDrawer({ isOpen: true, appointment });
+                }}
+              >
+                Edit
+              </Button>
             </Group>
           </Group>
         </Paper>

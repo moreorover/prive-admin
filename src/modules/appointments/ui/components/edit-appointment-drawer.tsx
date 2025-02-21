@@ -1,6 +1,5 @@
 "use client";
 
-import AppointmentForm from "@/components/dashboard/appointments/AppointmentForm";
 import { Appointment } from "@/lib/schemas";
 import { notifications } from "@mantine/notifications";
 import { Drawer } from "@mantine/core";
@@ -8,8 +7,9 @@ import { useAtom } from "jotai";
 import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { trpc } from "@/trpc/client";
 import dayjs from "dayjs";
+import { AppointmentForm } from "@/modules/appointments/ui/components/appointment-form";
 
-export default function EditAppointmentDrawer() {
+export const EditAppointmentDrawer = () => {
   const [value, setOpen] = useAtom(editAppointmentDrawerAtom);
 
   const utils = trpc.useUtils();
@@ -65,4 +65,4 @@ export default function EditAppointmentDrawer() {
       />
     </Drawer>
   );
-}
+};

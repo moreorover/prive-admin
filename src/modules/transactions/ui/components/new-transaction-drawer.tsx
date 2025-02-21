@@ -26,7 +26,6 @@ export const NewTransactionDrawer = () => {
         customerId: null,
         onCreated: () => {},
       });
-      close();
     },
     onError: () => {
       notifications.show({

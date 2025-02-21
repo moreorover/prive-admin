@@ -2,11 +2,7 @@
 
 import { useForm } from "@mantine/form";
 import { IconTrash } from "@tabler/icons-react";
-import {
-  Appointment,
-  appointmentSchema,
-  type ActionResponse,
-} from "@/lib/schemas";
+import { Appointment, appointmentSchema } from "@/lib/schemas";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { Button, Textarea, TextInput } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
@@ -17,11 +13,11 @@ type Props = {
   onDelete?: () => void;
 };
 
-export default function AppointmentForm({
+export const AppointmentForm = ({
   appointment,
   onSubmitAction,
   onDelete,
-}: Props) {
+}: Props) => {
   const form = useForm({
     mode: "uncontrolled",
     initialValues: appointment,
@@ -74,4 +70,4 @@ export default function AppointmentForm({
       )}
     </form>
   );
-}
+};

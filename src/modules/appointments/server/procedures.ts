@@ -25,6 +25,21 @@ export const appointmentsRouter = createTRPCRouter({
 
       return appointment;
     }),
+  create: protectedProcedure
+    .input(z.object({ appointment: appointmentSchema, clientId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { appointment, clientId } = input;
+
+      const c = await prisma.appointment.create({
+        data: {
+          name: appointment.name,
+          notes: appointment.notes,
+          startsAt: appointment.startsAt,
+          clientId,
+        },
+      });
+      return c;
+    }),
   update: protectedProcedure
     .input(z.object({ appointment: appointmentSchema }))
     .mutation(async ({ input, ctx }) => {
