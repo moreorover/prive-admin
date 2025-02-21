@@ -41,7 +41,7 @@ export const AppointmentsView = ({ weekOffset }: Props) => {
               {weekOffset != 0 && (
                 <Button
                   component={Link}
-                  href={"/dashboard/appointments?weekOffset=0"}
+                  href={"?weekOffset=0"}
                   variant="light"
                   color="cyan"
                 >
@@ -51,7 +51,7 @@ export const AppointmentsView = ({ weekOffset }: Props) => {
               <Button
                 variant="light"
                 component={Link}
-                href={"/dashboard/appointments?weekOffset=" + (weekOffset - 1)}
+                href={"?weekOffset=" + (weekOffset - 1)}
               >
                 Previous Week
               </Button>
@@ -62,7 +62,7 @@ export const AppointmentsView = ({ weekOffset }: Props) => {
               <Button
                 variant="light"
                 component={Link}
-                href={"/dashboard/appointments?weekOffset=" + (weekOffset + 2)}
+                href={"?weekOffset=" + (weekOffset + 1)}
               >
                 Next Week
               </Button>
