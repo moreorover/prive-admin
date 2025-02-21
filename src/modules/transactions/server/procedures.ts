@@ -152,7 +152,18 @@ export const transactionsRouter = createTRPCRouter({
   delete: protectedProcedure
     .input(
       z.object({
-        id: z.string().cuid2(),
+        id: z.string().refine(
+          (val) => {
+            if (!val) return true; // Allow undefined
+            // Check if it's a valid cuid2 or starts with "mm_"
+            return (
+              z.string().cuid2().safeParse(val).success ||
+              val.startsWith("mm_") ||
+              val.startsWith("pp_")
+            );
+          },
+          { message: "id must be a valid cuid2 or start with 'mm_'" },
+        ),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -163,16 +174,14 @@ export const transactionsRouter = createTRPCRouter({
       });
 
       if (!transaction) {
-        new TRPCError({ code: "NOT_FOUND" });
-        return;
+        throw new TRPCError({ code: "NOT_FOUND" });
       }
 
       if (transaction.type !== "CASH") {
-        new TRPCError({
+        throw new TRPCError({
           code: "CONFLICT",
           message: "Can not delete transaction that is no type of CASH!",
         });
-        return;
       }
 
       const c = await prisma.transaction.delete({

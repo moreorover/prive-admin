@@ -28,14 +28,14 @@ export default function TransactionsTable({
       notifications.show({
         color: "green",
         title: "Success!",
-        message: "Transaction unassigned.",
+        message: "Transaction deleted.",
       });
     },
-    onError: () => {
+    onError: (e) => {
       notifications.show({
         color: "red",
-        title: "Failed to unassign transaction",
-        message: "Please try again.",
+        title: "Failed to delete transaction",
+        message: e.message,
       });
     },
   });
