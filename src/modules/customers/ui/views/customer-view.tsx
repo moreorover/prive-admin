@@ -14,6 +14,8 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { AppointmentsTable } from "@/modules/customers/ui/components/appointments-table";
+import { useSetAtom } from "jotai";
+import { editCustomerDrawerAtom } from "@/lib/atoms";
 
 interface Props {
   customerId: string;
@@ -30,12 +32,14 @@ export const CustomerView = ({ customerId }: Props) => {
 };
 
 function CustomerSuspense({ customerId }: Props) {
+  const utils = trpc.useUtils();
   const [customer] = trpc.customers.getOne.useSuspenseQuery({ id: customerId });
   const [appointments] =
     trpc.appointments.getAppointmentsByCustomerId.useSuspenseQuery({
       customerId,
     });
   const [orders] = [[]];
+  const showUpdateCustomerDrawer = useSetAtom(editCustomerDrawerAtom);
 
   return (
     <Grid>
@@ -44,7 +48,19 @@ function CustomerSuspense({ customerId }: Props) {
           <Group justify="space-between">
             <Title order={4}>{customer.name}</Title>
             <Group>
-              <Button disabled>Edit</Button>
+              <Button
+                onClick={() => {
+                  showUpdateCustomerDrawer({
+                    isOpen: true,
+                    customer,
+                    onCreated: () => {
+                      utils.customers.getOne.invalidate({ id: customerId });
+                    },
+                  });
+                }}
+              >
+                Edit
+              </Button>
             </Group>
           </Group>
         </Paper>

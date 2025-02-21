@@ -1,7 +1,5 @@
 "use client";
 
-import NewCustomerDrawer from "@/components/dashboard/customers/NewCustomerDrawer";
-import EditCustomerDrawer from "@/components/dashboard/customers/EditCustomerDrawer";
 import NewProductDrawer from "@/components/dashboard/products/NewProductDrawer";
 import EditProductDrawer from "@/components/dashboard/products/EditProductDrawer";
 import NewProductVariantDrawer from "@/components/dashboard/products/NewProductVariantDrawer";
@@ -13,6 +11,8 @@ import EditOrderItemDrawer from "@/components/dashboard/orders/EditOrderItemDraw
 import { NewTransactionDrawer } from "@/modules/transactions/ui/components/new-transaction-drawer";
 import { NewAppointmentDrawer } from "@/modules/appointments/ui/components/new-appointment-drawer";
 import { EditAppointmentDrawer } from "@/modules/appointments/ui/components/edit-appointment-drawer";
+import { NewCustomerDrawer } from "@/modules/customers/ui/components/new-customer-drawer";
+import { EditCustomerDrawer } from "@/modules/customers/ui/components/edit-customer-drawer";
 
 export default function DrawerProvider() {
   return (

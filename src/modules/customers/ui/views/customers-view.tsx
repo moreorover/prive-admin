@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Button,
   Grid,
   GridCol,
   Group,
@@ -14,6 +15,8 @@ import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { CustomersTable } from "@/modules/customers/ui/components/customers-table";
+import { useSetAtom } from "jotai";
+import { newCustomerDrawerAtom } from "@/lib/atoms";
 
 export const CustomersView = () => {
   return (
@@ -26,6 +29,8 @@ export const CustomersView = () => {
 };
 
 function CustomersSuspense() {
+  const utils = trpc.useUtils();
+  const showNewCustomerDrawer = useSetAtom(newCustomerDrawerAtom);
   const [customers] = trpc.customers.getAll.useSuspenseQuery();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,6 +56,18 @@ function CustomersSuspense() {
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.currentTarget.value)}
               />
+              <Button
+                onClick={() => {
+                  showNewCustomerDrawer({
+                    isOpen: true,
+                    onCreated: () => {
+                      utils.customers.getAll.invalidate();
+                    },
+                  });
+                }}
+              >
+                New
+              </Button>
             </Group>
           </Group>
         </Paper>

@@ -3,11 +3,35 @@ import { TRPCError } from "@trpc/server";
 import prisma from "@/lib/prisma";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { customerSchema } from "@/lib/schemas";
 
 export const customersRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
     return prisma.customer.findMany();
   }),
+  create: protectedProcedure
+    .input(z.object({ customer: customerSchema }))
+    .mutation(async ({ input, ctx }) => {
+      const { customer } = input;
+
+      const c = await prisma.customer.create({
+        data: { name: customer.name },
+      });
+
+      return c;
+    }),
+  update: protectedProcedure
+    .input(z.object({ customer: customerSchema }))
+    .mutation(async ({ input, ctx }) => {
+      const { customer } = input;
+
+      const c = await prisma.customer.update({
+        data: { name: customer.name },
+        where: { id: customer.id },
+      });
+
+      return c;
+    }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string().cuid2() }))
     .query(async ({ input, ctx }) => {

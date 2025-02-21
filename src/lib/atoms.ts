@@ -12,12 +12,14 @@ import dayjs from "dayjs";
 
 export const newCustomerDrawerAtom = atom<{
   isOpen: boolean;
-}>({ isOpen: false });
+  onCreated: () => void;
+}>({ isOpen: false, onCreated: () => {} });
 
 export const editCustomerDrawerAtom = atom<{
   isOpen: boolean;
   customer: Customer;
-}>({ isOpen: false, customer: { name: "" } });
+  onCreated: () => void;
+}>({ isOpen: false, customer: { name: "" }, onCreated: () => {} });
 
 export const newProductDrawerAtom = atom<{
   isOpen: boolean;

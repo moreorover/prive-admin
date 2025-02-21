@@ -1,34 +1,37 @@
 "use client";
 
-import CustomerForm from "@/components/dashboard/customers/CustomerForm";
 import { Customer } from "@/lib/schemas";
 import { notifications } from "@mantine/notifications";
-import { createCustomer } from "@/data-access/customer";
 import { Drawer } from "@mantine/core";
 import { useAtom } from "jotai";
 import { newCustomerDrawerAtom } from "@/lib/atoms";
+import { CustomerForm } from "@/modules/customers/ui/components/customer-form";
+import { trpc } from "@/trpc/client";
 
-export default function NewCustomerDrawer() {
+export const NewCustomerDrawer = () => {
   const [value, setOpen] = useAtom(newCustomerDrawerAtom);
 
-  async function onSubmit(data: Customer) {
-    const response = await createCustomer(data);
-
-    if (response.type === "ERROR") {
-      notifications.show({
-        color: "red",
-        title: "Failed to create Customer",
-        message: "Please try again.",
-      });
-    } else {
-      setOpen({ isOpen: false });
+  const newCustomer = trpc.customers.create.useMutation({
+    onSuccess: () => {
       notifications.show({
         color: "green",
         title: "Success!",
         message: "Customer created.",
       });
-    }
-    return response;
+      setOpen({ isOpen: false, onCreated: () => {} });
+      value.onCreated();
+    },
+    onError: () => {
+      notifications.show({
+        color: "red",
+        title: "Failed to create Customer",
+        message: "Please try again.",
+      });
+    },
+  });
+
+  async function onSubmit(data: Customer) {
+    newCustomer.mutate({ customer: data });
   }
 
   function onDelete() {
@@ -38,7 +41,7 @@ export default function NewCustomerDrawer() {
   return (
     <Drawer
       opened={value.isOpen}
-      onClose={() => setOpen({ isOpen: false })}
+      onClose={() => setOpen({ isOpen: false, onCreated: () => {} })}
       position="right"
       title="Create Customer"
     >
@@ -49,4 +52,4 @@ export default function NewCustomerDrawer() {
       />
     </Drawer>
   );
-}
+};

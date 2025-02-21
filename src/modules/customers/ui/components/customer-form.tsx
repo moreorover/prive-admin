@@ -8,15 +8,11 @@ import { Button, TextInput } from "@mantine/core";
 
 type Props = {
   customer: Customer;
-  onSubmitAction: (values: Customer) => Promise<ActionResponse>;
+  onSubmitAction: (values: Customer) => void;
   onDelete?: () => void;
 };
 
-export default function CustomerForm({
-  customer,
-  onSubmitAction,
-  onDelete,
-}: Props) {
+export const CustomerForm = ({ customer, onSubmitAction, onDelete }: Props) => {
   const form = useForm({
     mode: "uncontrolled",
     initialValues: customer,
@@ -56,4 +52,4 @@ export default function CustomerForm({
       )}
     </form>
   );
-}
+};
