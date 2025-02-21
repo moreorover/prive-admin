@@ -64,6 +64,18 @@ export const transactionsRouter = createTRPCRouter({
 
       return c;
     }),
+  createTransactions: protectedProcedure
+    .input(z.object({ transactions: z.array(transactionSchema) }))
+    .mutation(async ({ input, ctx }) => {
+      const { transactions } = input;
+
+      const c = await prisma.transaction.createMany({
+        data: transactions,
+        skipDuplicates: true,
+      });
+
+      return c;
+    }),
   linkTransactionsWithAppointment: protectedProcedure
     .input(
       z.object({

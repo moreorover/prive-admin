@@ -2,9 +2,9 @@
 
 import React from "react";
 import { Transaction } from "@/lib/schemas";
-import { createTransactions } from "@/data-access/transaction";
 import { notifications } from "@mantine/notifications";
-import { CsvUploadButton } from "@/modules/transactions/ui/components/csv-upload-button"; // adjust the import path as needed
+import { CsvUploadButton } from "@/modules/transactions/ui/components/csv-upload-button";
+import { trpc } from "@/trpc/client"; // adjust the import path as needed
 
 // Define the type for CSV upload results.
 interface CSVUploadResults {
@@ -209,22 +209,28 @@ export const MonzoUpload = () => {
       customerId: null,
     }));
 
-    const response = await createTransactions(transactions);
+    createTransactions.mutate({ transactions });
+  };
 
-    if (response.type === "ERROR") {
-      notifications.show({
-        color: "red",
-        title: "Failed to create Transactions",
-        message: response.message,
-      });
-    } else {
+  const utils = trpc.useUtils();
+
+  const createTransactions = trpc.transactions.createTransactions.useMutation({
+    onSuccess: () => {
       notifications.show({
         color: "green",
         title: "Success!",
-        message: response.message,
+        message: "Transactions created!",
       });
-    }
-  };
+      utils.transactions.getAll.invalidate();
+    },
+    onError: () => {
+      notifications.show({
+        color: "red",
+        title: "Failed to create Transactions",
+        message: "Please try again.",
+      });
+    },
+  });
 
   return <CsvUploadButton text="Monzo" onUploadAction={handleUploadAction} />;
 };
