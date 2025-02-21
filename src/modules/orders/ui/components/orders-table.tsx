@@ -1,8 +1,9 @@
 "use client";
 
-import { ScrollArea, Table, Text } from "@mantine/core";
+import { Button, ScrollArea, Table, Text } from "@mantine/core";
 import { GetAllOrders } from "@/modules/orders/types";
 import dayjs from "dayjs";
+import Link from "next/link";
 
 interface Props {
   orders: GetAllOrders;
@@ -23,7 +24,11 @@ export const OrdersTable = ({ orders }: Props) => {
       <Table.Td>
         <Text>{dayjs(order.placedAt).format("DD MMM YYYY HH:mm")}</Text>
       </Table.Td>
-      <Table.Td></Table.Td>
+      <Table.Td>
+        <Button component={Link} href={`/dashboard/orders/${order.id}`}>
+          View
+        </Button>
+      </Table.Td>
     </Table.Tr>
   ));
 

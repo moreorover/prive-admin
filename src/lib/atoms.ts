@@ -52,6 +52,7 @@ export const newOrderDrawerAtom = atom<{
 export const editOrderDrawerAtom = atom<{
   isOpen: boolean;
   order: Order;
+  onUpdated: () => void;
 }>({
   isOpen: false,
   order: {
@@ -60,6 +61,7 @@ export const editOrderDrawerAtom = atom<{
     status: "PENDING",
     placedAt: dayjs().toDate(),
   },
+  onUpdated: () => {},
 });
 
 export const newOrderItemDrawerAtom = atom<{

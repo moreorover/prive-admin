@@ -93,6 +93,7 @@ export const ordersRouter = createTRPCRouter({
 
       const orders = await prisma.order.findMany({
         where: { customerId },
+        include: { customer: true },
       });
 
       return orders;

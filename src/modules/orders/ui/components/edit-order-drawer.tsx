@@ -1,42 +1,47 @@
 "use client";
 
-import OrderForm from "@/components/dashboard/orders/OrderForm";
 import { Order } from "@/lib/schemas";
 import { notifications } from "@mantine/notifications";
-import { updateOrder } from "@/data-access/order";
 import { Drawer } from "@mantine/core";
 import { useAtom } from "jotai";
 import { editOrderDrawerAtom } from "@/lib/atoms";
 import dayjs from "dayjs";
+import { OrderForm } from "@/modules/orders/ui/components/order-form";
+import { trpc } from "@/trpc/client";
 
-export default function EditOrderDrawer() {
+export const EditOrderDrawer = () => {
   const [value, setOpen] = useAtom(editOrderDrawerAtom);
 
-  async function onSubmit(data: Order) {
-    const response = await updateOrder({ ...data, id: value.order.id });
-
-    if (response.type === "ERROR") {
-      notifications.show({
-        color: "red",
-        title: "Failed to update Order",
-        message: "Please try again.",
-      });
-    } else {
+  const updateOrder = trpc.orders.update.useMutation({
+    onSuccess: () => {
+      value.onUpdated();
       setOpen({
         isOpen: false,
         order: {
           customerId: "",
           status: "PENDING",
+          type: "PURCHASE",
           placedAt: dayjs().toDate(),
         },
+        onUpdated: () => {},
       });
       notifications.show({
         color: "green",
         title: "Success!",
         message: "Order updated.",
       });
-    }
-    return response;
+    },
+    onError: () => {
+      notifications.show({
+        color: "red",
+        title: "Failed to update Order",
+        message: "Please try again.",
+      });
+    },
+  });
+
+  async function onSubmit(data: Order) {
+    updateOrder.mutate({ order: data });
   }
 
   return (
@@ -48,8 +53,10 @@ export default function EditOrderDrawer() {
           order: {
             customerId: "",
             status: "PENDING",
+            type: "PURCHASE",
             placedAt: dayjs().toDate(),
           },
+          onUpdated: () => {},
         })
       }
       position="right"
@@ -58,4 +65,4 @@ export default function EditOrderDrawer() {
       <OrderForm onSubmitAction={onSubmit} order={{ ...value.order }} />
     </Drawer>
   );
-}
+};

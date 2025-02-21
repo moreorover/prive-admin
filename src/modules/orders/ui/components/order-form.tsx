@@ -1,17 +1,17 @@
 "use client";
 
 import { useForm } from "@mantine/form";
-import { Order, orderSchema, type ActionResponse } from "@/lib/schemas";
+import { Order, orderSchema } from "@/lib/schemas";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { Button, Select } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 
 type Props = {
   order: Order;
-  onSubmitAction: (values: Order) => Promise<ActionResponse>;
+  onSubmitAction: (values: Order) => void;
 };
 
-export default function OrderForm({ order, onSubmitAction }: Props) {
+export const OrderForm = ({ order, onSubmitAction }: Props) => {
   const form = useForm({
     mode: "uncontrolled",
     initialValues: order,
@@ -19,7 +19,7 @@ export default function OrderForm({ order, onSubmitAction }: Props) {
   });
 
   async function handleSubmit(values: typeof form.values) {
-    await onSubmitAction(values);
+    onSubmitAction(values);
   }
 
   return (
@@ -43,4 +43,4 @@ export default function OrderForm({ order, onSubmitAction }: Props) {
       </Button>
     </form>
   );
-}
+};

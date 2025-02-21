@@ -15,7 +15,8 @@ import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { AppointmentsTable } from "@/modules/customers/ui/components/appointments-table";
 import { useSetAtom } from "jotai";
-import { editCustomerDrawerAtom } from "@/lib/atoms";
+import { editCustomerDrawerAtom, newOrderDrawerAtom } from "@/lib/atoms";
+import { OrdersTable } from "@/modules/orders/ui/components/orders-table";
 
 interface Props {
   customerId: string;
@@ -38,8 +39,11 @@ function CustomerSuspense({ customerId }: Props) {
     trpc.appointments.getAppointmentsByCustomerId.useSuspenseQuery({
       customerId,
     });
-  const [orders] = [[]];
+  const [orders] = trpc.orders.getOrdersByCustomerId.useSuspenseQuery({
+    customerId,
+  });
   const showUpdateCustomerDrawer = useSetAtom(editCustomerDrawerAtom);
+  const showCreateOrderDrawer = useSetAtom(newOrderDrawerAtom);
 
   return (
     <Grid>
@@ -83,15 +87,31 @@ function CustomerSuspense({ customerId }: Props) {
         </Paper>
       </GridCol>
       <GridCol span={12}>
-        {orders.length > 0 ? (
-          <Paper withBorder p="md" radius="md" shadow="sm">
-            <Text c="gray">Orders Table here to be...</Text>
-          </Paper>
-        ) : (
-          <Paper withBorder p="md" radius="md" shadow="sm">
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          <Group justify="space-between">
+            <Title order={4}>Orders</Title>
+            <Group>
+              <Button
+                onClick={() => {
+                  showCreateOrderDrawer({
+                    isOpen: true,
+                    customerId,
+                    onCreated: () => {
+                      utils.customers.getOne.invalidate({ id: customerId });
+                    },
+                  });
+                }}
+              >
+                New
+              </Button>
+            </Group>
+          </Group>
+          {orders.length > 0 ? (
+            <OrdersTable orders={orders} />
+          ) : (
             <Text c="gray">No Orders found.</Text>
-          </Paper>
-        )}
+          )}
+        </Paper>
       </GridCol>
     </Grid>
   );

@@ -1,41 +1,46 @@
 "use client";
 
-import OrderForm from "@/components/dashboard/orders/OrderForm";
 import { Order } from "@/lib/schemas";
 import { notifications } from "@mantine/notifications";
-import { createOrder } from "@/data-access/order";
 import { Drawer } from "@mantine/core";
 import { useAtom } from "jotai";
 import { newOrderDrawerAtom } from "@/lib/atoms";
 import dayjs from "dayjs";
+import { trpc } from "@/trpc/client";
+import { OrderForm } from "@/modules/orders/ui/components/order-form";
 
-export default function NewOrderDrawer() {
+export const NewOrderDrawer = () => {
   const [value, setOpen] = useAtom(newOrderDrawerAtom);
 
-  async function onSubmit(data: Order) {
-    const response = await createOrder(data);
-
-    if (response.type === "ERROR") {
-      notifications.show({
-        color: "red",
-        title: "Failed to create Order",
-        message: "Please try again.",
-      });
-    } else {
-      setOpen({ isOpen: false, customerId: "" });
+  const newOrder = trpc.orders.create.useMutation({
+    onSuccess: () => {
+      value.onCreated();
+      setOpen({ isOpen: false, customerId: "", onCreated: () => {} });
       notifications.show({
         color: "green",
         title: "Success!",
         message: "Order created.",
       });
-    }
-    return response;
+    },
+    onError: () => {
+      notifications.show({
+        color: "red",
+        title: "Failed to create Order",
+        message: "Please try again.",
+      });
+    },
+  });
+
+  async function onSubmit(data: Order) {
+    newOrder.mutate({ order: data, customerId: value.customerId });
   }
 
   return (
     <Drawer
       opened={value.isOpen}
-      onClose={() => setOpen({ isOpen: false, customerId: "" })}
+      onClose={() =>
+        setOpen({ isOpen: false, customerId: "", onCreated: () => {} })
+      }
       position="right"
       title="Create Order"
     >
@@ -50,4 +55,4 @@ export default function NewOrderDrawer() {
       />
     </Drawer>
   );
-}
+};
