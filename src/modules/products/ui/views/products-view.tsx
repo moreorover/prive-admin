@@ -14,33 +14,34 @@ import { trpc } from "@/trpc/client";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { CustomersTable } from "@/modules/customers/ui/components/customers-table";
 import { useSetAtom } from "jotai";
-import { newCustomerDrawerAtom } from "@/lib/atoms";
+import { newProductDrawerAtom } from "@/lib/atoms";
+import { ProductsTable } from "@/modules/products/ui/components/products-table";
 
-export const CustomersView = () => {
+export const ProductsView = () => {
   return (
     <Suspense fallback={<LoaderSkeleton />}>
       <ErrorBoundary fallback={<p>Error</p>}>
-        <CustomersSuspense />
+        <ProductsSuspense />
       </ErrorBoundary>
     </Suspense>
   );
 };
 
-function CustomersSuspense() {
+function ProductsSuspense() {
   const utils = trpc.useUtils();
-  const showNewCustomerDrawer = useSetAtom(newCustomerDrawerAtom);
-  const [customers] = trpc.customers.getAll.useSuspenseQuery();
+  const showNewProductDrawer = useSetAtom(newProductDrawerAtom);
+  const [products] = trpc.products.getAll.useSuspenseQuery();
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredCustomers = customers.filter((customer) => {
+  const filteredProducts = products.filter((product) => {
     const searchLower = searchTerm.toLowerCase();
 
     return (
-      customer.name.toLowerCase().includes(searchLower) ||
-      customer.id.toLowerCase() === searchLower
+      product.name.toLowerCase().includes(searchLower) ||
+      product.description?.toLowerCase().includes(searchLower) ||
+      product.id.toLowerCase() === searchLower
     );
   });
 
@@ -49,7 +50,7 @@ function CustomersSuspense() {
       <GridCol span={12}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           <Group justify="space-between">
-            <Title order={4}>Customers</Title>
+            <Title order={4}>Products</Title>
             <Group>
               <TextInput
                 placeholder="Search..."
@@ -58,10 +59,10 @@ function CustomersSuspense() {
               />
               <Button
                 onClick={() => {
-                  showNewCustomerDrawer({
+                  showNewProductDrawer({
                     isOpen: true,
                     onCreated: () => {
-                      utils.customers.getAll.invalidate();
+                      utils.products.getAll.invalidate();
                     },
                   });
                 }}
@@ -74,10 +75,10 @@ function CustomersSuspense() {
       </GridCol>
       <GridCol span={12}>
         <Paper withBorder p="md" radius="md" shadow="sm">
-          {filteredCustomers.length > 0 ? (
-            <CustomersTable customers={filteredCustomers} />
+          {filteredProducts.length > 0 ? (
+            <ProductsTable products={filteredProducts} />
           ) : (
-            <Text c="gray">No customers found.</Text>
+            <Text c="gray">No products found.</Text>
           )}
         </Paper>
       </GridCol>

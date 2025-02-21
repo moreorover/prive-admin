@@ -1,19 +1,20 @@
 "use client";
 
 import { Button, Table } from "@mantine/core";
-import { GetAllCustomers } from "@/modules/customers/types";
+import { GetAllProducts } from "@/modules/products/types";
 import Link from "next/link";
 
 interface Props {
-  customers: GetAllCustomers;
+  products: GetAllProducts;
 }
 
-export function CustomersTable({ customers }: Props) {
-  const rows = customers.map((customer) => (
-    <Table.Tr key={customer.id}>
-      <Table.Td>{customer.name}</Table.Td>
+export const ProductsTable = ({ products }: Props) => {
+  const rows = products.map((product) => (
+    <Table.Tr key={product.id}>
+      <Table.Td>{product.name}</Table.Td>
+      <Table.Td>{product.description}</Table.Td>
       <Table.Td>
-        <Button component={Link} href={`/dashboard/customers/${customer.id}`}>
+        <Button component={Link} href={`/dashboard/products/${product.id}`}>
           View
         </Button>
       </Table.Td>
@@ -24,10 +25,11 @@ export function CustomersTable({ customers }: Props) {
       <Table.Thead>
         <Table.Tr>
           <Table.Th>Name</Table.Th>
+          <Table.Th>Description</Table.Th>
           <Table.Th></Table.Th>
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>{rows}</Table.Tbody>
     </Table>
   );
-}
+};

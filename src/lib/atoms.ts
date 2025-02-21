@@ -23,12 +23,18 @@ export const editCustomerDrawerAtom = atom<{
 
 export const newProductDrawerAtom = atom<{
   isOpen: boolean;
-}>({ isOpen: false });
+  onCreated: () => void;
+}>({ isOpen: false, onCreated: () => {} });
 
 export const editProductDrawerAtom = atom<{
   isOpen: boolean;
   product: Product;
-}>({ isOpen: false, product: { name: "", description: "" } });
+  onUpdated: () => void;
+}>({
+  isOpen: false,
+  product: { name: "", description: "" },
+  onUpdated: () => {},
+});
 
 export const newProductVariantDrawerAtom = atom<{
   isOpen: boolean;
