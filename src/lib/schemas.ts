@@ -28,7 +28,6 @@ export type Product = z.infer<typeof productSchema>;
 
 export const productVariantSchema = z.object({
   id: z.string().cuid2().optional(),
-  productId: z.string().cuid2(),
   size: z.string(),
   price: z.number(),
   stock: z.number(),

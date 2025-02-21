@@ -1,24 +1,20 @@
 "use client";
 
 import { useForm } from "@mantine/form";
-import {
-  ProductVariant,
-  productVariantSchema,
-  type ActionResponse,
-} from "@/lib/schemas";
+import { ProductVariant, productVariantSchema } from "@/lib/schemas";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { Button, Stack, NumberInput, TextInput } from "@mantine/core";
 
 type Props = {
   productVariant: ProductVariant;
-  onSubmitAction: (values: ProductVariant) => Promise<ActionResponse>;
+  onSubmitAction: (values: ProductVariant) => void;
   onDelete?: () => void;
 };
 
-export default function ProductVariantForm({
+export const ProductVariantForm = ({
   productVariant,
   onSubmitAction,
-}: Props) {
+}: Props) => {
   const form = useForm({
     mode: "uncontrolled",
     initialValues: productVariant,
@@ -54,4 +50,4 @@ export default function ProductVariantForm({
       </Stack>
     </form>
   );
-}
+};

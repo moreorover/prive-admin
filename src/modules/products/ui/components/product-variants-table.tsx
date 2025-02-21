@@ -7,9 +7,13 @@ import { editProductVariantDrawerAtom } from "@/lib/atoms";
 
 interface Props {
   productVariants: ProductVariant[];
+  onUpdatedAction: () => void;
 }
 
-export const ProductVariantsTable = ({ productVariants }: Props) => {
+export const ProductVariantsTable = ({
+  productVariants,
+  onUpdatedAction,
+}: Props) => {
   const showEditProductVariantDrawer = useSetAtom(editProductVariantDrawerAtom);
   const rows = productVariants.map((productVariant) => (
     <Table.Tr key={productVariant.id}>
@@ -19,7 +23,11 @@ export const ProductVariantsTable = ({ productVariants }: Props) => {
       <Table.Td>
         <Button
           onClick={() => {
-            showEditProductVariantDrawer({ isOpen: true, productVariant });
+            showEditProductVariantDrawer({
+              isOpen: true,
+              productVariant,
+              onUpdated: onUpdatedAction,
+            });
           }}
         >
           Edit

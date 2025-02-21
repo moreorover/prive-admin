@@ -2,6 +2,7 @@ import { appointmentsRouter } from "@/modules/appointments/server/procedures";
 import { customersRouter } from "@/modules/customers/server/procedures";
 import { ordersRouter } from "@/modules/orders/server/procedures";
 import { productsRouter } from "@/modules/products/server/procedures";
+import { productVariantsRouter } from "@/modules/product_variants/server/procedures";
 import { transactionsRouter } from "@/modules/transactions/server/procedures";
 
 import { createTRPCRouter } from "@/trpc/init";
@@ -11,6 +12,7 @@ export const appRouter = createTRPCRouter({
   customers: customersRouter,
   orders: ordersRouter,
   products: productsRouter,
+  productVariants: productVariantsRouter,
   transactions: transactionsRouter,
 });
 // export type definition of API

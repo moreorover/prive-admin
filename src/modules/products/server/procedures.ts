@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { customerSchema, productSchema } from "@/lib/schemas";
+import { productSchema } from "@/lib/schemas";
 
 export const productsRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {

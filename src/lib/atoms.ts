@@ -39,14 +39,17 @@ export const editProductDrawerAtom = atom<{
 export const newProductVariantDrawerAtom = atom<{
   isOpen: boolean;
   productId: string;
-}>({ isOpen: false, productId: "" });
+  onCreated: () => void;
+}>({ isOpen: false, productId: "", onCreated: () => {} });
 
 export const editProductVariantDrawerAtom = atom<{
   isOpen: boolean;
   productVariant: ProductVariant;
+  onUpdated: () => void;
 }>({
   isOpen: false,
-  productVariant: { productId: "", size: "", price: 0, stock: 0 },
+  productVariant: { size: "", price: 0, stock: 0 },
+  onUpdated: () => {},
 });
 
 export const newOrderDrawerAtom = atom<{

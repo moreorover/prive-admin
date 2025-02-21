@@ -82,7 +82,10 @@ export const ProductSuspense = ({ productId }: Props) => {
               onClick={() => {
                 showNewProductVariantDrawer({
                   isOpen: true,
-                  productId: product.id!,
+                  productId,
+                  onCreated: () => {
+                    utils.products.getOne.invalidate({ id: productId });
+                  },
                 });
               }}
             >
@@ -90,7 +93,12 @@ export const ProductSuspense = ({ productId }: Props) => {
             </Button>
           </Group>
           {product.variants.length > 0 ? (
-            <ProductVariantsTable productVariants={product.variants} />
+            <ProductVariantsTable
+              productVariants={product.variants}
+              onUpdatedAction={() => {
+                utils.products.getOne.invalidate({ id: productId });
+              }}
+            />
           ) : (
             <Text c="gray">No Appointments found.</Text>
           )}

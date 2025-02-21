@@ -1,40 +1,42 @@
 "use client";
 
-import ProductVariantForm from "@/components/dashboard/products/ProductVariantForm";
 import { ProductVariant } from "@/lib/schemas";
 import { notifications } from "@mantine/notifications";
-import { updateProductVariant } from "@/data-access/productVariant";
 import { Drawer } from "@mantine/core";
 import { useAtom } from "jotai";
 import { editProductVariantDrawerAtom } from "@/lib/atoms";
+import { ProductVariantForm } from "@/modules/product_variants/ui/components/product-variant-form";
+import { trpc } from "@/trpc/client";
 
-export default function EditProductVariantDrawer() {
+export const EditProductVariantDrawer = () => {
   const [value, setOpen] = useAtom(editProductVariantDrawerAtom);
 
-  async function onSubmit(data: ProductVariant) {
-    const response = await updateProductVariant({
-      ...data,
-      id: value.productVariant.id,
-    });
-
-    if (response.type === "ERROR") {
-      notifications.show({
-        color: "red",
-        title: "Failed to update Product Variant",
-        message: "Please try again.",
-      });
-    } else {
+  const updateProductVariant = trpc.productVariants.update.useMutation({
+    onSuccess: () => {
+      value.onUpdated();
       setOpen({
         isOpen: false,
-        productVariant: { productId: "", size: "", price: 0, stock: 0 },
+        productVariant: { size: "", price: 0, stock: 0 },
+        onUpdated: () => {},
       });
       notifications.show({
         color: "green",
         title: "Success!",
         message: "Product Variant updated.",
       });
-    }
-    return response;
+    },
+    onError: (e) => {
+      console.log({ e });
+      notifications.show({
+        color: "red",
+        title: "Failed to update Product Variant",
+        message: "Please try again.",
+      });
+    },
+  });
+
+  async function onSubmit(data: ProductVariant) {
+    updateProductVariant.mutate({ productVariant: data });
   }
 
   return (
@@ -43,7 +45,8 @@ export default function EditProductVariantDrawer() {
       onClose={() =>
         setOpen({
           isOpen: false,
-          productVariant: { productId: "", size: "", price: 0, stock: 0 },
+          productVariant: { size: "", price: 0, stock: 0 },
+          onUpdated: () => {},
         })
       }
       position="right"
@@ -57,4 +60,4 @@ export default function EditProductVariantDrawer() {
       />
     </Drawer>
   );
-}
+};
