@@ -1,34 +1,37 @@
 "use client";
 
-import ProductForm from "@/components/dashboard/products/ProductForm";
 import { Product } from "@/lib/schemas";
 import { notifications } from "@mantine/notifications";
-import { createProduct } from "@/data-access/product";
 import { Drawer } from "@mantine/core";
 import { useAtom } from "jotai";
 import { newProductDrawerAtom } from "@/lib/atoms";
+import { trpc } from "@/trpc/client";
+import { ProductForm } from "@/modules/products/ui/components/product-form";
 
-export default function NewProductDrawer() {
+export const NewProductDrawer = () => {
   const [value, setOpen] = useAtom(newProductDrawerAtom);
 
-  async function onSubmit(data: Product) {
-    const response = await createProduct(data);
-
-    if (response.type === "ERROR") {
-      notifications.show({
-        color: "red",
-        title: "Failed to create Product",
-        message: "Please try again.",
-      });
-    } else {
-      setOpen({ isOpen: false });
+  const newProduct = trpc.products.create.useMutation({
+    onSuccess: () => {
+      value.onCreated();
+      setOpen({ isOpen: false, onCreated: () => {} });
       notifications.show({
         color: "green",
         title: "Success!",
         message: "Product created.",
       });
-    }
-    return response;
+    },
+    onError: () => {
+      notifications.show({
+        color: "red",
+        title: "Failed to create Product",
+        message: "Please try again.",
+      });
+    },
+  });
+
+  async function onSubmit(data: Product) {
+    newProduct.mutate({ product: data });
   }
 
   function onDelete() {
@@ -38,7 +41,7 @@ export default function NewProductDrawer() {
   return (
     <Drawer
       opened={value.isOpen}
-      onClose={() => setOpen({ isOpen: false })}
+      onClose={() => setOpen({ isOpen: false, onCreated: () => {} })}
       position="right"
       title="Create Product"
     >
@@ -49,4 +52,4 @@ export default function NewProductDrawer() {
       />
     </Drawer>
   );
-}
+};

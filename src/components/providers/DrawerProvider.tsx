@@ -1,7 +1,5 @@
 "use client";
 
-import NewProductDrawer from "@/components/dashboard/products/NewProductDrawer";
-import EditProductDrawer from "@/components/dashboard/products/EditProductDrawer";
 import NewProductVariantDrawer from "@/components/dashboard/products/NewProductVariantDrawer";
 import EditProductVariantDrawer from "@/components/dashboard/products/EditProductVariantDrawer";
 import NewOrderItemDrawer from "@/components/dashboard/orders/NewOrderItemDrawer";
@@ -13,6 +11,8 @@ import { NewCustomerDrawer } from "@/modules/customers/ui/components/new-custome
 import { EditCustomerDrawer } from "@/modules/customers/ui/components/edit-customer-drawer";
 import { NewOrderDrawer } from "@/modules/orders/ui/components/new-order-drawer";
 import { EditOrderDrawer } from "@/modules/orders/ui/components/edit-order-drawer";
+import { NewProductDrawer } from "@/modules/products/ui/components/new-product-drawer";
+import { EditProductDrawer } from "@/modules/products/ui/components/edit-product-drawer";
 
 export default function DrawerProvider() {
   return (

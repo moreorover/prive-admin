@@ -2,21 +2,17 @@
 
 import { useForm } from "@mantine/form";
 import { IconTrash } from "@tabler/icons-react";
-import { Product, productSchema, type ActionResponse } from "@/lib/schemas";
+import { Product, productSchema } from "@/lib/schemas";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { Button, Stack, Textarea, TextInput } from "@mantine/core";
 
 type Props = {
   product: Product;
-  onSubmitAction: (values: Product) => Promise<ActionResponse>;
+  onSubmitAction: (values: Product) => void;
   onDelete?: () => void;
 };
 
-export default function ProductForm({
-  product,
-  onSubmitAction,
-  onDelete,
-}: Props) {
+export const ProductForm = ({ product, onSubmitAction, onDelete }: Props) => {
   const form = useForm({
     mode: "uncontrolled",
     initialValues: product,
@@ -65,4 +61,4 @@ export default function ProductForm({
       </Stack>
     </form>
   );
-}
+};

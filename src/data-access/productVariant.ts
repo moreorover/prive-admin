@@ -13,25 +13,6 @@ import {
   productVariantSchema,
 } from "@/lib/schemas";
 
-export async function getProductVariants(productId: string) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    return redirect("/");
-  }
-
-  const productVariants = await prisma.productVariant.findMany({
-    where: { productId },
-  });
-
-  return productVariants.map((productVariant) => ({
-    ...productVariant,
-    price: productVariant.price / 100,
-  }));
-}
-
 export async function createProductVariant(
   productVariant: ProductVariant,
 ): Promise<ActionResponse> {

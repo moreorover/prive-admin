@@ -12,9 +12,10 @@ import {
   Title,
 } from "@mantine/core";
 import { useSetAtom } from "jotai";
-import { editOrderDrawerAtom } from "@/lib/atoms";
+import { editOrderDrawerAtom, newTransactionDrawerAtom } from "@/lib/atoms";
 import dayjs from "dayjs";
 import { trpc } from "@/trpc/client";
+import TransactionsTable from "@/modules/orders/ui/components/transactions-table";
 
 interface Props {
   orderId: string;
@@ -23,8 +24,13 @@ interface Props {
 export const OrderView = ({ orderId }: Props) => {
   const showEditOrderDrawer = useSetAtom(editOrderDrawerAtom);
   // const showNewOrderItemDrawer = useSetAtom(newOrderItemDrawerAtom);
+  const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
   const utils = trpc.useUtils();
   const [order] = trpc.orders.getOne.useSuspenseQuery({ id: orderId });
+  const [transactions] = trpc.transactions.getByOrderId.useSuspenseQuery({
+    orderId,
+    includeCustomer: true,
+  });
 
   return (
     <Grid>
@@ -97,49 +103,51 @@ export const OrderView = ({ orderId }: Props) => {
           {/*/>*/}
         </Paper>
       </GridCol>
-      {/*<GridCol span={12}>*/}
-      {/*  <Paper*/}
-      {/*    style={{*/}
-      {/*      padding: "16px",*/}
-      {/*      borderRadius: "8px",*/}
-      {/*    }}*/}
-      {/*  >*/}
-      {/*    <div*/}
-      {/*      style={{*/}
-      {/*        display: "flex",*/}
-      {/*        justifyContent: "space-between",*/}
-      {/*        alignItems: "center",*/}
-      {/*        marginBottom: "16px",*/}
-      {/*      }}*/}
-      {/*    >*/}
-      {/*      <Title order={4}>Order Transactions</Title>*/}
-      {/*      <Group gap="sm">*/}
-      {/*        <Button*/}
-      {/*          onClick={() => {*/}
-      {/*            showNewTransactionDrawer({*/}
-      {/*              isOpen: true,*/}
-      {/*              orderId: order.id!,*/}
-      {/*            });*/}
-      {/*          }}*/}
-      {/*        >*/}
-      {/*          New*/}
-      {/*        </Button>*/}
-      {/*        <Button*/}
-      {/*          onClick={() => {*/}
-      {/*            showPickTransactionModal({*/}
-      {/*              isOpen: true,*/}
-      {/*              transactions: transactionOptions,*/}
-      {/*              onConfirmAction: onConfirmAction,*/}
-      {/*            });*/}
-      {/*          }}*/}
-      {/*        >*/}
-      {/*          Pick transactions*/}
-      {/*        </Button>*/}
-      {/*      </Group>*/}
-      {/*    </div>*/}
-      {/*    <TransactionsTable transactions={transactions} />*/}
-      {/*  </Paper>*/}
-      {/*</GridCol>*/}
+      <GridCol span={12}>
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          <Group justify="space-between">
+            <Title order={4}>Order Transactions</Title>
+            <Group gap="sm">
+              <Button
+                onClick={() => {
+                  showNewTransactionDrawer({
+                    isOpen: true,
+                    orderId: orderId,
+                    onCreated: () => {
+                      utils.transactions.getByOrderId.invalidate({
+                        orderId,
+                        includeCustomer: true,
+                      });
+                    },
+                  });
+                }}
+              >
+                New
+              </Button>
+              <Button
+              // onClick={() => {
+              //   showPickTransactionModal({
+              //     isOpen: true,
+              //     transactions: transactionOptions,
+              //     onConfirmAction: onConfirmAction,
+              //   });
+              // }}
+              >
+                Pick transactions
+              </Button>
+            </Group>
+          </Group>
+          <TransactionsTable
+            transactions={transactions}
+            onUpdateAction={() => {
+              utils.transactions.getByOrderId.invalidate({
+                orderId,
+                includeCustomer: true,
+              });
+            }}
+          />
+        </Paper>
+      </GridCol>
     </Grid>
   );
 };

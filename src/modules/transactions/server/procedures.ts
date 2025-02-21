@@ -45,6 +45,21 @@ export const transactionsRouter = createTRPCRouter({
         include: { customer: includeCustomer },
       });
     }),
+  getByOrderId: protectedProcedure
+    .input(
+      z.object({
+        orderId: z.string().cuid2().nullable(),
+        includeCustomer: z.boolean(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { orderId, includeCustomer } = input;
+
+      return prisma.transaction.findMany({
+        where: { orderId },
+        include: { customer: includeCustomer },
+      });
+    }),
   createTransaction: protectedProcedure
     .input(z.object({ transaction: transactionSchema }))
     .mutation(async ({ input, ctx }) => {
@@ -60,6 +75,26 @@ export const transactionsRouter = createTRPCRouter({
           orderId: transaction.orderId,
           customerId: transaction.customerId,
         },
+      });
+
+      return c;
+    }),
+  update: protectedProcedure
+    .input(z.object({ transaction: transactionSchema }))
+    .mutation(async ({ input, ctx }) => {
+      const { transaction } = input;
+
+      const c = await prisma.transaction.update({
+        data: {
+          name: transaction.name,
+          notes: transaction.notes,
+          amount: transaction.amount * 100,
+          type: transaction.type,
+          appointmentId: transaction.appointmentId,
+          orderId: transaction.orderId,
+          customerId: transaction.customerId,
+        },
+        where: { id: transaction.id },
       });
 
       return c;

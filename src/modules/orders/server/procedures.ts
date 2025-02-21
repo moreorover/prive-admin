@@ -23,7 +23,7 @@ export const ordersRouter = createTRPCRouter({
 
       const order = await prisma.order.findUnique({
         where: { id },
-        include: { customer: true },
+        include: { customer: true, transactions: true },
       });
 
       if (!order) {
