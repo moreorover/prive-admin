@@ -58,6 +58,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
   const [transactionOptions] =
     trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
       appointmentId: null,
+      orderId: null,
       includeCustomer: false,
     });
 

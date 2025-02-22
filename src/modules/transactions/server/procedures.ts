@@ -33,15 +33,16 @@ export const transactionsRouter = createTRPCRouter({
   getManyByAppointmentId: protectedProcedure
     .input(
       z.object({
-        appointmentId: z.string().cuid2().nullable(),
+        appointmentId: z.string().cuid2().nullish(),
+        orderId: z.string().cuid2().nullish(),
         includeCustomer: z.boolean(),
       }),
     )
     .query(async ({ input, ctx }) => {
-      const { appointmentId, includeCustomer } = input;
+      const { appointmentId, orderId, includeCustomer } = input;
 
       return prisma.transaction.findMany({
-        where: { appointmentId },
+        where: { appointmentId, orderId },
         include: { customer: includeCustomer },
       });
     }),
@@ -111,22 +112,24 @@ export const transactionsRouter = createTRPCRouter({
 
       return c;
     }),
-  linkTransactionsWithAppointment: protectedProcedure
+  assignTransactions: protectedProcedure
     .input(
       z.object({
         transactions: z.array(z.string()),
-        appointmentId: z.string(),
+        appointmentId: z.string().nullish(),
+        orderId: z.string().nullish(),
         customerId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const { transactions, appointmentId, customerId } = input;
+      const { transactions, appointmentId, orderId, customerId } = input;
 
       const c = await prisma.transaction.updateMany({
         where: { id: { in: transactions } },
         data: {
           appointmentId,
           customerId,
+          orderId,
         },
       });
 

@@ -21,6 +21,7 @@ import dayjs from "dayjs";
 import { trpc } from "@/trpc/client";
 import TransactionsTable from "@/modules/orders/ui/components/transactions-table";
 import { OrderItemsTable } from "@/modules/order_item/ui/components/order-items-table";
+import { modals } from "@mantine/modals";
 
 interface Props {
   orderId: string;
@@ -41,6 +42,13 @@ export const OrderView = ({ orderId }: Props) => {
   });
   const [orderItemOptions] =
     trpc.orderItems.getProductOptionsByOrderId.useSuspenseQuery({ orderId });
+
+  const [transactionOptions] =
+    trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
+      appointmentId: null,
+      orderId: null,
+      includeCustomer: false,
+    });
 
   return (
     <Grid>
@@ -149,13 +157,29 @@ export const OrderView = ({ orderId }: Props) => {
                 New
               </Button>
               <Button
-              // onClick={() => {
-              //   showPickTransactionModal({
-              //     isOpen: true,
-              //     transactions: transactionOptions,
-              //     onConfirmAction: onConfirmAction,
-              //   });
-              // }}
+                onClick={() =>
+                  modals.openContextModal({
+                    modal: "transactionPickerModal",
+                    title: "Pick transactions",
+                    size: "xl",
+                    innerProps: {
+                      customerId: order.customerId,
+                      orderId,
+                      transactionOptions,
+                      onPicked: () => {
+                        utils.transactions.getByOrderId.invalidate({
+                          orderId,
+                          includeCustomer: true,
+                        });
+                        utils.transactions.getManyByAppointmentId.invalidate({
+                          appointmentId: null,
+                          orderId: null,
+                          includeCustomer: false,
+                        });
+                      },
+                    },
+                  })
+                }
               >
                 Pick transactions
               </Button>

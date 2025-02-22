@@ -21,9 +21,11 @@ export const TransactionPickerModal = ({
   id,
   innerProps,
 }: ContextModalProps<{
-  appointmentId: string;
+  appointmentId: string | null | undefined;
   customerId: string;
+  orderId: string | null | undefined;
   transactionOptions: GetTransactionOptions;
+  onPicked: () => void;
 }>) => {
   const utils = trpc.useUtils();
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
@@ -62,31 +64,31 @@ export const TransactionPickerModal = ({
     );
   };
 
-  const pickTransactions =
-    trpc.transactions.linkTransactionsWithAppointment.useMutation({
-      onSuccess: () => {
-        notifications.show({
-          color: "green",
-          title: "Success!",
-          message: "Transactions picked.",
-        });
-        onSuccess();
-        context.closeModal(id);
-      },
-      onError: () => {
-        notifications.show({
-          color: "red",
-          title: "Failed to pick Transactions",
-          message: "Please try again.",
-        });
-      },
-    });
+  const pickTransactions = trpc.transactions.assignTransactions.useMutation({
+    onSuccess: () => {
+      innerProps.onPicked();
+      notifications.show({
+        color: "green",
+        title: "Success!",
+        message: "Transactions picked.",
+      });
+      context.closeModal(id);
+    },
+    onError: () => {
+      notifications.show({
+        color: "red",
+        title: "Failed to pick Transactions",
+        message: "Please try again.",
+      });
+    },
+  });
 
   function onConfirmAction(selectedRows: string[]) {
     if (selectedRows.length > 0) {
       pickTransactions.mutate({
         transactions: selectedRows,
         appointmentId: innerProps.appointmentId,
+        orderId: innerProps.orderId,
         customerId: innerProps.customerId,
       });
     } else {

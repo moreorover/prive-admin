@@ -28,6 +28,11 @@ export default async function Page({ params }: Props) {
     orderId,
   });
   void trpc.orderItems.getProductOptionsByOrderId.prefetch({ orderId });
+  void trpc.transactions.getManyByAppointmentId.prefetch({
+    appointmentId: null,
+    orderId: null,
+    includeCustomer: false,
+  });
 
   return (
     <HydrateClient>

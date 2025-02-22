@@ -68,6 +68,16 @@ export const AppointmentTransactionMenu = ({
                   customerId,
                   appointmentId,
                   transactionOptions,
+                  onPicked: () => {
+                    utils.transactions.getManyByAppointmentId.invalidate({
+                      appointmentId: appointmentId,
+                      includeCustomer: true,
+                    });
+                    utils.transactions.getManyByAppointmentId.invalidate({
+                      appointmentId: null,
+                      includeCustomer: false,
+                    });
+                  },
                 },
               })
             }
