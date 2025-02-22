@@ -1,10 +1,10 @@
 "use client";
 
 import { useForm } from "@mantine/form";
-import { IconTrash } from "@tabler/icons-react";
 import { Product, productSchema } from "@/lib/schemas";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { Button, Stack, Textarea, TextInput } from "@mantine/core";
+import { Trash2 } from "lucide-react";
 
 type Props = {
   product: Product;
@@ -49,7 +49,7 @@ export const ProductForm = ({ product, onSubmitAction, onDelete }: Props) => {
         </Button>
         {product.id && (
           <Button
-            leftSection={<IconTrash />}
+            leftSection={<Trash2 />}
             fullWidth
             color="red"
             type="button"

@@ -1,16 +1,11 @@
-import {
-  IconComponents,
-  IconDashboard,
-  IconLock,
-  IconMoodSmile,
-} from "@tabler/icons-react";
 import type { NavItem } from "@/types/nav-item";
+import { Component, LayoutDashboard } from "lucide-react";
 
 export const navLinks: NavItem[] = [
-  { label: "Dashboard", icon: IconDashboard, link: "/dashboard" },
+  { label: "Dashboard", icon: Component, link: "/dashboard" },
   {
     label: "Admin",
-    icon: IconComponents,
+    icon: LayoutDashboard,
     initiallyOpened: true,
     links: [
       {

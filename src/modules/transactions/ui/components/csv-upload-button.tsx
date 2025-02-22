@@ -1,9 +1,9 @@
 "use client";
 
 import { useCSVReader } from "react-papaparse";
-import { IconUpload } from "@tabler/icons-react";
 import { Button } from "@mantine/core";
 import React from "react";
+import { Upload } from "lucide-react";
 
 const INITIAL_IMPORT_RESULTS = {
   data: [],
@@ -27,7 +27,7 @@ export const CsvUploadButton = ({ text, onUploadAction }: Props) => {
         getRootProps: () => React.ButtonHTMLAttributes<HTMLButtonElement>;
       }) => (
         <Button size="sm" className="w-full lg:w-auto" {...getRootProps()}>
-          <IconUpload className="size-4 mr-2" />
+          <Upload />
           {text} Import
         </Button>
       )}

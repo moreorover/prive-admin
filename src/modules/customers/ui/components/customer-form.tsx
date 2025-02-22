@@ -1,10 +1,10 @@
 "use client";
 
 import { useForm } from "@mantine/form";
-import { IconTrash } from "@tabler/icons-react";
-import { Customer, customerSchema, type ActionResponse } from "@/lib/schemas";
+import { Customer, customerSchema } from "@/lib/schemas";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { Button, TextInput } from "@mantine/core";
+import { Trash2 } from "lucide-react";
 
 type Props = {
   customer: Customer;
@@ -41,7 +41,7 @@ export const CustomerForm = ({ customer, onSubmitAction, onDelete }: Props) => {
       </Button>
       {customer.id && (
         <Button
-          leftSection={<IconTrash />}
+          leftSection={<Trash2 />}
           fullWidth
           mt="xl"
           type="button"
