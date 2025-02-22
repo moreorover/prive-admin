@@ -20,6 +20,15 @@ export default async function Page({ params }: Props) {
   }
 
   void trpc.orders.getOne.prefetch({ id: orderId });
+  void trpc.transactions.getByOrderId.prefetch({
+    orderId,
+    includeCustomer: true,
+  });
+  void trpc.orderItems.getByOrderId.prefetch({
+    orderId,
+  });
+  void trpc.orderItems.getProductOptionsByOrderId.prefetch({ orderId });
+
   return (
     <HydrateClient>
       <OrderView orderId={orderId} />
