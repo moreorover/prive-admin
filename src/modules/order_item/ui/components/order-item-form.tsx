@@ -1,23 +1,23 @@
 "use client";
 
 import { useForm } from "@mantine/form";
-import { orderItemSchema, type ActionResponse, OrderItem } from "@/lib/schemas";
+import { orderItemSchema, OrderItem } from "@/lib/schemas";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { Button, NumberInput, Select } from "@mantine/core";
 
 type Props = {
   orderItem: OrderItem;
   productOptions: { value: string; label: string }[];
-  onSubmitAction: (values: OrderItem) => Promise<ActionResponse>;
+  onSubmitAction: (values: OrderItem) => void;
   isItemSelectDisabled?: boolean;
 };
 
-export default function OrderItemForm({
+export const OrderItemForm = ({
   orderItem,
   productOptions,
   onSubmitAction,
   isItemSelectDisabled = false,
-}: Props) {
+}: Props) => {
   const form = useForm({
     mode: "uncontrolled",
     initialValues: orderItem,
@@ -59,4 +59,4 @@ export default function OrderItemForm({
       </Button>
     </form>
   );
-}
+};

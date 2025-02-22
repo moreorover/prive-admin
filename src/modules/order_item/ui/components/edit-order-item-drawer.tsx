@@ -1,26 +1,19 @@
 "use client";
 
-import OrderItemForm from "@/components/dashboard/orders/OrderItemForm";
 import { OrderItem } from "@/lib/schemas";
 import { notifications } from "@mantine/notifications";
-import { updateOrderItem } from "@/data-access/orderItem";
 import { Drawer } from "@mantine/core";
 import { useAtom } from "jotai";
 import { editOrderItemDrawerAtom } from "@/lib/atoms";
+import { OrderItemForm } from "@/modules/order_item/ui/components/order-item-form";
+import { trpc } from "@/trpc/client";
 
-export default function EditOrderItemDrawer() {
+export const EditOrderItemDrawer = () => {
   const [value, setOpen] = useAtom(editOrderItemDrawerAtom);
 
-  async function onSubmit(data: OrderItem) {
-    const response = await updateOrderItem({ ...data, id: value.orderItem.id });
-
-    if (response.type === "ERROR") {
-      notifications.show({
-        color: "red",
-        title: "Failed to create Order Item",
-        message: "Please try again.",
-      });
-    } else {
+  const updateOrderItem = trpc.orderItems.update.useMutation({
+    onSuccess: () => {
+      value.onUpdated();
       setOpen({
         isOpen: false,
         orderItem: {
@@ -31,14 +24,25 @@ export default function EditOrderItemDrawer() {
           productVariantId: "",
         },
         productOptions: [],
+        onUpdated: () => {},
       });
       notifications.show({
         color: "green",
         title: "Success!",
         message: "Order Item created.",
       });
-    }
-    return response;
+    },
+    onError: () => {
+      notifications.show({
+        color: "red",
+        title: "Failed to create Order Item",
+        message: "Please try again.",
+      });
+    },
+  });
+
+  async function onSubmit(data: OrderItem) {
+    updateOrderItem.mutate({ orderItem: data });
   }
 
   return (
@@ -55,6 +59,7 @@ export default function EditOrderItemDrawer() {
             productVariantId: "",
           },
           productOptions: [],
+          onUpdated: () => {},
         })
       }
       position="right"
@@ -75,4 +80,4 @@ export default function EditOrderItemDrawer() {
       />
     </Drawer>
   );
-}
+};

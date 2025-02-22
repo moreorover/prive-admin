@@ -77,12 +77,14 @@ export const newOrderItemDrawerAtom = atom<{
   isOpen: boolean;
   orderId: string;
   productOptions: { value: string; label: string }[];
-}>({ isOpen: false, orderId: "", productOptions: [] });
+  onCreated: () => void;
+}>({ isOpen: false, orderId: "", productOptions: [], onCreated: () => {} });
 
 export const editOrderItemDrawerAtom = atom<{
   isOpen: boolean;
   orderItem: OrderItem;
   productOptions: { value: string; label: string }[];
+  onUpdated: () => void;
 }>({
   isOpen: false,
   orderItem: {
@@ -93,6 +95,7 @@ export const editOrderItemDrawerAtom = atom<{
     productVariantId: "",
   },
   productOptions: [],
+  onUpdated: () => {},
 });
 
 export const newTransactionDrawerAtom = atom<{
