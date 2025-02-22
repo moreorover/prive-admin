@@ -10,7 +10,7 @@ import {
   Title,
 } from "@mantine/core";
 import { trpc } from "@/trpc/client";
-import { Suspense } from "react";
+import { Suspense, useCallback } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import TransactionsTable from "@/modules/transactions/ui/components/transactions-table";
@@ -31,9 +31,19 @@ export const TransactionsView = () => {
 
 function TransactionsSuspense() {
   const utils = trpc.useUtils();
-  const [transactions] = trpc.transactions.getAll.useSuspenseQuery();
-
   const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
+
+  // Memoized function to avoid unnecessary re-renders
+  const handleNewTransaction = useCallback(() => {
+    showNewTransactionDrawer({
+      isOpen: true,
+      onCreated: () => {
+        utils.transactions.getAll.invalidate();
+      },
+    });
+  }, [showNewTransactionDrawer, utils.transactions.getAll]);
+
+  const [transactions] = trpc.transactions.getAll.useSuspenseQuery();
 
   return (
     <Grid>
@@ -46,14 +56,7 @@ function TransactionsSuspense() {
               <PayPalUpload />
               <Button
                 className="w-full lg:w-auto"
-                onClick={() => {
-                  showNewTransactionDrawer({
-                    isOpen: true,
-                    onCreated: () => {
-                      utils.transactions.getAll.invalidate();
-                    },
-                  });
-                }}
+                onClick={handleNewTransaction}
               >
                 New
               </Button>
