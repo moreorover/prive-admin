@@ -40,9 +40,7 @@ export const TransactionPickerModal = ({
           transaction.name.toLowerCase().includes(searchLower)) ||
         (transaction.type &&
           transaction.type.toLowerCase().includes(searchLower)) ||
-        String(transaction.amount / 100)
-          .toLowerCase()
-          .includes(searchLower) ||
+        String(transaction.amount).toLowerCase().includes(searchLower) ||
         (transaction.id && transaction.id.toLowerCase() === searchLower)
       );
     },
@@ -53,7 +51,7 @@ export const TransactionPickerModal = ({
     new Intl.NumberFormat("en-UK", {
       style: "currency",
       currency: "GBP",
-    }).format(amount / 100);
+    }).format(amount);
 
   // Toggle selection for a given transaction ID
   const toggleRowSelection = (id: string) => {

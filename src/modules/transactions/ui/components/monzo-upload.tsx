@@ -203,7 +203,7 @@ export const MonzoUpload = () => {
         description: t.description,
         currency: t.currency,
       }),
-      amount: t.amount * 100,
+      amount: t.amount,
       type: "BANK",
       orderId: null,
       customerId: null,

@@ -276,7 +276,7 @@ export const PayPalUpload = () => {
       id: `pp_${t.transactionId}`,
       name: t.name,
       notes: buildNotes(t),
-      amount: t.gross * 100,
+      amount: t.gross,
       type: "PAYPAL",
       orderId: null,
       customerId: null,

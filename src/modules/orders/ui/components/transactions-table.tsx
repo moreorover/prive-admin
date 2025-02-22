@@ -40,7 +40,7 @@ export default function TransactionsTable({
     new Intl.NumberFormat("en-UK", {
       style: "currency",
       currency: "GBP",
-    }).format(amount / 100);
+    }).format(amount);
 
   const openDeleteModal = (transaction: Transaction) =>
     modals.openConfirmModal({

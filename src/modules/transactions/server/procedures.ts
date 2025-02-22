@@ -70,7 +70,7 @@ export const transactionsRouter = createTRPCRouter({
         data: {
           name: transaction.name,
           notes: transaction.notes,
-          amount: transaction.amount * 100,
+          amount: transaction.amount,
           type: transaction.type,
           appointmentId: transaction.appointmentId,
           orderId: transaction.orderId,
@@ -89,7 +89,7 @@ export const transactionsRouter = createTRPCRouter({
         data: {
           name: transaction.name,
           notes: transaction.notes,
-          amount: transaction.amount * 100,
+          amount: transaction.amount,
           type: transaction.type,
           appointmentId: transaction.appointmentId,
           orderId: transaction.orderId,
