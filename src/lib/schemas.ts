@@ -1,10 +1,5 @@
 import { z } from "zod";
 
-export type ActionResponse = {
-  type: "SUCCESS" | "ERROR";
-  message: string;
-};
-
 export const customerSchema = z.object({
   id: z.string().cuid2().optional(),
   name: z
