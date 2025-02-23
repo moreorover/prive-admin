@@ -51,32 +51,37 @@ export const orderItemSchema = z.object({
 
 export type OrderItem = z.infer<typeof orderItemSchema>;
 
-export const transactionSchema = z
+export const transactionIdSchema = z.string().refine(
+  (val) => {
+    if (!val) return true; // Allow undefined
+    // Check if it's a valid cuid2 or starts with "mm_"
+    return (
+      z.string().cuid2().safeParse(val).success ||
+      val.startsWith("mm_") ||
+      val.startsWith("pp_")
+    );
+  },
+  { message: "id must be a valid cuid2 or start with 'mm_'" },
+);
+
+export const transactionSchema = z.object({
+  id: transactionIdSchema.optional(),
+  name: z.string().nullable(),
+  notes: z.string().nullable(),
+  amount: z.number().refine((value) => value !== 0, {
+    message: "Amount cannot be zero",
+  }),
+  type: z.enum(["BANK", "CASH", "PAYPAL"]),
+});
+
+export const transactionAllocationSchema = z
   .object({
-    id: z
-      .string()
-      .optional()
-      .refine(
-        (val) => {
-          if (!val) return true; // Allow undefined
-          // Check if it's a valid cuid2 or starts with "mm_"
-          return (
-            z.string().cuid2().safeParse(val).success ||
-            val.startsWith("mm_") ||
-            val.startsWith("pp_")
-          );
-        },
-        { message: "id must be a valid cuid2 or start with 'mm_'" },
-      ),
-    name: z.string().nullable(),
-    notes: z.string().nullable(),
-    amount: z.number().refine((value) => value !== 0, {
-      message: "Amount cannot be zero",
-    }),
-    type: z.enum(["BANK", "CASH", "PAYPAL"]),
+    id: z.string().cuid2().optional(),
+    amount: z.number(),
     appointmentId: z.string().cuid2().nullish(),
     orderId: z.string().cuid2().nullish(),
-    customerId: z.string().cuid2().nullish(),
+    customerId: z.string().cuid2(),
+    transactionId: transactionIdSchema,
   })
   .refine(
     (data) => {
@@ -91,8 +96,6 @@ export const transactionSchema = z
       path: ["appointmentId", "orderId"], // This points to the relevant fields in the error
     },
   );
-
-export const transactionsSchema = z.array(transactionSchema);
 
 export type Transaction = z.infer<typeof transactionSchema>;
 

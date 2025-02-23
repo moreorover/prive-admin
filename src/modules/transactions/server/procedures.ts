@@ -72,9 +72,6 @@ export const transactionsRouter = createTRPCRouter({
           notes: transaction.notes,
           amount: transaction.amount,
           type: transaction.type,
-          appointmentId: transaction.appointmentId,
-          orderId: transaction.orderId,
-          customerId: transaction.customerId,
         },
       });
 
@@ -91,9 +88,6 @@ export const transactionsRouter = createTRPCRouter({
           notes: transaction.notes,
           amount: transaction.amount,
           type: transaction.type,
-          appointmentId: transaction.appointmentId,
-          orderId: transaction.orderId,
-          customerId: transaction.customerId,
         },
         where: { id: transaction.id },
       });
@@ -105,8 +99,15 @@ export const transactionsRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const { transactions } = input;
 
+      const transactionBatch = await prisma.transactionBatch.create();
+
+      const transactionsWithBatch = transactions.map((transaction) => ({
+        ...transaction,
+        batchId: transactionBatch.id,
+      }));
+
       const c = await prisma.transaction.createMany({
-        data: transactions,
+        data: transactionsWithBatch,
         skipDuplicates: true,
       });
 
