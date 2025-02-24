@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Badge, Button, Table, Text, Group, ActionIcon } from "@mantine/core";
+import { ActionIcon, Badge, Button, Group, Table, Text } from "@mantine/core";
 import { GetAllTransactionsWithAllocations } from "@/modules/transactions/types";
 import { trpc } from "@/trpc/client";
 import { notifications } from "@mantine/notifications";
@@ -123,12 +123,12 @@ export default function TransactionsTable({
         ? transaction.allocations.map((allocation) => (
             <Table.Tr key={allocation.id} bg="gray.0">
               <Table.Td />
-              <Table.Td colSpan={2}>
+              <Table.Td colSpan={3}>
                 <Group>
                   <Text size="sm">Customer: {allocation.customer.name}</Text>
                 </Group>
               </Table.Td>
-              <Table.Td colSpan={2}>
+              <Table.Td>
                 <Text>{formatAmount(allocation.amount)}</Text>
               </Table.Td>
               <Table.Td>

@@ -137,7 +137,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
           </Group>
           <TransactionsTable
             appointmentId={appointmentId}
-            transactions={transactionAllocations}
+            transactionAllocations={transactionAllocations}
           />
         </Paper>
       </GridCol>

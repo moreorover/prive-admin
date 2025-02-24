@@ -4,20 +4,25 @@ import { Badge, Button, Menu, ScrollArea, Table, Text } from "@mantine/core";
 import { trpc } from "@/trpc/client";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
-import { Transaction } from "@/lib/schemas";
 import { GetTransactionAllocationsByAppointmentAndOrder } from "@/modules/appointments/types";
 import Link from "next/link";
+import { useSetAtom } from "jotai/index";
+import { editTransactionAllocationDrawerAtom } from "@/lib/atoms";
 
 interface Props {
   appointmentId: string;
-  transactions: GetTransactionAllocationsByAppointmentAndOrder;
+  transactionAllocations: GetTransactionAllocationsByAppointmentAndOrder;
 }
 
 export default function TransactionsTable({
   appointmentId,
-  transactions,
+  transactionAllocations,
 }: Props) {
   const utils = trpc.useUtils();
+
+  const showEditTransactionAllocationDrawer = useSetAtom(
+    editTransactionAllocationDrawerAtom,
+  );
 
   const deleteTransaction = trpc.transactionAllocations.delete.useMutation({
     onSuccess: () => {
@@ -48,7 +53,7 @@ export default function TransactionsTable({
       currency: "GBP",
     }).format(amount);
 
-  const openDeleteModal = (transaction: Transaction) =>
+  const openDeleteModal = (transactionAllocationId: string) =>
     modals.openConfirmModal({
       title: "Delete Transaction?",
       centered: true,
@@ -60,28 +65,30 @@ export default function TransactionsTable({
       onCancel: () => {},
       onConfirm: () =>
         deleteTransaction.mutate({
-          transactionAllocationId: transaction.id!,
+          transactionAllocationId,
         }),
     });
 
-  const rows = transactions.map((transaction) => (
-    <Table.Tr key={transaction.id}>
+  const rows = transactionAllocations.map((transactionAllocation) => (
+    <Table.Tr key={transactionAllocation.id}>
       <Table.Td>
-        <Text>{transaction.customer?.name}</Text>
+        <Text>{transactionAllocation.customer?.name}</Text>
       </Table.Td>
       <Table.Td>
-        <Text>{transaction.name}</Text>
+        <Text>{transactionAllocation.transaction.name}</Text>
       </Table.Td>
       <Table.Td>
         <Badge
-          color={transaction.type === "CASH" ? "blue" : "green"}
+          color={
+            transactionAllocation.transaction.type === "CASH" ? "blue" : "green"
+          }
           variant="light"
         >
-          {transaction.type}
+          {transactionAllocation.transaction.type}
         </Badge>
       </Table.Td>
       <Table.Td>
-        <Text>{formatAmount(transaction.amount)}</Text>
+        <Text>{formatAmount(transactionAllocation.amount)}</Text>
       </Table.Td>
       <Table.Td>
         <Menu shadow="md" width={200}>
@@ -91,12 +98,37 @@ export default function TransactionsTable({
 
           <Menu.Dropdown>
             <Menu.Label>Transactions</Menu.Label>
-            <Link href={`/dashboard/transactions/${transaction.id}`}>
+            <Menu.Item
+              onClick={() => {
+                showEditTransactionAllocationDrawer({
+                  isOpen: true,
+                  transactionAllocation,
+                  maxAmount: transactionAllocation.remainingAllocation,
+                  onUpdated: () => {
+                    utils.transactionAllocations.getByAppointmentAndOrderId.invalidate(
+                      {
+                        appointmentId,
+                        includeCustomer: true,
+                      },
+                    );
+                    utils.transactions.getTransactionOptions.invalidate();
+                  },
+                });
+              }}
+            >
+              Edit
+            </Menu.Item>
+            <Link href={`/dashboard/transactions/${transactionAllocation.id}`}>
               <Menu.Item>View</Menu.Item>
+            </Link>
+            <Link
+              href={`/dashboard/transactions/${transactionAllocation.transaction.id}`}
+            >
+              <Menu.Item>View Parent Transaction</Menu.Item>
             </Link>
             <Menu.Item
               onClick={() => {
-                openDeleteModal(transaction);
+                openDeleteModal(transactionAllocation.id);
               }}
             >
               Delete

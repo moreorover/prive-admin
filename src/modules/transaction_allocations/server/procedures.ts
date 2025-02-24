@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { transactionAllocationSchema } from "@/lib/schemas";
+import { Simulate } from "react-dom/test-utils";
 
 export const transactionAllocationsRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -39,10 +40,44 @@ export const transactionAllocationsRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const { appointmentId, orderId, includeCustomer } = input;
 
-      return prisma.transactionAllocation.findMany({
+      const allocations = await prisma.transactionAllocation.findMany({
         where: { appointmentId, orderId },
-        include: { customer: includeCustomer },
+        include: {
+          customer: includeCustomer,
+          transaction: { include: { allocations: true } },
+        },
       });
+
+      const allocationsWithRemaining = allocations.map((allocation) => {
+        const totalAllocated = allocation.transaction.allocations.reduce(
+          (sum, alloc) => sum + alloc.amount,
+          0,
+        );
+
+        const { allocations: _, ...rest } = allocation.transaction;
+        void _;
+
+        const remainingAllocation =
+          allocation.transaction.amount - totalAllocated + allocation.amount;
+
+        // Return a lean object with allocation fields, minimal transaction info, and the computed remaining allocation
+        return {
+          id: allocation.id,
+          appointmentId: allocation.appointmentId,
+          transactionId: allocation.transactionId,
+          amount: allocation.amount,
+          customer: allocation.customer,
+          customerId: allocation.customerId,
+          remainingAllocation,
+          transaction: rest,
+          // transaction: {
+          //   id: allocation.transaction.id,
+          //   amount: allocation.transaction.amount,
+          // },
+        };
+      });
+
+      return allocationsWithRemaining;
     }),
   create: protectedProcedure
     .input(z.object({ transactionAllocation: transactionAllocationSchema }))
@@ -69,7 +104,7 @@ export const transactionAllocationsRouter = createTRPCRouter({
           appointmentId: z.string().cuid2().nullish(),
           customerId: z.string().cuid2(),
           orderId: z.string().cuid2().nullish(),
-          amount: z.number().nullish(),
+          amount: z.number(),
         }),
       }),
     )

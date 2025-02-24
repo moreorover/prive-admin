@@ -49,7 +49,7 @@ export const transactionsRouter = createTRPCRouter({
         (sum, alloc) => sum + alloc.amount,
         0,
       );
-      return totalAllocated < transaction.amount; // Only keep transactions with unallocated amount
+      return totalAllocated !== transaction.amount; // Only keep transactions with unallocated amount
     });
 
     return unallocatedTransactions;

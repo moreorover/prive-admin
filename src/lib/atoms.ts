@@ -7,6 +7,7 @@ import {
   Product,
   ProductVariant,
   Transaction,
+  TransactionAllocation,
 } from "@/lib/schemas";
 import dayjs from "dayjs";
 
@@ -127,6 +128,21 @@ export const editTransactionDrawerAtom = atom<{
   },
 });
 
+export const editTransactionAllocationDrawerAtom = atom<{
+  isOpen: boolean;
+  transactionAllocation: TransactionAllocation;
+  maxAmount: number;
+  onUpdated: () => void;
+}>({
+  isOpen: false,
+  transactionAllocation: {
+    amount: 0,
+    customerId: "",
+    transactionId: "",
+  },
+  maxAmount: 0,
+  onUpdated: () => {},
+});
 export const newAppointmentDrawerAtom = atom<{
   isOpen: boolean;
   clientId: string;
