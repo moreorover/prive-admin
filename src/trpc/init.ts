@@ -38,7 +38,7 @@ export const protectedProcedure = t.procedure.use(
     }
 
     // TODO: look at this if we need to fetch user here?
-    const user = await prisma.user.findMany({ where: { id: ctx.userId } });
+    const user = await prisma.user.findUnique({ where: { id: ctx.userId } });
 
     if (!user) {
       throw new TRPCError({ code: "UNAUTHORIZED" });

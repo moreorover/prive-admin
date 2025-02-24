@@ -5,12 +5,12 @@ import { trpc } from "@/trpc/client";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import { Transaction } from "@/lib/schemas";
-import { GetTransactionByAppointmentId } from "@/modules/appointments/types";
+import { GetTransactionAllocationsByAppointmentAndOrder } from "@/modules/appointments/types";
 import Link from "next/link";
 
 interface Props {
   appointmentId: string;
-  transactions: GetTransactionByAppointmentId;
+  transactions: GetTransactionAllocationsByAppointmentAndOrder;
 }
 
 export default function TransactionsTable({

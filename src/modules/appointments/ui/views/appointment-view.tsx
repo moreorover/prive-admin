@@ -44,7 +44,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
       appointmentId,
     });
 
-  const [transactions] =
+  const [transactionAllocations] =
     trpc.transactionAllocations.getByAppointmentAndOrderId.useSuspenseQuery({
       appointmentId,
       includeCustomer: true,
@@ -137,7 +137,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
           </Group>
           <TransactionsTable
             appointmentId={appointmentId}
-            transactions={transactions}
+            transactions={transactionAllocations}
           />
         </Paper>
       </GridCol>
