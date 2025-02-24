@@ -62,13 +62,26 @@ export const transactionAllocationsRouter = createTRPCRouter({
       return c;
     }),
   update: protectedProcedure
-    .input(z.object({ transactionAllocation: transactionAllocationSchema }))
+    .input(
+      z.object({
+        transactionAllocation: z.object({
+          id: z.string().cuid2(),
+          appointmentId: z.string().cuid2().nullish(),
+          customerId: z.string().cuid2(),
+          orderId: z.string().cuid2().nullish(),
+          amount: z.number().nullish(),
+        }),
+      }),
+    )
     .mutation(async ({ input, ctx }) => {
       const { transactionAllocation } = input;
 
       const c = await prisma.transactionAllocation.update({
         data: {
-          amount: transactionAllocation.amount,
+          ...transactionAllocation,
+          amount: transactionAllocation.amount
+            ? transactionAllocation.amount
+            : 0,
         },
         where: { id: transactionAllocation.id },
       });
@@ -82,6 +95,32 @@ export const transactionAllocationsRouter = createTRPCRouter({
 
       const c = await prisma.transactionAllocation.delete({
         where: { id: transactionAllocationId },
+      });
+
+      return c;
+    }),
+  allocateTransactions: protectedProcedure
+    .input(
+      z.object({
+        transactionIds: z.array(z.string()),
+        appointmentId: z.string().nullish(),
+        orderId: z.string().nullish(),
+        customerId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { transactionIds, appointmentId, orderId, customerId } = input;
+
+      const transactionAllocations = transactionIds.map((transactionId) => ({
+        transactionId,
+        appointmentId,
+        orderId,
+        customerId,
+        amount: 0,
+      }));
+
+      const c = await prisma.transactionAllocation.createMany({
+        data: transactionAllocations,
       });
 
       return c;

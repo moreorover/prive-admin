@@ -13,7 +13,7 @@ export default async function Page() {
     return redirect("/");
   }
 
-  void trpc.transactions.getAll.prefetch();
+  void trpc.transactions.getAllTransactionsWithAllocations.prefetch();
 
   return (
     <HydrateClient>

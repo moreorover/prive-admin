@@ -222,6 +222,7 @@ export const MonzoUpload = () => {
         message: "Transactions created!",
       });
       utils.transactions.getAll.invalidate();
+      utils.transactions.getAllTransactionsWithAllocations.invalidate();
     },
     onError: () => {
       notifications.show({

@@ -65,14 +65,16 @@ const transactionName = ["Booking Fee", "Payment"];
 const generateTransactions = (count: number) => {
   return Array.from({ length: count }).map(() => {
     const amount = faker.number.float({
-      min: 50,
+      min: -800,
       max: 800,
       multipleOf: 0.25,
     });
     return {
       name: faker.helpers.arrayElement(transactionName),
       amount,
-      allocations: generateTransactionAllocations(amount),
+      allocations: generateTransactionAllocations(
+        faker.helpers.arrayElement([amount, amount / 5, amount / 25]),
+      ),
     };
   });
 };
@@ -113,4 +115,4 @@ const generateTransactionAllocations = (
   return allocations;
 };
 
-export const transactions = generateTransactions(20);
+export const transactions = generateTransactions(40);

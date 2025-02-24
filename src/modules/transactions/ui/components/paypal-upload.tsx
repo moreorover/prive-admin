@@ -295,6 +295,7 @@ export const PayPalUpload = () => {
         message: "Transactions created!",
       });
       utils.transactions.getAll.invalidate();
+      utils.transactions.getAllTransactionsWithAllocations.invalidate();
     },
     onError: () => {
       notifications.show({

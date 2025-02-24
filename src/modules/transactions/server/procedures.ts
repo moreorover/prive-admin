@@ -3,18 +3,40 @@ import { TRPCError } from "@trpc/server";
 import prisma from "@/lib/prisma";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { transactionSchema } from "@/lib/schemas";
+import { transactionIdSchema, transactionSchema } from "@/lib/schemas";
 
 export const transactionsRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
-    const transactions = await prisma.transaction.findMany({
-      include: {
-        customer: true,
-      },
-    });
+    const transactions = await prisma.transaction.findMany();
 
     return transactions;
   }),
+  getAllTransactionsWithAllocations: protectedProcedure.query(
+    async ({ ctx }) => {
+      const transactions = await prisma.transaction.findMany({
+        include: {
+          allocations: { include: { customer: true } }, // Include related allocations
+        },
+      });
+
+      // Transform data to include allocated and remaining amounts
+      const transactionsWithComputedFields = transactions.map((transaction) => {
+        const allocatedAmount = transaction.allocations.reduce(
+          (sum, alloc) => sum + alloc.amount,
+          0,
+        );
+        const remainingAmount = transaction.amount - allocatedAmount;
+
+        return {
+          ...transaction,
+          allocatedAmount,
+          remainingAmount,
+        };
+      });
+
+      return transactionsWithComputedFields;
+    },
+  ),
   getOne: protectedProcedure
     .input(z.object({ id: z.string().cuid2() }))
     .query(async ({ input, ctx }) => {
@@ -30,22 +52,6 @@ export const transactionsRouter = createTRPCRouter({
 
       return transaction;
     }),
-  getManyByAppointmentId: protectedProcedure
-    .input(
-      z.object({
-        appointmentId: z.string().cuid2().nullish(),
-        orderId: z.string().cuid2().nullish(),
-        includeCustomer: z.boolean(),
-      }),
-    )
-    .query(async ({ input, ctx }) => {
-      const { appointmentId, orderId, includeCustomer } = input;
-
-      return prisma.transaction.findMany({
-        where: { appointmentId, orderId },
-        include: { customer: includeCustomer },
-      });
-    }),
   getByOrderId: protectedProcedure
     .input(
       z.object({
@@ -57,8 +63,16 @@ export const transactionsRouter = createTRPCRouter({
       const { orderId, includeCustomer } = input;
 
       return prisma.transaction.findMany({
-        where: { orderId },
-        include: { customer: includeCustomer },
+        where: {
+          allocations: {
+            some: {
+              orderId,
+            },
+          },
+        },
+        include: {
+          allocations: { include: { customer: includeCustomer } },
+        },
       });
     }),
   createTransaction: protectedProcedure
@@ -98,76 +112,18 @@ export const transactionsRouter = createTRPCRouter({
     .input(z.object({ transactions: z.array(transactionSchema) }))
     .mutation(async ({ input, ctx }) => {
       const { transactions } = input;
-
-      const transactionBatch = await prisma.transactionBatch.create();
-
-      const transactionsWithBatch = transactions.map((transaction) => ({
-        ...transaction,
-        batchId: transactionBatch.id,
-      }));
-
-      const c = await prisma.transaction.createMany({
-        data: transactionsWithBatch,
-        skipDuplicates: true,
-      });
-
-      return c;
-    }),
-  assignTransactions: protectedProcedure
-    .input(
-      z.object({
-        transactions: z.array(z.string()),
-        appointmentId: z.string().nullish(),
-        orderId: z.string().nullish(),
-        customerId: z.string(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { transactions, appointmentId, orderId, customerId } = input;
-
-      const c = await prisma.transaction.updateMany({
-        where: { id: { in: transactions } },
+      const transactionBatch = await prisma.transactionBatch.create({
         data: {
-          appointmentId,
-          customerId,
-          orderId,
+          transactions: { createMany: { data: transactions } },
         },
       });
 
-      return c;
-    }),
-  setAppointmentId: protectedProcedure
-    .input(
-      z.object({
-        transactionId: z.string(),
-        appointmentId: z.string().nullable(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { transactionId, appointmentId } = input;
-
-      const c = await prisma.transaction.update({
-        where: { id: transactionId },
-        data: { appointmentId },
-      });
-
-      return c;
+      return transactionBatch;
     }),
   delete: protectedProcedure
     .input(
       z.object({
-        id: z.string().refine(
-          (val) => {
-            if (!val) return true; // Allow undefined
-            // Check if it's a valid cuid2 or starts with "mm_"
-            return (
-              z.string().cuid2().safeParse(val).success ||
-              val.startsWith("mm_") ||
-              val.startsWith("pp_")
-            );
-          },
-          { message: "id must be a valid cuid2 or start with 'mm_'" },
-        ),
+        id: transactionIdSchema,
       }),
     )
     .mutation(async ({ input, ctx }) => {
