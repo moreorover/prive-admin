@@ -1,10 +1,12 @@
 "use client";
 
-import { Badge, Button, Table, Text } from "@mantine/core";
+import { useState } from "react";
+import { Badge, Button, Table, Text, Group, ActionIcon } from "@mantine/core";
 import { GetAllTransactionsWithAllocations } from "@/modules/transactions/types";
 import { trpc } from "@/trpc/client";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
+import { ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 
 interface Props {
   transactions: GetAllTransactionsWithAllocations;
@@ -15,7 +17,15 @@ export default function TransactionsTable({
   transactions,
   onUpdateAction,
 }: Props) {
-  // Helper to format the amount (assuming amount is stored in cents)
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  const toggleExpand = (transactionId: string) => {
+    setExpanded((prev) => ({
+      ...prev,
+      [transactionId]: !prev[transactionId],
+    }));
+  };
+
   const formatAmount = (amount: number) =>
     new Intl.NumberFormat("en-UK", {
       style: "currency",
@@ -47,54 +57,17 @@ export default function TransactionsTable({
       children: (
         <Text size="sm">Are you sure you want to delete this transaction?</Text>
       ),
-      labels: { confirm: "Delete Transactions", cancel: "Cancel" },
+      labels: { confirm: "Delete", cancel: "Cancel" },
       confirmProps: { color: "red" },
       onCancel: () => {},
-      onConfirm: () =>
-        deleteTransaction.mutate({
-          id: transactionId,
-        }),
+      onConfirm: () => deleteTransaction.mutate({ id: transactionId }),
     });
 
-  const rows = transactions.map((transaction) => (
-    <Table.Tr
-      key={transaction.id}
-      bg={transaction.remainingAmount !== 0 ? "pink.0" : "transparent"}
-    >
-      <Table.Td>
-        <Text>{transaction.name}</Text>
-      </Table.Td>
-      <Table.Td>
-        <Badge
-          color={transaction.type === "CASH" ? "blue" : "green"}
-          variant="light"
-        >
-          {transaction.type}
-        </Badge>
-      </Table.Td>
-      <Table.Td>
-        <Text>{formatAmount(transaction.amount)}</Text>
-      </Table.Td>
-      <Table.Td>
-        <Text>{formatAmount(transaction.allocatedAmount)}</Text>
-      </Table.Td>
-      <Table.Td>
-        <Text>{formatAmount(transaction.remainingAmount)}</Text>
-      </Table.Td>
-      <Table.Td>
-        {transaction.type === "CASH" && (
-          <Button onClick={() => openDeleteModal(transaction.id)}>
-            Delete
-          </Button>
-        )}
-      </Table.Td>
-    </Table.Tr>
-  ));
-
   return (
-    <Table striped highlightOnHover stickyHeader stickyHeaderOffset={60}>
+    <Table striped highlightOnHover>
       <Table.Thead>
         <Table.Tr>
+          <Table.Th />
           <Table.Th>Transaction Name</Table.Th>
           <Table.Th>Type</Table.Th>
           <Table.Th>Amount</Table.Th>
@@ -103,7 +76,92 @@ export default function TransactionsTable({
           <Table.Th />
         </Table.Tr>
       </Table.Thead>
-      <Table.Tbody>{rows}</Table.Tbody>
+      <Table.Tbody>
+        {transactions.map((transaction) => {
+          const isExpanded = expanded[transaction.id];
+          return (
+            <>
+              {/* Main Transaction Row */}
+              <Table.Tr
+                key={transaction.id}
+                bg={
+                  transaction.remainingAmount !== 0 ? "pink.0" : "transparent"
+                }
+              >
+                <Table.Td>
+                  <ActionIcon
+                    onClick={() => toggleExpand(transaction.id)}
+                    variant="subtle"
+                  >
+                    {isExpanded ? (
+                      <ChevronDown size={16} />
+                    ) : (
+                      <ChevronRight size={16} />
+                    )}
+                  </ActionIcon>
+                </Table.Td>
+                <Table.Td>
+                  <Text>{transaction.name}</Text>
+                </Table.Td>
+                <Table.Td>
+                  <Badge
+                    color={transaction.type === "CASH" ? "blue" : "green"}
+                    variant="light"
+                  >
+                    {transaction.type}
+                  </Badge>
+                </Table.Td>
+                <Table.Td>
+                  <Text>{formatAmount(transaction.amount)}</Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text>{formatAmount(transaction.allocatedAmount)}</Text>
+                </Table.Td>
+                <Table.Td>
+                  <Text>{formatAmount(transaction.remainingAmount)}</Text>
+                </Table.Td>
+                <Table.Td>
+                  {transaction.type === "CASH" && (
+                    <Button
+                      color="red"
+                      size="xs"
+                      onClick={() => openDeleteModal(transaction.id)}
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  )}
+                </Table.Td>
+              </Table.Tr>
+
+              {/* Allocation Rows - Shown when expanded */}
+              {isExpanded &&
+                transaction.allocations.map((allocation) => (
+                  <Table.Tr
+                    key={allocation.id}
+                    // sx={{ backgroundColor: "#f8f9fa" }}
+                  >
+                    <Table.Td />
+                    <Table.Td colSpan={2}>
+                      <Group>
+                        <Text size="sm">Allocation</Text>
+                        <Badge color="gray" size="xs">
+                          {allocation.id}
+                        </Badge>
+                      </Group>
+                    </Table.Td>
+                    <Table.Td colSpan={2}>
+                      <Text>{formatAmount(allocation.amount)}</Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text>Customer ID: {allocation.customerId}</Text>
+                    </Table.Td>
+                    <Table.Td />
+                  </Table.Tr>
+                ))}
+            </>
+          );
+        })}
+      </Table.Tbody>
     </Table>
   );
 }
