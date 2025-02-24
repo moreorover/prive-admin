@@ -112,13 +112,28 @@ export const transactionsRouter = createTRPCRouter({
     .input(z.object({ transactions: z.array(transactionSchema) }))
     .mutation(async ({ input, ctx }) => {
       const { transactions } = input;
+
+      // const transactionBatch = await prisma.transactionBatch.create({
+      //   data: {
+      //     transactions: { createMany: { data: transactions } },
+      //   },
+      // });
+
       const transactionBatch = await prisma.transactionBatch.create({
-        data: {
-          transactions: { createMany: { data: transactions } },
-        },
+        data: {},
       });
 
-      return transactionBatch;
+      const transactionsWithBatch = transactions.map((transaction) => ({
+        ...transaction,
+        batchId: transactionBatch.id,
+      }));
+
+      const c = await prisma.transaction.createMany({
+        data: transactionsWithBatch,
+        skipDuplicates: true,
+      });
+
+      return c;
     }),
   delete: protectedProcedure
     .input(
