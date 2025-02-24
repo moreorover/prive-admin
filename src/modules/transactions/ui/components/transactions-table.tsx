@@ -1,13 +1,13 @@
 "use client";
 
-import { Badge, Button, ScrollArea, Table, Text } from "@mantine/core";
-import { GetAllTransactions } from "@/modules/transactions/types";
+import { Badge, Button, Table, Text } from "@mantine/core";
+import { GetAllTransactionsWithAllocations } from "@/modules/transactions/types";
 import { trpc } from "@/trpc/client";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 
 interface Props {
-  transactions: GetAllTransactions;
+  transactions: GetAllTransactionsWithAllocations;
   onUpdateAction: () => void;
 }
 
@@ -57,10 +57,10 @@ export default function TransactionsTable({
     });
 
   const rows = transactions.map((transaction) => (
-    <Table.Tr key={transaction.id}>
-      <Table.Td>
-        <Text>{transaction.customer?.name}</Text>
-      </Table.Td>
+    <Table.Tr
+      key={transaction.id}
+      bg={transaction.remainingAmount !== 0 ? "pink.0" : "transparent"}
+    >
       <Table.Td>
         <Text>{transaction.name}</Text>
       </Table.Td>
@@ -76,6 +76,12 @@ export default function TransactionsTable({
         <Text>{formatAmount(transaction.amount)}</Text>
       </Table.Td>
       <Table.Td>
+        <Text>{formatAmount(transaction.allocatedAmount)}</Text>
+      </Table.Td>
+      <Table.Td>
+        <Text>{formatAmount(transaction.remainingAmount)}</Text>
+      </Table.Td>
+      <Table.Td>
         {transaction.type === "CASH" && (
           <Button onClick={() => openDeleteModal(transaction.id)}>
             Delete
@@ -86,19 +92,18 @@ export default function TransactionsTable({
   ));
 
   return (
-    <ScrollArea>
-      <Table striped highlightOnHover>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Person Name</Table.Th>
-            <Table.Th>Transaction Name</Table.Th>
-            <Table.Th>Type</Table.Th>
-            <Table.Th>Amount</Table.Th>
-            <Table.Th />
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
-      </Table>
-    </ScrollArea>
+    <Table striped highlightOnHover stickyHeader stickyHeaderOffset={60}>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>Transaction Name</Table.Th>
+          <Table.Th>Type</Table.Th>
+          <Table.Th>Amount</Table.Th>
+          <Table.Th>Allocated</Table.Th>
+          <Table.Th>Remaining</Table.Th>
+          <Table.Th />
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>{rows}</Table.Tbody>
+    </Table>
   );
 }
