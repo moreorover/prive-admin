@@ -1,4 +1,17 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
+
+const transformAmount = <
+  T extends {
+    amount?: number | undefined | Prisma.IntFieldUpdateOperationsInput;
+  },
+>(
+  data: T,
+): T => {
+  if (data?.amount !== undefined && typeof data.amount === "number") {
+    return { ...data, amount: data.amount * 100 };
+  }
+  return data;
+};
 
 const prismaClientSingleton = () => {
   return new PrismaClient().$extends({
@@ -16,125 +29,70 @@ const prismaClientSingleton = () => {
     },
     query: {
       transaction: {
-        create({ args, query }) {
-          if (
-            args.data?.amount !== undefined &&
-            typeof args.data.amount === "number"
-          ) {
-            args.data.amount = args.data.amount * 100;
-          }
-          return query(args);
-        },
-        update({ args, query }) {
-          if (
-            args.data?.amount !== undefined &&
-            typeof args.data.amount === "number"
-          ) {
-            args.data.amount = args.data.amount * 100;
-          }
-          return query(args);
-        },
-        upsert({ args, query }) {
-          if (
-            args.create?.amount !== undefined &&
-            typeof args.create.amount === "number"
-          ) {
-            args.create.amount = args.create.amount * 100;
-          }
-          if (
-            args.update?.amount !== undefined &&
-            typeof args.update.amount === "number"
-          ) {
-            args.update.amount = args.update.amount * 100;
-          }
-          return query(args);
-        },
-        createMany({ args, query }) {
-          if (Array.isArray(args.data)) {
-            args.data = args.data.map((item) =>
-              item.amount !== undefined && typeof item.amount === "number"
-                ? { ...item, amount: item.amount * 100 }
-                : item,
-            );
-          }
-          return query(args);
-        },
-        updateMany({ args, query }) {
-          if (Array.isArray(args.data)) {
-            args.data = args.data.map((item) =>
-              item.amount !== undefined && typeof item.amount === "number"
-                ? { ...item, amount: item.amount * 100 }
-                : item,
-            );
-          }
-          return query(args);
-        },
+        create: ({ args, query }) =>
+          query({ ...args, data: transformAmount(args.data) }),
+        update: ({ args, query }) =>
+          query({ ...args, data: transformAmount(args.data) }),
+        upsert: ({ args, query }) =>
+          query({
+            ...args,
+            create: transformAmount(args.create),
+            update: transformAmount(args.update),
+          }),
+        createMany: ({ args, query }) =>
+          query({
+            ...args,
+            data: Array.isArray(args.data)
+              ? args.data.map(transformAmount)
+              : transformAmount(args.data),
+          }),
+        updateMany: ({ args, query }) =>
+          query({
+            ...args,
+            data: Array.isArray(args.data)
+              ? args.data.map(transformAmount)
+              : transformAmount(args.data),
+          }),
       },
       transactionAllocation: {
-        create({ args, query }) {
-          if (
-            args.data?.amount !== undefined &&
-            typeof args.data.amount === "number"
-          ) {
-            args.data.amount = args.data.amount * 100;
-          }
-          return query(args);
-        },
-        update({ args, query }) {
-          if (
-            args.data?.amount !== undefined &&
-            typeof args.data.amount === "number"
-          ) {
-            args.data.amount = args.data.amount * 100;
-          }
-          return query(args);
-        },
-        upsert({ args, query }) {
-          if (
-            args.create?.amount !== undefined &&
-            typeof args.create.amount === "number"
-          ) {
-            args.create.amount = args.create.amount * 100;
-          }
-          if (
-            args.update?.amount !== undefined &&
-            typeof args.update.amount === "number"
-          ) {
-            args.update.amount = args.update.amount * 100;
-          }
-          return query(args);
-        },
-        createMany({ args, query }) {
-          if (Array.isArray(args.data)) {
-            args.data = args.data.map((item) =>
-              item.amount !== undefined && typeof item.amount === "number"
-                ? { ...item, amount: item.amount * 100 }
-                : item,
-            );
-          }
-          return query(args);
-        },
-        updateMany({ args, query }) {
-          if (Array.isArray(args.data)) {
-            args.data = args.data.map((item) =>
-              item.amount !== undefined && typeof item.amount === "number"
-                ? { ...item, amount: item.amount * 100 }
-                : item,
-            );
-          }
-          return query(args);
-        },
+        create: ({ args, query }) =>
+          query({ ...args, data: transformAmount(args.data) }),
+        update: ({ args, query }) =>
+          query({ ...args, data: transformAmount(args.data) }),
+        upsert: ({ args, query }) =>
+          query({
+            ...args,
+            create: transformAmount(args.create),
+            update: transformAmount(args.update),
+          }),
+        createMany: ({ args, query }) =>
+          query({
+            ...args,
+            data: Array.isArray(args.data)
+              ? args.data.map(transformAmount)
+              : transformAmount(args.data),
+          }),
+        updateMany: ({ args, query }) =>
+          query({
+            ...args,
+            data: Array.isArray(args.data)
+              ? args.data.map(transformAmount)
+              : transformAmount(args.data),
+          }),
       },
     },
   });
 };
 
+// Singleton Handling
 declare const globalThis: {
-  prismaGlobal: ReturnType<typeof prismaClientSingleton>;
+  prismaGlobal?: ReturnType<typeof prismaClientSingleton>;
 } & typeof global;
 
 const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
 
-export default prisma;
+if (process.env.NODE_ENV !== "production") {
+  globalThis.prismaGlobal = prisma;
+}
 
-if (process.env.NODE_ENV !== "production") globalThis.prismaGlobal = prisma;
+export default prisma;
