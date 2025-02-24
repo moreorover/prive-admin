@@ -24,14 +24,11 @@ export const AppointmentTransactionMenu = ({
   const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
 
   const onSuccess = () => {
-    utils.transactions.getManyByAppointmentId.invalidate({
+    utils.transactionAllocations.getByAppointmentAndOrderId.invalidate({
       appointmentId,
       includeCustomer: true,
     });
-    utils.transactions.getManyByAppointmentId.invalidate({
-      appointmentId: null,
-      includeCustomer: false,
-    });
+    utils.transactions.getTransactionOptions.invalidate();
   };
 
   return (
@@ -69,14 +66,13 @@ export const AppointmentTransactionMenu = ({
                   appointmentId,
                   transactionOptions,
                   onPicked: () => {
-                    utils.transactions.getManyByAppointmentId.invalidate({
-                      appointmentId: appointmentId,
-                      includeCustomer: true,
-                    });
-                    utils.transactions.getManyByAppointmentId.invalidate({
-                      appointmentId: null,
-                      includeCustomer: false,
-                    });
+                    utils.transactionAllocations.getByAppointmentAndOrderId.invalidate(
+                      {
+                        appointmentId: appointmentId,
+                        includeCustomer: true,
+                      },
+                    );
+                    utils.transactions.getTransactionOptions.invalidate();
                   },
                 },
               })

@@ -37,6 +37,23 @@ export const transactionsRouter = createTRPCRouter({
       return transactionsWithComputedFields;
     },
   ),
+  getTransactionOptions: protectedProcedure.query(async ({ ctx }) => {
+    const transactions = await prisma.transaction.findMany({
+      include: {
+        allocations: true, // Fetch allocations for each transaction
+      },
+    });
+
+    const unallocatedTransactions = transactions.filter((transaction) => {
+      const totalAllocated = transaction.allocations.reduce(
+        (sum, alloc) => sum + alloc.amount,
+        0,
+      );
+      return totalAllocated < transaction.amount; // Only keep transactions with unallocated amount
+    });
+
+    return unallocatedTransactions;
+  }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string().cuid2() }))
     .query(async ({ input, ctx }) => {

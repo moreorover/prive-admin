@@ -17,14 +17,11 @@ export default async function Page({ params }: Props) {
   void trpc.customers.getAvailablePersonnelByAppointmentId.prefetch({
     appointmentId,
   });
-  void trpc.transactions.getManyByAppointmentId.prefetch({
+  void trpc.transactionAllocations.getByAppointmentAndOrderId.prefetch({
     appointmentId,
     includeCustomer: true,
   });
-  void trpc.transactions.getManyByAppointmentId.prefetch({
-    appointmentId: null,
-    includeCustomer: false,
-  });
+  void trpc.transactions.getTransactionOptions.prefetch();
 
   const session = await auth.api.getSession({
     headers: await headers(),

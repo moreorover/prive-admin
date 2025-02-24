@@ -19,26 +19,23 @@ export default function TransactionsTable({
 }: Props) {
   const utils = trpc.useUtils();
 
-  const unassignTransaction = trpc.transactions.setAppointmentId.useMutation({
+  const deleteTransaction = trpc.transactionAllocations.delete.useMutation({
     onSuccess: () => {
       notifications.show({
         color: "green",
         title: "Success!",
-        message: "Transaction unassigned.",
+        message: "Transaction deleted.",
       });
-      utils.transactions.getManyByAppointmentId.invalidate({
+      utils.transactionAllocations.getByAppointmentAndOrderId.invalidate({
         appointmentId,
         includeCustomer: true,
       });
-      utils.transactions.getManyByAppointmentId.invalidate({
-        appointmentId: null,
-        includeCustomer: false,
-      });
+      utils.transactions.getTransactionOptions.invalidate();
     },
     onError: () => {
       notifications.show({
         color: "red",
-        title: "Failed to unassign transaction",
+        title: "Failed to delete transaction",
         message: "Please try again.",
       });
     },
@@ -53,20 +50,17 @@ export default function TransactionsTable({
 
   const openDeleteModal = (transaction: Transaction) =>
     modals.openConfirmModal({
-      title: "Unassign Transaction from this Appointment?",
+      title: "Delete Transaction?",
       centered: true,
       children: (
-        <Text size="sm">
-          Are you sure you want to unassign this transaction?
-        </Text>
+        <Text size="sm">Are you sure you want to delete this transaction?</Text>
       ),
-      labels: { confirm: "Unassign Transactions", cancel: "Cancel" },
+      labels: { confirm: "Delete Transaction", cancel: "Cancel" },
       confirmProps: { color: "red" },
       onCancel: () => {},
       onConfirm: () =>
-        unassignTransaction.mutate({
-          transactionId: transaction.id!,
-          appointmentId: null,
+        deleteTransaction.mutate({
+          transactionAllocationId: transaction.id!,
         }),
     });
 
@@ -105,7 +99,7 @@ export default function TransactionsTable({
                 openDeleteModal(transaction);
               }}
             >
-              Unassign
+              Delete
             </Menu.Item>
           </Menu.Dropdown>
         </Menu>
