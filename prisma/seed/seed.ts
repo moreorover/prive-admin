@@ -1,8 +1,11 @@
 import { auth } from "@/lib/auth";
-import { PrismaClient } from "@prisma/client";
-import { customers, products } from "./data";
+import { customers, products, transactions } from "./data";
+import { faker } from "@faker-js/faker";
+import prisma from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+faker.seed(410149);
+
+const customerIds: string[] = [];
 
 async function seedUsers() {
   const userEmail = "x@x.com";
@@ -23,9 +26,11 @@ async function seedUsers() {
 
 async function seedCustomers() {
   for (const customer of customers) {
-    await prisma.customer.create({
+    const createdCustomer = await prisma.customer.create({
       data: { ...customer.customer },
     });
+
+    customerIds.push(createdCustomer.id);
   }
 }
 
@@ -33,40 +38,60 @@ async function seedProducts() {
   for (const product of products) {
     const createdProduct = await prisma.product.create({
       data: {
-        name: product.product.name,
-        description: product.product.description,
+        name: product.name,
+        description: product.description,
       },
     });
 
-    for (const variant of product.product.variants) {
+    for (const variant of product.variants) {
       await prisma.productVariant.create({
-        data: {
-          productId: createdProduct.id,
-          size: variant.size,
-          price: variant.price,
-          stock: variant.stock,
-        },
+        data: { ...variant, productId: createdProduct.id },
       });
     }
   }
 }
 
+const seedTransactions = async (): Promise<void> => {
+  for (const transaction of transactions) {
+    const createdTransaction = await prisma.transaction.create({
+      data: {
+        name: transaction.name,
+        amount: transaction.amount,
+      },
+    });
+
+    const transactionAllocations = transaction.allocations.map(
+      (allocation) => ({
+        ...allocation,
+        transactionId: createdTransaction.id,
+        customerId: faker.helpers.arrayElement(customerIds),
+      }),
+    );
+
+    await prisma.transactionAllocation.createMany({
+      data: transactionAllocations,
+    });
+  }
+};
+
 async function main() {
-  console.log("Seeding database...");
+  console.log("🛠 Seeding database...");
 
   await prisma.customer.deleteMany();
   await prisma.product.deleteMany();
+  await prisma.transaction.deleteMany();
 
   await seedUsers();
   await seedCustomers();
   await seedProducts();
+  await seedTransactions();
 
-  console.log("Database seeded successfully!");
+  console.log("🌱 Database seeded successfully!");
 }
 
 main()
   .catch((error) => {
-    console.error("Error seeding database:", error);
+    console.error("❌ Error seeding database:", error);
     process.exit(1);
   })
   .finally(() => {
