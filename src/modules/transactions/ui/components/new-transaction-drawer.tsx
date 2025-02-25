@@ -23,7 +23,7 @@ export const NewTransactionDrawer = () => {
         isOpen: false,
         orderId: null,
         appointmentId: null,
-        customerId: null,
+        customerId: "",
         onCreated: () => {},
       });
     },
@@ -37,7 +37,12 @@ export const NewTransactionDrawer = () => {
   });
 
   async function onSubmit(data: Transaction) {
-    newTransaction.mutate({ transaction: data });
+    newTransaction.mutate({
+      transaction: data,
+      appointmentId: value.appointmentId,
+      orderId: value.orderId,
+      customerId: value.customerId,
+    });
   }
 
   return (
@@ -49,7 +54,7 @@ export const NewTransactionDrawer = () => {
             isOpen: false,
             orderId: null,
             appointmentId: null,
-            customerId: null,
+            customerId: "",
             onCreated: () => {},
           })
         }
@@ -59,9 +64,6 @@ export const NewTransactionDrawer = () => {
         <TransactionForm
           onSubmitAction={onSubmit}
           transaction={{
-            appointmentId: value.appointmentId,
-            orderId: value.orderId,
-            customerId: value.customerId,
             name: "",
             notes: "",
             amount: 0,

@@ -93,9 +93,16 @@ export const transactionsRouter = createTRPCRouter({
       });
     }),
   createTransaction: protectedProcedure
-    .input(z.object({ transaction: transactionSchema }))
+    .input(
+      z.object({
+        transaction: transactionSchema,
+        appointmentId: z.string().cuid2().nullish(),
+        orderId: z.string().cuid2().nullish(),
+        customerId: z.string().cuid2(),
+      }),
+    )
     .mutation(async ({ input, ctx }) => {
-      const { transaction } = input;
+      const { transaction, appointmentId, orderId, customerId } = input;
 
       const c = await prisma.transaction.create({
         data: {
@@ -105,6 +112,18 @@ export const transactionsRouter = createTRPCRouter({
           type: transaction.type,
         },
       });
+
+      if (transaction.type === "CASH") {
+        const ta = await prisma.transactionAllocation.create({
+          data: {
+            transactionId: c.id,
+            orderId,
+            appointmentId,
+            customerId,
+            amount: transaction.amount,
+          },
+        });
+      }
 
       return c;
     }),
