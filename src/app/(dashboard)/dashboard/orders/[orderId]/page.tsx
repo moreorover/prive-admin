@@ -28,10 +28,10 @@ export default async function Page({ params }: Props) {
     orderId,
   });
   void trpc.orderItems.getProductOptionsByOrderId.prefetch({ orderId });
-  void trpc.transactions.getManyByAppointmentId.prefetch({
-    appointmentId: null,
-    orderId: null,
-    includeCustomer: false,
+  void trpc.transactions.getTransactionOptions.prefetch();
+  void trpc.transactionAllocations.getByAppointmentAndOrderId.prefetch({
+    orderId,
+    includeCustomer: true,
   });
 
   return (

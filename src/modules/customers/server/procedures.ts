@@ -6,12 +6,12 @@ import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { customerSchema } from "@/lib/schemas";
 
 export const customersRouter = createTRPCRouter({
-  getAll: protectedProcedure.query(async ({ ctx }) => {
+  getAll: protectedProcedure.query(async ({}) => {
     return prisma.customer.findMany();
   }),
   create: protectedProcedure
     .input(z.object({ customer: customerSchema }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { customer } = input;
 
       const c = await prisma.customer.create({
@@ -22,7 +22,7 @@ export const customersRouter = createTRPCRouter({
     }),
   update: protectedProcedure
     .input(z.object({ customer: customerSchema }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { customer } = input;
 
       const c = await prisma.customer.update({
@@ -34,7 +34,7 @@ export const customersRouter = createTRPCRouter({
     }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string().cuid2() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { id } = input;
 
       const customer = await prisma.customer.findUnique({
@@ -49,7 +49,7 @@ export const customersRouter = createTRPCRouter({
     }),
   getClientByAppointmentId: protectedProcedure
     .input(z.object({ appointmentId: z.string().cuid2() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { appointmentId } = input;
 
       const appointment = await prisma.appointment.findUnique({
@@ -65,7 +65,7 @@ export const customersRouter = createTRPCRouter({
     }),
   getPersonnelByAppointmentId: protectedProcedure
     .input(z.object({ appointmentId: z.string().cuid2() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { appointmentId } = input;
 
       const appointment = await prisma.appointment.findUnique({
@@ -87,7 +87,7 @@ export const customersRouter = createTRPCRouter({
     }),
   getAvailablePersonnelByAppointmentId: protectedProcedure
     .input(z.object({ appointmentId: z.string().cuid2() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { appointmentId } = input;
 
       const appointment = await prisma.appointment.findUnique({

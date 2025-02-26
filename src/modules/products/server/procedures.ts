@@ -6,12 +6,12 @@ import { TRPCError } from "@trpc/server";
 import { productSchema } from "@/lib/schemas";
 
 export const productsRouter = createTRPCRouter({
-  getAll: protectedProcedure.query(async ({ ctx }) => {
+  getAll: protectedProcedure.query(async ({}) => {
     return prisma.product.findMany();
   }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string().cuid2() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { id } = input;
 
       const product = await prisma.product.findUnique({
@@ -27,7 +27,7 @@ export const productsRouter = createTRPCRouter({
     }),
   create: protectedProcedure
     .input(z.object({ product: productSchema }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { product } = input;
 
       const c = await prisma.product.create({
@@ -38,7 +38,7 @@ export const productsRouter = createTRPCRouter({
     }),
   update: protectedProcedure
     .input(z.object({ product: productSchema }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { product } = input;
 
       const c = await prisma.product.update({

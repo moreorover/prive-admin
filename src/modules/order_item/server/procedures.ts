@@ -11,7 +11,7 @@ export const orderItemsRouter = createTRPCRouter({
         orderItem: orderItemSchema,
       }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { orderItem } = input;
 
       const createdOrderItem = await prisma.orderItem.create({
@@ -32,7 +32,7 @@ export const orderItemsRouter = createTRPCRouter({
         orderItem: orderItemSchema,
       }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { orderItem } = input;
 
       const updatedOrderItem = await prisma.orderItem.update({
@@ -48,7 +48,7 @@ export const orderItemsRouter = createTRPCRouter({
     }),
   getByOrderId: protectedProcedure
     .input(z.object({ orderId: z.string().cuid2() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { orderId } = input;
 
       const orderItems = await prisma.orderItem.findMany({
@@ -60,7 +60,7 @@ export const orderItemsRouter = createTRPCRouter({
     }),
   getProductOptionsByOrderId: protectedProcedure
     .input(z.object({ orderId: z.string().cuid2() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { orderId } = input;
 
       const orderItems = await prisma.orderItem.findMany({

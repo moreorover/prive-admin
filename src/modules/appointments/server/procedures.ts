@@ -11,7 +11,7 @@ dayjs.extend(isoWeek);
 export const appointmentsRouter = createTRPCRouter({
   getOne: protectedProcedure
     .input(z.object({ id: z.string().cuid2() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { id } = input;
 
       const appointment = await prisma.appointment.findUnique({
@@ -27,7 +27,7 @@ export const appointmentsRouter = createTRPCRouter({
     }),
   create: protectedProcedure
     .input(z.object({ appointment: appointmentSchema, clientId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { appointment, clientId } = input;
 
       const c = await prisma.appointment.create({
@@ -42,7 +42,7 @@ export const appointmentsRouter = createTRPCRouter({
     }),
   update: protectedProcedure
     .input(z.object({ appointment: appointmentSchema }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { appointment } = input;
 
       const c = await prisma.appointment.update({
@@ -59,7 +59,7 @@ export const appointmentsRouter = createTRPCRouter({
     .input(
       z.object({ personnel: z.array(z.string()), appointmentId: z.string() }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { personnel, appointmentId } = input;
 
       const data = personnel.map((p) => ({
@@ -73,7 +73,7 @@ export const appointmentsRouter = createTRPCRouter({
     }),
   getAppointmentsForWeek: protectedProcedure
     .input(z.object({ offset: z.number().int() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { offset } = input;
       const startOfWeek = dayjs()
         .isoWeekday(1)
@@ -97,7 +97,7 @@ export const appointmentsRouter = createTRPCRouter({
     }),
   getAppointmentsByCustomerId: protectedProcedure
     .input(z.object({ customerId: z.string().cuid2() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { customerId } = input;
 
       const appointments = await prisma.appointment.findMany({

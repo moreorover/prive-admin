@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { z } from "zod";
-import { productSchema, productVariantSchema } from "@/lib/schemas";
+import { productVariantSchema } from "@/lib/schemas";
 
 export const productVariantsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -12,7 +12,7 @@ export const productVariantsRouter = createTRPCRouter({
         productId: z.string().cuid2(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { productVariant, productId } = input;
 
       const c = await prisma.productVariant.create({
@@ -27,7 +27,7 @@ export const productVariantsRouter = createTRPCRouter({
     }),
   update: protectedProcedure
     .input(z.object({ productVariant: productVariantSchema }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { productVariant } = input;
 
       const c = await prisma.productVariant.update({

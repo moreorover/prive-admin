@@ -6,38 +6,36 @@ import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { transactionIdSchema, transactionSchema } from "@/lib/schemas";
 
 export const transactionsRouter = createTRPCRouter({
-  getAll: protectedProcedure.query(async ({ ctx }) => {
+  getAll: protectedProcedure.query(async ({}) => {
     const transactions = await prisma.transaction.findMany();
 
     return transactions;
   }),
-  getAllTransactionsWithAllocations: protectedProcedure.query(
-    async ({ ctx }) => {
-      const transactions = await prisma.transaction.findMany({
-        include: {
-          allocations: { include: { customer: true } }, // Include related allocations
-        },
-      });
+  getAllTransactionsWithAllocations: protectedProcedure.query(async ({}) => {
+    const transactions = await prisma.transaction.findMany({
+      include: {
+        allocations: { include: { customer: true } }, // Include related allocations
+      },
+    });
 
-      // Transform data to include allocated and remaining amounts
-      const transactionsWithComputedFields = transactions.map((transaction) => {
-        const allocatedAmount = transaction.allocations.reduce(
-          (sum, alloc) => sum + alloc.amount,
-          0,
-        );
-        const remainingAmount = transaction.amount - allocatedAmount;
+    // Transform data to include allocated and remaining amounts
+    const transactionsWithComputedFields = transactions.map((transaction) => {
+      const allocatedAmount = transaction.allocations.reduce(
+        (sum, alloc) => sum + alloc.amount,
+        0,
+      );
+      const remainingAmount = transaction.amount - allocatedAmount;
 
-        return {
-          ...transaction,
-          allocatedAmount,
-          remainingAmount,
-        };
-      });
+      return {
+        ...transaction,
+        allocatedAmount,
+        remainingAmount,
+      };
+    });
 
-      return transactionsWithComputedFields;
-    },
-  ),
-  getTransactionOptions: protectedProcedure.query(async ({ ctx }) => {
+    return transactionsWithComputedFields;
+  }),
+  getTransactionOptions: protectedProcedure.query(async ({}) => {
     const transactions = await prisma.transaction.findMany({
       include: {
         allocations: true, // Fetch allocations for each transaction
@@ -56,7 +54,7 @@ export const transactionsRouter = createTRPCRouter({
   }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string().cuid2() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { id } = input;
 
       const transaction = await prisma.transaction.findUnique({
@@ -76,7 +74,7 @@ export const transactionsRouter = createTRPCRouter({
         includeCustomer: z.boolean(),
       }),
     )
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { orderId, includeCustomer } = input;
 
       return prisma.transaction.findMany({
@@ -101,7 +99,7 @@ export const transactionsRouter = createTRPCRouter({
         customerId: z.string().cuid2(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { transaction, appointmentId, orderId, customerId } = input;
 
       const c = await prisma.transaction.create({
@@ -114,7 +112,7 @@ export const transactionsRouter = createTRPCRouter({
       });
 
       if (transaction.type === "CASH") {
-        const ta = await prisma.transactionAllocation.create({
+        await prisma.transactionAllocation.create({
           data: {
             transactionId: c.id,
             orderId,
@@ -129,7 +127,7 @@ export const transactionsRouter = createTRPCRouter({
     }),
   update: protectedProcedure
     .input(z.object({ transaction: transactionSchema }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { transaction } = input;
 
       const c = await prisma.transaction.update({
@@ -146,7 +144,7 @@ export const transactionsRouter = createTRPCRouter({
     }),
   createTransactions: protectedProcedure
     .input(z.object({ transactions: z.array(transactionSchema) }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { transactions } = input;
 
       // const transactionBatch = await prisma.transactionBatch.create({
@@ -177,7 +175,7 @@ export const transactionsRouter = createTRPCRouter({
         id: transactionIdSchema,
       }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { id } = input;
 
       const transaction = await prisma.transaction.findUnique({
