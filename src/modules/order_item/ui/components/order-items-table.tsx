@@ -11,11 +11,7 @@ interface Props {
   onUpdatedAction: () => void;
 }
 
-export const OrderItemsTable = ({
-  orderItems,
-  productOptions,
-  onUpdatedAction,
-}: Props) => {
+export const OrderItemsTable = ({ orderItems, onUpdatedAction }: Props) => {
   const showEditOrderItemDrawer = useSetAtom(editOrderItemDrawerAtom);
 
   const rows = orderItems.map((orderItem) => (

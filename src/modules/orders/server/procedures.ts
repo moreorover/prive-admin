@@ -9,7 +9,7 @@ import { orderSchema } from "@/lib/schemas";
 dayjs.extend(isoWeek);
 
 export const ordersRouter = createTRPCRouter({
-  getAll: protectedProcedure.query(async ({ ctx }) => {
+  getAll: protectedProcedure.query(async ({}) => {
     const orders = await prisma.order.findMany({
       include: { customer: true },
     });
@@ -18,7 +18,7 @@ export const ordersRouter = createTRPCRouter({
   }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string().cuid2() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { id } = input;
 
       const order = await prisma.order.findUnique({
@@ -34,7 +34,7 @@ export const ordersRouter = createTRPCRouter({
     }),
   create: protectedProcedure
     .input(z.object({ order: orderSchema, customerId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { order, customerId } = input;
 
       const c = await prisma.order.create({
@@ -49,7 +49,7 @@ export const ordersRouter = createTRPCRouter({
     }),
   update: protectedProcedure
     .input(z.object({ order: orderSchema }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { order } = input;
 
       const c = await prisma.order.update({
@@ -64,7 +64,7 @@ export const ordersRouter = createTRPCRouter({
     }),
   getOrdersForWeek: protectedProcedure
     .input(z.object({ offset: z.number().int() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { offset } = input;
       const startOfWeek = dayjs()
         .isoWeekday(1)
@@ -88,7 +88,7 @@ export const ordersRouter = createTRPCRouter({
     }),
   getOrdersByCustomerId: protectedProcedure
     .input(z.object({ customerId: z.string().cuid2() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { customerId } = input;
 
       const orders = await prisma.order.findMany({

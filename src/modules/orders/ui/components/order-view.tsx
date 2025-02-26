@@ -33,10 +33,11 @@ export const OrderView = ({ orderId }: Props) => {
   const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
   const utils = trpc.useUtils();
   const [order] = trpc.orders.getOne.useSuspenseQuery({ id: orderId });
-  const [transactions] = trpc.transactions.getByOrderId.useSuspenseQuery({
-    orderId,
-    includeCustomer: true,
-  });
+  const [transactionAllocations] =
+    trpc.transactionAllocations.getByAppointmentAndOrderId.useSuspenseQuery({
+      orderId,
+      includeCustomer: true,
+    });
   const [orderItems] = trpc.orderItems.getByOrderId.useSuspenseQuery({
     orderId,
   });
@@ -44,11 +45,7 @@ export const OrderView = ({ orderId }: Props) => {
     trpc.orderItems.getProductOptionsByOrderId.useSuspenseQuery({ orderId });
 
   const [transactionOptions] =
-    trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
-      appointmentId: null,
-      orderId: null,
-      includeCustomer: false,
-    });
+    trpc.transactions.getTransactionOptions.useSuspenseQuery();
 
   return (
     <Grid>
@@ -145,6 +142,7 @@ export const OrderView = ({ orderId }: Props) => {
                   showNewTransactionDrawer({
                     isOpen: true,
                     orderId: orderId,
+                    customerId: order.customer.id,
                     onCreated: () => {
                       utils.transactions.getByOrderId.invalidate({
                         orderId,
@@ -171,11 +169,7 @@ export const OrderView = ({ orderId }: Props) => {
                           orderId,
                           includeCustomer: true,
                         });
-                        utils.transactions.getManyByAppointmentId.invalidate({
-                          appointmentId: null,
-                          orderId: null,
-                          includeCustomer: false,
-                        });
+                        utils.transactions.getTransactionOptions.invalidate();
                       },
                     },
                   })
@@ -186,13 +180,8 @@ export const OrderView = ({ orderId }: Props) => {
             </Group>
           </Group>
           <TransactionsTable
-            transactions={transactions}
-            onUpdateAction={() => {
-              utils.transactions.getByOrderId.invalidate({
-                orderId,
-                includeCustomer: true,
-              });
-            }}
+            orderId={orderId}
+            transactionAllocations={transactionAllocations}
           />
         </Paper>
       </GridCol>
