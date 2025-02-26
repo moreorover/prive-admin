@@ -1,5 +1,10 @@
 // paypalCsvConfig.ts
 import { Transaction } from "@/lib/schemas";
+import dayjs from "dayjs";
+
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+dayjs.extend(customParseFormat);
 
 export interface PayPalTransaction {
   date: string;
@@ -173,6 +178,7 @@ export const paypalTransformRow = (t: PayPalTransaction): Transaction => ({
   notes: buildPaypalNotes(t),
   amount: t.gross,
   type: "PAYPAL",
+  createdAt: dayjs(`${t.date} ${t.time}`, "DD/MM/YYYY HH:mm:ss").toDate(),
 });
 
 export const paypalFilterRow = (t: PayPalTransaction): boolean =>

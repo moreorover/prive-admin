@@ -72,6 +72,7 @@ export const transactionSchema = z.object({
     message: "Amount cannot be zero",
   }),
   type: z.enum(["BANK", "CASH", "PAYPAL"]),
+  createdAt: z.union([z.string(), z.date(), z.undefined()]),
 });
 
 export type Transaction = z.infer<typeof transactionSchema>;

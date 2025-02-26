@@ -1,5 +1,10 @@
 // monzoCsvConfig.ts
 import { Transaction } from "@/lib/schemas";
+import dayjs from "dayjs";
+
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+dayjs.extend(customParseFormat);
 
 export interface MonzoTransaction {
   transactionId: string;
@@ -106,4 +111,5 @@ export const monzoTransformRow = (t: MonzoTransaction): Transaction => ({
   }),
   amount: t.amount,
   type: "BANK",
+  createdAt: dayjs(`${t.date} ${t.time}`, "DD/MM/YYYY HH:mm:ss").toDate(),
 });
