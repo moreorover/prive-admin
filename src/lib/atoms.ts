@@ -6,7 +6,6 @@ import {
   OrderItem,
   Product,
   ProductVariant,
-  Transaction,
   TransactionAllocation,
 } from "@/lib/schemas";
 import dayjs from "dayjs";

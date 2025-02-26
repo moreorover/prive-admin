@@ -23,10 +23,12 @@ export const EditTransactionAllocationDrawer = () => {
         setOpen({
           isOpen: false,
           transactionAllocation: {
+            id: "",
             amount: 0,
             customerId: "",
             transactionId: "",
           },
+          maxAmount: 0,
           onUpdated: () => {},
         });
       },
@@ -50,10 +52,12 @@ export const EditTransactionAllocationDrawer = () => {
         setOpen({
           isOpen: false,
           transactionAllocation: {
+            id: "",
             amount: 0,
             customerId: "",
             transactionId: "",
           },
+          maxAmount: 0,
           onUpdated: () => {},
         })
       }

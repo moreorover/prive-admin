@@ -4,10 +4,9 @@ import prisma from "@/lib/prisma";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { transactionAllocationSchema } from "@/lib/schemas";
-import { Simulate } from "react-dom/test-utils";
 
 export const transactionAllocationsRouter = createTRPCRouter({
-  getAll: protectedProcedure.query(async ({ ctx }) => {
+  getAll: protectedProcedure.query(async ({}) => {
     const transactions = await prisma.transactionAllocation.findMany({
       include: { order: true, customer: true },
     });
@@ -16,7 +15,7 @@ export const transactionAllocationsRouter = createTRPCRouter({
   }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string().cuid2() }))
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { id } = input;
 
       const transaction = await prisma.transactionAllocation.findUnique({
@@ -37,7 +36,7 @@ export const transactionAllocationsRouter = createTRPCRouter({
         includeCustomer: z.boolean(),
       }),
     )
-    .query(async ({ input, ctx }) => {
+    .query(async ({ input }) => {
       const { appointmentId, orderId, includeCustomer } = input;
 
       const allocations = await prisma.transactionAllocation.findMany({
@@ -81,7 +80,7 @@ export const transactionAllocationsRouter = createTRPCRouter({
     }),
   create: protectedProcedure
     .input(z.object({ transactionAllocation: transactionAllocationSchema }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { transactionAllocation } = input;
 
       const c = await prisma.transactionAllocation.create({
@@ -108,7 +107,7 @@ export const transactionAllocationsRouter = createTRPCRouter({
         }),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { transactionAllocation } = input;
 
       const c = await prisma.transactionAllocation.update({
@@ -125,7 +124,7 @@ export const transactionAllocationsRouter = createTRPCRouter({
     }),
   delete: protectedProcedure
     .input(z.object({ transactionAllocationId: z.string().cuid2() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { transactionAllocationId } = input;
 
       const c = await prisma.transactionAllocation.delete({
@@ -143,7 +142,7 @@ export const transactionAllocationsRouter = createTRPCRouter({
         customerId: z.string(),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const { transactionIds, appointmentId, orderId, customerId } = input;
 
       const transactionAllocations = transactionIds.map((transactionId) => ({
