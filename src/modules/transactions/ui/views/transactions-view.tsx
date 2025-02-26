@@ -6,8 +6,7 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import TransactionsTable from "@/modules/transactions/ui/components/transactions-table";
-import { MonzoUpload } from "@/modules/transactions/ui/components/monzo-upload";
-import { PayPalUpload } from "@/modules/transactions/ui/components/paypal-upload";
+import { CsvUploadButton } from "@/modules/transactions/ui/components/csv-upload-button";
 
 export const TransactionsView = () => {
   return (
@@ -35,8 +34,7 @@ function TransactionsSuspense() {
               {/*
               TODO: make sure that createdAt transaction field is read from CSV provided
               */}
-              <MonzoUpload />
-              <PayPalUpload />
+              <CsvUploadButton />
             </Group>
           </Group>
         </Paper>

@@ -1,34 +1,27 @@
 "use client";
 
 import { useCSVReader } from "react-papaparse";
-import { Button } from "@mantine/core";
+import { Button, Group } from "@mantine/core";
 import React from "react";
 import { Upload } from "lucide-react";
+import { useSmartCsvParser } from "@/modules/transactions/hooks/useSmartCsvParser";
 
-const INITIAL_IMPORT_RESULTS = {
-  data: [],
-  errors: [],
-  meta: {},
-};
-
-type Props = {
-  text: string;
-  onUploadAction: (results: typeof INITIAL_IMPORT_RESULTS) => void;
-};
-
-export const CsvUploadButton = ({ text, onUploadAction }: Props) => {
+export const CsvUploadButton = () => {
   const { CSVReader } = useCSVReader();
+  const parseCsvData = useSmartCsvParser();
 
   return (
-    <CSVReader onUploadAccepted={onUploadAction}>
+    <CSVReader onUploadAccepted={parseCsvData}>
       {({
         getRootProps,
       }: {
         getRootProps: () => React.ButtonHTMLAttributes<HTMLButtonElement>;
       }) => (
         <Button size="sm" className="w-full lg:w-auto" {...getRootProps()}>
-          <Upload />
-          {text} Import
+          <Group>
+            <Upload />
+            Import CSV
+          </Group>
         </Button>
       )}
     </CSVReader>
