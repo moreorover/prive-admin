@@ -7,6 +7,7 @@ import { transactionsRouter } from "@/modules/transactions/server/procedures";
 
 import { createTRPCRouter } from "@/trpc/init";
 import { orderItemsRouter } from "@/modules/order_item/server/procedures";
+import { transactionAllocationsRouter } from "@/modules/transaction_allocations/server/procedures";
 
 export const appRouter = createTRPCRouter({
   appointments: appointmentsRouter,
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   products: productsRouter,
   productVariants: productVariantsRouter,
   transactions: transactionsRouter,
+  transactionAllocations: transactionAllocationsRouter,
 });
 // export type definition of API
 export type AppRouter = typeof appRouter;

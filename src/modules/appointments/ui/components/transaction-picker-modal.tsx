@@ -27,7 +27,6 @@ export const TransactionPickerModal = ({
   transactionOptions: GetTransactionOptions;
   onPicked: () => void;
 }>) => {
-  const utils = trpc.useUtils();
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -62,29 +61,30 @@ export const TransactionPickerModal = ({
     );
   };
 
-  const pickTransactions = trpc.transactions.assignTransactions.useMutation({
-    onSuccess: () => {
-      innerProps.onPicked();
-      notifications.show({
-        color: "green",
-        title: "Success!",
-        message: "Transactions picked.",
-      });
-      context.closeModal(id);
-    },
-    onError: () => {
-      notifications.show({
-        color: "red",
-        title: "Failed to pick Transactions",
-        message: "Please try again.",
-      });
-    },
-  });
+  const pickTransactions =
+    trpc.transactionAllocations.allocateTransactions.useMutation({
+      onSuccess: () => {
+        innerProps.onPicked();
+        notifications.show({
+          color: "green",
+          title: "Success!",
+          message: "Transactions picked.",
+        });
+        context.closeModal(id);
+      },
+      onError: () => {
+        notifications.show({
+          color: "red",
+          title: "Failed to pick Transactions",
+          message: "Please try again.",
+        });
+      },
+    });
 
   function onConfirmAction(selectedRows: string[]) {
     if (selectedRows.length > 0) {
       pickTransactions.mutate({
-        transactions: selectedRows,
+        transactionIds: selectedRows,
         appointmentId: innerProps.appointmentId,
         orderId: innerProps.orderId,
         customerId: innerProps.customerId,
@@ -97,17 +97,6 @@ export const TransactionPickerModal = ({
       });
     }
   }
-
-  const onSuccess = () => {
-    utils.transactions.getManyByAppointmentId.invalidate({
-      appointmentId: innerProps.appointmentId,
-      includeCustomer: true,
-    });
-    utils.transactions.getManyByAppointmentId.invalidate({
-      appointmentId: null,
-      includeCustomer: false,
-    });
-  };
 
   const rows = filteredTransactions.map((transaction) => (
     <Table.Tr

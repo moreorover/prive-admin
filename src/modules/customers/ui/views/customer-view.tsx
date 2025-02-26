@@ -15,7 +15,11 @@ import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { AppointmentsTable } from "@/modules/customers/ui/components/appointments-table";
 import { useSetAtom } from "jotai";
-import { editCustomerDrawerAtom, newOrderDrawerAtom } from "@/lib/atoms";
+import {
+  editCustomerDrawerAtom,
+  newAppointmentDrawerAtom,
+  newOrderDrawerAtom,
+} from "@/lib/atoms";
 import { OrdersTable } from "@/modules/orders/ui/components/orders-table";
 
 interface Props {
@@ -44,6 +48,7 @@ function CustomerSuspense({ customerId }: Props) {
   });
   const showUpdateCustomerDrawer = useSetAtom(editCustomerDrawerAtom);
   const showCreateOrderDrawer = useSetAtom(newOrderDrawerAtom);
+  const showCreateAppointmentDrawer = useSetAtom(newAppointmentDrawerAtom);
 
   return (
     <Grid>
@@ -74,7 +79,21 @@ function CustomerSuspense({ customerId }: Props) {
           <Group justify="space-between">
             <Title order={4}>Appointments</Title>
             <Group>
-              <Button disabled>New</Button>
+              <Button
+                onClick={() => {
+                  showCreateAppointmentDrawer({
+                    isOpen: true,
+                    clientId: customer.id,
+                    onCreated: () => {
+                      utils.appointments.getAppointmentsByCustomerId.invalidate(
+                        { customerId },
+                      );
+                    },
+                  });
+                }}
+              >
+                New
+              </Button>
             </Group>
           </Group>
           {appointments.length > 0 ? (

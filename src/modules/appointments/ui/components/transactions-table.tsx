@@ -4,41 +4,43 @@ import { Badge, Button, Menu, ScrollArea, Table, Text } from "@mantine/core";
 import { trpc } from "@/trpc/client";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
-import { Transaction } from "@/lib/schemas";
-import { GetTransactionByAppointmentId } from "@/modules/appointments/types";
+import { GetTransactionAllocationsByAppointmentAndOrder } from "@/modules/appointments/types";
 import Link from "next/link";
+import { useSetAtom } from "jotai/index";
+import { editTransactionAllocationDrawerAtom } from "@/lib/atoms";
 
 interface Props {
   appointmentId: string;
-  transactions: GetTransactionByAppointmentId;
+  transactionAllocations: GetTransactionAllocationsByAppointmentAndOrder;
 }
 
 export default function TransactionsTable({
   appointmentId,
-  transactions,
+  transactionAllocations,
 }: Props) {
   const utils = trpc.useUtils();
 
-  const unassignTransaction = trpc.transactions.setAppointmentId.useMutation({
+  const showEditTransactionAllocationDrawer = useSetAtom(
+    editTransactionAllocationDrawerAtom,
+  );
+
+  const deleteTransaction = trpc.transactionAllocations.delete.useMutation({
     onSuccess: () => {
       notifications.show({
         color: "green",
         title: "Success!",
-        message: "Transaction unassigned.",
+        message: "Transaction deleted.",
       });
-      utils.transactions.getManyByAppointmentId.invalidate({
+      utils.transactionAllocations.getByAppointmentAndOrderId.invalidate({
         appointmentId,
         includeCustomer: true,
       });
-      utils.transactions.getManyByAppointmentId.invalidate({
-        appointmentId: null,
-        includeCustomer: false,
-      });
+      utils.transactions.getTransactionOptions.invalidate();
     },
     onError: () => {
       notifications.show({
         color: "red",
-        title: "Failed to unassign transaction",
+        title: "Failed to delete transaction",
         message: "Please try again.",
       });
     },
@@ -51,43 +53,42 @@ export default function TransactionsTable({
       currency: "GBP",
     }).format(amount);
 
-  const openDeleteModal = (transaction: Transaction) =>
+  const openDeleteModal = (transactionAllocationId: string) =>
     modals.openConfirmModal({
-      title: "Unassign Transaction from this Appointment?",
+      title: "Delete Transaction?",
       centered: true,
       children: (
-        <Text size="sm">
-          Are you sure you want to unassign this transaction?
-        </Text>
+        <Text size="sm">Are you sure you want to delete this transaction?</Text>
       ),
-      labels: { confirm: "Unassign Transactions", cancel: "Cancel" },
+      labels: { confirm: "Delete Transaction", cancel: "Cancel" },
       confirmProps: { color: "red" },
       onCancel: () => {},
       onConfirm: () =>
-        unassignTransaction.mutate({
-          transactionId: transaction.id!,
-          appointmentId: null,
+        deleteTransaction.mutate({
+          transactionAllocationId,
         }),
     });
 
-  const rows = transactions.map((transaction) => (
-    <Table.Tr key={transaction.id}>
+  const rows = transactionAllocations.map((transactionAllocation) => (
+    <Table.Tr key={transactionAllocation.id}>
       <Table.Td>
-        <Text>{transaction.customer?.name}</Text>
+        <Text>{transactionAllocation.customer?.name}</Text>
       </Table.Td>
       <Table.Td>
-        <Text>{transaction.name}</Text>
+        <Text>{transactionAllocation.transaction.name}</Text>
       </Table.Td>
       <Table.Td>
         <Badge
-          color={transaction.type === "CASH" ? "blue" : "green"}
+          color={
+            transactionAllocation.transaction.type === "CASH" ? "blue" : "green"
+          }
           variant="light"
         >
-          {transaction.type}
+          {transactionAllocation.transaction.type}
         </Badge>
       </Table.Td>
       <Table.Td>
-        <Text>{formatAmount(transaction.amount)}</Text>
+        <Text>{formatAmount(transactionAllocation.amount)}</Text>
       </Table.Td>
       <Table.Td>
         <Menu shadow="md" width={200}>
@@ -97,15 +98,40 @@ export default function TransactionsTable({
 
           <Menu.Dropdown>
             <Menu.Label>Transactions</Menu.Label>
-            <Link href={`/dashboard/transactions/${transaction.id}`}>
+            <Menu.Item
+              onClick={() => {
+                showEditTransactionAllocationDrawer({
+                  isOpen: true,
+                  transactionAllocation,
+                  maxAmount: transactionAllocation.remainingAllocation,
+                  onUpdated: () => {
+                    utils.transactionAllocations.getByAppointmentAndOrderId.invalidate(
+                      {
+                        appointmentId,
+                        includeCustomer: true,
+                      },
+                    );
+                    utils.transactions.getTransactionOptions.invalidate();
+                  },
+                });
+              }}
+            >
+              Edit
+            </Menu.Item>
+            <Link href={`/dashboard/transactions/${transactionAllocation.id}`}>
               <Menu.Item>View</Menu.Item>
+            </Link>
+            <Link
+              href={`/dashboard/transactions/${transactionAllocation.transaction.id}`}
+            >
+              <Menu.Item>View Parent Transaction</Menu.Item>
             </Link>
             <Menu.Item
               onClick={() => {
-                openDeleteModal(transaction);
+                openDeleteModal(transactionAllocation.id);
               }}
             >
-              Unassign
+              Delete
             </Menu.Item>
           </Menu.Dropdown>
         </Menu>

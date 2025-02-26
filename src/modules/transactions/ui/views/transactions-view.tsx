@@ -43,7 +43,8 @@ function TransactionsSuspense() {
     });
   }, [showNewTransactionDrawer, utils.transactions.getAll]);
 
-  const [transactions] = trpc.transactions.getAll.useSuspenseQuery();
+  const [transactions] =
+    trpc.transactions.getAllTransactionsWithAllocations.useSuspenseQuery();
 
   return (
     <Grid>
@@ -52,6 +53,9 @@ function TransactionsSuspense() {
           <Group justify="space-between">
             <Title order={4}>Transactions</Title>
             <Group>
+              {/*
+              TODO: make sure that createdAt transaction field is read from CSV provided
+              */}
               <MonzoUpload />
               <PayPalUpload />
               <Button
@@ -70,7 +74,7 @@ function TransactionsSuspense() {
             <TransactionsTable
               transactions={transactions}
               onUpdateAction={() => {
-                utils.transactions.getAll.invalidate();
+                utils.transactions.getAllTransactionsWithAllocations.invalidate();
               }}
             />
           ) : (

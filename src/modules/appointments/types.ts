@@ -8,11 +8,11 @@ export type GetAppointmentsForWeek =
 export type GetPersonnelByAppointmentId =
   inferRouterOutputs<AppRouter>["customers"]["getPersonnelByAppointmentId"];
 
-export type GetTransactionByAppointmentId =
-  inferRouterOutputs<AppRouter>["transactions"]["getManyByAppointmentId"];
-
 export type GetPersonnelOptions =
   inferRouterOutputs<AppRouter>["customers"]["getPersonnelByAppointmentId"];
 
+export type GetTransactionAllocationsByAppointmentAndOrder =
+  inferRouterOutputs<AppRouter>["transactionAllocations"]["getByAppointmentAndOrderId"];
+
 export type GetTransactionOptions =
-  inferRouterOutputs<AppRouter>["transactions"]["getManyByAppointmentId"];
+  inferRouterOutputs<AppRouter>["transactions"]["getTransactionOptions"];

@@ -44,8 +44,8 @@ function AppointmentSuspense({ appointmentId }: Props) {
       appointmentId,
     });
 
-  const [transactions] =
-    trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
+  const [transactionAllocations] =
+    trpc.transactionAllocations.getByAppointmentAndOrderId.useSuspenseQuery({
       appointmentId,
       includeCustomer: true,
     });
@@ -56,11 +56,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
     });
 
   const [transactionOptions] =
-    trpc.transactions.getManyByAppointmentId.useSuspenseQuery({
-      appointmentId: null,
-      orderId: null,
-      includeCustomer: false,
-    });
+    trpc.transactions.getTransactionOptions.useSuspenseQuery();
 
   const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
 
@@ -141,7 +137,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
           </Group>
           <TransactionsTable
             appointmentId={appointmentId}
-            transactions={transactions}
+            transactionAllocations={transactionAllocations}
           />
         </Paper>
       </GridCol>
