@@ -50,21 +50,24 @@ export const TransactionsView = () => {
       </GridCol>
       <GridCol span={3}>
         <Paper withBorder p="md" radius="md" shadow="sm">
-          <Center>
-            <DatePicker
-              type="range"
-              value={pendingDates}
-              onChange={setStartAndEnd}
-            />
-          </Center>
-          <Center>
-            <Button
-              onClick={confirmDateSelection}
-              disabled={!isConfirmationPending()}
-            >
-              Apply
-            </Button>
-          </Center>
+          <Group justify="space-between">
+            <Center>
+              <DatePicker
+                // size="xs"
+                type="range"
+                value={pendingDates}
+                onChange={setStartAndEnd}
+              />
+            </Center>
+            <Center>
+              <Button
+                onClick={confirmDateSelection}
+                disabled={!isConfirmationPending()}
+              >
+                Apply
+              </Button>
+            </Center>
+          </Group>
         </Paper>
       </GridCol>
       <Suspense
