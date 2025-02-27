@@ -17,19 +17,22 @@ export default async function Page({ searchParams }: Props) {
     return redirect("/");
   }
 
-  const searchParamWeekOffset = (await searchParams).weekOffset;
-  let weekOffset = 0;
+  const searchParamWeekOffset = (await searchParams).offset;
+  let offset;
+  if (!searchParamWeekOffset) {
+    offset = 0;
+  }
   if (typeof searchParamWeekOffset === "string") {
-    weekOffset = parseInt(searchParamWeekOffset) || 0;
+    offset = parseInt(searchParamWeekOffset) || 0;
   }
 
   void trpc.appointments.getAppointmentsForWeek.prefetch({
-    offset: weekOffset,
+    offset,
   });
 
   return (
     <HydrateClient>
-      <AppointmentsView weekOffset={weekOffset} />
+      <AppointmentsView offset={offset} />
     </HydrateClient>
   );
 }
