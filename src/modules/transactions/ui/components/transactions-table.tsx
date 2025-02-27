@@ -7,6 +7,7 @@ import { trpc } from "@/trpc/client";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import { ChevronRight, Trash2 } from "lucide-react";
+import dayjs from "dayjs";
 
 interface Props {
   transactions: GetAllTransactionsWithAllocations;
@@ -86,6 +87,9 @@ export default function TransactionsTable({
           </ActionIcon>
         </Table.Td>
         <Table.Td>
+          {dayjs(transaction.createdAt).format("DD MMM YYYY HH:mm")}
+        </Table.Td>
+        <Table.Td>
           <Text>{transaction.name}</Text>
         </Table.Td>
         <Table.Td>
@@ -123,6 +127,9 @@ export default function TransactionsTable({
         ? transaction.allocations.map((allocation) => (
             <Table.Tr key={allocation.id} bg="gray.0">
               <Table.Td />
+              <Table.Td>
+                {dayjs(allocation.createdAt).format("DD MMM YYYY HH:mm")}
+              </Table.Td>
               <Table.Td colSpan={3}>
                 <Group>
                   <Text size="sm">Customer: {allocation.customer.name}</Text>
@@ -146,6 +153,7 @@ export default function TransactionsTable({
       <Table.Thead>
         <Table.Tr>
           <Table.Th />
+          <Table.Th>Created At</Table.Th>
           <Table.Th>Transaction Name</Table.Th>
           <Table.Th>Type</Table.Th>
           <Table.Th>Amount</Table.Th>
