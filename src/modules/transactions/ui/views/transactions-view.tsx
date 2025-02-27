@@ -2,6 +2,7 @@
 
 import {
   Button,
+  Center,
   Grid,
   GridCol,
   Group,
@@ -14,11 +15,11 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import TransactionsTable from "@/modules/transactions/ui/components/transactions-table";
-import useMonthOffset from "@/hooks/useMonthOffset";
-import dayjs from "dayjs";
 import { LineChart } from "@mantine/charts";
 import { CsvUploadButton } from "@/modules/transactions/ui/components/csv-upload-button";
 import { aggregateTransactions } from "@/modules/transactions/hooks/chartUtils";
+import { DatePicker } from "@mantine/dates";
+import useDateRangeMonth from "@/hooks/useDateRangeMonth";
 
 interface Props {
   startDate: string;
@@ -27,13 +28,13 @@ interface Props {
 
 export const TransactionsView = () => {
   const {
-    isCurrentMonth,
     startOfMonth,
     endOfMonth,
-    addMonth,
-    subtractMonth,
-    resetMonth,
-  } = useMonthOffset();
+    pendingDates,
+    setStartAndEnd,
+    confirmDateSelection,
+    isConfirmationPending,
+  } = useDateRangeMonth();
 
   return (
     <Grid>
@@ -42,27 +43,37 @@ export const TransactionsView = () => {
           <Group justify="space-between">
             <Title order={4}>Transactions</Title>
             <Group>
-              {!isCurrentMonth && (
-                <Button onClick={resetMonth} variant="light" color="cyan">
-                  Current Month
-                </Button>
-              )}
-              <Button variant="light" onClick={subtractMonth}>
-                Previous Month
-              </Button>
-              <Text>
-                {dayjs(startOfMonth).format("MMM, YYYY")} -{" "}
-                {dayjs(endOfMonth).format("MMM, YYYY")}
-              </Text>
-              <Button variant="light" onClick={addMonth}>
-                Next Month
-              </Button>
               <CsvUploadButton />
             </Group>
           </Group>
         </Paper>
       </GridCol>
-      <Suspense fallback={<LoaderSkeleton />}>
+      <GridCol span={3}>
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          <Center>
+            <DatePicker
+              type="range"
+              value={pendingDates}
+              onChange={setStartAndEnd}
+            />
+          </Center>
+          <Center>
+            <Button
+              onClick={confirmDateSelection}
+              disabled={!isConfirmationPending()}
+            >
+              Apply
+            </Button>
+          </Center>
+        </Paper>
+      </GridCol>
+      <Suspense
+        fallback={
+          <GridCol>
+            <LoaderSkeleton />
+          </GridCol>
+        }
+      >
         <ErrorBoundary fallback={<p>Error</p>}>
           <TransactionsSuspense startDate={startOfMonth} endDate={endOfMonth} />
         </ErrorBoundary>
@@ -84,7 +95,7 @@ function TransactionsSuspense({ startDate, endDate }: Props) {
 
   return (
     <>
-      <GridCol span={12}>
+      <GridCol span={9}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           {transactions.length > 0 ? (
             <LineChart
