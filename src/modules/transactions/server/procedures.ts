@@ -50,6 +50,9 @@ export const transactionsRouter = createTRPCRouter({
             lte: endOfWeek.toDate(),
           },
         },
+        orderBy: {
+          createdAt: "asc",
+        },
         include: {
           allocations: { include: { customer: true } }, // Include related allocations
         },

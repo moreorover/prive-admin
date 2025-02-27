@@ -14,13 +14,53 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import TransactionsTable from "@/modules/transactions/ui/components/transactions-table";
-import { CsvUploadButton } from "@/modules/transactions/ui/components/csv-upload-button";
 import useMonthOffset from "@/hooks/useMonthOffset";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
+import { LineChart } from "@mantine/charts";
+import { GetAllTransactionsWithAllocations } from "@/modules/transactions/types";
 
 interface Props {
   startDate: string;
   endDate: string;
+}
+
+type AggregatedResult = {
+  date: string;
+  total: number;
+}[];
+
+function aggregateTransactions(
+  startDate: string,
+  endDate: string,
+  transactions: GetAllTransactionsWithAllocations,
+): AggregatedResult {
+  const start: Dayjs = dayjs(startDate);
+  const end: Dayjs = dayjs(endDate);
+  const result: Record<string, number> = {};
+
+  // Initialize the result object with each date in the range
+  for (
+    let date = start;
+    date.isBefore(end) || date.isSame(end, "day");
+    date = date.add(1, "day")
+  ) {
+    result[date.format("YYYY-MM-DD")] = 0;
+  }
+
+  // Sum up transactions by date
+  transactions.forEach(({ createdAt, amount }) => {
+    const date = dayjs(createdAt).format("YYYY-MM-DD");
+    if (result.hasOwnProperty(date)) {
+      result[date] += amount;
+    }
+  });
+
+  // Convert result object to an array and calculate cumulative totals
+  let cumulativeTotal = 0;
+  return Object.entries(result).map(([date, total]) => {
+    cumulativeTotal += total;
+    return { date, total: cumulativeTotal };
+  });
 }
 
 export const TransactionsView = () => {
@@ -59,16 +99,11 @@ export const TransactionsView = () => {
           </Group>
         </Paper>
       </GridCol>
-      <GridCol span={12}>
-        <Suspense fallback={<LoaderSkeleton />}>
-          <ErrorBoundary fallback={<p>Error</p>}>
-            <TransactionsSuspense
-              startDate={startOfMonth}
-              endDate={endOfMonth}
-            />
-          </ErrorBoundary>
-        </Suspense>
-      </GridCol>
+      <Suspense fallback={<LoaderSkeleton />}>
+        <ErrorBoundary fallback={<p>Error</p>}>
+          <TransactionsSuspense startDate={startOfMonth} endDate={endOfMonth} />
+        </ErrorBoundary>
+      </Suspense>
     </Grid>
   );
 };
@@ -82,18 +117,36 @@ function TransactionsSuspense({ startDate, endDate }: Props) {
       endDate,
     });
 
+  const ts = aggregateTransactions(startDate, endDate, transactions);
+
   return (
-    <Paper withBorder p="md" radius="md" shadow="sm">
-      {transactions.length > 0 ? (
-        <TransactionsTable
-          transactions={transactions}
-          onUpdateAction={() => {
-            utils.transactions.getAllTransactionsWithAllocations.invalidate();
-          }}
-        />
-      ) : (
-        <Text c="gray">No transactions found.</Text>
-      )}
-    </Paper>
+    <>
+      <GridCol span={12}>
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          <LineChart
+            h={300}
+            data={ts}
+            dataKey="date"
+            unit="£"
+            series={[{ name: "total", color: "indigo.6" }]}
+            curveType="natural"
+          />
+        </Paper>
+      </GridCol>
+      <GridCol span={12}>
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          {transactions.length > 0 ? (
+            <TransactionsTable
+              transactions={transactions}
+              onUpdateAction={() => {
+                utils.transactions.getAllTransactionsWithAllocations.invalidate();
+              }}
+            />
+          ) : (
+            <Text c="gray">No transactions found.</Text>
+          )}
+        </Paper>
+      </GridCol>
+    </>
   );
 }
