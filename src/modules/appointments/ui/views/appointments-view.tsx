@@ -16,19 +16,18 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { AppointmentsTable } from "@/modules/appointments/ui/components/appointments-table";
-import useCounter from "@/hooks/useCounter";
+import useWeekOffset from "@/hooks/useWeekOffset";
 
 dayjs.extend(isoWeek);
 
 interface Props {
-  offset: number;
+  startDate: string;
+  endDate: string;
 }
 
-export const AppointmentsView = ({ offset }: Props) => {
-  const { count, increase, decrease, reset } = useCounter(offset);
-
-  const startOfWeek = dayjs().isoWeekday(1).add(count, "week").startOf("day");
-  const endOfWeek = dayjs().isoWeekday(7).add(count, "week").endOf("day");
+export const AppointmentsView = () => {
+  const { offset, startOfWeek, endOfWeek, addWeek, subtractWeek, resetWeek } =
+    useWeekOffset();
 
   return (
     <Grid>
@@ -37,19 +36,19 @@ export const AppointmentsView = ({ offset }: Props) => {
           <Group justify="space-between">
             <Title order={4}>Appointments</Title>
             <Group>
-              {count != 0 && (
-                <Button onClick={reset} variant="light" color="cyan">
+              {offset != 0 && (
+                <Button onClick={resetWeek} variant="light" color="cyan">
                   Current Week
                 </Button>
               )}
-              <Button variant="light" onClick={decrease}>
+              <Button variant="light" onClick={subtractWeek}>
                 Previous Week
               </Button>
               <Text>
-                {startOfWeek.format("MMM D, YYYY")} -{" "}
-                {endOfWeek.format("MMM D, YYYY")}
+                {dayjs(startOfWeek).format("MMM D, YYYY")} -{" "}
+                {dayjs(endOfWeek).format("MMM D, YYYY")}
               </Text>
-              <Button variant="light" onClick={increase}>
+              <Button variant="light" onClick={addWeek}>
                 Next Week
               </Button>
             </Group>
@@ -59,7 +58,7 @@ export const AppointmentsView = ({ offset }: Props) => {
       <GridCol span={12}>
         <Suspense fallback={<LoaderSkeleton />}>
           <ErrorBoundary fallback={<p>Error</p>}>
-            <AppointmentsSuspense offset={count} />
+            <AppointmentsSuspense startDate={startOfWeek} endDate={endOfWeek} />
           </ErrorBoundary>
         </Suspense>
       </GridCol>
@@ -67,21 +66,22 @@ export const AppointmentsView = ({ offset }: Props) => {
   );
 };
 
-function AppointmentsSuspense({ offset }: Props) {
+function AppointmentsSuspense({ startDate, endDate }: Props) {
   const [appointments] =
-    trpc.appointments.getAppointmentsForWeek.useSuspenseQuery({
-      offset,
+    trpc.appointments.getAppointmentsBetweenDates.useSuspenseQuery({
+      startDate,
+      endDate,
     });
 
   return (
     <>
-      {appointments.length > 0 ? (
-        <AppointmentsTable appointments={appointments} />
-      ) : (
-        <Paper withBorder p="md" radius="md" shadow="sm">
+      <Paper withBorder p="md" radius="md" shadow="sm">
+        {appointments.length > 0 ? (
+          <AppointmentsTable appointments={appointments} />
+        ) : (
           <Text c="gray">No appointments found for this week.</Text>
-        </Paper>
-      )}
+        )}
+      </Paper>
     </>
   );
 }
