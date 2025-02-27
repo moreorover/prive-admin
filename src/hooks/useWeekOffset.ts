@@ -5,39 +5,52 @@ import dayjs from "dayjs";
 function useWeekOffset(initialDate = dayjs()) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const weekOffset = Number(searchParams.get("weekOffset")) || 0;
-  const [offset, setOffset] = useState(weekOffset);
+  const weekStartParam = searchParams.get("weekStart");
+  const weekStart = weekStartParam
+    ? dayjs(weekStartParam)
+    : dayjs(initialDate).startOf("isoWeek");
 
-  const startOfWeek = dayjs(initialDate)
-    .add(offset, "week")
-    .startOf("isoWeek")
-    .format("YYYY-MM-DD");
-  const endOfWeek = dayjs(initialDate)
-    .add(offset, "week")
-    .endOf("isoWeek")
-    .format("YYYY-MM-DD");
+  const [currentWeekStart, setCurrentWeekStart] = useState(weekStart);
+  const currentWeekEnd = currentWeekStart.endOf("isoWeek");
+
+  const offset = currentWeekStart.diff(dayjs().startOf("isoWeek"), "week");
 
   useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-    params.set("weekStart", startOfWeek);
-    params.set("weekEnd", endOfWeek);
-    params.set("weekOffset", offset.toString());
-    router.replace(`?${params.toString()}`, { scroll: false });
-  }, [offset, router, searchParams, startOfWeek, endOfWeek]);
+    const currentParams = new URLSearchParams(searchParams);
+    const existingWeekStart = currentParams.get("weekStart");
+    const existingWeekEnd = currentParams.get("weekEnd");
+
+    const newWeekStart = currentWeekStart.format("YYYY-MM-DD");
+    const newWeekEnd = currentWeekEnd.format("YYYY-MM-DD");
+
+    // Only update the URL if the values are different
+    if (existingWeekStart !== newWeekStart || existingWeekEnd !== newWeekEnd) {
+      currentParams.set("weekStart", newWeekStart);
+      currentParams.set("weekEnd", newWeekEnd);
+      router.replace(`?${currentParams.toString()}`, { scroll: false });
+    }
+  }, [currentWeekStart, currentWeekEnd, router, searchParams]);
 
   const addWeek = useCallback(() => {
-    setOffset((prev) => prev + 1);
+    setCurrentWeekStart((prev) => prev.add(1, "week"));
   }, []);
 
   const subtractWeek = useCallback(() => {
-    setOffset((prev) => prev - 1);
+    setCurrentWeekStart((prev) => prev.subtract(1, "week"));
   }, []);
 
   const resetWeek = useCallback(() => {
-    setOffset(0);
+    setCurrentWeekStart(dayjs().startOf("isoWeek"));
   }, []);
 
-  return { offset, startOfWeek, endOfWeek, addWeek, subtractWeek, resetWeek };
+  return {
+    offset,
+    startOfWeek: currentWeekStart.format("YYYY-MM-DD"),
+    endOfWeek: currentWeekEnd.format("YYYY-MM-DD"),
+    addWeek,
+    subtractWeek,
+    resetWeek,
+  };
 }
 
 export default useWeekOffset;
