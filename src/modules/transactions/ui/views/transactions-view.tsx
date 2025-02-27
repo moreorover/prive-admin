@@ -15,32 +15,23 @@ import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import TransactionsTable from "@/modules/transactions/ui/components/transactions-table";
 import { CsvUploadButton } from "@/modules/transactions/ui/components/csv-upload-button";
-import useCounter from "@/hooks/useCounter";
+import useMonthOffset from "@/hooks/useMonthOffset";
+import dayjs from "dayjs";
+
+interface Props {
+  startDate: string;
+  endDate: string;
+}
 
 export const TransactionsView = () => {
-  const { count, increase, decrease, reset } = useCounter();
-  return (
-    <>
-      <Group>
-        <Button onClick={reset}>back</Button>
-        <Button onClick={decrease}>-</Button>
-        <Title>{count}</Title>
-        <Button onClick={increase}>+</Button>
-      </Group>
-      <Suspense fallback={<LoaderSkeleton />}>
-        <ErrorBoundary fallback={<p>Error</p>}>
-          <TransactionsSuspense />
-        </ErrorBoundary>
-      </Suspense>
-    </>
-  );
-};
-
-function TransactionsSuspense() {
-  const utils = trpc.useUtils();
-
-  const [transactions] =
-    trpc.transactions.getAllTransactionsWithAllocations.useSuspenseQuery();
+  const {
+    isCurrentMonth,
+    startOfMonth,
+    endOfMonth,
+    addMonth,
+    subtractMonth,
+    resetMonth,
+  } = useMonthOffset();
 
   return (
     <Grid>
@@ -49,25 +40,60 @@ function TransactionsSuspense() {
           <Group justify="space-between">
             <Title order={4}>Transactions</Title>
             <Group>
-              <CsvUploadButton />
+              {!isCurrentMonth && (
+                <Button onClick={resetMonth} variant="light" color="cyan">
+                  Current Month
+                </Button>
+              )}
+              <Button variant="light" onClick={subtractMonth}>
+                Previous Month
+              </Button>
+              <Text>
+                {dayjs(startOfMonth).format("MMM, YYYY")} -{" "}
+                {dayjs(endOfMonth).format("MMM, YYYY")}
+              </Text>
+              <Button variant="light" onClick={addMonth}>
+                Next Month
+              </Button>
             </Group>
           </Group>
         </Paper>
       </GridCol>
       <GridCol span={12}>
-        <Paper withBorder p="md" radius="md" shadow="sm">
-          {transactions.length > 0 ? (
-            <TransactionsTable
-              transactions={transactions}
-              onUpdateAction={() => {
-                utils.transactions.getAllTransactionsWithAllocations.invalidate();
-              }}
+        <Suspense fallback={<LoaderSkeleton />}>
+          <ErrorBoundary fallback={<p>Error</p>}>
+            <TransactionsSuspense
+              startDate={startOfMonth}
+              endDate={endOfMonth}
             />
-          ) : (
-            <Text c="gray">No transactions found.</Text>
-          )}
-        </Paper>
+          </ErrorBoundary>
+        </Suspense>
       </GridCol>
     </Grid>
+  );
+};
+
+function TransactionsSuspense({ startDate, endDate }: Props) {
+  const utils = trpc.useUtils();
+
+  const [transactions] =
+    trpc.transactions.getTransactionsBetweenDates.useSuspenseQuery({
+      startDate,
+      endDate,
+    });
+
+  return (
+    <Paper withBorder p="md" radius="md" shadow="sm">
+      {transactions.length > 0 ? (
+        <TransactionsTable
+          transactions={transactions}
+          onUpdateAction={() => {
+            utils.transactions.getAllTransactionsWithAllocations.invalidate();
+          }}
+        />
+      ) : (
+        <Text c="gray">No transactions found.</Text>
+      )}
+    </Paper>
   );
 }

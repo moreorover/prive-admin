@@ -26,8 +26,14 @@ interface Props {
 }
 
 export const AppointmentsView = () => {
-  const { offset, startOfWeek, endOfWeek, addWeek, subtractWeek, resetWeek } =
-    useWeekOffset();
+  const {
+    isCurrentWeek,
+    startOfWeek,
+    endOfWeek,
+    addWeek,
+    subtractWeek,
+    resetWeek,
+  } = useWeekOffset();
 
   return (
     <Grid>
@@ -36,7 +42,7 @@ export const AppointmentsView = () => {
           <Group justify="space-between">
             <Title order={4}>Appointments</Title>
             <Group>
-              {offset != 0 && (
+              {!isCurrentWeek && (
                 <Button onClick={resetWeek} variant="light" color="cyan">
                   Current Week
                 </Button>

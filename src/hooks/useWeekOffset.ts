@@ -13,8 +13,7 @@ function useWeekOffset(initialDate = dayjs()) {
   const [currentWeekStart, setCurrentWeekStart] = useState(weekStart);
   const currentWeekEnd = currentWeekStart.endOf("isoWeek");
 
-  const offset = currentWeekStart.diff(dayjs().startOf("isoWeek"), "week");
-
+  // Prevent infinite loops
   useEffect(() => {
     const currentParams = new URLSearchParams(searchParams);
     const existingWeekStart = currentParams.get("weekStart");
@@ -23,7 +22,6 @@ function useWeekOffset(initialDate = dayjs()) {
     const newWeekStart = currentWeekStart.format("YYYY-MM-DD");
     const newWeekEnd = currentWeekEnd.format("YYYY-MM-DD");
 
-    // Only update the URL if the values are different
     if (existingWeekStart !== newWeekStart || existingWeekEnd !== newWeekEnd) {
       currentParams.set("weekStart", newWeekStart);
       currentParams.set("weekEnd", newWeekEnd);
@@ -44,7 +42,7 @@ function useWeekOffset(initialDate = dayjs()) {
   }, []);
 
   return {
-    offset,
+    isCurrentWeek: currentWeekStart.isSame(dayjs().startOf("isoWeek"), "day"),
     startOfWeek: currentWeekStart.format("YYYY-MM-DD"),
     endOfWeek: currentWeekEnd.format("YYYY-MM-DD"),
     addWeek,
