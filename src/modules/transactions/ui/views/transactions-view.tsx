@@ -48,7 +48,7 @@ export const TransactionsView = () => {
           </Group>
         </Paper>
       </GridCol>
-      <GridCol span={3}>
+      <GridCol span={{ base: 12, xl: 3 }}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           <Group justify="space-between">
             <Center>
@@ -98,7 +98,7 @@ function TransactionsSuspense({ startDate, endDate }: Props) {
 
   return (
     <>
-      <GridCol span={9}>
+      <GridCol span={{ base: 12, xl: 9 }}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           {transactions.length > 0 ? (
             <LineChart
