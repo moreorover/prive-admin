@@ -99,6 +99,7 @@ export default function TransactionsTable({
           <Menu.Dropdown>
             <Menu.Label>Transactions</Menu.Label>
             <Menu.Item
+              disabled={transactionAllocation.transaction.type === "CASH"}
               onClick={() => {
                 showEditTransactionAllocationDrawer({
                   isOpen: true,
@@ -119,12 +120,12 @@ export default function TransactionsTable({
               Edit
             </Menu.Item>
             <Link href={`/dashboard/transactions/${transactionAllocation.id}`}>
-              <Menu.Item>View</Menu.Item>
+              <Menu.Item disabled>View</Menu.Item>
             </Link>
             <Link
               href={`/dashboard/transactions/${transactionAllocation.transaction.id}`}
             >
-              <Menu.Item>View Parent Transaction</Menu.Item>
+              <Menu.Item disabled>View Parent Transaction</Menu.Item>
             </Link>
             <Menu.Item
               onClick={() => {
