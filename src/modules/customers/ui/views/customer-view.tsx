@@ -116,7 +116,9 @@ function CustomerSuspense({ customerId }: Props) {
                     isOpen: true,
                     customerId,
                     onCreated: () => {
-                      utils.customers.getOne.invalidate({ id: customerId });
+                      utils.orders.getOrdersByCustomerId.invalidate({
+                        customerId,
+                      });
                     },
                   });
                 }}
