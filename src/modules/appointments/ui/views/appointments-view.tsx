@@ -16,20 +16,24 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { AppointmentsTable } from "@/modules/appointments/ui/components/appointments-table";
-import Link from "next/link";
+import useWeekOffset from "@/hooks/useWeekOffset";
 
 dayjs.extend(isoWeek);
 
 interface Props {
-  weekOffset: number;
+  startDate: string;
+  endDate: string;
 }
 
-export const AppointmentsView = ({ weekOffset }: Props) => {
-  const startOfWeek = dayjs()
-    .isoWeekday(1)
-    .add(weekOffset, "week")
-    .startOf("day");
-  const endOfWeek = dayjs().isoWeekday(7).add(weekOffset, "week").endOf("day");
+export const AppointmentsView = () => {
+  const {
+    isCurrentWeek,
+    startOfWeek,
+    endOfWeek,
+    addWeek,
+    subtractWeek,
+    resetWeek,
+  } = useWeekOffset();
 
   return (
     <Grid>
@@ -38,32 +42,19 @@ export const AppointmentsView = ({ weekOffset }: Props) => {
           <Group justify="space-between">
             <Title order={4}>Appointments</Title>
             <Group>
-              {weekOffset != 0 && (
-                <Button
-                  component={Link}
-                  href={"?weekOffset=0"}
-                  variant="light"
-                  color="cyan"
-                >
+              {!isCurrentWeek && (
+                <Button onClick={resetWeek} variant="light" color="cyan">
                   Current Week
                 </Button>
               )}
-              <Button
-                variant="light"
-                component={Link}
-                href={"?weekOffset=" + (weekOffset - 1)}
-              >
+              <Button variant="light" onClick={subtractWeek}>
                 Previous Week
               </Button>
               <Text>
-                {startOfWeek.format("MMM D, YYYY")} -{" "}
-                {endOfWeek.format("MMM D, YYYY")}
+                {dayjs(startOfWeek).format("MMM D, YYYY")} -{" "}
+                {dayjs(endOfWeek).format("MMM D, YYYY")}
               </Text>
-              <Button
-                variant="light"
-                component={Link}
-                href={"?weekOffset=" + (weekOffset + 1)}
-              >
+              <Button variant="light" onClick={addWeek}>
                 Next Week
               </Button>
             </Group>
@@ -73,7 +64,7 @@ export const AppointmentsView = ({ weekOffset }: Props) => {
       <GridCol span={12}>
         <Suspense fallback={<LoaderSkeleton />}>
           <ErrorBoundary fallback={<p>Error</p>}>
-            <AppointmentsSuspense weekOffset={weekOffset} />
+            <AppointmentsSuspense startDate={startOfWeek} endDate={endOfWeek} />
           </ErrorBoundary>
         </Suspense>
       </GridCol>
@@ -81,21 +72,22 @@ export const AppointmentsView = ({ weekOffset }: Props) => {
   );
 };
 
-function AppointmentsSuspense({ weekOffset }: Props) {
+function AppointmentsSuspense({ startDate, endDate }: Props) {
   const [appointments] =
-    trpc.appointments.getAppointmentsForWeek.useSuspenseQuery({
-      offset: weekOffset,
+    trpc.appointments.getAppointmentsBetweenDates.useSuspenseQuery({
+      startDate,
+      endDate,
     });
 
   return (
     <>
-      {appointments.length > 0 ? (
-        <AppointmentsTable appointments={appointments} />
-      ) : (
-        <Paper withBorder p="md" radius="md" shadow="sm">
+      <Paper withBorder p="md" radius="md" shadow="sm">
+        {appointments.length > 0 ? (
+          <AppointmentsTable appointments={appointments} />
+        ) : (
           <Text c="gray">No appointments found for this week.</Text>
-        </Paper>
-      )}
+        )}
+      </Paper>
     </>
   );
 }

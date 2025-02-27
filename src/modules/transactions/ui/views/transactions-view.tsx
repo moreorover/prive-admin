@@ -1,28 +1,40 @@
 "use client";
 
-import { Grid, GridCol, Group, Paper, Text, Title } from "@mantine/core";
+import {
+  Button,
+  Center,
+  Grid,
+  GridCol,
+  Group,
+  Paper,
+  Text,
+  Title,
+} from "@mantine/core";
 import { trpc } from "@/trpc/client";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import TransactionsTable from "@/modules/transactions/ui/components/transactions-table";
+import { LineChart } from "@mantine/charts";
 import { CsvUploadButton } from "@/modules/transactions/ui/components/csv-upload-button";
+import { aggregateTransactions } from "@/modules/transactions/hooks/chartUtils";
+import { DatePicker } from "@mantine/dates";
+import useDateRangeMonth from "@/hooks/useDateRangeMonth";
+
+interface Props {
+  startDate: string;
+  endDate: string;
+}
 
 export const TransactionsView = () => {
-  return (
-    <Suspense fallback={<LoaderSkeleton />}>
-      <ErrorBoundary fallback={<p>Error</p>}>
-        <TransactionsSuspense />
-      </ErrorBoundary>
-    </Suspense>
-  );
-};
-
-function TransactionsSuspense() {
-  const utils = trpc.useUtils();
-
-  const [transactions] =
-    trpc.transactions.getAllTransactionsWithAllocations.useSuspenseQuery();
+  const {
+    startOfMonth,
+    endOfMonth,
+    pendingDates,
+    setStartAndEnd,
+    confirmDateSelection,
+    isConfirmationPending,
+  } = useDateRangeMonth();
 
   return (
     <Grid>
@@ -31,12 +43,75 @@ function TransactionsSuspense() {
           <Group justify="space-between">
             <Title order={4}>Transactions</Title>
             <Group>
-              {/*
-              TODO: make sure that createdAt transaction field is read from CSV provided
-              */}
               <CsvUploadButton />
             </Group>
           </Group>
+        </Paper>
+      </GridCol>
+      <GridCol span={{ base: 12, xl: 3 }}>
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          <Group justify="space-between">
+            <Center>
+              <DatePicker
+                // size="xs"
+                type="range"
+                value={pendingDates}
+                onChange={setStartAndEnd}
+              />
+            </Center>
+            <Center>
+              <Button
+                onClick={confirmDateSelection}
+                disabled={!isConfirmationPending()}
+              >
+                Apply
+              </Button>
+            </Center>
+          </Group>
+        </Paper>
+      </GridCol>
+      <Suspense
+        fallback={
+          <GridCol>
+            <LoaderSkeleton />
+          </GridCol>
+        }
+      >
+        <ErrorBoundary fallback={<p>Error</p>}>
+          <TransactionsSuspense startDate={startOfMonth} endDate={endOfMonth} />
+        </ErrorBoundary>
+      </Suspense>
+    </Grid>
+  );
+};
+
+function TransactionsSuspense({ startDate, endDate }: Props) {
+  const utils = trpc.useUtils();
+
+  const [transactions] =
+    trpc.transactions.getTransactionsBetweenDates.useSuspenseQuery({
+      startDate,
+      endDate,
+    });
+
+  const chartData = aggregateTransactions(startDate, endDate, transactions);
+
+  return (
+    <>
+      <GridCol span={{ base: 12, xl: 9 }}>
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          {transactions.length > 0 ? (
+            <LineChart
+              h={300}
+              data={chartData}
+              dataKey="date"
+              unit="£"
+              series={[{ name: "total", color: "indigo.6" }]}
+              curveType="natural"
+            />
+          ) : (
+            <Text c="gray">No transactions found.</Text>
+          )}
         </Paper>
       </GridCol>
       <GridCol span={12}>
@@ -45,7 +120,10 @@ function TransactionsSuspense() {
             <TransactionsTable
               transactions={transactions}
               onUpdateAction={() => {
-                utils.transactions.getAllTransactionsWithAllocations.invalidate();
+                utils.transactions.getTransactionsBetweenDates.invalidate({
+                  startDate,
+                  endDate,
+                });
               }}
             />
           ) : (
@@ -53,6 +131,6 @@ function TransactionsSuspense() {
           )}
         </Paper>
       </GridCol>
-    </Grid>
+    </>
   );
 }
