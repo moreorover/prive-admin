@@ -1,9 +1,8 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getProduct } from "@/data-access/product";
-import { getProductVariants } from "@/data-access/productVariant";
-import ProductPage from "@/components/dashboard/products/ProductPage";
+import { HydrateClient, trpc } from "@/trpc/server";
+import { ProductView } from "@/modules/products/ui/views/product-view";
 
 type Props = {
   params: Promise<{ productId: string }>;
@@ -20,13 +19,11 @@ export default async function Page({ params }: Props) {
     return redirect("/");
   }
 
-  const product = await getProduct(productId);
+  void trpc.products.getOne.prefetch({ id: productId });
 
-  if (!product) {
-    return redirect("/dashboard/products");
-  }
-
-  const productVariants = await getProductVariants(productId);
-
-  return <ProductPage product={product} productVariants={productVariants} />;
+  return (
+    <HydrateClient>
+      <ProductView productId={productId} />
+    </HydrateClient>
+  );
 }

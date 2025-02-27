@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { getProducts } from "@/data-access/product";
-import ProductsPage from "@/components/dashboard/products/ProductsPage";
+import { HydrateClient, trpc } from "@/trpc/server";
+import { ProductsView } from "@/modules/products/ui/views/products-view";
 
 export default async function Page() {
   const session = await auth.api.getSession({
@@ -13,6 +13,10 @@ export default async function Page() {
     return redirect("/");
   }
 
-  const products = await getProducts();
-  return <ProductsPage products={products} />;
+  void trpc.products.getAll.prefetch();
+  return (
+    <HydrateClient>
+      <ProductsView />
+    </HydrateClient>
+  );
 }

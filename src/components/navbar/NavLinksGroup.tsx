@@ -8,14 +8,20 @@ import {
   UnstyledButton,
   useDirection,
 } from "@mantine/core";
-import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useState } from "react";
+import React, {
+  ForwardRefExoticComponent,
+  RefAttributes,
+  useState,
+} from "react";
 import classes from "./NavLinksGroup.module.css";
+import { ChevronLeft, ChevronRight, LucideProps } from "lucide-react";
 
 interface LinksGroupProps {
-  icon: React.FC<any>;
+  icon: ForwardRefExoticComponent<
+    Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>
+  >;
   label: string;
   link?: string;
   initiallyOpened?: boolean;
@@ -34,7 +40,7 @@ export function NavLinksGroup({
 
   const hasLinks = Array.isArray(links);
   const [opened, setOpened] = useState(initiallyOpened || false);
-  const ChevronIcon = dir === "ltr" ? IconChevronRight : IconChevronLeft;
+  const ChevronIcon = dir === "ltr" ? ChevronRight : ChevronLeft;
   const items = (hasLinks ? links : []).map((link) => {
     return (
       <Link
@@ -84,7 +90,6 @@ export function NavLinksGroup({
               <ChevronIcon
                 className={classes.chevron}
                 size="1rem"
-                stroke={1.5}
                 style={{
                   transform: opened
                     ? `rotate(${dir === "rtl" ? -90 : 90}deg)`

@@ -14,6 +14,7 @@ import "@mantine/dates/styles.css";
 import "@mantine/notifications/styles.css";
 import { breakpoints, colors } from "./theme";
 import React from "react";
+import { TRPCProvider } from "@/trpc/client";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -52,10 +53,12 @@ export default function RootLayout({
         <ColorSchemeScript />
       </Head>
       <body className="antialiased">
-        <MantineProvider theme={theme}>
-          {children}
-          <Notifications />
-        </MantineProvider>
+        <TRPCProvider>
+          <MantineProvider theme={theme}>
+            {children}
+            <Notifications />
+          </MantineProvider>
+        </TRPCProvider>
       </body>
     </html>
   );

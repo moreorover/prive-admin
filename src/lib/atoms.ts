@@ -6,49 +6,62 @@ import {
   OrderItem,
   Product,
   ProductVariant,
-  Transaction,
+  TransactionAllocation,
 } from "@/lib/schemas";
 import dayjs from "dayjs";
 
 export const newCustomerDrawerAtom = atom<{
   isOpen: boolean;
-}>({ isOpen: false });
+  onCreated: () => void;
+}>({ isOpen: false, onCreated: () => {} });
 
 export const editCustomerDrawerAtom = atom<{
   isOpen: boolean;
   customer: Customer;
-}>({ isOpen: false, customer: { name: "" } });
+  onCreated: () => void;
+}>({ isOpen: false, customer: { name: "" }, onCreated: () => {} });
 
 export const newProductDrawerAtom = atom<{
   isOpen: boolean;
-}>({ isOpen: false });
+  onCreated: () => void;
+}>({ isOpen: false, onCreated: () => {} });
 
 export const editProductDrawerAtom = atom<{
   isOpen: boolean;
   product: Product;
-}>({ isOpen: false, product: { name: "", description: "" } });
+  onUpdated: () => void;
+}>({
+  isOpen: false,
+  product: { name: "", description: "" },
+  onUpdated: () => {},
+});
 
 export const newProductVariantDrawerAtom = atom<{
   isOpen: boolean;
   productId: string;
-}>({ isOpen: false, productId: "" });
+  onCreated: () => void;
+}>({ isOpen: false, productId: "", onCreated: () => {} });
 
 export const editProductVariantDrawerAtom = atom<{
   isOpen: boolean;
   productVariant: ProductVariant;
+  onUpdated: () => void;
 }>({
   isOpen: false,
-  productVariant: { productId: "", size: "", price: 0, stock: 0 },
+  productVariant: { size: "", price: 0, stock: 0 },
+  onUpdated: () => {},
 });
 
 export const newOrderDrawerAtom = atom<{
   isOpen: boolean;
   customerId: string;
-}>({ isOpen: false, customerId: "" });
+  onCreated: () => void;
+}>({ isOpen: false, customerId: "", onCreated: () => {} });
 
 export const editOrderDrawerAtom = atom<{
   isOpen: boolean;
   order: Order;
+  onUpdated: () => void;
 }>({
   isOpen: false,
   order: {
@@ -57,18 +70,21 @@ export const editOrderDrawerAtom = atom<{
     status: "PENDING",
     placedAt: dayjs().toDate(),
   },
+  onUpdated: () => {},
 });
 
 export const newOrderItemDrawerAtom = atom<{
   isOpen: boolean;
   orderId: string;
   productOptions: { value: string; label: string }[];
-}>({ isOpen: false, orderId: "", productOptions: [] });
+  onCreated: () => void;
+}>({ isOpen: false, orderId: "", productOptions: [], onCreated: () => {} });
 
 export const editOrderItemDrawerAtom = atom<{
   isOpen: boolean;
   orderItem: OrderItem;
   productOptions: { value: string; label: string }[];
+  onUpdated: () => void;
 }>({
   isOpen: false,
   orderItem: {
@@ -79,49 +95,44 @@ export const editOrderItemDrawerAtom = atom<{
     productVariantId: "",
   },
   productOptions: [],
+  onUpdated: () => {},
 });
 
 export const newTransactionDrawerAtom = atom<{
   isOpen: boolean;
   orderId?: string | null;
   appointmentId?: string | null;
-  customerId?: string | null;
-}>({ isOpen: false, orderId: undefined, customerId: undefined });
-
-export const editTransactionDrawerAtom = atom<{
-  isOpen: boolean;
-  transaction: Transaction;
+  customerId: string;
+  onCreated: () => void;
 }>({
   isOpen: false,
-  transaction: {
-    name: "",
-    notes: "",
+  appointmentId: undefined,
+  orderId: undefined,
+  customerId: "",
+  onCreated: () => {},
+});
+
+export const editTransactionAllocationDrawerAtom = atom<{
+  isOpen: boolean;
+  transactionAllocation: TransactionAllocation;
+  maxAmount: number;
+  onUpdated: () => void;
+}>({
+  isOpen: false,
+  transactionAllocation: {
+    id: "",
     amount: 0,
-    type: "CASH",
-    orderId: null,
-    customerId: null,
+    customerId: "",
+    transactionId: "",
   },
+  maxAmount: 0,
+  onUpdated: () => {},
 });
-
-export const transactionPickerModalAtom = atom<{
-  isOpen: boolean;
-  transactions: Transaction[];
-  customerId: string | null;
-  onConfirmAction: (
-    selectedTransactions: string[],
-    customerId: string | null,
-  ) => void;
-}>({
-  isOpen: false,
-  transactions: [],
-  customerId: null,
-  onConfirmAction: () => {},
-});
-
 export const newAppointmentDrawerAtom = atom<{
   isOpen: boolean;
   clientId: string;
-}>({ isOpen: false, clientId: "" });
+  onCreated: () => void;
+}>({ isOpen: false, clientId: "", onCreated: () => {} });
 
 export const editAppointmentDrawerAtom = atom<{
   isOpen: boolean;

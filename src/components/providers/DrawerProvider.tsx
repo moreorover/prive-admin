@@ -1,20 +1,19 @@
 "use client";
 
-import NewCustomerDrawer from "@/components/dashboard/customers/NewCustomerDrawer";
-import EditCustomerDrawer from "@/components/dashboard/customers/EditCustomerDrawer";
-import NewProductDrawer from "@/components/dashboard/products/NewProductDrawer";
-import EditProductDrawer from "@/components/dashboard/products/EditProductDrawer";
-import NewProductVariantDrawer from "@/components/dashboard/products/NewProductVariantDrawer";
-import EditProductVariantDrawer from "@/components/dashboard/products/EditProductVariantDrawer";
-import NewOrderDrawer from "@/components/dashboard/orders/NewOrderDrawer";
-import EditOrderDrawer from "@/components/dashboard/orders/EditOrderDrawer";
-import NewOrderItemDrawer from "@/components/dashboard/orders/NewOrderItemDrawer";
-import EditOrderItemDrawer from "@/components/dashboard/orders/EditOrderItemDrawer";
-import NewTransactionDrawer from "@/components/dashboard/transactions/NewTransactionDrawer";
-import NewAppointmentDrawer from "@/components/dashboard/appointments/NewAppointmentDrawer";
-import EditAppointmentDrawer from "@/components/dashboard/appointments/EditAppointmentDrawer";
-import TransactionPickerModal from "@/components/dashboard/transactions/TransactionPickerModal";
-import PersonnelPickerModal from "@/components/dashboard/customers/PersonnelPickerModal";
+import { NewTransactionDrawer } from "@/modules/transactions/ui/components/new-transaction-drawer";
+import { NewAppointmentDrawer } from "@/modules/appointments/ui/components/new-appointment-drawer";
+import { EditAppointmentDrawer } from "@/modules/appointments/ui/components/edit-appointment-drawer";
+import { NewCustomerDrawer } from "@/modules/customers/ui/components/new-customer-drawer";
+import { EditCustomerDrawer } from "@/modules/customers/ui/components/edit-customer-drawer";
+import { NewOrderDrawer } from "@/modules/orders/ui/components/new-order-drawer";
+import { EditOrderDrawer } from "@/modules/orders/ui/components/edit-order-drawer";
+import { NewProductDrawer } from "@/modules/products/ui/components/new-product-drawer";
+import { EditProductDrawer } from "@/modules/products/ui/components/edit-product-drawer";
+import { NewProductVariantDrawer } from "@/modules/product_variants/ui/components/new-product-variant-drawer";
+import { EditProductVariantDrawer } from "@/modules/product_variants/ui/components/edit-product-variant-drawer";
+import { NewOrderItemDrawer } from "@/modules/order_item/ui/components/new-order-item-drawer";
+import { EditOrderItemDrawer } from "@/modules/order_item/ui/components/edit-order-item-drawer";
+import { EditTransactionAllocationDrawer } from "@/modules/transaction_allocations/ui/components/edit-transaction-allocation-drawer";
 
 export default function DrawerProvider() {
   return (
@@ -39,9 +38,7 @@ export default function DrawerProvider() {
       <NewAppointmentDrawer />
       <EditAppointmentDrawer />
 
-      <TransactionPickerModal />
-
-      <PersonnelPickerModal />
+      <EditTransactionAllocationDrawer />
     </>
   );
 }
