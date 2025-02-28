@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Button,
-  Grid,
-  GridCol,
-  Group,
-  Paper,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Grid, GridCol, Group, Paper, Text, Title } from "@mantine/core";
 import { trpc } from "@/trpc/client";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -16,7 +8,8 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { AppointmentsTable } from "@/modules/appointments/ui/components/appointments-table";
-import useWeekOffset from "@/hooks/useWeekOffset";
+import useDateRange from "@/modules/ui/hooks/useDateRange";
+import { DateRangeDrawer } from "@/modules/ui/components/date-range-drawer";
 
 dayjs.extend(isoWeek);
 
@@ -26,14 +19,8 @@ interface Props {
 }
 
 export const AppointmentsView = () => {
-  const {
-    isCurrentWeek,
-    startOfWeek,
-    endOfWeek,
-    addWeek,
-    subtractWeek,
-    resetWeek,
-  } = useWeekOffset();
+  const { start, end, startAsDate, endAsDate, rangeText, setStartAndEnd } =
+    useDateRange();
 
   return (
     <Grid>
@@ -41,22 +28,13 @@ export const AppointmentsView = () => {
         <Paper withBorder p="md" radius="md" shadow="sm">
           <Group justify="space-between">
             <Title order={4}>Appointments</Title>
+            <Text>{rangeText}</Text>
             <Group>
-              {!isCurrentWeek && (
-                <Button onClick={resetWeek} variant="light" color="cyan">
-                  Current Week
-                </Button>
-              )}
-              <Button variant="light" onClick={subtractWeek}>
-                Previous Week
-              </Button>
-              <Text>
-                {dayjs(startOfWeek).format("MMM D, YYYY")} -{" "}
-                {dayjs(endOfWeek).format("MMM D, YYYY")}
-              </Text>
-              <Button variant="light" onClick={addWeek}>
-                Next Week
-              </Button>
+              <DateRangeDrawer
+                start={startAsDate}
+                end={endAsDate}
+                onConfirm={setStartAndEnd}
+              />
             </Group>
           </Group>
         </Paper>
@@ -64,7 +42,7 @@ export const AppointmentsView = () => {
       <GridCol span={12}>
         <Suspense fallback={<LoaderSkeleton />}>
           <ErrorBoundary fallback={<p>Error</p>}>
-            <AppointmentsSuspense startDate={startOfWeek} endDate={endOfWeek} />
+            <AppointmentsSuspense startDate={start} endDate={end} />
           </ErrorBoundary>
         </Suspense>
       </GridCol>

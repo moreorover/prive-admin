@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  Button,
-  Center,
-  Grid,
-  GridCol,
-  Group,
-  Paper,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Grid, GridCol, Group, Paper, Text, Title } from "@mantine/core";
 import { trpc } from "@/trpc/client";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -19,7 +10,7 @@ import { LineChart } from "@mantine/charts";
 import { CsvUploadButton } from "@/modules/transactions/ui/components/csv-upload-button";
 import { aggregateTransactions } from "@/modules/transactions/hooks/chartUtils";
 import { DateRangeDrawer } from "@/modules/ui/components/date-range-drawer";
-import useDateRange from "@/hooks/useDateRange";
+import useDateRange from "@/modules/ui/hooks/useDateRange";
 
 interface Props {
   startDate: string;
