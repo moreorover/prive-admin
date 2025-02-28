@@ -18,8 +18,8 @@ import TransactionsTable from "@/modules/transactions/ui/components/transactions
 import { LineChart } from "@mantine/charts";
 import { CsvUploadButton } from "@/modules/transactions/ui/components/csv-upload-button";
 import { aggregateTransactions } from "@/modules/transactions/hooks/chartUtils";
-import { DatePicker } from "@mantine/dates";
-import useDateRangeMonth from "@/hooks/useDateRangeMonth";
+import { DateRangeDrawer } from "@/modules/ui/components/date-range-drawer";
+import useDateRange from "@/hooks/useDateRange";
 
 interface Props {
   startDate: string;
@@ -27,61 +27,44 @@ interface Props {
 }
 
 export const TransactionsView = () => {
-  const {
-    startOfMonth,
-    endOfMonth,
-    pendingDates,
-    setStartAndEnd,
-    confirmDateSelection,
-    isConfirmationPending,
-  } = useDateRangeMonth();
+  const { start, end, startAsDate, endAsDate, rangeText, setStartAndEnd } =
+    useDateRange();
 
   return (
-    <Grid>
-      <GridCol span={12}>
-        <Paper withBorder p="md" radius="md" shadow="sm">
-          <Group justify="space-between">
-            <Title order={4}>Transactions</Title>
-            <Group>
-              <CsvUploadButton />
+    <>
+      <Grid>
+        <GridCol span={12}>
+          <Paper withBorder p="md" radius="md" shadow="sm">
+            <Group justify="space-between">
+              <Title order={4}>Transactions</Title>
+              <Text>{rangeText}</Text>
+              <Group>
+                <CsvUploadButton />
+                <DateRangeDrawer
+                  start={startAsDate}
+                  end={endAsDate}
+                  onConfirm={setStartAndEnd}
+                />
+              </Group>
             </Group>
-          </Group>
-        </Paper>
-      </GridCol>
-      <GridCol span={{ base: 12, xl: 3 }}>
-        <Paper withBorder p="md" radius="md" shadow="sm">
-          <Group justify="space-between">
-            <Center>
-              <DatePicker
-                // size="xs"
-                type="range"
-                value={pendingDates}
-                onChange={setStartAndEnd}
-              />
-            </Center>
-            <Center>
-              <Button
-                onClick={confirmDateSelection}
-                disabled={!isConfirmationPending()}
-              >
-                Apply
-              </Button>
-            </Center>
-          </Group>
-        </Paper>
-      </GridCol>
-      <Suspense
-        fallback={
-          <GridCol>
-            <LoaderSkeleton />
-          </GridCol>
-        }
-      >
-        <ErrorBoundary fallback={<p>Error</p>}>
-          <TransactionsSuspense startDate={startOfMonth} endDate={endOfMonth} />
-        </ErrorBoundary>
-      </Suspense>
-    </Grid>
+          </Paper>
+        </GridCol>
+        <GridCol span={{ base: 12, xl: 3 }}>
+          <Paper withBorder p="md" radius="md" shadow="sm"></Paper>
+        </GridCol>
+        <Suspense
+          fallback={
+            <GridCol>
+              <LoaderSkeleton />
+            </GridCol>
+          }
+        >
+          <ErrorBoundary fallback={<p>Error</p>}>
+            <TransactionsSuspense startDate={start} endDate={end} />
+          </ErrorBoundary>
+        </Suspense>
+      </Grid>
+    </>
   );
 };
 
