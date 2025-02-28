@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  Button,
-  Grid,
-  GridCol,
-  Group,
-  Paper,
-  Text,
-  Title,
-} from "@mantine/core";
+import { Grid, GridCol, Group, Paper, Text, Title } from "@mantine/core";
 import { trpc } from "@/trpc/client";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -16,20 +8,19 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { AppointmentsTable } from "@/modules/appointments/ui/components/appointments-table";
-import Link from "next/link";
+import useDateRange from "@/modules/ui/hooks/useDateRange";
+import { DateRangeDrawer } from "@/modules/ui/components/date-range-drawer";
 
 dayjs.extend(isoWeek);
 
 interface Props {
-  weekOffset: number;
+  startDate: string;
+  endDate: string;
 }
 
-export const AppointmentsView = ({ weekOffset }: Props) => {
-  const startOfWeek = dayjs()
-    .isoWeekday(1)
-    .add(weekOffset, "week")
-    .startOf("day");
-  const endOfWeek = dayjs().isoWeekday(7).add(weekOffset, "week").endOf("day");
+export const AppointmentsView = () => {
+  const { start, end, startAsDate, endAsDate, rangeText, setStartAndEnd } =
+    useDateRange();
 
   return (
     <Grid>
@@ -37,35 +28,13 @@ export const AppointmentsView = ({ weekOffset }: Props) => {
         <Paper withBorder p="md" radius="md" shadow="sm">
           <Group justify="space-between">
             <Title order={4}>Appointments</Title>
+            <Text>{rangeText}</Text>
             <Group>
-              {weekOffset != 0 && (
-                <Button
-                  component={Link}
-                  href={"?weekOffset=0"}
-                  variant="light"
-                  color="cyan"
-                >
-                  Current Week
-                </Button>
-              )}
-              <Button
-                variant="light"
-                component={Link}
-                href={"?weekOffset=" + (weekOffset - 1)}
-              >
-                Previous Week
-              </Button>
-              <Text>
-                {startOfWeek.format("MMM D, YYYY")} -{" "}
-                {endOfWeek.format("MMM D, YYYY")}
-              </Text>
-              <Button
-                variant="light"
-                component={Link}
-                href={"?weekOffset=" + (weekOffset + 1)}
-              >
-                Next Week
-              </Button>
+              <DateRangeDrawer
+                start={startAsDate}
+                end={endAsDate}
+                onConfirm={setStartAndEnd}
+              />
             </Group>
           </Group>
         </Paper>
@@ -73,7 +42,7 @@ export const AppointmentsView = ({ weekOffset }: Props) => {
       <GridCol span={12}>
         <Suspense fallback={<LoaderSkeleton />}>
           <ErrorBoundary fallback={<p>Error</p>}>
-            <AppointmentsSuspense weekOffset={weekOffset} />
+            <AppointmentsSuspense startDate={start} endDate={end} />
           </ErrorBoundary>
         </Suspense>
       </GridCol>
@@ -81,21 +50,22 @@ export const AppointmentsView = ({ weekOffset }: Props) => {
   );
 };
 
-function AppointmentsSuspense({ weekOffset }: Props) {
+function AppointmentsSuspense({ startDate, endDate }: Props) {
   const [appointments] =
-    trpc.appointments.getAppointmentsForWeek.useSuspenseQuery({
-      offset: weekOffset,
+    trpc.appointments.getAppointmentsBetweenDates.useSuspenseQuery({
+      startDate,
+      endDate,
     });
 
   return (
     <>
-      {appointments.length > 0 ? (
-        <AppointmentsTable appointments={appointments} />
-      ) : (
-        <Paper withBorder p="md" radius="md" shadow="sm">
+      <Paper withBorder p="md" radius="md" shadow="sm">
+        {appointments.length > 0 ? (
+          <AppointmentsTable appointments={appointments} />
+        ) : (
           <Text c="gray">No appointments found for this week.</Text>
-        </Paper>
-      )}
+        )}
+      </Paper>
     </>
   );
 }

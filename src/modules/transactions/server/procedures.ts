@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { transactionIdSchema, transactionSchema } from "@/lib/schemas";
+import dayjs from "dayjs";
 
 export const transactionsRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({}) => {
@@ -35,6 +36,45 @@ export const transactionsRouter = createTRPCRouter({
 
     return transactionsWithComputedFields;
   }),
+  getTransactionsBetweenDates: protectedProcedure
+    .input(z.object({ startDate: z.string(), endDate: z.string() }))
+    .query(async ({ input }) => {
+      const { startDate, endDate } = input;
+      const startOfWeek = dayjs(startDate);
+      const endOfWeek = dayjs(endDate); // Sunday end
+
+      const transactions = await prisma.transaction.findMany({
+        where: {
+          createdAt: {
+            gte: startOfWeek.toDate(),
+            lte: endOfWeek.toDate(),
+          },
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
+        include: {
+          allocations: { include: { customer: true } }, // Include related allocations
+        },
+      });
+
+      // Transform data to include allocated and remaining amounts
+      const transactionsWithComputedFields = transactions.map((transaction) => {
+        const allocatedAmount = transaction.allocations.reduce(
+          (sum, alloc) => sum + alloc.amount,
+          0,
+        );
+        const remainingAmount = transaction.amount - allocatedAmount;
+
+        return {
+          ...transaction,
+          allocatedAmount,
+          remainingAmount,
+        };
+      });
+
+      return transactionsWithComputedFields;
+    }),
   getTransactionOptions: protectedProcedure.query(async ({}) => {
     const transactions = await prisma.transaction.findMany({
       include: {
