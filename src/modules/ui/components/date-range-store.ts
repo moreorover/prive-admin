@@ -13,7 +13,7 @@ const initialState: State = {
   isOpen: false,
 };
 
-export const useDateRangeStore = create<State & Action>((set, get) => ({
+export const useDateRangeStore = create<State & Action>((set) => ({
   ...initialState,
   isOpen: false,
   open: () => set(() => ({ isOpen: true })),
