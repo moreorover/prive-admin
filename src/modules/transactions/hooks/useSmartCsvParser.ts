@@ -1,6 +1,5 @@
 // useSmartCsvParser.ts
 import { notifications } from "@mantine/notifications";
-import { trpc } from "@/trpc/client";
 import {
   CsvParserConfig,
   knownConfigs,
@@ -17,33 +16,32 @@ interface CSVUploadResults {
 }
 
 export function useSmartCsvParser() {
-  const utils = trpc.useUtils();
-  const createTransactions = trpc.transactions.createTransactions.useMutation({
-    onSuccess: (result) => {
-      if (result.count === 0) {
-        notifications.show({
-          color: "yellow",
-          title: "Attention!",
-          message: "No transactions have been imported!",
-        });
-        return;
-      }
-      utils.transactions.getAll.invalidate();
-      utils.transactions.getAllTransactionsWithAllocations.invalidate();
-      notifications.show({
-        color: "green",
-        title: "Success!",
-        message: `Total of ${result.count} Transactions created!`,
-      });
-    },
-    onError: () => {
-      notifications.show({
-        color: "red",
-        title: "Failed to create Transactions",
-        message: "Please try again.",
-      });
-    },
-  });
+  // const utils = trpc.useUtils();
+  // const createTransactions = trpc.transactions.createTransactions.useMutation({
+  //   onSuccess: (result) => {
+  //     if (result.count === 0) {
+  //       notifications.show({
+  //         color: "yellow",
+  //         title: "Attention!",
+  //         message: "No transactions have been imported!",
+  //       });
+  //       return;
+  //     }
+  //     utils.transactions.getAll.invalidate();
+  //     notifications.show({
+  //       color: "green",
+  //       title: "Success!",
+  //       message: `Total of ${result.count} Transactions created!`,
+  //     });
+  //   },
+  //   onError: () => {
+  //     notifications.show({
+  //       color: "red",
+  //       title: "Failed to create Transactions",
+  //       message: "Please try again.",
+  //     });
+  //   },
+  // });
 
   const parseCsvData = async (results: CSVUploadResults): Promise<void> => {
     if (results.errors.length > 0) {
@@ -97,7 +95,7 @@ export function useSmartCsvParser() {
       return;
     }
 
-    createTransactions.mutate({ transactions });
+    // createTransactions.mutate({ transactions });
   };
 
   return parseCsvData;

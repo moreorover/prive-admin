@@ -21,7 +21,6 @@ import dayjs from "dayjs";
 import { trpc } from "@/trpc/client";
 import TransactionsTable from "@/modules/orders/ui/components/transactions-table";
 import { OrderItemsTable } from "@/modules/order_item/ui/components/order-items-table";
-import { modals } from "@mantine/modals";
 
 interface Props {
   orderId: string;
@@ -33,19 +32,15 @@ export const OrderView = ({ orderId }: Props) => {
   const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
   const utils = trpc.useUtils();
   const [order] = trpc.orders.getOne.useSuspenseQuery({ id: orderId });
-  const [transactionAllocations] =
-    trpc.transactionAllocations.getByAppointmentAndOrderId.useSuspenseQuery({
-      orderId,
-      includeCustomer: true,
-    });
   const [orderItems] = trpc.orderItems.getByOrderId.useSuspenseQuery({
     orderId,
   });
   const [orderItemOptions] =
     trpc.orderItems.getProductOptionsByOrderId.useSuspenseQuery({ orderId });
-
-  const [transactionOptions] =
-    trpc.transactions.getTransactionOptions.useSuspenseQuery();
+  const [orderTransactions] = trpc.transactions.getByOrderId.useSuspenseQuery({
+    orderId,
+    includeCustomer: true,
+  });
 
   return (
     <Grid>
@@ -154,34 +149,11 @@ export const OrderView = ({ orderId }: Props) => {
               >
                 New
               </Button>
-              <Button
-                onClick={() =>
-                  modals.openContextModal({
-                    modal: "transactionPickerModal",
-                    title: "Pick transactions",
-                    size: "xl",
-                    innerProps: {
-                      customerId: order.customerId,
-                      orderId,
-                      transactionOptions,
-                      onPicked: () => {
-                        utils.transactions.getByOrderId.invalidate({
-                          orderId,
-                          includeCustomer: true,
-                        });
-                        utils.transactions.getTransactionOptions.invalidate();
-                      },
-                    },
-                  })
-                }
-              >
-                Pick transactions
-              </Button>
             </Group>
           </Group>
           <TransactionsTable
             orderId={orderId}
-            transactionAllocations={transactionAllocations}
+            transactions={orderTransactions}
           />
         </Paper>
       </GridCol>

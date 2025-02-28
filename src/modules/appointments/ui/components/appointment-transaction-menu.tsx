@@ -4,31 +4,26 @@ import { Button, Menu } from "@mantine/core";
 import { trpc } from "@/trpc/client";
 import { useSetAtom } from "jotai/index";
 import { newTransactionDrawerAtom } from "@/lib/atoms";
-import { GetTransactionOptions } from "@/modules/appointments/types";
-import { modals } from "@mantine/modals";
 import { Ellipsis } from "lucide-react";
 
 interface Props {
   appointmentId: string;
   customerId: string;
-  transactionOptions: GetTransactionOptions;
 }
 
 export const AppointmentTransactionMenu = ({
   appointmentId,
   customerId,
-  transactionOptions,
 }: Props) => {
   const utils = trpc.useUtils();
 
   const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
 
   const onSuccess = () => {
-    utils.transactionAllocations.getByAppointmentAndOrderId.invalidate({
+    utils.transactions.getByAppointmentId.invalidate({
       appointmentId,
       includeCustomer: true,
     });
-    utils.transactions.getTransactionOptions.invalidate();
   };
 
   return (
@@ -53,32 +48,7 @@ export const AppointmentTransactionMenu = ({
               });
             }}
           >
-            New Cash Transaction
-          </Menu.Item>
-          <Menu.Item
-            onClick={() =>
-              modals.openContextModal({
-                modal: "transactionPickerModal",
-                title: "Pick transactions",
-                size: "xl",
-                innerProps: {
-                  customerId,
-                  appointmentId,
-                  transactionOptions,
-                  onPicked: () => {
-                    utils.transactionAllocations.getByAppointmentAndOrderId.invalidate(
-                      {
-                        appointmentId: appointmentId,
-                        includeCustomer: true,
-                      },
-                    );
-                    utils.transactions.getTransactionOptions.invalidate();
-                  },
-                },
-              })
-            }
-          >
-            Pick Transactions
+            New Transaction
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>

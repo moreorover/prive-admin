@@ -50,15 +50,9 @@ const prismaClientSingleton = () => {
           compute: (transaction) => transaction.amount / 100,
         },
       },
-      transactionAllocation: {
-        amount: {
-          compute: (transaction) => transaction.amount / 100,
-        },
-      },
     },
     query: {
       transaction: generateQueryExtension(),
-      transactionAllocation: generateQueryExtension(),
     },
   });
 };

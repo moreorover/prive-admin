@@ -51,21 +51,8 @@ export const orderItemSchema = z.object({
 
 export type OrderItem = z.infer<typeof orderItemSchema>;
 
-export const transactionIdSchema = z.string().refine(
-  (val) => {
-    if (!val) return true; // Allow undefined
-    // Check if it's a valid cuid2 or starts with "mm_"
-    return (
-      z.string().cuid2().safeParse(val).success ||
-      val.startsWith("mm_") ||
-      val.startsWith("pp_")
-    );
-  },
-  { message: "id must be a valid cuid2 or start with 'mm_'" },
-);
-
 export const transactionSchema = z.object({
-  id: transactionIdSchema.optional(),
+  id: z.string().cuid2().optional(),
   name: z.string().nullable(),
   notes: z.string().nullable(),
   amount: z.number().refine((value) => value !== 0, {
@@ -76,73 +63,6 @@ export const transactionSchema = z.object({
 });
 
 export type Transaction = z.infer<typeof transactionSchema>;
-
-export const transactionAllocationSchema = z
-  .object({
-    id: z.string().cuid2(),
-    amount: z.number(),
-    appointmentId: z.string().cuid2().nullish(),
-    orderId: z.string().cuid2().nullish(),
-    customerId: z.string().cuid2(),
-    transactionId: transactionIdSchema,
-  })
-  .refine(
-    (data) => {
-      const hasAppointment =
-        data.appointmentId !== null && data.appointmentId !== undefined;
-      const hasOrder = data.orderId !== null && data.orderId !== undefined;
-      return !(hasAppointment && hasOrder); // Ensure only one is set
-    },
-    {
-      message:
-        "Transaction must be assigned to either an appointment OR an order, not both.",
-      path: ["appointmentId", "orderId"], // This points to the relevant fields in the error
-    },
-  );
-
-export const transactionAllocationFormSchema = (maxAmount: number) => {
-  return z
-    .object({
-      id: z.string().cuid2(),
-      amount:
-        maxAmount > 0
-          ? z
-              .number()
-              .min(0, {
-                message: `Amount has to be between £0 and £${maxAmount}`,
-              })
-              .max(maxAmount, {
-                message: `Amount has to be between £0 and £${maxAmount}`,
-              })
-          : z
-              .number()
-              .min(maxAmount, {
-                message: `Amount has to be between £${maxAmount} and £0`,
-              })
-              .max(0, {
-                message: `Amount has to be between £${maxAmount} and £0`,
-              }),
-      appointmentId: z.string().cuid2().nullish(),
-      orderId: z.string().cuid2().nullish(),
-      customerId: z.string().cuid2(),
-      transactionId: transactionIdSchema,
-    })
-    .refine(
-      (data) => {
-        const hasAppointment =
-          data.appointmentId !== null && data.appointmentId !== undefined;
-        const hasOrder = data.orderId !== null && data.orderId !== undefined;
-        return !(hasAppointment && hasOrder); // Ensure only one is set
-      },
-      {
-        message:
-          "Transaction must be assigned to either an appointment OR an order, not both.",
-        path: ["appointmentId", "orderId"], // This points to the relevant fields in the error
-      },
-    );
-};
-
-export type TransactionAllocation = z.infer<typeof transactionAllocationSchema>;
 
 export const appointmentSchema = z.object({
   id: z.string().cuid2().optional(),

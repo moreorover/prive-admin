@@ -57,19 +57,8 @@ const seedTransactions = async (): Promise<void> => {
       data: {
         name: transaction.name,
         amount: transaction.amount,
-      },
-    });
-
-    const transactionAllocations = transaction.allocations.map(
-      (allocation) => ({
-        ...allocation,
-        transactionId: createdTransaction.id,
         customerId: faker.helpers.arrayElement(customerIds),
-      }),
-    );
-
-    await prisma.transactionAllocation.createMany({
-      data: transactionAllocations,
+      },
     });
   }
 };

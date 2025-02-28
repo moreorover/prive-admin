@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { HydrateClient, trpc } from "@/trpc/server";
-import { OrderView } from "@/modules/orders/ui/components/order-view";
+import { OrderView } from "@/modules/orders/ui/views/order-view";
 
 type Props = {
   params: Promise<{ orderId: string }>;
@@ -28,11 +28,6 @@ export default async function Page({ params }: Props) {
     orderId,
   });
   void trpc.orderItems.getProductOptionsByOrderId.prefetch({ orderId });
-  void trpc.transactions.getTransactionOptions.prefetch();
-  void trpc.transactionAllocations.getByAppointmentAndOrderId.prefetch({
-    orderId,
-    includeCustomer: true,
-  });
 
   return (
     <HydrateClient>

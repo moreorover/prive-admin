@@ -78,7 +78,7 @@ model Customer {
   createdAt               DateTime                  @default(now())
   updatedAt               DateTime?                 @updatedAt
   orders                  Order[]
-  transactions            TransactionAllocation[]
+  transactions            Transaction[]
   appointmentsAsCustomer  Appointment[]
   appointmentsAsPersonnel PersonnelOnAppointments[]
 
@@ -117,16 +117,16 @@ enum OrderType {
 }
 
 model Order {
-  id           String                  @id @default(cuid(2))
+  id           String        @id @default(cuid(2))
   customerId   String
-  customer     Customer                @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  type         OrderType               @default(PURCHASE)
-  status       OrderStatus             @default(PENDING)
-  placedAt     DateTime                @db.Date
-  createdAt    DateTime                @default(now())
-  updatedAt    DateTime                @updatedAt
+  customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  type         OrderType     @default(PURCHASE)
+  status       OrderStatus   @default(PENDING)
+  placedAt     DateTime      @db.Date
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   items        OrderItem[]
-  transactions TransactionAllocation[]
+  transactions Transaction[]
 
   @@map("orders")
 }
@@ -168,34 +168,24 @@ model TransactionBatch {
 }
 
 model Transaction {
-  id          String                  @id @default(cuid(2))
-  name        String?
-  notes       String?
-  amount      Int                     @db.Integer
-  type        TransactionType         @default(BANK)
-  allocations TransactionAllocation[]
-  createdAt   DateTime                @default(now())
+  id        String          @id @default(cuid(2))
+  name      String?
+  notes     String?
+  amount    Int             @db.Integer
+  type      TransactionType @default(BANK)
+  createdAt DateTime        @default(now())
 
   batchId String?
   batch   TransactionBatch? @relation(fields: [batchId], references: [id], onDelete: Cascade)
 
-  @@map("transactions")
-}
-
-model TransactionAllocation {
-  id            String       @id @default(cuid(2))
-  transactionId String
-  transaction   Transaction  @relation(fields: [transactionId], references: [id], onDelete: Cascade)
   customerId    String
   customer      Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
   orderId       String?
   order         Order?       @relation(fields: [orderId], references: [id], onDelete: SetNull)
   appointmentId String?
   appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
-  amount        Int          @db.Integer // Portion of the transaction assigned
-  createdAt     DateTime     @default(now())
 
-  @@map("transaction_allocations")
+  @@map("transactions")
 }
 
 model Appointment {
@@ -208,9 +198,9 @@ model Appointment {
 
   personnel PersonnelOnAppointments[]
 
-  createdAt             DateTime                @default(now())
-  updatedAt             DateTime                @updatedAt
-  TransactionAllocation TransactionAllocation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[]
 
   @@map("appointments")
 }
