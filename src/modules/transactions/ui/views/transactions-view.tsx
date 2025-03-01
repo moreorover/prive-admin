@@ -27,8 +27,8 @@ export const TransactionsView = () => {
           <Paper withBorder p="md" radius="md" shadow="sm">
             <Group justify="space-between">
               <Title order={4}>Transactions</Title>
-              <Text>{rangeText}</Text>
               <Group>
+                <Text>{rangeText}</Text>
                 {/*<CsvUploadButton />*/}
                 <DateRangeDrawer
                   start={startAsDate}

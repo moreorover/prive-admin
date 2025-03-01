@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { customers, products, transactions } from "./data";
+import { customers, generateTransactions, products } from "./data";
 import { faker } from "@faker-js/faker";
 import prisma from "@/lib/prisma";
 
@@ -52,12 +52,13 @@ async function seedProducts() {
 }
 
 const seedTransactions = async (): Promise<void> => {
-  for (const transaction of transactions) {
+  for (const transaction of generateTransactions(40)) {
     const createdTransaction = await prisma.transaction.create({
       data: {
         name: transaction.name,
         amount: transaction.amount,
         customerId: faker.helpers.arrayElement(customerIds),
+        createdAt: transaction.createdAt,
       },
     });
   }

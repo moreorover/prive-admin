@@ -45,10 +45,9 @@ export const TransactionForm = ({
       <Select
         label="Transaction Type"
         placeholder="Select type"
-        data={["BANK", "CASH"]}
+        data={["BANK", "CASH", "PAYPAL"]}
         key={form.key("type")}
         {...form.getInputProps("type")}
-        disabled={transaction.type === "CASH"}
       />
       <NumberInput
         label="Amount"

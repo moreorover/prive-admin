@@ -94,7 +94,6 @@ export default function TransactionsTable({
           <Menu.Dropdown>
             <Menu.Label>Transactions</Menu.Label>
             <Menu.Item
-              disabled={transaction.type === "CASH"}
               onClick={() => {
                 showEditTransactionDrawer({
                   isOpen: true,

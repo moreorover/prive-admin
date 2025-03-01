@@ -1,12 +1,13 @@
 "use client";
 
-import { Button, Drawer, Group } from "@mantine/core";
+import { ActionIcon, Button, Drawer, Group } from "@mantine/core";
 import { DatePicker } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
 import { useForm } from "@mantine/form";
 import { zodResolver } from "mantine-form-zod-resolver";
 import { z } from "zod";
 import { useState } from "react";
+import { Settings2 } from "lucide-react";
 
 interface Props {
   start: Date;
@@ -49,7 +50,13 @@ export const DateRangeDrawer = ({ start, end, onConfirm }: Props) => {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Open</Button>
+      <ActionIcon
+        variant="filled"
+        aria-label="Date Settings"
+        onClick={() => setOpen(true)}
+      >
+        <Settings2 size={16} />
+      </ActionIcon>
       <Drawer
         opened={open}
         onClose={() => setOpen(false)}

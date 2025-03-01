@@ -62,7 +62,7 @@ export const products = [
 
 const transactionName = ["Booking Fee", "Payment"];
 
-const generateTransactions = (count: number) => {
+export const generateTransactions = (count: number) => {
   return Array.from({ length: count }).map(() => {
     const amount = faker.number.float({
       min: -800,
@@ -72,6 +72,10 @@ const generateTransactions = (count: number) => {
     return {
       name: faker.helpers.arrayElement(transactionName),
       amount,
+      createdAt: faker.helpers.arrayElement([
+        faker.date.recent(),
+        faker.date.soon(),
+      ]),
     };
   });
 };
