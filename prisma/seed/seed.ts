@@ -1,5 +1,13 @@
 import { auth } from "@/lib/auth";
-import { customers, generateTransactions, products } from "./data";
+import {
+  createAppointment,
+  createCustomer,
+  createProduct,
+  createProductVariant,
+  createTransaction,
+  generateObjects,
+  sizes,
+} from "./data";
 import { faker } from "@faker-js/faker";
 import prisma from "@/lib/prisma";
 
@@ -25,9 +33,9 @@ async function seedUsers() {
 }
 
 async function seedCustomers() {
-  for (const customer of customers) {
+  for (const customer of generateObjects(10, () => createCustomer(faker))) {
     const createdCustomer = await prisma.customer.create({
-      data: { ...customer.customer },
+      data: customer,
     });
 
     customerIds.push(createdCustomer.id);
@@ -35,7 +43,7 @@ async function seedCustomers() {
 }
 
 async function seedProducts() {
-  for (const product of products) {
+  for (const product of generateObjects(5, () => createProduct(faker))) {
     const createdProduct = await prisma.product.create({
       data: {
         name: product.name,
@@ -43,7 +51,8 @@ async function seedProducts() {
       },
     });
 
-    for (const variant of product.variants) {
+    for (const size of sizes) {
+      const variant = createProductVariant(faker, size);
       await prisma.productVariant.create({
         data: { ...variant, productId: createdProduct.id },
       });
@@ -52,15 +61,38 @@ async function seedProducts() {
 }
 
 const seedTransactions = async (): Promise<void> => {
-  for (const transaction of generateTransactions(40)) {
-    const createdTransaction = await prisma.transaction.create({
-      data: {
-        name: transaction.name,
-        amount: transaction.amount,
-        customerId: faker.helpers.arrayElement(customerIds),
-        createdAt: transaction.createdAt,
-      },
-    });
+  for (const customerId of customerIds) {
+    for (const transaction of generateObjects(10, () =>
+      createTransaction(faker),
+    )) {
+      await prisma.transaction.create({
+        data: { ...transaction, customerId },
+      });
+    }
+  }
+};
+
+const seedAppointments = async (): Promise<void> => {
+  for (const customerId of customerIds) {
+    for (const appointment of generateObjects(10, () =>
+      createAppointment(faker),
+    )) {
+      const createdAppointment = await prisma.appointment.create({
+        data: { ...appointment, clientId: customerId },
+      });
+
+      for (const transaction of generateObjects(3, () =>
+        createTransaction(faker),
+      )) {
+        await prisma.transaction.create({
+          data: {
+            ...transaction,
+            customerId,
+            appointmentId: createdAppointment.id,
+          },
+        });
+      }
+    }
   }
 };
 
@@ -70,11 +102,13 @@ async function main() {
   await prisma.customer.deleteMany();
   await prisma.product.deleteMany();
   await prisma.transaction.deleteMany();
+  await prisma.appointment.deleteMany();
 
   await seedUsers();
   await seedCustomers();
   await seedProducts();
   await seedTransactions();
+  await seedAppointments();
 
   console.log("🌱 Database seeded successfully!");
 }
