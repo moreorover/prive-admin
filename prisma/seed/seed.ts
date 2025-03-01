@@ -115,9 +115,11 @@ async function main() {
 
 main()
   .catch((error) => {
-    console.error("❌ Error seeding database:", error);
+    console.error("❌ Error seeding database:", error.message);
+    console.error("📍 Stack trace:", error.stack);
     process.exit(1);
   })
-  .finally(() => {
-    prisma.$disconnect();
+  .finally(async () => {
+    await prisma.$disconnect();
+    console.log("🔌 Disconnected from database.");
   });
