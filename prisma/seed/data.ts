@@ -34,8 +34,8 @@ export const createTransaction = (faker: Faker) => {
       multipleOf: 0.25,
     }),
     createdAt: faker.helpers.arrayElement([
-      faker.date.recent(),
-      faker.date.soon(),
+      faker.date.recent({ days: 10 }),
+      faker.date.soon({ days: 10 }),
     ]),
     type: faker.helpers.arrayElement(["BANK", "CASH", "PAYPAL"]),
   };
@@ -50,8 +50,8 @@ export const createAppointment = (faker: Faker) => {
     ]),
     notes: faker.helpers.arrayElement([faker.lorem.sentence(), null]),
     startsAt: faker.helpers.arrayElement([
-      faker.date.recent(),
-      faker.date.soon(),
+      faker.date.recent({ days: 10 }),
+      faker.date.soon({ days: 10 }),
     ]),
   };
 };
