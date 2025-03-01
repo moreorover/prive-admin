@@ -20,6 +20,7 @@ import TransactionsTable from "@/modules/appointments/ui/components/transactions
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { useSetAtom } from "jotai";
+import StatsCard from "@/modules/ui/components/stats-card/StatsCard";
 
 interface Props {
   appointmentId: string;
@@ -54,6 +55,11 @@ function AppointmentSuspense({ appointmentId }: Props) {
       appointmentId,
     });
 
+  const transactionsTotal = transactions.reduce(
+    (sum, transaction) => sum + transaction.amount,
+    0,
+  );
+
   const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
 
   return (
@@ -74,7 +80,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
           </Group>
         </Paper>
       </GridCol>
-      <GridCol span={12}>
+      <GridCol span={4}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           <Title order={4}>Appointment Details</Title>
           <Text size="sm" mt="xs">
@@ -85,6 +91,9 @@ function AppointmentSuspense({ appointmentId }: Props) {
             {dayjs(appointment.startsAt).format("DD MMM YYYY HH:mm")}
           </Text>
         </Paper>
+      </GridCol>
+      <GridCol span={2}>
+        <StatsCard data={{ title: "total", value: `£ ${transactionsTotal}` }} />
       </GridCol>
       <GridCol span={12}>
         <Grid>

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useSetAtom } from "jotai/index";
 import { editTransactionDrawerAtom } from "@/lib/atoms";
 import { GetTransactionsByAppointment } from "@/modules/transactions/types";
+import dayjs from "dayjs";
 
 interface Props {
   appointmentId: string;
@@ -68,6 +69,9 @@ export default function TransactionsTable({
 
   const rows = transactions.map((transaction) => (
     <Table.Tr key={transaction.id}>
+      <Table.Td>
+        <Text>{dayjs(transaction.createdAt).format("DD MMM YYYY HH:mm")}</Text>
+      </Table.Td>
       <Table.Td>
         <Text>{transaction.customer.name}</Text>
       </Table.Td>
@@ -130,6 +134,7 @@ export default function TransactionsTable({
       <Table striped highlightOnHover>
         <Table.Thead>
           <Table.Tr>
+            <Table.Th>Created At</Table.Th>
             <Table.Th>Person Name</Table.Th>
             <Table.Th>Transaction Name</Table.Th>
             <Table.Th>Type</Table.Th>
