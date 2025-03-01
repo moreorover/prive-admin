@@ -69,6 +69,9 @@ export const DateRangeDrawer = ({ start, end, onConfirm }: Props) => {
             {...form.getInputProps("dateRange")}
             type="range"
             allowSingleDateInRange={true}
+            withWeekNumbers
+            firstDayOfWeek={0}
+            weekendDays={[0, 1]}
           />
           <Group justify="flex-end" mt="md">
             <Button fullWidth mt="xl" type="submit">
