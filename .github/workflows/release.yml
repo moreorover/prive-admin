@@ -70,7 +70,7 @@ jobs:
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:dev-ci
+          tags: tag:prod-ci
 
       - name: Test Hostname Resolution
         run: |
@@ -94,17 +94,4 @@ jobs:
           docker context use remote
 
       - name: Docker Stack Deploy
-        run: docker stack deploy -c docker-stack.yaml sensepro
-
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Reload database
-        env:
-          DATABASE_URL: postgresql://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@prive:5432/${{ secrets.POSTGRES_DATABASE }}
-        run: npm run db:dev
+        run: docker stack deploy -c docker-stack.yaml prive
