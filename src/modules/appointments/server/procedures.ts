@@ -109,6 +109,9 @@ export const appointmentsRouter = createTRPCRouter({
             lte: endOfWeek.toDate(),
           },
         },
+        orderBy: {
+          startsAt: "asc",
+        },
         include: {
           client: true,
         },

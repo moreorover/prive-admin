@@ -4,38 +4,32 @@ import { Badge, Button, Menu, ScrollArea, Table, Text } from "@mantine/core";
 import { trpc } from "@/trpc/client";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
-import { GetTransactionAllocationsByAppointmentAndOrder } from "@/modules/appointments/types";
 import Link from "next/link";
 import { useSetAtom } from "jotai/index";
-import { editTransactionAllocationDrawerAtom } from "@/lib/atoms";
+import { editTransactionDrawerAtom } from "@/lib/atoms";
+import { GetOrderTransactions } from "@/modules/orders/types";
 
 interface Props {
   orderId: string;
-  transactionAllocations: GetTransactionAllocationsByAppointmentAndOrder;
+  transactions: GetOrderTransactions;
 }
 
-export default function TransactionsTable({
-  orderId,
-  transactionAllocations,
-}: Props) {
+export default function TransactionsTable({ orderId, transactions }: Props) {
   const utils = trpc.useUtils();
 
-  const showEditTransactionAllocationDrawer = useSetAtom(
-    editTransactionAllocationDrawerAtom,
-  );
+  const showEditTransactionDrawer = useSetAtom(editTransactionDrawerAtom);
 
-  const deleteTransaction = trpc.transactionAllocations.delete.useMutation({
+  const deleteTransaction = trpc.transactions.delete.useMutation({
     onSuccess: () => {
       notifications.show({
         color: "green",
         title: "Success!",
         message: "Transaction deleted.",
       });
-      utils.transactionAllocations.getByAppointmentAndOrderId.invalidate({
+      utils.transactions.getByOrderId.invalidate({
         orderId,
         includeCustomer: true,
       });
-      utils.transactions.getTransactionOptions.invalidate();
     },
     onError: () => {
       notifications.show({
@@ -53,7 +47,7 @@ export default function TransactionsTable({
       currency: "GBP",
     }).format(amount);
 
-  const openDeleteModal = (transactionAllocationId: string) =>
+  const openDeleteModal = (transactionId: string) =>
     modals.openConfirmModal({
       title: "Delete Transaction?",
       centered: true,
@@ -65,30 +59,28 @@ export default function TransactionsTable({
       onCancel: () => {},
       onConfirm: () =>
         deleteTransaction.mutate({
-          transactionAllocationId,
+          id: transactionId,
         }),
     });
 
-  const rows = transactionAllocations.map((transactionAllocation) => (
-    <Table.Tr key={transactionAllocation.id}>
+  const rows = transactions.map((transaction) => (
+    <Table.Tr key={transaction.id}>
       <Table.Td>
-        <Text>{transactionAllocation.customer?.name}</Text>
+        <Text>{transaction.customer.name}</Text>
       </Table.Td>
       <Table.Td>
-        <Text>{transactionAllocation.transaction.name}</Text>
+        <Text>{transaction.name}</Text>
       </Table.Td>
       <Table.Td>
         <Badge
-          color={
-            transactionAllocation.transaction.type === "CASH" ? "blue" : "green"
-          }
+          color={transaction.type === "CASH" ? "blue" : "green"}
           variant="light"
         >
-          {transactionAllocation.transaction.type}
+          {transaction.type}
         </Badge>
       </Table.Td>
       <Table.Td>
-        <Text>{formatAmount(transactionAllocation.amount)}</Text>
+        <Text>{formatAmount(transaction.amount)}</Text>
       </Table.Td>
       <Table.Td>
         <Menu shadow="md" width={200}>
@@ -100,35 +92,26 @@ export default function TransactionsTable({
             <Menu.Label>Transactions</Menu.Label>
             <Menu.Item
               onClick={() => {
-                showEditTransactionAllocationDrawer({
+                showEditTransactionDrawer({
                   isOpen: true,
-                  transactionAllocation,
-                  maxAmount: transactionAllocation.remainingAllocation,
+                  transaction,
                   onUpdated: () => {
-                    utils.transactionAllocations.getByAppointmentAndOrderId.invalidate(
-                      {
-                        orderId: orderId,
-                        includeCustomer: true,
-                      },
-                    );
-                    utils.transactions.getTransactionOptions.invalidate();
+                    utils.transactions.getByOrderId.invalidate({
+                      orderId: orderId,
+                      includeCustomer: true,
+                    });
                   },
                 });
               }}
             >
               Edit
             </Menu.Item>
-            <Link href={`/dashboard/transactions/${transactionAllocation.id}`}>
+            <Link href={`/dashboard/transactions/${transaction.id}`}>
               <Menu.Item>View</Menu.Item>
-            </Link>
-            <Link
-              href={`/dashboard/transactions/${transactionAllocation.transaction.id}`}
-            >
-              <Menu.Item>View Parent Transaction</Menu.Item>
             </Link>
             <Menu.Item
               onClick={() => {
-                openDeleteModal(transactionAllocation.id);
+                openDeleteModal(transaction.id);
               }}
             >
               Delete

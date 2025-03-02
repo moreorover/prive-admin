@@ -20,6 +20,7 @@ import TransactionsTable from "@/modules/appointments/ui/components/transactions
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { useSetAtom } from "jotai";
+import StatsCard from "@/modules/ui/components/stats-card/StatsCard";
 
 interface Props {
   appointmentId: string;
@@ -44,19 +45,20 @@ function AppointmentSuspense({ appointmentId }: Props) {
       appointmentId,
     });
 
-  const [transactionAllocations] =
-    trpc.transactionAllocations.getByAppointmentAndOrderId.useSuspenseQuery({
-      appointmentId,
-      includeCustomer: true,
-    });
+  const [transactions] = trpc.transactions.getByAppointmentId.useSuspenseQuery({
+    appointmentId,
+    includeCustomer: true,
+  });
 
   const [personnelOptions] =
     trpc.customers.getAvailablePersonnelByAppointmentId.useSuspenseQuery({
       appointmentId,
     });
 
-  const [transactionOptions] =
-    trpc.transactions.getTransactionOptions.useSuspenseQuery();
+  const transactionsTotal = transactions.reduce(
+    (sum, transaction) => sum + transaction.amount,
+    0,
+  );
 
   const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
 
@@ -78,7 +80,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
           </Group>
         </Paper>
       </GridCol>
-      <GridCol span={12}>
+      <GridCol span={4}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           <Title order={4}>Appointment Details</Title>
           <Text size="sm" mt="xs">
@@ -90,6 +92,9 @@ function AppointmentSuspense({ appointmentId }: Props) {
           </Text>
         </Paper>
       </GridCol>
+      <GridCol span={2}>
+        <StatsCard data={{ title: "total", value: `£ ${transactionsTotal}` }} />
+      </GridCol>
       <GridCol span={12}>
         <Grid>
           {/* Client Card */}
@@ -100,7 +105,6 @@ function AppointmentSuspense({ appointmentId }: Props) {
                 <AppointmentTransactionMenu
                   appointmentId={appointmentId}
                   customerId={appointment.client.id}
-                  transactionOptions={transactionOptions}
                 />
               </Group>
               <Text size="sm" mt="xs">
@@ -122,7 +126,6 @@ function AppointmentSuspense({ appointmentId }: Props) {
               <PersonnelTable
                 appointmentId={appointmentId}
                 personnel={personnel}
-                transactionOptions={transactionOptions}
               />
             </Paper>
           </GridCol>
@@ -137,7 +140,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
           </Group>
           <TransactionsTable
             appointmentId={appointmentId}
-            transactionAllocations={transactionAllocations}
+            transactions={transactions}
           />
         </Paper>
       </GridCol>

@@ -28,8 +28,8 @@ export const AppointmentsView = () => {
         <Paper withBorder p="md" radius="md" shadow="sm">
           <Group justify="space-between">
             <Title order={4}>Appointments</Title>
-            <Text>{rangeText}</Text>
             <Group>
+              <Text>{rangeText}</Text>
               <DateRangeDrawer
                 start={startAsDate}
                 end={endAsDate}

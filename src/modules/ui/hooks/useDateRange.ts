@@ -6,10 +6,13 @@ function useDateRange() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const startParam = searchParams.get("start");
-  const start = startParam ? dayjs(startParam) : dayjs().startOf("week");
+  const endParam = searchParams.get("end");
+  const start =
+    startParam && endParam ? dayjs(startParam) : dayjs().startOf("week");
+  const end = startParam && endParam ? dayjs(endParam) : dayjs().endOf("week");
 
   const [currentStart, setCurrentStart] = useState(start);
-  const [currentEnd, setCurrentEnd] = useState(start.endOf("week"));
+  const [currentEnd, setCurrentEnd] = useState(end);
 
   useEffect(() => {
     const currentParams = new URLSearchParams(searchParams);

@@ -7,7 +7,6 @@ import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import TransactionsTable from "@/modules/transactions/ui/components/transactions-table";
 import { LineChart } from "@mantine/charts";
-import { CsvUploadButton } from "@/modules/transactions/ui/components/csv-upload-button";
 import { aggregateTransactions } from "@/modules/transactions/hooks/chartUtils";
 import { DateRangeDrawer } from "@/modules/ui/components/date-range-drawer";
 import useDateRange from "@/modules/ui/hooks/useDateRange";
@@ -28,9 +27,9 @@ export const TransactionsView = () => {
           <Paper withBorder p="md" radius="md" shadow="sm">
             <Group justify="space-between">
               <Title order={4}>Transactions</Title>
-              <Text>{rangeText}</Text>
               <Group>
-                <CsvUploadButton />
+                <Text>{rangeText}</Text>
+                {/*<CsvUploadButton />*/}
                 <DateRangeDrawer
                   start={startAsDate}
                   end={endAsDate}

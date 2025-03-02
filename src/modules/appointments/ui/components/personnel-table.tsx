@@ -1,23 +1,15 @@
 "use client";
 
 import { Table } from "@mantine/core";
-import {
-  GetPersonnelByAppointmentId,
-  GetTransactionOptions,
-} from "@/modules/appointments/types";
+import { GetPersonnelByAppointmentId } from "@/modules/appointments/types";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
 
 interface Props {
   appointmentId: string;
   personnel: GetPersonnelByAppointmentId;
-  transactionOptions: GetTransactionOptions;
 }
 
-export default function PersonnelTable({
-  appointmentId,
-  personnel,
-  transactionOptions,
-}: Props) {
+export default function PersonnelTable({ appointmentId, personnel }: Props) {
   const rows = personnel.map((customer) => (
     <Table.Tr key={customer.id}>
       <Table.Td>{customer.name}</Table.Td>
@@ -25,7 +17,6 @@ export default function PersonnelTable({
         <AppointmentTransactionMenu
           appointmentId={appointmentId}
           customerId={customer.id}
-          transactionOptions={transactionOptions}
         />
       </Table.Td>
     </Table.Tr>

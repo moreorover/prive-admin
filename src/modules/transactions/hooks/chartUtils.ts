@@ -1,4 +1,4 @@
-import { GetAllTransactionsWithAllocations } from "@/modules/transactions/types";
+import { GetAllTransactions } from "@/modules/transactions/types";
 import dayjs, { Dayjs } from "dayjs";
 
 export type AggregatedResult = {
@@ -9,7 +9,7 @@ export type AggregatedResult = {
 export function aggregateTransactions(
   startDate: string,
   endDate: string,
-  transactions: GetAllTransactionsWithAllocations,
+  transactions: GetAllTransactions,
 ): AggregatedResult {
   const start: Dayjs = dayjs(startDate);
   const end: Dayjs = dayjs(endDate);
