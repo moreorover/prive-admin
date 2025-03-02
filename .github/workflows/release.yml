@@ -39,6 +39,7 @@ jobs:
           #          platforms: linux/amd64,linux/arm64
           build-args: |
             NEXT_PUBLIC_APP_URL=https://${{ vars.DOMAIN_NAME }}
+            BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}
           push: true
           tags: |
             ${{ env.IMAGE_NAME }}:latest
@@ -55,7 +56,6 @@ jobs:
     timeout-minutes: 30
     env:
       VERSION: ${{ github.sha }}
-      ENVIRONMENT: development
       DOMAIN_NAME: ${{ vars.DOMAIN_NAME }}
       BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
       POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
