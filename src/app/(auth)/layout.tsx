@@ -1,4 +1,4 @@
-import { Anchor, Box, Text, Title, Center } from "@mantine/core";
+import { Anchor, Box, Center, Text } from "@mantine/core";
 import classes from "./layout.module.css";
 import React from "react";
 
@@ -10,9 +10,22 @@ export default function AuthLayout({ children }: Props) {
   return (
     <Center className={classes.wrapper}>
       <Box>
-        <Title order={1} fw="bolder">
-          Mantine Admin
-        </Title>
+        <Text
+          inherit
+          variant="gradient"
+          component="span"
+          gradient={{ from: "pink", to: "yellow" }}
+        >
+          PRIVÉ
+        </Text>{" "}
+        <Text
+          inherit
+          variant="gradient"
+          component="span"
+          gradient={{ from: "blue", to: "green" }}
+        >
+          Admin
+        </Text>
         <Text c="dimmed" size="sm" mt={5}>
           Don&apos;t have an account?{" "}
           <Anchor size="sm" href="/register">

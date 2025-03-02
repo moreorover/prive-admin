@@ -1,26 +1,21 @@
-import { ColorSchemesSwitcher } from "@/components/color-schemes-switcher";
 import {
   AppShell,
   AppShellHeader,
   AppShellMain,
   Group,
+  NavLink,
   Text,
   Title,
 } from "@mantine/core";
-import Image from "next/image";
+import { Logo } from "@/components/logo/Logo";
+import { Activity, ChevronRight } from "lucide-react";
 
 export default function Home() {
   return (
     <AppShell header={{ height: 60 }} padding="md">
       <AppShellHeader>
         <Group className="h-full px-md">
-          <Image
-            className="dark:invert"
-            src="https://nextjs.org/icons/next.svg"
-            alt="logo"
-            width={100}
-            height={100}
-          />
+          <Logo />
         </Group>
       </AppShellHeader>
       <AppShellMain>
@@ -32,16 +27,15 @@ export default function Home() {
             component="span"
             gradient={{ from: "pink", to: "yellow" }}
           >
-            Mantine
+            PRIVÉ
           </Text>{" "}
-          +
           <Text
             inherit
             variant="gradient"
             component="span"
             gradient={{ from: "blue", to: "green" }}
           >
-            TailwindCSS
+            Admin
           </Text>
         </Title>
         <Text
@@ -52,12 +46,20 @@ export default function Home() {
           mx="auto"
           mt="xl"
         >
-          This starter Next.js project includes a minimal setup for Mantine with
-          TailwindCSS. To get started edit page.tsx file.
+          This is Admin portal.
         </Text>
-
         <div className="flex justify-center mt-10">
-          <ColorSchemesSwitcher />
+          <Group>
+            <NavLink
+              href="/signin"
+              label="Sign In"
+              leftSection={<Activity size="1rem" />}
+              rightSection={
+                <ChevronRight size="0.8rem" className="mantine-rotate-rtl" />
+              }
+              active
+            />
+          </Group>
         </div>
       </AppShellMain>
     </AppShell>
