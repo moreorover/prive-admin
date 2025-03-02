@@ -15,10 +15,11 @@ import React from "react";
 
 interface Props {
   profile: { name: string; email: string };
+  version?: string | undefined;
   children: React.ReactNode;
 }
 
-export default function DashboardShell({ children, profile }: Props) {
+export default function DashboardShell({ children, profile, version }: Props) {
   const [opened, { toggle }] = useDisclosure();
   const { colorScheme } = useMantineColorScheme();
   const theme = useMantineTheme();
@@ -52,8 +53,8 @@ export default function DashboardShell({ children, profile }: Props) {
       </AppShell.Header>
       <AppShell.Main bg={bg}>{children}</AppShell.Main>
       <AppShell.Footer>
-        <Text w="full" size="sm" c="gray">
-          CopyRight © 2024
+        <Text w="full" size="sm" c="gray" ta="right">
+          {version}
         </Text>
       </AppShell.Footer>
     </AppShell>
