@@ -1,0 +1,30 @@
+name: PR Build Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build and Validate PR
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code from the PR
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Set up Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      # Install Dependencies
+      - name: Install Dependencies
+        run: npm install
+
+      # Run the Build
+      - name: Run Build
+        run: npm run build

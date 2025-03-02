@@ -1,0 +1,62 @@
+services:
+  reverse-proxy:
+    image: traefik:v3.3.0
+    command:
+      - "--providers.docker"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=admin@${DOMAIN_NAME}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+    ports:
+      - "80:80"
+      - "8080:8080" # Traefik panel
+      - "443:443"   # HTTPS port
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to Docker events
+      - letsencrypt:/letsencrypt
+
+  db:
+    image: postgres:17.2
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DATABASE}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  prive:
+    image: ghcr.io/moreorover/prive-admin:${VERSION:-latest}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.web.loadbalancer.server.port=3000"
+      - "traefik.http.routers.prive.rule=Host(`${DOMAIN_NAME}`)"
+      - "traefik.http.routers.prive.entrypoints=websecure"
+      - "traefik.http.routers.prive.tls.certresolver=myresolver"
+    environment:
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DATABASE}
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      - VERSION=v${VERSION}
+    deploy:
+      update_config:
+        order: start-first
+    depends_on:
+      - db
+      - rabbitmq
+
+volumes:
+  letsencrypt:
+  rabbitmq_data:
+  postgres_data:
+    driver: local

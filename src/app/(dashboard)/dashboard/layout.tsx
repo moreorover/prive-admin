@@ -19,6 +19,8 @@ export default async function DashboardLayout({ children }: Props) {
 
   const user = session.user;
 
+  const version = process.env.VERSION;
+
   return (
     <DashboardShell profile={{ name: user.name, email: user.email }}>
       {children}
