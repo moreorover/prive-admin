@@ -36,6 +36,12 @@ export const CustomerForm = ({ customer, onSubmitAction, onDelete }: Props) => {
         key={form.key("name")}
         {...form.getInputProps("name")}
       />
+      <TextInput
+        label="Phone Number"
+        placeholder="+44..."
+        key={form.key("phoneNumber")}
+        {...form.getInputProps("phoneNumber")}
+      />
       <Button fullWidth mt="xl" type="submit">
         {customer.id ? "Update" : "Create"}
       </Button>

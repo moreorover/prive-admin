@@ -7,6 +7,7 @@ export const generateObjects = <T>(count: number, generator: () => T): T[] => {
 export const createCustomer = (faker: Faker) => {
   return {
     name: faker.person.fullName(),
+    phoneNumber: faker.phone.number({ style: "international" }),
   };
 };
 

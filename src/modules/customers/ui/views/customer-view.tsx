@@ -74,6 +74,14 @@ function CustomerSuspense({ customerId }: Props) {
           </Group>
         </Paper>
       </GridCol>
+      <GridCol span={3}>
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          <Title order={4}>Customer Details</Title>
+          <Text size="sm" mt="xs">
+            <strong>Phone Number:</strong> {customer.phoneNumber || "N/A"}
+          </Text>
+        </Paper>
+      </GridCol>
       <GridCol span={12}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           <Group justify="space-between">

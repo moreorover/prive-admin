@@ -15,7 +15,7 @@ export const customersRouter = createTRPCRouter({
       const { customer } = input;
 
       const c = await prisma.customer.create({
-        data: { name: customer.name },
+        data: { name: customer.name, phoneNumber: customer.phoneNumber },
       });
 
       return c;
@@ -26,7 +26,7 @@ export const customersRouter = createTRPCRouter({
       const { customer } = input;
 
       const c = await prisma.customer.update({
-        data: { name: customer.name },
+        data: { name: customer.name, phoneNumber: customer.phoneNumber },
         where: { id: customer.id },
       });
 
