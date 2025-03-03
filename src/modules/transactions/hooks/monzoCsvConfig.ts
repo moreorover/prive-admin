@@ -112,4 +112,6 @@ export const monzoTransformRow = (t: MonzoTransaction): Transaction => ({
   amount: t.amount,
   type: "BANK",
   createdAt: dayjs(`${t.date} ${t.time}`, "DD/MM/YYYY HH:mm:ss").toDate(),
+  status: "COMPLETED",
+  completedDateBy: t.date,
 });

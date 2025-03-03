@@ -91,7 +91,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
   const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
 
   return (
-    <Grid>
+    <Grid grow align="center">
       <GridCol span={12}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           <Group justify="space-between">
@@ -126,10 +126,10 @@ function AppointmentSuspense({ appointmentId }: Props) {
             Transactions Summary
           </Text>
           <Center>
-            <DonutChart size={164} thickness={20} data={chartData} />
+            <DonutChart size={124} thickness={15} data={chartData} />
           </Center>
           <Text size="md" ta="center" fw={500} mt="sm">
-            Total: <b>£{transactionsTotal.toFixed(2)}</b>
+            Total: <b>£ {transactionsTotal.toFixed(2)}</b>
           </Text>
         </Paper>
       </GridCol>

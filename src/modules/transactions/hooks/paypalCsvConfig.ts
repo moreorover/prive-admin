@@ -179,6 +179,8 @@ export const paypalTransformRow = (t: PayPalTransaction): Transaction => ({
   amount: t.gross,
   type: "PAYPAL",
   createdAt: dayjs(`${t.date} ${t.time}`, "DD/MM/YYYY HH:mm:ss").toDate(),
+  status: "COMPLETED",
+  completedDateBy: t.date,
 });
 
 export const paypalFilterRow = (t: PayPalTransaction): boolean =>
