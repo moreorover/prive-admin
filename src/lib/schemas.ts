@@ -78,8 +78,14 @@ export type Transaction = z.infer<typeof transactionSchema>;
 export const appointmentSchema = z.object({
   id: z.string().cuid2().optional(),
   name: z.string(),
-  notes: z.string().nullable(),
   startsAt: z.date(),
 });
 
 export type Appointment = z.infer<typeof appointmentSchema>;
+
+export const appointmentNoteSchema = z.object({
+  id: z.string().cuid2().optional(),
+  note: z.string(),
+});
+
+export type AppointmentNote = z.infer<typeof appointmentNoteSchema>;

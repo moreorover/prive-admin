@@ -21,6 +21,8 @@ import TransactionsTable from "@/modules/appointments/ui/components/transactions
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { useSetAtom } from "jotai";
+import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
+import { useAppointmentNoteDrawerStore } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { DonutChart } from "@mantine/charts";
 
 interface Props {
@@ -37,6 +39,7 @@ export const AppointmentView = ({ appointmentId }: Props) => {
 };
 
 function AppointmentSuspense({ appointmentId }: Props) {
+  const utils = trpc.useUtils();
   const [appointment] = trpc.appointments.getOne.useSuspenseQuery({
     id: appointmentId,
   });
@@ -53,6 +56,11 @@ function AppointmentSuspense({ appointmentId }: Props) {
 
   const [personnelOptions] =
     trpc.customers.getAvailablePersonnelByAppointmentId.useSuspenseQuery({
+      appointmentId,
+    });
+
+  const [notes] =
+    trpc.appointmentNotes.getNotesByAppointmentId.useSuspenseQuery({
       appointmentId,
     });
 
@@ -89,38 +97,74 @@ function AppointmentSuspense({ appointmentId }: Props) {
   ];
 
   const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
+  const openNewAppointmentNoteDrawer = useAppointmentNoteDrawerStore(
+    (state) => state.openDrawer,
+  );
 
   return (
     <Grid grow align="center">
-      <GridCol span={12}>
+      <GridCol span={{ base: 12, md: 6, lg: 3 }}>
         <Paper withBorder p="md" radius="md" shadow="sm">
-          <Group justify="space-between">
-            <Title order={4}>{appointment.name}</Title>
-            <Group>
-              <Button
-                onClick={() => {
-                  showEditAppointmentDrawer({ isOpen: true, appointment });
-                }}
-              >
-                Edit
-              </Button>
-            </Group>
+          <Group justify="space-between" gap="sm">
+            <Title order={4}>Client</Title>
+            <AppointmentTransactionMenu
+              appointmentId={appointmentId}
+              customer={appointment.client}
+            />
           </Group>
+          <Text size="sm" mt="xs">
+            <strong>Name:</strong> {appointment.client.name}
+          </Text>
+          <Text size="sm" mt="xs">
+            <strong>Number:</strong> {appointment.client.phoneNumber}
+          </Text>
         </Paper>
       </GridCol>
-      <GridCol span={4}>
+      <GridCol span={{ base: 12, md: 6, lg: 3 }}>
         <Paper withBorder p="md" radius="md" shadow="sm">
-          <Title order={4}>Appointment Details</Title>
+          <Group justify="space-between" gap="sm">
+            <Title order={4}>Appointment Details</Title>
+            <Button
+              onClick={() => {
+                showEditAppointmentDrawer({ isOpen: true, appointment });
+              }}
+            >
+              Edit
+            </Button>
+          </Group>
           <Text size="sm" mt="xs">
-            <strong>Notes:</strong> {appointment.notes || "No notes provided"}
-          </Text>
-          <Text size="sm" mt="xs">
-            <strong>Start Time:</strong>{" "}
-            {dayjs(appointment.startsAt).format("DD MMM YYYY HH:mm")}
+            <strong>Scheduled At:</strong>{" "}
+            {dayjs(appointment.startsAt).format("DD MMMM YYYY HH:mm")}
           </Text>
         </Paper>
       </GridCol>
-      <GridCol span={3}>
+      <GridCol span={{ sm: 12 }}>
+        {/* Personnel Involved */}
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          <Group justify="space-between" gap="sm">
+            <Title order={4}>Personnel Involved</Title>
+            <PersonnelPickerModal
+              appointmentId={appointmentId}
+              personnelOptions={personnelOptions}
+            />
+          </Group>
+          <PersonnelTable appointmentId={appointmentId} personnel={personnel} />
+        </Paper>
+      </GridCol>
+      {/* Transactions */}
+      <GridCol span={{ base: 12 }}>
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          <Group justify="space-between" gap="sm">
+            <Title order={4}>Transactions</Title>
+          </Group>
+          <TransactionsTable
+            appointmentId={appointmentId}
+            transactions={transactions}
+          />
+        </Paper>
+      </GridCol>
+
+      <GridCol span={{ base: 12, sm: 12, md: 3 }}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           <Text size="lg" fw={700} ta="center">
             Transactions Summary
@@ -133,53 +177,29 @@ function AppointmentSuspense({ appointmentId }: Props) {
           </Text>
         </Paper>
       </GridCol>
-      <GridCol span={12}>
-        <Grid>
-          {/* Client Card */}
-          <GridCol span={{ sm: 12, md: 3, lg: 3 }}>
-            <Paper withBorder p="md" radius="md" shadow="sm">
-              <Group justify="space-between" gap="sm">
-                <Title order={4}>Client</Title>
-                <AppointmentTransactionMenu
-                  appointmentId={appointmentId}
-                  customerId={appointment.client.id}
-                />
-              </Group>
-              <Text size="sm" mt="xs">
-                <strong>Name:</strong> {appointment.client.name}
-              </Text>
-            </Paper>
-          </GridCol>
 
-          {/* Personnel Involved */}
-          <GridCol span={{ sm: 12, md: 9, lg: 9 }}>
-            <Paper withBorder p="md" radius="md" shadow="sm">
-              <Group justify="space-between" gap="sm">
-                <Title order={4}>Personnel Involved</Title>
-                <PersonnelPickerModal
-                  appointmentId={appointmentId}
-                  personnelOptions={personnelOptions}
-                />
-              </Group>
-              <PersonnelTable
-                appointmentId={appointmentId}
-                personnel={personnel}
-              />
-            </Paper>
-          </GridCol>
-        </Grid>
-      </GridCol>
-
-      {/* Transactions */}
-      <GridCol span={12}>
+      {/* Notes */}
+      <GridCol span={{ base: 12 }}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           <Group justify="space-between" gap="sm">
-            <Title order={4}>Transactions</Title>
+            <Title order={4}>Notes</Title>
+            <Button
+              onClick={() => {
+                openNewAppointmentNoteDrawer({
+                  appointmentId,
+                  isOpen: true,
+                  onCreated: () => {
+                    utils.appointmentNotes.getNotesByAppointmentId.invalidate({
+                      appointmentId,
+                    });
+                  },
+                });
+              }}
+            >
+              New
+            </Button>
           </Group>
-          <TransactionsTable
-            appointmentId={appointmentId}
-            transactions={transactions}
-          />
+          <AppointmentNotesTable appointmentId={appointmentId} notes={notes} />
         </Paper>
       </GridCol>
     </Grid>

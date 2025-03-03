@@ -10,3 +10,6 @@ export type GetPersonnelByAppointmentId =
 
 export type GetPersonnelOptions =
   inferRouterOutputs<AppRouter>["customers"]["getPersonnelByAppointmentId"];
+
+export type GetAppointmentNotes =
+  inferRouterOutputs<AppRouter>["appointmentNotes"]["getNotesByAppointmentId"];

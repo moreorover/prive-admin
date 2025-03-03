@@ -18,8 +18,8 @@ export const newCustomerDrawerAtom = atom<{
 export const editCustomerDrawerAtom = atom<{
   isOpen: boolean;
   customer: Customer;
-  onCreated: () => void;
-}>({ isOpen: false, customer: { name: "" }, onCreated: () => {} });
+  onUpdated: () => void;
+}>({ isOpen: false, customer: { name: "" }, onUpdated: () => {} });
 
 export const newProductDrawerAtom = atom<{
   isOpen: boolean;
@@ -140,7 +140,7 @@ export const editAppointmentDrawerAtom = atom<{
   appointment: Appointment;
 }>({
   isOpen: false,
-  appointment: { name: "", notes: "", startsAt: dayjs().toDate() },
+  appointment: { name: "", startsAt: dayjs().toDate() },
 });
 
 export const personnelPickerModalAtom = atom<{

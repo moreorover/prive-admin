@@ -1,4 +1,5 @@
 import { appointmentsRouter } from "@/modules/appointments/server/procedures";
+import { appointmentNotesRouter } from "@/modules/appointment_notes/server/procedures";
 import { customersRouter } from "@/modules/customers/server/procedures";
 import { ordersRouter } from "@/modules/orders/server/procedures";
 import { productsRouter } from "@/modules/products/server/procedures";
@@ -10,6 +11,7 @@ import { orderItemsRouter } from "@/modules/order_item/server/procedures";
 
 export const appRouter = createTRPCRouter({
   appointments: appointmentsRouter,
+  appointmentNotes: appointmentNotesRouter,
   customers: customersRouter,
   orders: ordersRouter,
   orderItems: orderItemsRouter,

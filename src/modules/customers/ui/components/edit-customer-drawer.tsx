@@ -18,8 +18,8 @@ export const EditCustomerDrawer = () => {
         title: "Success!",
         message: "Customer updated.",
       });
-      setOpen({ isOpen: false, customer: { name: "" }, onCreated: () => {} });
-      value.onCreated();
+      setOpen({ isOpen: false, customer: { name: "" }, onUpdated: () => {} });
+      value.onUpdated();
     },
     onError: () => {
       notifications.show({
@@ -42,7 +42,7 @@ export const EditCustomerDrawer = () => {
     <Drawer
       opened={value.isOpen}
       onClose={() =>
-        setOpen({ isOpen: false, customer: { name: "" }, onCreated: () => {} })
+        setOpen({ isOpen: false, customer: { name: "" }, onUpdated: () => {} })
       }
       position="right"
       title="Update Customer"

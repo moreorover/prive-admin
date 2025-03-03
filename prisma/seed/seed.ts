@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import {
   createAppointment,
+  createAppointmentNote,
   createCustomer,
   createProduct,
   createProductVariant,
@@ -88,6 +89,17 @@ const seedAppointments = async (): Promise<void> => {
           data: {
             ...transaction,
             customerId,
+            appointmentId: createdAppointment.id,
+          },
+        });
+      }
+
+      for (const note of generateObjects(10, () =>
+        createAppointmentNote(faker),
+      )) {
+        await prisma.appointmentNote.create({
+          data: {
+            ...note,
             appointmentId: createdAppointment.id,
           },
         });

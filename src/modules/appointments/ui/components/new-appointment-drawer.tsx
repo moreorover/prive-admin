@@ -55,7 +55,7 @@ export const NewAppointmentDrawer = () => {
       <AppointmentForm
         onSubmitAction={onSubmit}
         onDelete={onDelete}
-        appointment={{ name: "", notes: "", startsAt: dayjs().toDate() }}
+        appointment={{ name: "", startsAt: dayjs().toDate() }}
       />
     </Drawer>
   );
