@@ -24,7 +24,7 @@ async function seedUsers() {
   if (!existingUser) {
     await auth.api.signUpEmail({
       body: {
-        email: "x@x.com",
+        email: userEmail,
         password: "password123",
         name: "X",
       },

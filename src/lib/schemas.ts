@@ -59,6 +59,8 @@ export const transactionSchema = z.object({
     message: "Amount cannot be zero",
   }),
   type: z.enum(["BANK", "CASH", "PAYPAL"]),
+  status: z.enum(["PENDING", "COMPLETED"]),
+  completedDateBy: z.union([z.string(), z.date()]),
   createdAt: z.union([z.string(), z.date(), z.undefined()]),
 });
 

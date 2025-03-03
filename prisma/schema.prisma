@@ -167,13 +167,20 @@ model TransactionBatch {
   @@map("transaction_batches")
 }
 
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+}
+
 model Transaction {
-  id        String          @id @default(cuid(2))
-  name      String?
-  notes     String?
-  amount    Int             @db.Integer
-  type      TransactionType @default(BANK)
-  createdAt DateTime        @default(now())
+  id              String            @id @default(cuid(2))
+  name            String?
+  notes           String?
+  amount          Int               @db.Integer
+  type            TransactionType   @default(BANK)
+  status          TransactionStatus @default(PENDING)
+  completedDateBy DateTime          @default(now()) @db.Date
+  createdAt       DateTime          @default(now())
 
   batchId String?
   batch   TransactionBatch? @relation(fields: [batchId], references: [id], onDelete: Cascade)

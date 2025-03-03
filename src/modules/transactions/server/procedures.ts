@@ -109,6 +109,8 @@ export const transactionsRouter = createTRPCRouter({
           notes: transaction.notes,
           amount: transaction.amount,
           type: transaction.type,
+          status: transaction.status,
+          completedDateBy: transaction.completedDateBy,
           appointmentId,
           orderId,
           customerId,
@@ -128,6 +130,8 @@ export const transactionsRouter = createTRPCRouter({
           notes: transaction.notes,
           amount: transaction.amount,
           type: transaction.type,
+          status: transaction.status,
+          completedDateBy: transaction.completedDateBy,
         },
         where: { id: transaction.id },
       });

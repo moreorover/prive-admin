@@ -7,6 +7,7 @@ import { trpc } from "@/trpc/client";
 import { useAtom } from "jotai/index";
 import { newTransactionDrawerAtom } from "@/lib/atoms";
 import { TransactionForm } from "@/modules/transactions/ui/components/transaction-form";
+import dayjs from "dayjs";
 
 export const NewTransactionDrawer = () => {
   const [value, setOpen] = useAtom(newTransactionDrawerAtom);
@@ -68,6 +69,8 @@ export const NewTransactionDrawer = () => {
             notes: "",
             amount: 0,
             type: "CASH",
+            status: "PENDING",
+            completedDateBy: dayjs().toDate(),
           }}
           disabled={newTransaction.isPending}
         />
