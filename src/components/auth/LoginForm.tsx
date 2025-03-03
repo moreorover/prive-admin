@@ -23,8 +23,8 @@ export function LoginForm() {
   const form = useForm({
     mode: "uncontrolled",
     initialValues: {
-      email: "x@x.com",
-      password: "password123",
+      email: process.env.NODE_ENV === "development" ? "x@x.com" : "",
+      password: process.env.NODE_ENV === "development" ? "password123" : "",
     },
 
     validate: zodResolver(signInFormSchema),
@@ -73,6 +73,8 @@ export function LoginForm() {
           label="Email"
           placeholder="test@example.com"
           required
+          name="email"
+          autoComplete="email"
           key={form.key("email")}
           {...form.getInputProps("email")}
         />
@@ -80,6 +82,8 @@ export function LoginForm() {
           label="Password"
           placeholder="Your password"
           required
+          name="password"
+          autoComplete="current-password"
           mt="md"
           key={form.key("password")}
           {...form.getInputProps("password")}
