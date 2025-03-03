@@ -54,8 +54,17 @@ export const createAppointment = (faker: Faker) => {
       "Correction",
       "New hair set",
     ]),
-    notes: faker.helpers.arrayElement([faker.lorem.sentence(), null]),
     startsAt: faker.helpers.arrayElement([
+      faker.date.recent({ days: 10 }),
+      faker.date.soon({ days: 10 }),
+    ]),
+  };
+};
+
+export const createAppointmentNote = (faker: Faker) => {
+  return {
+    note: faker.lorem.sentence(),
+    createdAt: faker.helpers.arrayElement([
       faker.date.recent({ days: 10 }),
       faker.date.soon({ days: 10 }),
     ]),

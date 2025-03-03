@@ -1,27 +1,26 @@
 "use client";
 
 import { useForm } from "@mantine/form";
-import { Appointment, appointmentSchema } from "@/lib/schemas";
+import { AppointmentNote, appointmentNoteSchema } from "@/lib/schemas";
 import { zodResolver } from "mantine-form-zod-resolver";
-import { Button, TextInput } from "@mantine/core";
-import { DateTimePicker } from "@mantine/dates";
+import { Button, Textarea } from "@mantine/core";
 import { Trash2 } from "lucide-react";
 
 type Props = {
-  appointment: Appointment;
-  onSubmitAction: (values: Appointment) => void;
+  appointmentNote: AppointmentNote;
+  onSubmitAction: (values: AppointmentNote) => void;
   onDelete?: () => void;
 };
 
-export const AppointmentForm = ({
-  appointment,
+export const AppointmentNoteForm = ({
+  appointmentNote,
   onSubmitAction,
   onDelete,
 }: Props) => {
   const form = useForm({
     mode: "uncontrolled",
-    initialValues: appointment,
-    validate: zodResolver(appointmentSchema),
+    initialValues: appointmentNote,
+    validate: zodResolver(appointmentNoteSchema),
   });
 
   async function handleSubmit(values: typeof form.values) {
@@ -34,25 +33,19 @@ export const AppointmentForm = ({
 
   return (
     <form onSubmit={form.onSubmit(handleSubmit)}>
-      <TextInput
-        label="Name"
-        placeholder="Consultation"
+      <Textarea
+        label="Note"
+        placeholder="Your appointment note"
         required
-        key={form.key("name")}
-        {...form.getInputProps("name")}
-      />
-      <DateTimePicker
-        label="Starts at"
-        placeholder="Pick date and time"
-        required
-        key={form.key("startsAt")}
-        {...form.getInputProps("startsAt")}
+        key={form.key("note")}
+        {...form.getInputProps("note")}
       />
       <Button fullWidth mt="xl" type="submit">
-        {appointment.id ? "Update" : "Create"}
+        {appointmentNote.id ? "Update" : "Create"}
       </Button>
-      {appointment.id && (
+      {appointmentNote.id && (
         <Button
+          disabled
           leftSection={<Trash2 />}
           fullWidth
           mt="xl"

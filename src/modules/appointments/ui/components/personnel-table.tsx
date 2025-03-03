@@ -13,10 +13,11 @@ export default function PersonnelTable({ appointmentId, personnel }: Props) {
   const rows = personnel.map((customer) => (
     <Table.Tr key={customer.id}>
       <Table.Td>{customer.name}</Table.Td>
+      <Table.Td>{customer.phoneNumber}</Table.Td>
       <Table.Td>
         <AppointmentTransactionMenu
           appointmentId={appointmentId}
-          customerId={customer.id}
+          customer={customer}
         />
       </Table.Td>
     </Table.Tr>
@@ -26,6 +27,7 @@ export default function PersonnelTable({ appointmentId, personnel }: Props) {
       <Table.Thead>
         <Table.Tr>
           <Table.Th>Name</Table.Th>
+          <Table.Th>Phone Number</Table.Th>
           <Table.Th></Table.Th>
         </Table.Tr>
       </Table.Thead>

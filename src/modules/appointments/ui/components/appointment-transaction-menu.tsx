@@ -3,21 +3,23 @@
 import { Button, Menu } from "@mantine/core";
 import { trpc } from "@/trpc/client";
 import { useSetAtom } from "jotai/index";
-import { newTransactionDrawerAtom } from "@/lib/atoms";
+import { editCustomerDrawerAtom, newTransactionDrawerAtom } from "@/lib/atoms";
 import { Ellipsis } from "lucide-react";
+import { Customer } from "@/lib/schemas";
 
 interface Props {
   appointmentId: string;
-  customerId: string;
+  customer: Customer;
 }
 
 export const AppointmentTransactionMenu = ({
   appointmentId,
-  customerId,
+  customer,
 }: Props) => {
   const utils = trpc.useUtils();
 
   const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
+  const showEditCustomerDrawer = useSetAtom(editCustomerDrawerAtom);
 
   const onSuccess = () => {
     utils.transactions.getByAppointmentId.invalidate({
@@ -36,6 +38,22 @@ export const AppointmentTransactionMenu = ({
         </Menu.Target>
 
         <Menu.Dropdown>
+          <Menu.Label>Customer</Menu.Label>
+          <Menu.Item
+            onClick={() => {
+              showEditCustomerDrawer({
+                isOpen: true,
+                customer,
+                onUpdated: () => {
+                  utils.appointments.getOne.invalidate({
+                    id: appointmentId,
+                  });
+                },
+              });
+            }}
+          >
+            Edit
+          </Menu.Item>
           <Menu.Label>Transactions</Menu.Label>
           <Menu.Item
             onClick={() => {
@@ -43,7 +61,7 @@ export const AppointmentTransactionMenu = ({
                 isOpen: true,
                 orderId: null,
                 appointmentId,
-                customerId,
+                customerId: customer.id!,
                 onCreated: onSuccess,
               });
             }}

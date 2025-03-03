@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { appointmentSchema } from "@/lib/schemas";
+import { appointmentNoteSchema, appointmentSchema } from "@/lib/schemas";
 
 dayjs.extend(isoWeek);
 
@@ -33,7 +33,6 @@ export const appointmentsRouter = createTRPCRouter({
       const c = await prisma.appointment.create({
         data: {
           name: appointment.name,
-          notes: appointment.notes,
           startsAt: appointment.startsAt,
           clientId,
         },
@@ -48,7 +47,6 @@ export const appointmentsRouter = createTRPCRouter({
       const c = await prisma.appointment.update({
         data: {
           name: appointment.name,
-          notes: appointment.notes,
           startsAt: appointment.startsAt,
         },
         where: { id: appointment.id },
@@ -131,5 +129,33 @@ export const appointmentsRouter = createTRPCRouter({
       });
 
       return appointments;
+    }),
+  createNote: protectedProcedure
+    .input(z.object({ appointmentId: z.string().cuid2(), note: z.string() }))
+    .mutation(async ({ input }) => {
+      const { appointmentId, note } = input;
+
+      const c = await prisma.appointmentNote.create({
+        data: {
+          note: note,
+          appointmentId,
+        },
+      });
+      return c;
+    }),
+  updateNote: protectedProcedure
+    .input(z.object({ note: appointmentNoteSchema }))
+    .mutation(async ({ input }) => {
+      const { note } = input;
+
+      const c = await prisma.appointmentNote.update({
+        data: {
+          note: note.note,
+        },
+        where: {
+          id: note.id,
+        },
+      });
+      return c;
     }),
 });

@@ -62,7 +62,7 @@ function CustomerSuspense({ customerId }: Props) {
                   showUpdateCustomerDrawer({
                     isOpen: true,
                     customer,
-                    onCreated: () => {
+                    onUpdated: () => {
                       utils.customers.getOne.invalidate({ id: customerId });
                     },
                   });

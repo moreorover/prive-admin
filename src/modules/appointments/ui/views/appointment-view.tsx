@@ -22,6 +22,8 @@ import { PersonnelPickerModal } from "@/modules/appointments/ui/components/perso
 import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { useSetAtom } from "jotai";
 import { DonutChart } from "@mantine/charts";
+import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
+import { useAppointmentNoteDrawerStore } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 
 interface Props {
   appointmentId: string;
@@ -37,6 +39,7 @@ export const AppointmentView = ({ appointmentId }: Props) => {
 };
 
 function AppointmentSuspense({ appointmentId }: Props) {
+  const utils = trpc.useUtils();
   const [appointment] = trpc.appointments.getOne.useSuspenseQuery({
     id: appointmentId,
   });
@@ -53,6 +56,11 @@ function AppointmentSuspense({ appointmentId }: Props) {
 
   const [personnelOptions] =
     trpc.customers.getAvailablePersonnelByAppointmentId.useSuspenseQuery({
+      appointmentId,
+    });
+
+  const [notes] =
+    trpc.appointmentNotes.getNotesByAppointmentId.useSuspenseQuery({
       appointmentId,
     });
 
@@ -89,6 +97,9 @@ function AppointmentSuspense({ appointmentId }: Props) {
   ];
 
   const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
+  const openNewAppointmentDrawer = useAppointmentNoteDrawerStore(
+    (state) => state.openDrawer,
+  );
 
   return (
     <Grid grow align="center">
@@ -111,9 +122,6 @@ function AppointmentSuspense({ appointmentId }: Props) {
       <GridCol span={4}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           <Title order={4}>Appointment Details</Title>
-          <Text size="sm" mt="xs">
-            <strong>Notes:</strong> {appointment.notes || "No notes provided"}
-          </Text>
           <Text size="sm" mt="xs">
             <strong>Start Time:</strong>{" "}
             {dayjs(appointment.startsAt).format("DD MMM YYYY HH:mm")}
@@ -142,11 +150,14 @@ function AppointmentSuspense({ appointmentId }: Props) {
                 <Title order={4}>Client</Title>
                 <AppointmentTransactionMenu
                   appointmentId={appointmentId}
-                  customerId={appointment.client.id}
+                  customer={appointment.client}
                 />
               </Group>
               <Text size="sm" mt="xs">
                 <strong>Name:</strong> {appointment.client.name}
+              </Text>
+              <Text size="sm" mt="xs">
+                <strong>Number:</strong> {appointment.client.phoneNumber}
               </Text>
             </Paper>
           </GridCol>
@@ -180,6 +191,31 @@ function AppointmentSuspense({ appointmentId }: Props) {
             appointmentId={appointmentId}
             transactions={transactions}
           />
+        </Paper>
+      </GridCol>
+
+      {/* Notes */}
+      <GridCol span={12}>
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          <Group justify="space-between" gap="sm">
+            <Title order={4}>Notes</Title>
+            <Button
+              onClick={() => {
+                openNewAppointmentDrawer({
+                  appointmentId,
+                  isOpen: true,
+                  onCreated: () => {
+                    utils.appointmentNotes.getNotesByAppointmentId.invalidate({
+                      appointmentId,
+                    });
+                  },
+                });
+              }}
+            >
+              New
+            </Button>
+          </Group>
+          <AppointmentNotesTable appointmentId={appointmentId} notes={notes} />
         </Paper>
       </GridCol>
     </Grid>

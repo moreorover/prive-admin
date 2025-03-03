@@ -14,6 +14,8 @@ import { EditProductVariantDrawer } from "@/modules/product_variants/ui/componen
 import { NewOrderItemDrawer } from "@/modules/order_item/ui/components/new-order-item-drawer";
 import { EditOrderItemDrawer } from "@/modules/order_item/ui/components/edit-order-item-drawer";
 import { EditTransactionDrawer } from "@/modules/transactions/ui/components/edit-transaction-drawer";
+import { NewAppointmentNoteDrawer } from "@/modules/appointment_notes/ui/components/new-appointment-note-drawer";
+import { EditAppointmentNoteDrawer } from "@/modules/appointment_notes/ui/components/edit-appointment-note-drawer";
 
 export default function DrawerProvider() {
   return (
@@ -38,6 +40,9 @@ export default function DrawerProvider() {
 
       <NewAppointmentDrawer />
       <EditAppointmentDrawer />
+
+      <NewAppointmentNoteDrawer />
+      <EditAppointmentNoteDrawer />
     </>
   );
 }
