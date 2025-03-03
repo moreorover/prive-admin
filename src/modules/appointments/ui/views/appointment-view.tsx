@@ -2,6 +2,7 @@
 
 import {
   Button,
+  Center,
   Grid,
   GridCol,
   Group,
@@ -20,7 +21,7 @@ import TransactionsTable from "@/modules/appointments/ui/components/transactions
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { useSetAtom } from "jotai";
-import StatsCard from "@/modules/ui/components/stats-card/StatsCard";
+import { DonutChart } from "@mantine/charts";
 
 interface Props {
   appointmentId: string;
@@ -60,10 +61,37 @@ function AppointmentSuspense({ appointmentId }: Props) {
     0,
   );
 
+  const transactionsCompletedTotal = transactions
+    .filter((transaction) => transaction.status === "COMPLETED")
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
+
+  const transactionsPendingTotal = transactions
+    .filter((transaction) => transaction.status === "PENDING")
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
+
+  const chartData = [
+    {
+      name: "Completed",
+      value:
+        transactionsCompletedTotal < 0
+          ? transactionsCompletedTotal * -1
+          : transactionsCompletedTotal,
+      color: "green.4",
+    }, // Green
+    {
+      name: "Outstanding",
+      value:
+        transactionsPendingTotal < 0
+          ? transactionsPendingTotal * -1
+          : transactionsPendingTotal,
+      color: "pink.6",
+    }, // Red
+  ];
+
   const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
 
   return (
-    <Grid>
+    <Grid grow align="center">
       <GridCol span={12}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           <Group justify="space-between">
@@ -92,8 +120,18 @@ function AppointmentSuspense({ appointmentId }: Props) {
           </Text>
         </Paper>
       </GridCol>
-      <GridCol span={2}>
-        <StatsCard data={{ title: "total", value: `£ ${transactionsTotal}` }} />
+      <GridCol span={3}>
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          <Text size="lg" fw={700} ta="center">
+            Transactions Summary
+          </Text>
+          <Center>
+            <DonutChart size={124} thickness={15} data={chartData} />
+          </Center>
+          <Text size="md" ta="center" fw={500} mt="sm">
+            Total: <b>£ {transactionsTotal.toFixed(2)}</b>
+          </Text>
+        </Paper>
       </GridCol>
       <GridCol span={12}>
         <Grid>

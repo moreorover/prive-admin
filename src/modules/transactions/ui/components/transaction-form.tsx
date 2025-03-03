@@ -10,6 +10,8 @@ import {
   Textarea,
   TextInput,
 } from "@mantine/core";
+import { DateInput } from "@mantine/dates";
+import { useState } from "react";
 
 type Props = {
   transaction: Transaction;
@@ -26,7 +28,21 @@ export const TransactionForm = ({
     mode: "uncontrolled",
     initialValues: transaction,
     validate: zodResolver(transactionSchema),
+    onValuesChange: (values) => {
+      if (values.status === "COMPLETED") {
+        setDateLabel("When was it completed?");
+      }
+      if (values.status === "PENDING") {
+        setDateLabel("When should it be completed by?");
+      }
+    },
   });
+
+  const [dateLabel, setDateLabel] = useState<string>(
+    form.getValues().status === "COMPLETED"
+      ? "When was it completed?"
+      : "When should it be completed by?",
+  );
 
   return (
     <form onSubmit={form.onSubmit(onSubmitAction)}>
@@ -48,6 +64,20 @@ export const TransactionForm = ({
         data={["BANK", "CASH", "PAYPAL"]}
         key={form.key("type")}
         {...form.getInputProps("type")}
+      />
+      <Select
+        label="Transaction Status"
+        placeholder="Select status"
+        data={["PENDING", "COMPLETED"]}
+        key={form.key("status")}
+        {...form.getInputProps("status")}
+      />
+      <DateInput
+        label={dateLabel}
+        placeholder="Pick date and time"
+        required
+        key={form.key("completedDateBy")}
+        {...form.getInputProps("completedDateBy")}
       />
       <NumberInput
         label="Amount"

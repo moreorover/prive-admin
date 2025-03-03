@@ -38,6 +38,11 @@ export const createTransaction = (faker: Faker) => {
       faker.date.soon({ days: 10 }),
     ]),
     type: faker.helpers.arrayElement(["BANK", "CASH", "PAYPAL"]),
+    status: faker.helpers.arrayElement(["PENDING", "COMPLETED"]),
+    completedDateBy: faker.helpers.arrayElement([
+      faker.date.recent({ days: 10 }),
+      faker.date.soon({ days: 10 }),
+    ]),
   };
 };
 

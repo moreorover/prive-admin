@@ -7,6 +7,7 @@ import { trpc } from "@/trpc/client";
 import { useAtom } from "jotai/index";
 import { editTransactionDrawerAtom } from "@/lib/atoms";
 import { TransactionForm } from "@/modules/transactions/ui/components/transaction-form";
+import dayjs from "dayjs";
 
 export const EditTransactionDrawer = () => {
   const [value, setOpen] = useAtom(editTransactionDrawerAtom);
@@ -21,7 +22,14 @@ export const EditTransactionDrawer = () => {
       value.onUpdated();
       setOpen({
         isOpen: false,
-        transaction: { name: "", notes: "", amount: 0, type: "CASH" },
+        transaction: {
+          name: "",
+          notes: "",
+          amount: 0,
+          type: "CASH",
+          status: "PENDING",
+          completedDateBy: dayjs().toDate(),
+        },
         onUpdated: () => {},
       });
     },
@@ -47,7 +55,14 @@ export const EditTransactionDrawer = () => {
         onClose={() =>
           setOpen({
             isOpen: false,
-            transaction: { name: "", notes: "", amount: 0, type: "CASH" },
+            transaction: {
+              name: "",
+              notes: "",
+              amount: 0,
+              type: "CASH",
+              status: "PENDING",
+              completedDateBy: dayjs().toDate(),
+            },
             onUpdated: () => {},
           })
         }

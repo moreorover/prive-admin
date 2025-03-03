@@ -118,7 +118,14 @@ export const editTransactionDrawerAtom = atom<{
   onUpdated: () => void;
 }>({
   isOpen: false,
-  transaction: { name: "", notes: "", amount: 0, type: "CASH" },
+  transaction: {
+    name: "",
+    notes: "",
+    amount: 0,
+    type: "CASH",
+    status: "PENDING",
+    completedDateBy: dayjs().toDate(),
+  },
   onUpdated: () => {},
 });
 
