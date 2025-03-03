@@ -26,7 +26,7 @@ export const EditAppointmentDrawer = () => {
       });
       setOpen({
         isOpen: false,
-        appointment: { name: "", notes: "", startsAt: dayjs().toDate() },
+        appointment: { name: "", startsAt: dayjs().toDate() },
       });
     },
     onError: () => {
@@ -52,7 +52,7 @@ export const EditAppointmentDrawer = () => {
       onClose={() =>
         setOpen({
           isOpen: false,
-          appointment: { name: "", notes: "", startsAt: dayjs().toDate() },
+          appointment: { name: "", startsAt: dayjs().toDate() },
         })
       }
       position="right"
