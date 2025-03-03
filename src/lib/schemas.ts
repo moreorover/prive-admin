@@ -6,6 +6,15 @@ export const customerSchema = z.object({
     .string()
     .min(5, { message: "Name must be at least 5 characters long" })
     .max(50, { message: "Name cannot exceed 50 characters" }),
+  phoneNumber: z
+    .string()
+    .min(10, "Phone number must be at least 10 characters long")
+    .max(15, "Phone number must be at most 15 characters long")
+    .regex(
+      /^\+\d+$/,
+      "Phone number must start with '+' and contain only digits after it",
+    )
+    .nullish(),
 });
 
 export type Customer = z.infer<typeof customerSchema>;

@@ -48,7 +48,7 @@ export const NewCustomerDrawer = () => {
       <CustomerForm
         onSubmitAction={onSubmit}
         onDelete={onDelete}
-        customer={{ name: "" }}
+        customer={{ name: "", phoneNumber: "" }}
       />
     </Drawer>
   );

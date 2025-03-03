@@ -12,6 +12,7 @@ export function CustomersTable({ customers }: Props) {
   const rows = customers.map((customer) => (
     <Table.Tr key={customer.id}>
       <Table.Td>{customer.name}</Table.Td>
+      <Table.Td>{customer.phoneNumber}</Table.Td>
       <Table.Td>
         <Button component={Link} href={`/dashboard/customers/${customer.id}`}>
           View
@@ -24,6 +25,7 @@ export function CustomersTable({ customers }: Props) {
       <Table.Thead>
         <Table.Tr>
           <Table.Th>Name</Table.Th>
+          <Table.Th>Phone Number</Table.Th>
           <Table.Th></Table.Th>
         </Table.Tr>
       </Table.Thead>
