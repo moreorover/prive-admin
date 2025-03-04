@@ -7,6 +7,7 @@ import {
   GridCol,
   Group,
   Paper,
+  Stack,
   Text,
   Title,
 } from "@mantine/core";
@@ -102,105 +103,104 @@ function AppointmentSuspense({ appointmentId }: Props) {
   );
 
   return (
-    <Grid grow align="center">
-      <GridCol span={{ base: 12, md: 6, lg: 3 }}>
-        <Paper withBorder p="md" radius="md" shadow="sm">
-          <Group justify="space-between" gap="sm">
-            <Title order={4}>Client</Title>
-            <AppointmentTransactionMenu
+    <Grid grow>
+      <GridCol span={{ base: 12, lg: 3 }}>
+        <Stack>
+          <Paper withBorder p="md" radius="md" shadow="sm">
+            <Group justify="space-between" gap="sm">
+              <Title order={4}>Client</Title>
+              <AppointmentTransactionMenu
+                appointmentId={appointmentId}
+                customer={appointment.client}
+              />
+            </Group>
+            <Text size="sm" mt="xs">
+              <strong>Name:</strong> {appointment.client.name}
+            </Text>
+            <Text size="sm" mt="xs">
+              <strong>Number:</strong> {appointment.client.phoneNumber}
+            </Text>
+          </Paper>
+          <Paper withBorder p="md" radius="md" shadow="sm">
+            <Group justify="space-between" gap="sm">
+              <Title order={4}>Appointment Details</Title>
+              <Button
+                onClick={() => {
+                  showEditAppointmentDrawer({ isOpen: true, appointment });
+                }}
+              >
+                Edit
+              </Button>
+            </Group>
+            <Text size="sm" mt="xs">
+              <strong>Scheduled At:</strong>{" "}
+              {dayjs(appointment.startsAt).format("DD MMMM YYYY HH:mm")}
+            </Text>
+          </Paper>
+          <Paper withBorder p="md" radius="md" shadow="sm">
+            <Text size="lg" fw={700} ta="center">
+              Transactions Summary
+            </Text>
+            <Center>
+              <DonutChart size={124} thickness={15} data={chartData} />
+            </Center>
+            <Text size="md" ta="center" fw={500} mt="sm">
+              Total: <b>£ {transactionsTotal.toFixed(2)}</b>
+            </Text>
+          </Paper>
+        </Stack>
+      </GridCol>
+      <GridCol span={{ base: 12, lg: 9 }}>
+        <Stack>
+          <Paper withBorder p="md" radius="md" shadow="sm">
+            <Group justify="space-between" gap="sm">
+              <Title order={4}>Notes</Title>
+              <Button
+                onClick={() => {
+                  openNewAppointmentNoteDrawer({
+                    appointmentId,
+                    isOpen: true,
+                    onCreated: () => {
+                      utils.appointmentNotes.getNotesByAppointmentId.invalidate(
+                        {
+                          appointmentId,
+                        },
+                      );
+                    },
+                  });
+                }}
+              >
+                New
+              </Button>
+            </Group>
+            <AppointmentNotesTable
               appointmentId={appointmentId}
-              customer={appointment.client}
+              notes={notes}
             />
-          </Group>
-          <Text size="sm" mt="xs">
-            <strong>Name:</strong> {appointment.client.name}
-          </Text>
-          <Text size="sm" mt="xs">
-            <strong>Number:</strong> {appointment.client.phoneNumber}
-          </Text>
-        </Paper>
-      </GridCol>
-      <GridCol span={{ base: 12, md: 6, lg: 3 }}>
-        <Paper withBorder p="md" radius="md" shadow="sm">
-          <Group justify="space-between" gap="sm">
-            <Title order={4}>Appointment Details</Title>
-            <Button
-              onClick={() => {
-                showEditAppointmentDrawer({ isOpen: true, appointment });
-              }}
-            >
-              Edit
-            </Button>
-          </Group>
-          <Text size="sm" mt="xs">
-            <strong>Scheduled At:</strong>{" "}
-            {dayjs(appointment.startsAt).format("DD MMMM YYYY HH:mm")}
-          </Text>
-        </Paper>
-      </GridCol>
-      <GridCol span={{ sm: 12 }}>
-        {/* Personnel Involved */}
-        <Paper withBorder p="md" radius="md" shadow="sm">
-          <Group justify="space-between" gap="sm">
-            <Title order={4}>Personnel Involved</Title>
-            <PersonnelPickerModal
+          </Paper>
+          <Paper withBorder p="md" radius="md" shadow="sm">
+            <Group justify="space-between" gap="sm">
+              <Title order={4}>Personnel Involved</Title>
+              <PersonnelPickerModal
+                appointmentId={appointmentId}
+                personnelOptions={personnelOptions}
+              />
+            </Group>
+            <PersonnelTable
               appointmentId={appointmentId}
-              personnelOptions={personnelOptions}
+              personnel={personnel}
             />
-          </Group>
-          <PersonnelTable appointmentId={appointmentId} personnel={personnel} />
-        </Paper>
-      </GridCol>
-      {/* Transactions */}
-      <GridCol span={{ base: 12 }}>
-        <Paper withBorder p="md" radius="md" shadow="sm">
-          <Group justify="space-between" gap="sm">
-            <Title order={4}>Transactions</Title>
-          </Group>
-          <TransactionsTable
-            appointmentId={appointmentId}
-            transactions={transactions}
-          />
-        </Paper>
-      </GridCol>
-
-      <GridCol span={{ base: 12, sm: 12, md: 3 }}>
-        <Paper withBorder p="md" radius="md" shadow="sm">
-          <Text size="lg" fw={700} ta="center">
-            Transactions Summary
-          </Text>
-          <Center>
-            <DonutChart size={124} thickness={15} data={chartData} />
-          </Center>
-          <Text size="md" ta="center" fw={500} mt="sm">
-            Total: <b>£ {transactionsTotal.toFixed(2)}</b>
-          </Text>
-        </Paper>
-      </GridCol>
-
-      {/* Notes */}
-      <GridCol span={{ base: 12 }}>
-        <Paper withBorder p="md" radius="md" shadow="sm">
-          <Group justify="space-between" gap="sm">
-            <Title order={4}>Notes</Title>
-            <Button
-              onClick={() => {
-                openNewAppointmentNoteDrawer({
-                  appointmentId,
-                  isOpen: true,
-                  onCreated: () => {
-                    utils.appointmentNotes.getNotesByAppointmentId.invalidate({
-                      appointmentId,
-                    });
-                  },
-                });
-              }}
-            >
-              New
-            </Button>
-          </Group>
-          <AppointmentNotesTable appointmentId={appointmentId} notes={notes} />
-        </Paper>
+          </Paper>
+          <Paper withBorder p="md" radius="md" shadow="sm">
+            <Group justify="space-between" gap="sm">
+              <Title order={4}>Transactions</Title>
+            </Group>
+            <TransactionsTable
+              appointmentId={appointmentId}
+              transactions={transactions}
+            />
+          </Paper>
+        </Stack>
       </GridCol>
     </Grid>
   );
