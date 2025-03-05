@@ -3,6 +3,7 @@ import DashboardShell from "@/components/dashboard/DashboardShell";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { Container } from "@mantine/core";
 
 interface Props {
   children: React.ReactNode;
@@ -26,7 +27,7 @@ export default async function DashboardLayout({ children }: Props) {
       profile={{ name: user.name, email: user.email }}
       version={version}
     >
-      {children}
+      <Container fluid>{children}</Container>
     </DashboardShell>
   );
 }

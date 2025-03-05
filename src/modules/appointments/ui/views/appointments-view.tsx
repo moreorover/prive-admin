@@ -1,6 +1,15 @@
 "use client";
 
-import { Grid, GridCol, Group, Paper, Text, Title } from "@mantine/core";
+import {
+  Divider,
+  Flex,
+  Grid,
+  GridCol,
+  Paper,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import { trpc } from "@/trpc/client";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -8,8 +17,10 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { AppointmentsTable } from "@/modules/appointments/ui/components/appointments-table";
+import Surface from "@/modules/ui/components/surface";
+import { FilterDateMenu } from "@/modules/ui/components/filter-date-menu";
 import useDateRange from "@/modules/ui/hooks/useDateRange";
-import { DateRangeDrawer } from "@/modules/ui/components/date-range-drawer";
+import { useRouter } from "next/navigation";
 
 dayjs.extend(isoWeek);
 
@@ -19,34 +30,48 @@ interface Props {
 }
 
 export const AppointmentsView = () => {
-  const { start, end, startAsDate, endAsDate, rangeText, setStartAndEnd } =
-    useDateRange();
+  const router = useRouter();
+  const { start, end, range, rangeText, createQueryString } = useDateRange();
 
   return (
-    <Grid>
-      <GridCol span={12}>
-        <Paper withBorder p="md" radius="md" shadow="sm">
-          <Group justify="space-between">
-            <Title order={4}>Appointments</Title>
-            <Group>
-              <Text>{rangeText}</Text>
-              <DateRangeDrawer
-                start={startAsDate}
-                end={endAsDate}
-                onConfirm={setStartAndEnd}
-              />
-            </Group>
-          </Group>
-        </Paper>
-      </GridCol>
-      <GridCol span={12}>
-        <Suspense fallback={<LoaderSkeleton />}>
-          <ErrorBoundary fallback={<p>Error</p>}>
-            <AppointmentsSuspense startDate={start} endDate={end} />
-          </ErrorBoundary>
-        </Suspense>
-      </GridCol>
-    </Grid>
+    <Stack gap="sm">
+      <Surface component={Paper} style={{ backgroundColor: "transparent" }}>
+        <Flex
+          justify="space-between"
+          direction={{ base: "column", sm: "row" }}
+          gap={{ base: "sm", sm: 4 }}
+        >
+          <Stack gap={4}>
+            <Title order={3}>Appointments</Title>
+            {/*<Text></Text>*/}
+          </Stack>
+          <Flex align="center" gap="sm">
+            {/*<ActionIcon variant="subtle">*/}
+            {/*  <RefreshCw size={16} />*/}
+            {/*</ActionIcon>*/}
+            <FilterDateMenu
+              range={range}
+              rangeInText={rangeText}
+              onSelected={(range) =>
+                router.push(
+                  `/dashboard/appointments${createQueryString(range)}`,
+                )
+              }
+            />
+          </Flex>
+        </Flex>
+      </Surface>
+      <Divider />
+      <Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
+        <GridCol span={12}>
+          <Suspense fallback={<LoaderSkeleton />}>
+            <ErrorBoundary fallback={<p>Error</p>}>
+              <AppointmentsSuspense startDate={start} endDate={end} />
+            </ErrorBoundary>
+          </Suspense>
+        </GridCol>
+      </Grid>
+    </Stack>
   );
 };
 
@@ -59,13 +84,15 @@ function AppointmentsSuspense({ startDate, endDate }: Props) {
 
   return (
     <>
-      <Paper withBorder p="md" radius="md" shadow="sm">
-        {appointments.length > 0 ? (
-          <AppointmentsTable appointments={appointments} />
-        ) : (
-          <Text c="gray">No appointments found for this week.</Text>
-        )}
-      </Paper>
+      <Stack gap="lg">
+        <Paper withBorder p="md" radius="md" shadow="sm">
+          {appointments.length > 0 ? (
+            <AppointmentsTable appointments={appointments} />
+          ) : (
+            <Text c="gray">No appointments found for this week.</Text>
+          )}
+        </Paper>
+      </Stack>
     </>
   );
 }
