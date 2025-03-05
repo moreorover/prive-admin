@@ -1,6 +1,15 @@
 "use client";
 
-import { Grid, GridCol, Group, Paper, Text, Title } from "@mantine/core";
+import {
+  Divider,
+  Flex,
+  Grid,
+  GridCol,
+  Paper,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import { trpc } from "@/trpc/client";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -8,8 +17,10 @@ import { LoaderSkeleton } from "@/components/loader-skeleton";
 import TransactionsTable from "@/modules/transactions/ui/components/transactions-table";
 import { LineChart } from "@mantine/charts";
 import { aggregateTransactions } from "@/modules/transactions/hooks/chartUtils";
-import { DateRangeDrawer } from "@/modules/ui/components/date-range-drawer";
 import useDateRange from "@/modules/ui/hooks/useDateRange";
+import Surface from "@/modules/ui/components/surface";
+import { FilterDateMenu } from "@/modules/ui/components/filter-date-menu";
+import { useRouter } from "next/navigation";
 
 interface Props {
   startDate: string;
@@ -17,31 +28,35 @@ interface Props {
 }
 
 export const TransactionsView = () => {
-  const { start, end, startAsDate, endAsDate, rangeText, setStartAndEnd } =
-    useDateRange();
+  const router = useRouter();
+  const { start, end, range, rangeText, createQueryString } = useDateRange();
 
   return (
-    <>
-      <Grid>
-        <GridCol span={12}>
-          <Paper withBorder p="md" radius="md" shadow="sm">
-            <Group justify="space-between">
-              <Title order={4}>Transactions</Title>
-              <Group>
-                <Text>{rangeText}</Text>
-                {/*<CsvUploadButton />*/}
-                <DateRangeDrawer
-                  start={startAsDate}
-                  end={endAsDate}
-                  onConfirm={setStartAndEnd}
-                />
-              </Group>
-            </Group>
-          </Paper>
-        </GridCol>
-        <GridCol span={{ base: 12, xl: 3 }}>
-          <Paper withBorder p="md" radius="md" shadow="sm"></Paper>
-        </GridCol>
+    <Stack>
+      <Surface component={Paper} style={{ backgroundColor: "transparent" }}>
+        <Flex
+          justify="space-between"
+          direction={{ base: "column", sm: "row" }}
+          gap={{ base: "sm", sm: 4 }}
+        >
+          <Stack gap={4}>
+            <Title order={3}>Transactions</Title>
+          </Stack>
+          <Flex align="center" gap="sm">
+            <FilterDateMenu
+              range={range}
+              rangeInText={rangeText}
+              onSelected={(range) =>
+                router.push(
+                  `/dashboard/transactions${createQueryString(range)}`,
+                )
+              }
+            />
+          </Flex>
+        </Flex>
+      </Surface>
+      <Divider />
+      <Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
         <Suspense
           fallback={
             <GridCol>
@@ -54,7 +69,7 @@ export const TransactionsView = () => {
           </ErrorBoundary>
         </Suspense>
       </Grid>
-    </>
+    </Stack>
   );
 };
 
@@ -71,7 +86,7 @@ function TransactionsSuspense({ startDate, endDate }: Props) {
 
   return (
     <>
-      <GridCol span={{ base: 12, xl: 9 }}>
+      <GridCol span={{ base: 12 }}>
         <Paper withBorder p="md" radius="md" shadow="sm">
           {transactions.length > 0 ? (
             <LineChart
