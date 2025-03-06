@@ -25,6 +25,8 @@ import TransactionsTable from "@/modules/hair-orders/ui/components/transactions-
 import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
 import { notifications } from "@mantine/notifications";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
+import { useSetAtom } from "jotai/index";
+import { newTransactionDrawerAtom } from "@/lib/atoms";
 
 dayjs.extend(isoWeek);
 
@@ -76,13 +78,15 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
   });
   const [transactions] = trpc.transactions.getByHairOrderId.useSuspenseQuery({
     hairOrderId,
-    includeCustomer: false,
+    includeCustomer: true,
   });
   const [customerOptions] = trpc.customers.getAll.useSuspenseQuery();
 
   const openNewHairOrderNoteDrawer = useHairOrderNoteDrawerStore(
     (state) => state.openDrawer,
   );
+
+  const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
 
   const updateHairOrderMutation = trpc.hairOrders.update.useMutation({
     onSuccess: () => {
@@ -220,7 +224,23 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
           <Paper withBorder p="md" radius="md" shadow="sm">
             <Group justify="space-between" gap="sm">
               <Title order={4}>Transactions</Title>
-              <Button disabled={!hairOrder.customer}>New</Button>
+              <Button
+                disabled={!hairOrder.customer}
+                onClick={() => {
+                  showNewTransactionDrawer({
+                    isOpen: true,
+                    hairOrderId,
+                    customerId: hairOrder.customer!.id,
+                    onCreated: () => {
+                      utils.transactions.getByHairOrderId.invalidate({
+                        hairOrderId,
+                      });
+                    },
+                  });
+                }}
+              >
+                New
+              </Button>
             </Group>
             <TransactionsTable
               hairOrderId={hairOrderId}
