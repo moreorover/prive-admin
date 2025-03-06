@@ -14,8 +14,8 @@ datasource db {
 }
 
 model User {
-  id            String      @id
-  email         String      @unique
+  id            String          @id
+  email         String          @unique
   name          String?
   emailVerified Boolean
   image         String?
@@ -23,7 +23,8 @@ model User {
   updatedAt     DateTime
   Session       Session[]
   Account       Account[]
-  HairOrder     HairOrder[]
+  hairOrder     HairOrder[]
+  hairOrderNote HairOrderNote[]
 
   @@map("users")
 }
@@ -58,8 +59,6 @@ model Account {
   password              String?
   createdAt             DateTime
   updatedAt             DateTime
-
-  createdOrders HairOrder[]
 
   @@map("accounts")
 }
@@ -259,14 +258,29 @@ model HairOrder {
   customer   Customer? @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: SetNull)
 
   transactions Transaction[]
+  notes        HairOrderNote[]
 
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Account   Account? @relation(fields: [accountId], references: [id])
-  accountId String?
 
   @@map("hair_orders")
+}
+
+model HairOrderNote {
+  id   String @id @default(cuid(2))
+  note String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hairOrderId String
+  hairOrder   HairOrder @relation(fields: [hairOrderId], references: [id], onDelete: Cascade)
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@map("hair_order_notes")
 }

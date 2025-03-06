@@ -89,3 +89,19 @@ export const appointmentNoteSchema = z.object({
 });
 
 export type AppointmentNote = z.infer<typeof appointmentNoteSchema>;
+
+export const hairOrderSchema = z.object({
+  id: z.string().cuid2().optional(),
+  placedAt: z.union([z.string(), z.date(), z.null()]),
+  arrivedAt: z.union([z.string(), z.date(), z.null()]),
+  customerId: z.string().cuid2().nullish(),
+});
+
+export type HairOrder = z.infer<typeof hairOrderSchema>;
+
+export const hairOrderNoteSchema = z.object({
+  id: z.string().cuid2().optional(),
+  note: z.string(),
+});
+
+export type HairOrderNote = z.infer<typeof hairOrderNoteSchema>;
