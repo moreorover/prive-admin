@@ -2,6 +2,7 @@
 
 import {
   Button,
+  Center,
   Divider,
   Flex,
   Grid,
@@ -27,6 +28,7 @@ import { notifications } from "@mantine/notifications";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
 import { useSetAtom } from "jotai/index";
 import { newTransactionDrawerAtom } from "@/lib/atoms";
+import { DonutChart } from "@mantine/charts";
 
 dayjs.extend(isoWeek);
 
@@ -106,6 +108,38 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
     },
   });
 
+  const transactionsTotal = transactions.reduce(
+    (sum, transaction) => sum + transaction.amount,
+    0,
+  );
+
+  const transactionsCompletedTotal = transactions
+    .filter((transaction) => transaction.status === "COMPLETED")
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
+
+  const transactionsPendingTotal = transactions
+    .filter((transaction) => transaction.status === "PENDING")
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
+
+  const chartData = [
+    {
+      name: "Completed",
+      value:
+        transactionsCompletedTotal < 0
+          ? transactionsCompletedTotal * -1
+          : transactionsCompletedTotal,
+      color: "green.4",
+    }, // Green
+    {
+      name: "Outstanding",
+      value:
+        transactionsPendingTotal < 0
+          ? transactionsPendingTotal * -1
+          : transactionsPendingTotal,
+      color: "pink.6",
+    }, // Red
+  ];
+
   return (
     <Grid>
       <GridCol span={{ base: 12, lg: 3 }}>
@@ -169,7 +203,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
                   Total:
                 </Text>
                 <Text size="sm" w={500}>
-                  £ 500
+                  £{transactionsTotal.toFixed(2)}
                 </Text>
               </Flex>
               <Flex direction="column">
@@ -196,6 +230,17 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
                 </Text>
               </Flex>
             </Stack>
+          </Paper>
+          <Paper withBorder p="md" radius="md" shadow="sm">
+            <Text size="lg" fw={700} ta="center">
+              Transactions Summary
+            </Text>
+            <Center>
+              <DonutChart size={124} thickness={15} data={chartData} />
+            </Center>
+            <Text size="md" ta="center" fw={500} mt="sm">
+              Total: <b>£ {transactionsTotal.toFixed(2)}</b>
+            </Text>
           </Paper>
         </Stack>
       </GridCol>
