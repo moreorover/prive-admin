@@ -9,11 +9,13 @@ import { createTRPCRouter } from "@/trpc/init";
 import { orderItemsRouter } from "@/modules/order_item/server/procedures";
 import { transactionsRouter } from "@/modules/transactions/server/procedures";
 import { hairOrderNotesRouter } from "@/modules/hair_order_notes/server/procedures";
+import { hairRouter } from "@/modules/hair/server/procedures";
 
 export const appRouter = createTRPCRouter({
   appointments: appointmentsRouter,
   appointmentNotes: appointmentNotesRouter,
   customers: customersRouter,
+  hair: hairRouter,
   hairOrders: hairOrderRouter,
   hairOrderNotes: hairOrderNotesRouter,
   orders: ordersRouter,

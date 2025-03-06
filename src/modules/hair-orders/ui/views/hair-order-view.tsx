@@ -29,6 +29,7 @@ import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
 import { useSetAtom } from "jotai/index";
 import { newTransactionDrawerAtom } from "@/lib/atoms";
 import { DonutChart } from "@mantine/charts";
+import { useHairDrawerStore } from "@/modules/hair/ui/hair-drawer-store";
 
 dayjs.extend(isoWeek);
 
@@ -83,10 +84,13 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
     includeCustomer: true,
   });
   const [customerOptions] = trpc.customers.getAll.useSuspenseQuery();
+  const [hair] = trpc.hair.getByHairOrderId.useSuspenseQuery({ hairOrderId });
 
   const openNewHairOrderNoteDrawer = useHairOrderNoteDrawerStore(
     (state) => state.openDrawer,
   );
+
+  const openNewHairDrawer = useHairDrawerStore((state) => state.openDrawer);
 
   const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
 
@@ -295,9 +299,20 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
           <Paper withBorder p="md" radius="md" shadow="sm">
             <Group justify="space-between" gap="sm">
               <Title order={4}>Hair</Title>
-              <Button>New</Button>
+              <Button
+                onClick={() =>
+                  openNewHairDrawer({
+                    hairOrderId,
+                    onCreated: () => {
+                      utils.hair.getByHairOrderId.invalidate({ hairOrderId });
+                    },
+                  })
+                }
+              >
+                New
+              </Button>
             </Group>
-            Table
+            {JSON.stringify(hair, null, 2)}
           </Paper>
         </Stack>
       </GridCol>
