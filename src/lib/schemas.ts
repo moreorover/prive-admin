@@ -105,3 +105,14 @@ export const hairOrderNoteSchema = z.object({
 });
 
 export type HairOrderNote = z.infer<typeof hairOrderNoteSchema>;
+
+export const hairSchema = z.object({
+  id: z.string().cuid2().optional(),
+  color: z.string(),
+  description: z.string(),
+  upc: z.string(),
+  length: z.number().positive().max(150),
+  weight: z.number().positive().max(10000),
+});
+
+export type Hair = z.infer<typeof hairSchema>;

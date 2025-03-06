@@ -248,6 +248,7 @@ model HairOrder {
 
   transactions Transaction[]
   notes        HairOrderNote[]
+  hair         Hair[]
 
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
@@ -272,4 +273,21 @@ model HairOrderNote {
   createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
   @@map("hair_order_notes")
+}
+
+model Hair {
+  id             String @id @default(cuid(2))
+  color          String
+  description    String
+  upc            String
+  length         Int    @db.Integer
+  weightReceived Int    @db.Integer
+  weight         Int    @db.Integer
+
+  hairOrderId String
+  hairOrder   HairOrder @relation(fields: [hairOrderId], references: [id], onDelete: Cascade)
+
+  parentHairId String?
+  parentHair   Hair?   @relation("hairLocs", fields: [parentHairId], references: [id])
+  childHair    Hair[]  @relation("hairLocs")
 }
