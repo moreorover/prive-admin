@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { hairOrderSchema } from "@/lib/schemas";
 
 export const hairOrderRouter = createTRPCRouter({
   getAll: protectedProcedure.query(() => {
@@ -12,7 +13,7 @@ export const hairOrderRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const { id } = input;
       const c = await prisma.hairOrder.findFirst({
-        include: { createdBy: true },
+        include: { createdBy: true, customer: true },
         where: { id },
       });
 
@@ -31,4 +32,14 @@ export const hairOrderRouter = createTRPCRouter({
     });
     return c;
   }),
+  update: protectedProcedure
+    .input(z.object({ hairOrder: hairOrderSchema }))
+    .mutation(async ({ input }) => {
+      const { hairOrder } = input;
+      const c = await prisma.hairOrder.update({
+        data: hairOrder,
+        where: { id: hairOrder.id },
+      });
+      return c;
+    }),
 });

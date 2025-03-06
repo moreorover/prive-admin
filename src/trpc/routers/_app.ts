@@ -8,12 +8,14 @@ import { productVariantsRouter } from "@/modules/product_variants/server/procedu
 import { createTRPCRouter } from "@/trpc/init";
 import { orderItemsRouter } from "@/modules/order_item/server/procedures";
 import { transactionsRouter } from "@/modules/transactions/server/procedures";
+import { hairOrderNotesRouter } from "@/modules/hair_order_notes/server/procedures";
 
 export const appRouter = createTRPCRouter({
   appointments: appointmentsRouter,
   appointmentNotes: appointmentNotesRouter,
   customers: customersRouter,
   hairOrders: hairOrderRouter,
+  hairOrderNotes: hairOrderNotesRouter,
   orders: ordersRouter,
   orderItems: orderItemsRouter,
   products: productsRouter,
