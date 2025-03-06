@@ -18,7 +18,7 @@ export function UserButton({ name, email }: UserButtonProps) {
       <Flex direction="row" gap={8}>
         <Avatar radius="xl" />
 
-        <div style={{ flex: 1 }}>
+        <Flex direction="column">
           <Text size="sm" w={500}>
             {name}
           </Text>
@@ -26,7 +26,7 @@ export function UserButton({ name, email }: UserButtonProps) {
           <Text c="dimmed" size="xs">
             {email}
           </Text>
-        </div>
+        </Flex>
       </Flex>
     </UnstyledButton>
   );

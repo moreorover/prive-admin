@@ -1,18 +1,19 @@
 import { appointmentsRouter } from "@/modules/appointments/server/procedures";
 import { appointmentNotesRouter } from "@/modules/appointment_notes/server/procedures";
 import { customersRouter } from "@/modules/customers/server/procedures";
+import { hairOrderRouter } from "@/modules/hair-orders/server/procedures";
 import { ordersRouter } from "@/modules/orders/server/procedures";
 import { productsRouter } from "@/modules/products/server/procedures";
 import { productVariantsRouter } from "@/modules/product_variants/server/procedures";
-import { transactionsRouter } from "@/modules/transactions/server/procedures";
-
 import { createTRPCRouter } from "@/trpc/init";
 import { orderItemsRouter } from "@/modules/order_item/server/procedures";
+import { transactionsRouter } from "@/modules/transactions/server/procedures";
 
 export const appRouter = createTRPCRouter({
   appointments: appointmentsRouter,
   appointmentNotes: appointmentNotesRouter,
   customers: customersRouter,
+  hairOrders: hairOrderRouter,
   orders: ordersRouter,
   orderItems: orderItemsRouter,
   products: productsRouter,
