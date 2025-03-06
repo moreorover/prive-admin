@@ -163,14 +163,6 @@ enum TransactionType {
   PAYPAL
 }
 
-model TransactionBatch {
-  id           String        @id @default(cuid(2))
-  createdAt    DateTime      @default(now())
-  transactions Transaction[]
-
-  @@map("transaction_batches")
-}
-
 enum TransactionStatus {
   PENDING
   COMPLETED
@@ -185,9 +177,6 @@ model Transaction {
   status          TransactionStatus @default(PENDING)
   completedDateBy DateTime          @default(now()) @db.Date
   createdAt       DateTime          @default(now())
-
-  batchId String?
-  batch   TransactionBatch? @relation(fields: [batchId], references: [id], onDelete: Cascade)
 
   customerId    String
   customer      Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
