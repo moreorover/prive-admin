@@ -31,6 +31,7 @@ import { newTransactionDrawerAtom } from "@/lib/atoms";
 import { DonutChart } from "@mantine/charts";
 import { useHairDrawerStore } from "@/modules/hair/ui/hair-drawer-store";
 import HairTable from "@/modules/hair_orders/ui/components/hair-table";
+import { modals } from "@mantine/modals";
 
 dayjs.extend(isoWeek);
 
@@ -113,10 +114,31 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
     },
   });
 
+  const recalculatePrices = trpc.hair.recalculatePrices.useMutation({
+    onSuccess: () => {
+      utils.hairOrders.getById.invalidate({ id: hairOrderId });
+      utils.hair.getByHairOrderId.invalidate({ hairOrderId });
+      notifications.show({
+        color: "green",
+        title: "Success!",
+        message: "Prices recalculated.",
+      });
+    },
+    onError: () => {
+      notifications.show({
+        color: "red",
+        title: "Failed!",
+        message: "Something went wrong recalculating prices.",
+      });
+    },
+  });
+
   const transactionsTotal = transactions.reduce(
     (sum, transaction) => sum + transaction.amount,
     0,
   );
+
+  const totalHairWeight = hair.reduce((sum, h) => sum + h.weight, 0);
 
   const transactionsCompletedTotal = transactions
     .filter((transaction) => transaction.status === "COMPLETED")
@@ -144,6 +166,25 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
       color: "pink.6",
     }, // Red
   ];
+
+  const formatAmount = (amount: number) =>
+    new Intl.NumberFormat("en-UK", {
+      style: "currency",
+      currency: "GBP",
+    }).format(amount);
+
+  const openRecalculateModal = () =>
+    modals.openConfirmModal({
+      title: "Recalculate prices?",
+      centered: true,
+      children: (
+        <Text size="sm">Are you sure you want to recalculate hair prices?</Text>
+      ),
+      labels: { confirm: "Recalculate", cancel: "Cancel" },
+      confirmProps: { color: "red" },
+      onCancel: () => {},
+      onConfirm: () => recalculatePrices.mutate({ hairOrderId }),
+    });
 
   return (
     <Grid>
@@ -197,6 +238,14 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
               </Flex>
               <Flex direction="column">
                 <Text c="dimmed" size="xs">
+                  Status:
+                </Text>
+                <Text size="sm" w={500}>
+                  {hairOrder.status}
+                </Text>
+              </Flex>
+              <Flex direction="column">
+                <Text c="dimmed" size="xs">
                   Created By:
                 </Text>
                 <Text size="sm" w={500}>
@@ -209,6 +258,24 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
                 </Text>
                 <Text size="sm" w={500}>
                   £{transactionsTotal.toFixed(2)}
+                </Text>
+              </Flex>
+              <Flex direction="column">
+                <Text c="dimmed" size="xs">
+                  Price per gram:
+                </Text>
+                <Text size="sm" w={500}>
+                  {hairOrder.pricePerGram
+                    ? formatAmount(hairOrder.pricePerGram)
+                    : 0}
+                </Text>
+              </Flex>
+              <Flex direction="column">
+                <Text c="dimmed" size="xs">
+                  Total hair weight:
+                </Text>
+                <Text size="sm" w={500}>
+                  {totalHairWeight}g
                 </Text>
               </Flex>
               <Flex direction="column">
@@ -285,6 +352,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
                       utils.transactions.getByHairOrderId.invalidate({
                         hairOrderId,
                       });
+                      recalculatePrices.mutate({ hairOrderId });
                     },
                   });
                 }}
@@ -300,18 +368,21 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
           <Paper withBorder p="md" radius="md" shadow="sm">
             <Group justify="space-between" gap="sm">
               <Title order={4}>Hair</Title>
-              <Button
-                onClick={() =>
-                  openNewHairDrawer({
-                    hairOrderId,
-                    onCreated: () => {
-                      utils.hair.getByHairOrderId.invalidate({ hairOrderId });
-                    },
-                  })
-                }
-              >
-                New
-              </Button>
+              <Group>
+                <Button onClick={openRecalculateModal}>Recalculate</Button>
+                <Button
+                  onClick={() =>
+                    openNewHairDrawer({
+                      hairOrderId,
+                      onCreated: () => {
+                        utils.hair.getByHairOrderId.invalidate({ hairOrderId });
+                      },
+                    })
+                  }
+                >
+                  New
+                </Button>
+              </Group>
             </Group>
             <HairTable hairOrderId={hairOrderId} hair={hair} />
           </Paper>

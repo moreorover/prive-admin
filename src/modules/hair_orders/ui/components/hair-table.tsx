@@ -79,6 +79,9 @@ export default function HairTable({ hairOrderId, hair }: Props) {
         <Text>{h.weight}</Text>
       </Table.Td>
       <Table.Td>
+        <Text>{formatAmount(h.price)}</Text>
+      </Table.Td>
+      <Table.Td>
         <Menu shadow="md" width={200}>
           <Menu.Target>
             <Button>Manage</Button>
@@ -125,8 +128,9 @@ export default function HairTable({ hairOrderId, hair }: Props) {
             <Table.Th>Color</Table.Th>
             <Table.Th>Description</Table.Th>
             <Table.Th>UPC</Table.Th>
-            <Table.Th>Length</Table.Th>
-            <Table.Th>Weight</Table.Th>
+            <Table.Th>Length (cm)</Table.Th>
+            <Table.Th>Weight (g)</Table.Th>
+            <Table.Th>Price</Table.Th>
             <Table.Th />
           </Table.Tr>
         </Table.Thead>

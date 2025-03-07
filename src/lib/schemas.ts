@@ -102,6 +102,7 @@ export type HairOrder = z.infer<typeof hairOrderSchema>;
 export const hairOrderNoteSchema = z.object({
   id: z.string().cuid2().optional(),
   note: z.string(),
+  pricePerGram: z.number().default(0),
 });
 
 export type HairOrderNote = z.infer<typeof hairOrderNoteSchema>;
@@ -113,6 +114,7 @@ export const hairSchema = z.object({
   upc: z.string(),
   length: z.number().positive().max(150),
   weight: z.number().positive().max(10000),
+  price: z.number().default(0),
 });
 
 export type Hair = z.infer<typeof hairSchema>;
