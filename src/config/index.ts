@@ -32,6 +32,10 @@ export const navLinks: NavItem[] = [
         label: "Hair Orders",
         link: "/dashboard/hair-orders",
       },
+      {
+        label: "Hair",
+        link: "/dashboard/hair",
+      },
     ],
   },
 ];

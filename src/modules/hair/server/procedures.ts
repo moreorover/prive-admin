@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { hairSchema } from "@/lib/schemas";
 import { TRPCError } from "@trpc/server";
+import { Prisma } from "@prisma/client";
 
 export const hairRouter = createTRPCRouter({
   create: protectedProcedure
@@ -266,6 +267,36 @@ export const hairRouter = createTRPCRouter({
         where: {
           hairOrderId,
         },
+      });
+
+      const remaped = hair.map((h) => ({ ...h, price: h.price / 100 }));
+
+      return remaped;
+    }),
+  getAll: protectedProcedure
+    .input(
+      z.object({
+        color: z.string().nullish(),
+        description: z.string().nullish(),
+        upc: z.string().nullish(),
+        weight: z.number().min(0).nullish(),
+        length: z.number().min(0).nullish(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { color, description, upc, weight, length } = input;
+
+      const filters: Prisma.HairWhereInput = {}; // Strongly typed object
+
+      if (color && color.trim() !== "") filters.color = { contains: color };
+      if (description && description.trim() !== "")
+        filters.description = { contains: description };
+      if (upc && upc.trim() !== "") filters.upc = { contains: upc };
+      if (weight) filters.weight = weight;
+      if (length) filters.length = length;
+
+      const hair = await prisma.hair.findMany({
+        where: Object.keys(filters).length > 0 ? filters : undefined,
       });
 
       const remaped = hair.map((h) => ({ ...h, price: h.price / 100 }));
