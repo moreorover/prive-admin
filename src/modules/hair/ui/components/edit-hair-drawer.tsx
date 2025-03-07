@@ -7,40 +7,39 @@ import { useHairDrawerStore } from "@/modules/hair/ui/hair-drawer-store";
 import { notifications } from "@mantine/notifications";
 import { trpc } from "@/trpc/client";
 
-export const NewHairDrawer = () => {
+export const EditHairDrawer = () => {
   const isOpen = useHairDrawerStore((state) => state.isOpen);
   const hair = useHairDrawerStore((state) => state.hair);
-  const hairOrderId = useHairDrawerStore((state) => state.hairOrderId);
   const reset = useHairDrawerStore((state) => state.reset);
-  const onCreated = useHairDrawerStore((state) => state.onCreated);
+  const onUpdated = useHairDrawerStore((state) => state.onUpdated);
   const openDrawer = useHairDrawerStore((state) => state.openDrawer);
 
-  const newHair = trpc.hair.create.useMutation({
+  const newHair = trpc.hair.update.useMutation({
     onSuccess: () => {
       notifications.show({
         color: "green",
         title: "Success!",
-        message: "Hair created.",
+        message: "Hair updated.",
       });
       reset();
-      onCreated?.();
+      onUpdated?.();
     },
     onError: () => {
       notifications.show({
         color: "red",
-        title: "Failed to create Hair",
+        title: "Failed to update Hair",
         message: "Please try again.",
       });
     },
   });
 
   async function onSubmit(data: Hair) {
-    newHair.mutate({ hair: data, hairOrderId });
+    newHair.mutate({ hair: data });
   }
 
   return (
     <Drawer
-      opened={isOpen && onCreated !== undefined}
+      opened={isOpen && onUpdated !== undefined}
       onClose={() => openDrawer({ onCreated: () => {} })}
       position="right"
       title="Create Hair"
