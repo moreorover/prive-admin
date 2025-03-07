@@ -13,3 +13,5 @@ export type HairOrderTransactions =
 
 export type HairOrderHair =
   inferRouterOutputs<AppRouter>["hair"]["getByHairOrderId"];
+
+export type Hairs = inferRouterOutputs<AppRouter>["hair"]["getAll"];
