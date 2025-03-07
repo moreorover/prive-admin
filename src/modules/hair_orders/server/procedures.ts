@@ -12,16 +12,16 @@ export const hairOrderRouter = createTRPCRouter({
     .input(z.object({ id: z.string().cuid2() }))
     .query(async ({ input }) => {
       const { id } = input;
-      const c = await prisma.hairOrder.findFirst({
-        include: { createdBy: true, customer: true },
+      const hairOrder = await prisma.hairOrder.findFirst({
         where: { id },
+        include: { createdBy: true, customer: true },
       });
 
-      if (!c) {
+      if (!hairOrder) {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
-      return c;
+      return { ...hairOrder, pricePerGram: hairOrder.pricePerGram / 100 };
     }),
   create: protectedProcedure.mutation(async ({ ctx }) => {
     const { user } = ctx;

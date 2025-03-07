@@ -33,6 +33,25 @@ export default function TransactionsTable({
 
   const showEditTransactionDrawer = useSetAtom(editTransactionDrawerAtom);
 
+  const recalculatePrices = trpc.hair.recalculatePrices.useMutation({
+    onSuccess: () => {
+      utils.hairOrders.getById.invalidate({ id: hairOrderId });
+      utils.hair.getByHairOrderId.invalidate({ hairOrderId });
+      notifications.show({
+        color: "green",
+        title: "Success!",
+        message: "Prices recalculated.",
+      });
+    },
+    onError: () => {
+      notifications.show({
+        color: "red",
+        title: "Failed!",
+        message: "Something went wrong recalculating prices.",
+      });
+    },
+  });
+
   const deleteTransaction = trpc.transactions.delete.useMutation({
     onSuccess: () => {
       notifications.show({
@@ -44,6 +63,7 @@ export default function TransactionsTable({
         hairOrderId,
         includeCustomer: true,
       });
+      recalculatePrices.mutate({ hairOrderId });
     },
     onError: () => {
       notifications.show({
@@ -168,6 +188,7 @@ export default function TransactionsTable({
                       hairOrderId,
                       includeCustomer: true,
                     });
+                    recalculatePrices.mutate({ hairOrderId });
                   },
                 });
               }}

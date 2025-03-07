@@ -2,6 +2,7 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { hairSchema } from "@/lib/schemas";
+import { TRPCError } from "@trpc/server";
 
 export const hairRouter = createTRPCRouter({
   create: protectedProcedure
@@ -14,19 +15,91 @@ export const hairRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const { hairOrderId, hair } = input;
 
-      const c = await prisma.hair.create({
+      const hairOrder = await prisma.hairOrder.findUnique({
+        where: { id: hairOrderId },
+      });
+
+      if (!hairOrder) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      const newHair = await prisma.hair.create({
         data: {
           ...hair,
           weightReceived: hair.weight,
           hairOrderId,
         },
       });
-      return c;
+
+      const hairOrderTransactions = await prisma.transaction.findMany({
+        where: { hairOrderId },
+        select: { amount: true },
+      });
+
+      const transactionsTotal = hairOrderTransactions.reduce(
+        (sum, transaction) => sum + transaction.amount,
+        0,
+      );
+
+      const hairOrderHair = await prisma.hair.findMany({
+        where: { hairOrderId },
+      });
+
+      const hairTotalWeight = hairOrderHair.reduce(
+        (sum, h) => sum + h.weight,
+        0,
+      );
+
+      if (transactionsTotal === 0) {
+        await prisma.hairOrder.update({
+          data: { pricePerGram: 0 },
+          where: { id: hairOrderId },
+        });
+
+        await Promise.all(
+          hairOrderHair.map((hoh) =>
+            prisma.hair.update({
+              data: { price: 0 },
+              where: { id: hoh.id },
+            }),
+          ),
+        );
+      }
+
+      if (hairTotalWeight > 0 && transactionsTotal > 0) {
+        const hairPricePerGram = +(transactionsTotal / hairTotalWeight).toFixed(
+          2,
+        );
+
+        await prisma.hairOrder.update({
+          data: { pricePerGram: hairPricePerGram * 100 },
+          where: { id: hairOrderId },
+        });
+
+        await Promise.all(
+          hairOrderHair.map((hoh) =>
+            prisma.hair.update({
+              data: { price: hoh.weight * hairPricePerGram * 100 },
+              where: { id: hoh.id },
+            }),
+          ),
+        );
+      }
+
+      return newHair;
     }),
   update: protectedProcedure
     .input(z.object({ hair: hairSchema }))
     .mutation(async ({ input }) => {
       const { hair } = input;
+
+      const previousHair = await prisma.hair.findUnique({
+        where: { id: hair.id },
+      });
+
+      if (!previousHair) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
 
       const c = await prisma.hair.update({
         data: {
@@ -41,6 +114,71 @@ export const hairRouter = createTRPCRouter({
           id: hair.id,
         },
       });
+
+      if (previousHair.weight !== hair.weight) {
+        const hairOrder = await prisma.hairOrder.findUnique({
+          where: { id: previousHair.hairOrderId },
+        });
+
+        if (!hairOrder) {
+          throw new TRPCError({ code: "NOT_FOUND" });
+        }
+
+        const hairOrderTransactions = await prisma.transaction.findMany({
+          where: { hairOrderId: previousHair.hairOrderId },
+          select: { amount: true },
+        });
+
+        const transactionsTotal = hairOrderTransactions.reduce(
+          (sum, transaction) => sum + transaction.amount,
+          0,
+        );
+
+        const hairOrderHair = await prisma.hair.findMany({
+          where: { hairOrderId: previousHair.hairOrderId },
+        });
+
+        const hairTotalWeight = hairOrderHair.reduce(
+          (sum, h) => sum + h.weight,
+          0,
+        );
+
+        if (transactionsTotal === 0) {
+          await prisma.hairOrder.update({
+            data: { pricePerGram: 0 },
+            where: { id: previousHair.hairOrderId },
+          });
+
+          await Promise.all(
+            hairOrderHair.map((hoh) =>
+              prisma.hair.update({
+                data: { price: 0 },
+                where: { id: hoh.id },
+              }),
+            ),
+          );
+        }
+
+        if (hairTotalWeight > 0 && transactionsTotal > 0) {
+          const hairPricePerGram = +(
+            transactionsTotal / hairTotalWeight
+          ).toFixed(2);
+
+          await prisma.hairOrder.update({
+            data: { pricePerGram: hairPricePerGram * 100 },
+            where: { id: previousHair.hairOrderId },
+          });
+
+          await Promise.all(
+            hairOrderHair.map((hoh) =>
+              prisma.hair.update({
+                data: { price: hoh.weight * hairPricePerGram * 100 },
+                where: { id: hoh.id },
+              }),
+            ),
+          );
+        }
+      }
       return c;
     }),
   delete: protectedProcedure
@@ -53,6 +191,70 @@ export const hairRouter = createTRPCRouter({
           id: hairId,
         },
       });
+
+      const hairOrder = await prisma.hairOrder.findUnique({
+        where: { id: c.hairOrderId },
+      });
+
+      if (!hairOrder) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      const hairOrderTransactions = await prisma.transaction.findMany({
+        where: { hairOrderId: c.hairOrderId },
+        select: { amount: true },
+      });
+
+      const transactionsTotal = hairOrderTransactions.reduce(
+        (sum, transaction) => sum + transaction.amount,
+        0,
+      );
+
+      const hairOrderHair = await prisma.hair.findMany({
+        where: { hairOrderId: c.hairOrderId },
+      });
+
+      const hairTotalWeight = hairOrderHair.reduce(
+        (sum, h) => sum + h.weight,
+        0,
+      );
+
+      if (transactionsTotal === 0) {
+        await prisma.hairOrder.update({
+          data: { pricePerGram: 0 },
+          where: { id: c.hairOrderId },
+        });
+
+        await Promise.all(
+          hairOrderHair.map((hoh) =>
+            prisma.hair.update({
+              data: { price: 0 },
+              where: { id: hoh.id },
+            }),
+          ),
+        );
+      }
+
+      if (hairTotalWeight > 0 && transactionsTotal > 0) {
+        const hairPricePerGram = +(transactionsTotal / hairTotalWeight).toFixed(
+          2,
+        );
+
+        await prisma.hairOrder.update({
+          data: { pricePerGram: hairPricePerGram * 100 },
+          where: { id: c.hairOrderId },
+        });
+
+        await Promise.all(
+          hairOrderHair.map((hoh) =>
+            prisma.hair.update({
+              data: { price: hoh.weight * hairPricePerGram * 100 },
+              where: { id: hoh.id },
+            }),
+          ),
+        );
+      }
+
       return c;
     }),
   getByHairOrderId: protectedProcedure
@@ -66,6 +268,78 @@ export const hairRouter = createTRPCRouter({
         },
       });
 
-      return hair;
+      const remaped = hair.map((h) => ({ ...h, price: h.price / 100 }));
+
+      return remaped;
+    }),
+  recalculatePrices: protectedProcedure
+    .input(z.object({ hairOrderId: z.string().cuid2() }))
+    .mutation(async ({ input }) => {
+      const { hairOrderId } = input;
+
+      const hairOrder = await prisma.hairOrder.findUnique({
+        where: { id: hairOrderId },
+      });
+
+      if (!hairOrder) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      const hairOrderTransactions = await prisma.transaction.findMany({
+        where: { hairOrderId },
+        select: { amount: true },
+      });
+
+      const transactionsTotal = hairOrderTransactions.reduce(
+        (sum, transaction) => sum + transaction.amount,
+        0,
+      );
+
+      const hairOrderHair = await prisma.hair.findMany({
+        where: { hairOrderId },
+      });
+
+      const hairTotalWeight = hairOrderHair.reduce(
+        (sum, h) => sum + h.weight,
+        0,
+      );
+
+      if (transactionsTotal === 0) {
+        await prisma.hairOrder.update({
+          data: { pricePerGram: 0 },
+          where: { id: hairOrderId },
+        });
+
+        await Promise.all(
+          hairOrderHair.map((hoh) =>
+            prisma.hair.update({
+              data: { price: 0 },
+              where: { id: hoh.id },
+            }),
+          ),
+        );
+      }
+
+      if (hairTotalWeight > 0 && transactionsTotal > 0) {
+        const hairPricePerGram = +(transactionsTotal / hairTotalWeight).toFixed(
+          2,
+        );
+
+        await prisma.hairOrder.update({
+          data: { pricePerGram: hairPricePerGram * 100 },
+          where: { id: hairOrderId },
+        });
+
+        await Promise.all(
+          hairOrderHair.map((hoh) =>
+            prisma.hair.update({
+              data: { price: hoh.weight * hairPricePerGram * 100 },
+              where: { id: hoh.id },
+            }),
+          ),
+        );
+      }
+
+      return hairOrder;
     }),
 });

@@ -238,10 +238,11 @@ enum HairOrderStatus {
 }
 
 model HairOrder {
-  id        String          @id @default(cuid(2))
-  placedAt  DateTime?       @db.Date
-  arrivedAt DateTime?       @db.Date
-  status    HairOrderStatus @default(PENDING)
+  id           String          @id @default(cuid(2))
+  placedAt     DateTime?       @db.Date
+  arrivedAt    DateTime?       @db.Date
+  status       HairOrderStatus @default(PENDING)
+  pricePerGram Int             @default(0) @db.Integer
 
   customerId String?
   customer   Customer? @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: SetNull)
@@ -283,6 +284,7 @@ model Hair {
   length         Int    @db.Integer
   weightReceived Int    @db.Integer
   weight         Int    @db.Integer
+  price          Int    @db.Integer
 
   hairOrderId String
   hairOrder   HairOrder @relation(fields: [hairOrderId], references: [id], onDelete: Cascade)
@@ -290,4 +292,6 @@ model Hair {
   parentHairId String?
   parentHair   Hair?   @relation("hairLocs", fields: [parentHairId], references: [id])
   childHair    Hair[]  @relation("hairLocs")
+
+  @@map("hair")
 }
