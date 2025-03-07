@@ -2,7 +2,7 @@
 
 import { Badge, Button, Menu, ScrollArea, Table, Text } from "@mantine/core";
 import Link from "next/link";
-import { GetAllHairOrders } from "@/modules/hair-orders/types";
+import { GetAllHairOrders } from "@/modules/hair_orders/types";
 import dayjs from "dayjs";
 import { Check, Clock } from "lucide-react";
 

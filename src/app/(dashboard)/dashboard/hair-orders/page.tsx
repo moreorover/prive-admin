@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { HydrateClient, trpc } from "@/trpc/server";
-import { HairOrdersView } from "@/modules/hair-orders/ui/views/hair-orders-view";
+import { HairOrdersView } from "@/modules/hair_orders/ui/views/hair-orders-view";
 
 export default async function Page() {
   const session = await auth.api.getSession({

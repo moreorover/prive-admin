@@ -6,7 +6,7 @@ import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import dayjs from "dayjs";
 import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
-import { HairOrderNotes } from "@/modules/hair-orders/types";
+import { HairOrderNotes } from "@/modules/hair_orders/types";
 
 interface Props {
   hairOrderId: string;
