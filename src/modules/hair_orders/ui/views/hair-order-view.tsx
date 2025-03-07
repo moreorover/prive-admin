@@ -30,6 +30,7 @@ import { useSetAtom } from "jotai/index";
 import { newTransactionDrawerAtom } from "@/lib/atoms";
 import { DonutChart } from "@mantine/charts";
 import { useHairDrawerStore } from "@/modules/hair/ui/hair-drawer-store";
+import HairTable from "@/modules/hair_orders/ui/components/hair-table";
 
 dayjs.extend(isoWeek);
 
@@ -312,7 +313,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
                 New
               </Button>
             </Group>
-            {JSON.stringify(hair, null, 2)}
+            <HairTable hairOrderId={hairOrderId} hair={hair} />
           </Paper>
         </Stack>
       </GridCol>
