@@ -1,7 +1,7 @@
 import { appointmentsRouter } from "@/modules/appointments/server/procedures";
 import { appointmentNotesRouter } from "@/modules/appointment_notes/server/procedures";
 import { customersRouter } from "@/modules/customers/server/procedures";
-import { hairOrderRouter } from "@/modules/hair-orders/server/procedures";
+import { hairOrderRouter } from "@/modules/hair_orders/server/procedures";
 import { ordersRouter } from "@/modules/orders/server/procedures";
 import { productsRouter } from "@/modules/products/server/procedures";
 import { productVariantsRouter } from "@/modules/product_variants/server/procedures";

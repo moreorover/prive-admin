@@ -18,7 +18,7 @@ import { useSetAtom } from "jotai/index";
 import { editTransactionDrawerAtom } from "@/lib/atoms";
 import dayjs, { Dayjs } from "dayjs";
 import { AlertTriangle, Check, Clock } from "lucide-react";
-import { HairOrderTransactions } from "@/modules/hair-orders/types";
+import { HairOrderTransactions } from "@/modules/hair_orders/types";
 
 interface Props {
   hairOrderId: string;

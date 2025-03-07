@@ -23,7 +23,7 @@ import { useRouter } from "next/navigation";
 import { modals } from "@mantine/modals";
 import { trpc } from "@/trpc/client";
 import { notifications } from "@mantine/notifications";
-import HairOrdersTable from "@/modules/hair-orders/ui/components/hair-orders-table";
+import HairOrdersTable from "@/modules/hair_orders/ui/components/hair-orders-table";
 
 dayjs.extend(isoWeek);
 
