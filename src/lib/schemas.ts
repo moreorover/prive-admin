@@ -102,7 +102,6 @@ export type HairOrder = z.infer<typeof hairOrderSchema>;
 export const hairOrderNoteSchema = z.object({
   id: z.string().cuid2().optional(),
   note: z.string(),
-  pricePerGram: z.number().default(0),
 });
 
 export type HairOrderNote = z.infer<typeof hairOrderNoteSchema>;

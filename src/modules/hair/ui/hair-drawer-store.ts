@@ -17,7 +17,7 @@ type Action = {
 const initialState: State = {
   isOpen: false,
   hairOrderId: "",
-  hair: { color: "", description: "", upc: "", length: 0, weight: 0 },
+  hair: { color: "", description: "", upc: "", length: 0, weight: 0, price: 0 },
   onCreated: undefined,
   onUpdated: undefined,
 };
