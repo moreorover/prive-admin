@@ -303,6 +303,25 @@ export const hairRouter = createTRPCRouter({
 
       return remaped;
     }),
+  getById: protectedProcedure
+    .input(
+      z.object({
+        hairId: z.string().cuid2(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { hairId } = input;
+
+      const hair = await prisma.hair.findUnique({
+        where: { id: hairId },
+      });
+
+      if (!hair) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      return { ...hair, price: hair.price / 100 };
+    }),
   recalculatePrices: protectedProcedure
     .input(z.object({ hairOrderId: z.string().cuid2() }))
     .mutation(async ({ input }) => {

@@ -45,7 +45,7 @@ export default function HairTable({ hair }: Props) {
           <Menu.Dropdown>
             <Menu.Label>Hair</Menu.Label>
             <Link href={`/dashboard/hair/${h.id}`}>
-              <Menu.Item disabled>View</Menu.Item>
+              <Menu.Item>View</Menu.Item>
             </Link>
           </Menu.Dropdown>
         </Menu>
