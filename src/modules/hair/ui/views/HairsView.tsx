@@ -25,7 +25,7 @@ import { HairFilterDrawer } from "@/modules/hair/ui/components/hair-filter-drawe
 dayjs.extend(isoWeek);
 
 interface Props {
-  filters: {
+  searchParams: {
     color?: string;
     description?: string;
     upc?: string;
@@ -34,10 +34,9 @@ interface Props {
   };
 }
 
-export const HairsView = () => {
+export const HairsView = ({ searchParams }: Props) => {
   const router = useRouter();
-  const { color, description, upc, length, weight, label, createQueryString } =
-    useHairFilter();
+  const { label, createQueryString } = useHairFilter(searchParams);
 
   return (
     <Stack gap="sm">
@@ -53,7 +52,7 @@ export const HairsView = () => {
           </Stack>
           <Flex align="center" gap="sm">
             <HairFilterDrawer
-              filters={{ color, description, upc, length, weight }}
+              filters={searchParams}
               label={label}
               onSelected={(data) =>
                 router.push(`/dashboard/hair${createQueryString(data)}`)
@@ -67,9 +66,7 @@ export const HairsView = () => {
         <GridCol span={12}>
           <Suspense fallback={<LoaderSkeleton />}>
             <ErrorBoundary fallback={<p>Error</p>}>
-              <HairsSuspense
-                filters={{ color, description, upc, length, weight }}
-              />
+              <HairsSuspense searchParams={searchParams} />
             </ErrorBoundary>
           </Suspense>
         </GridCol>
@@ -78,8 +75,8 @@ export const HairsView = () => {
   );
 };
 
-function HairsSuspense({ filters }: Props) {
-  const [hair] = trpc.hair.getAll.useSuspenseQuery({ ...filters });
+function HairsSuspense({ searchParams }: Props) {
+  const [hair] = trpc.hair.getAll.useSuspenseQuery({ ...searchParams });
 
   return (
     <>
