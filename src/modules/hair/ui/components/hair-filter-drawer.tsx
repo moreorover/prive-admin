@@ -18,8 +18,14 @@ const schema = z.object({
   color: z.string().nullish(),
   description: z.string().nullish(),
   upc: z.string().nullish(),
-  weight: z.number().min(0).nullish(),
-  length: z.number().min(0).nullish(),
+  weight: z
+    .union([z.string(), z.number()])
+    .transform((val) => (val === "" ? undefined : Number(val)))
+    .optional(),
+  length: z
+    .union([z.string(), z.number()])
+    .transform((val) => (val === "" ? undefined : Number(val)))
+    .optional(),
 });
 
 interface Props {
@@ -74,6 +80,13 @@ export const HairFilterDrawer = ({ filters, label, onSelected }: Props) => {
           <Menu.Item
             onClick={() => {
               onSelected({});
+              form.setValues({
+                color: undefined,
+                description: undefined,
+                upc: undefined,
+                length: undefined,
+                weight: undefined,
+              });
             }}
           >
             Reset
@@ -108,14 +121,14 @@ export const HairFilterDrawer = ({ filters, label, onSelected }: Props) => {
           <NumberInput
             label="Weight"
             placeholder="110"
+            allowDecimal={false}
             key={form.key("weight")}
-            defaultValue={0}
             {...form.getInputProps("weight")}
           />
           <NumberInput
             label="Length"
             placeholder="50"
-            defaultValue={0}
+            allowDecimal={false}
             key={form.key("length")}
             {...form.getInputProps("length")}
           />
