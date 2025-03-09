@@ -33,7 +33,7 @@ export const navLinks: NavItem[] = [
         link: "/dashboard/hair-orders",
       },
       {
-        label: "Hair",
+        label: "Hair Stock",
         link: "/dashboard/hair",
       },
     ],

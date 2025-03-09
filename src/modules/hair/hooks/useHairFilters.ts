@@ -6,6 +6,7 @@ function useHairFilter(searchParams: {
   upc?: string;
   length?: number;
   weight?: number;
+  weightReceived?: number;
 }) {
   const createQueryString = useCallback(
     (filters: {
@@ -14,6 +15,7 @@ function useHairFilter(searchParams: {
       upc?: string;
       length?: number;
       weight?: number;
+      weightReceived?: number;
     }) => {
       const params = new URLSearchParams();
       if (filters.color && filters.color.trim() !== "") {
@@ -31,6 +33,9 @@ function useHairFilter(searchParams: {
       if (filters.weight && filters.weight !== 0) {
         params.set("weight", filters.weight.toString());
       }
+      if (filters.weightReceived && filters.weightReceived !== 0) {
+        params.set("weightReceived", filters.weightReceived.toString());
+      }
 
       return params.toString().trim() !== "" ? `?${params.toString()}` : "";
     },
@@ -47,6 +52,8 @@ function useHairFilter(searchParams: {
     activeFilters.push(`Length: ${searchParams.length}cm`);
   if (searchParams.weight)
     activeFilters.push(`Weight: ${searchParams.weight}g`);
+  if (searchParams.weightReceived)
+    activeFilters.push(`Weight Received: ${searchParams.weightReceived}g`);
 
   const label =
     activeFilters.length > 0 ? activeFilters.join(", ") : "No filters applied";

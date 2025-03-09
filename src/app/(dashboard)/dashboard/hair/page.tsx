@@ -11,6 +11,7 @@ interface Props {
     upc?: string;
     length?: number;
     weight?: number;
+    weightReceived?: number;
   }>;
 }
 
@@ -29,6 +30,7 @@ export default async function Page({ searchParams }: Props) {
     ...sp,
     length: sp.length ? Number(sp.length) : undefined,
     weight: sp.weight ? Number(sp.weight) : undefined,
+    weightReceived: sp.weightReceived ? Number(sp.weightReceived) : undefined,
   };
 
   void trpc.hair.getAll.prefetch({ ...parsedSearchParams });

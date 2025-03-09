@@ -47,7 +47,7 @@ export const hairRouter = createTRPCRouter({
       });
 
       const hairTotalWeight = hairOrderHair.reduce(
-        (sum, h) => sum + h.weight,
+        (sum, h) => sum + h.weightReceived,
         0,
       );
 
@@ -80,7 +80,7 @@ export const hairRouter = createTRPCRouter({
         await Promise.all(
           hairOrderHair.map((hoh) =>
             prisma.hair.update({
-              data: { price: hoh.weight * hairPricePerGram * 100 },
+              data: { price: hoh.weightReceived * hairPricePerGram * 100 },
               where: { id: hoh.id },
             }),
           ),
@@ -140,7 +140,7 @@ export const hairRouter = createTRPCRouter({
         });
 
         const hairTotalWeight = hairOrderHair.reduce(
-          (sum, h) => sum + h.weight,
+          (sum, h) => sum + h.weightReceived,
           0,
         );
 
@@ -173,7 +173,7 @@ export const hairRouter = createTRPCRouter({
           await Promise.all(
             hairOrderHair.map((hoh) =>
               prisma.hair.update({
-                data: { price: hoh.weight * hairPricePerGram * 100 },
+                data: { price: hoh.weightReceived * hairPricePerGram * 100 },
                 where: { id: hoh.id },
               }),
             ),
@@ -216,7 +216,7 @@ export const hairRouter = createTRPCRouter({
       });
 
       const hairTotalWeight = hairOrderHair.reduce(
-        (sum, h) => sum + h.weight,
+        (sum, h) => sum + h.weightReceived,
         0,
       );
 
@@ -249,7 +249,7 @@ export const hairRouter = createTRPCRouter({
         await Promise.all(
           hairOrderHair.map((hoh) =>
             prisma.hair.update({
-              data: { price: hoh.weight * hairPricePerGram * 100 },
+              data: { price: hoh.weightReceived * hairPricePerGram * 100 },
               where: { id: hoh.id },
             }),
           ),
@@ -280,11 +280,12 @@ export const hairRouter = createTRPCRouter({
         description: z.string().nullish(),
         upc: z.string().nullish(),
         weight: z.number().min(0).nullish(),
+        weightReceived: z.number().min(0).nullish(),
         length: z.number().min(0).nullish(),
       }),
     )
     .query(async ({ input }) => {
-      const { color, description, upc, weight, length } = input;
+      const { color, description, upc, weight, weightReceived, length } = input;
 
       const filters: Prisma.HairWhereInput = {}; // Strongly typed object
 
@@ -293,6 +294,7 @@ export const hairRouter = createTRPCRouter({
         filters.description = { contains: description };
       if (upc && upc.trim() !== "") filters.upc = { contains: upc };
       if (weight) filters.weight = weight;
+      if (weightReceived) filters.weightReceived = weightReceived;
       if (length) filters.length = length;
 
       const hair = await prisma.hair.findMany({
@@ -350,7 +352,7 @@ export const hairRouter = createTRPCRouter({
       });
 
       const hairTotalWeight = hairOrderHair.reduce(
-        (sum, h) => sum + h.weight,
+        (sum, h) => sum + h.weightReceived,
         0,
       );
 
@@ -383,7 +385,7 @@ export const hairRouter = createTRPCRouter({
         await Promise.all(
           hairOrderHair.map((hoh) =>
             prisma.hair.update({
-              data: { price: hoh.weight * hairPricePerGram * 100 },
+              data: { price: hoh.weightReceived * hairPricePerGram * 100 },
               where: { id: hoh.id },
             }),
           ),
