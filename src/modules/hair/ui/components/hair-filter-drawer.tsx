@@ -22,6 +22,10 @@ const schema = z.object({
     .union([z.string(), z.number()])
     .transform((val) => (val === "" ? undefined : Number(val)))
     .optional(),
+  weightReceived: z
+    .union([z.string(), z.number()])
+    .transform((val) => (val === "" ? undefined : Number(val)))
+    .optional(),
   length: z
     .union([z.string(), z.number()])
     .transform((val) => (val === "" ? undefined : Number(val)))
@@ -35,6 +39,7 @@ interface Props {
     upc?: string;
     length?: number;
     weight?: number;
+    weightReceived?: number;
   };
   label: string;
   onSelected: (filters: {
@@ -86,6 +91,7 @@ export const HairFilterDrawer = ({ filters, label, onSelected }: Props) => {
                 upc: undefined,
                 length: undefined,
                 weight: undefined,
+                weightReceived: undefined,
               });
             }}
           >
@@ -124,6 +130,13 @@ export const HairFilterDrawer = ({ filters, label, onSelected }: Props) => {
             allowDecimal={false}
             key={form.key("weight")}
             {...form.getInputProps("weight")}
+          />
+          <NumberInput
+            label="Weight Received"
+            placeholder="110"
+            allowDecimal={false}
+            key={form.key("weightReceived")}
+            {...form.getInputProps("weightReceived")}
           />
           <NumberInput
             label="Length"

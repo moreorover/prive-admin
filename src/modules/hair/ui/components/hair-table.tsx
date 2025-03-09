@@ -34,6 +34,9 @@ export default function HairTable({ hair }: Props) {
         <Text>{h.weight}</Text>
       </Table.Td>
       <Table.Td>
+        <Text>{h.weightReceived}</Text>
+      </Table.Td>
+      <Table.Td>
         <Text>{formatAmount(h.price)}</Text>
       </Table.Td>
       <Table.Td>
@@ -63,6 +66,7 @@ export default function HairTable({ hair }: Props) {
             <Table.Th>UPC</Table.Th>
             <Table.Th>Length (cm)</Table.Th>
             <Table.Th>Weight (g)</Table.Th>
+            <Table.Th>Weight Received (g)</Table.Th>
             <Table.Th>Price</Table.Th>
             <Table.Th />
           </Table.Tr>

@@ -2,11 +2,13 @@
 
 import {
   ActionIcon,
+  Button,
   CopyButton,
   Divider,
   Flex,
   Grid,
   GridCol,
+  Group,
   Paper,
   Stack,
   Text,
@@ -112,7 +114,15 @@ function HairSuspense({ hairId }: Props) {
                   </Flex>
                   <Flex direction="column">
                     <Text c="dimmed" size="xs">
-                      Weight:
+                      Received Weight:
+                    </Text>
+                    <Text size="sm" w={500}>
+                      {hair.weightReceived} g
+                    </Text>
+                  </Flex>
+                  <Flex direction="column">
+                    <Text c="dimmed" size="xs">
+                      Weight in Stock:
                     </Text>
                     <Text size="sm" w={500}>
                       {hair.weight} g
