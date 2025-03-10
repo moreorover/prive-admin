@@ -31,6 +31,7 @@ interface Props {
     upc?: string;
     length?: number;
     weight?: number;
+    weightReceived?: number;
   };
 }
 
