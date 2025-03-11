@@ -286,8 +286,8 @@ model Hair {
   weight         Int    @db.Integer
   price          Int    @db.Integer
 
-  hairOrderId String
-  hairOrder   HairOrder @relation(fields: [hairOrderId], references: [id], onDelete: Cascade)
+  hairOrderId String?
+  hairOrder   HairOrder? @relation(fields: [hairOrderId], references: [id], onDelete: Cascade)
 
   components HairComponent[] @relation("HairComponentsAsParent")
   usedIn     HairComponent[] @relation("HairComponentsAsChild")
