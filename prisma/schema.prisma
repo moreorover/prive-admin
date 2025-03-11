@@ -289,9 +289,22 @@ model Hair {
   hairOrderId String
   hairOrder   HairOrder @relation(fields: [hairOrderId], references: [id], onDelete: Cascade)
 
-  parentHairId String?
-  parentHair   Hair?   @relation("hairLocs", fields: [parentHairId], references: [id])
-  childHair    Hair[]  @relation("hairLocs")
+  components HairComponent[] @relation("HairComponentsAsParent")
+  usedIn     HairComponent[] @relation("HairComponentsAsChild")
 
   @@map("hair")
+}
+
+model HairComponent {
+  id     String @id @default(cuid(2))
+  weight Int    @db.Integer
+
+  hairId   String
+  parentId String
+
+  hair   Hair @relation("HairComponentsAsChild", fields: [hairId], references: [id], onDelete: Cascade)
+  parent Hair @relation("HairComponentsAsParent", fields: [parentId], references: [id], onDelete: Cascade)
+
+  @@unique([hairId, parentId])
+  @@map("hair_components")
 }
