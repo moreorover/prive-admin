@@ -23,6 +23,10 @@ import { ErrorBoundary } from "react-error-boundary";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import Surface from "@/modules/ui/components/surface";
 import { Check, Copy } from "lucide-react";
+import { ReusableTextDrawer } from "@/modules/ui/components/text-input-drawer";
+import { z } from "zod";
+import { notifications } from "@mantine/notifications";
+import { ReusableNumberDrawer } from "@/modules/ui/components/number-input-drawer";
 
 dayjs.extend(isoWeek);
 
@@ -41,7 +45,33 @@ export const HairView = ({ hairId }: Props) => {
 };
 
 function HairSuspense({ hairId }: Props) {
+  const utils = trpc.useUtils();
   const [hair] = trpc.hair.getById.useSuspenseQuery({ hairId });
+
+  const updateHairMutation = trpc.hair.update.useMutation({
+    onSuccess: () => {
+      utils.hair.getById.invalidate({ hairId });
+      notifications.show({
+        color: "green",
+        title: "Success!",
+        message: "Hair updated.",
+      });
+    },
+    onError: (e) => {
+      console.log({ e });
+      notifications.show({
+        color: "red",
+        title: "Error!",
+        message: "Failed to update Hair.",
+      });
+    },
+  });
+
+  const updateHair = (data: {
+    length?: number;
+    description?: string;
+    color?: string;
+  }) => updateHairMutation.mutate({ hair: { id: hairId, ...data } });
 
   return (
     <>
@@ -66,20 +96,40 @@ function HairSuspense({ hairId }: Props) {
               <Paper withBorder p="md" radius="md" shadow="sm">
                 <Stack gap="sm">
                   <Flex direction="column">
-                    <Text c="dimmed" size="xs">
-                      Color:
-                    </Text>
-                    <Text size="sm" w={500}>
-                      {hair.color}
-                    </Text>
+                    <Flex direction="column">
+                      <Text c="dimmed" size="xs">
+                        Color:
+                      </Text>
+                      <Flex direction="row" justify="space-between">
+                        <Text size="sm">{hair.color}</Text>
+                        <ReusableTextDrawer
+                          title={"Update Color"}
+                          initialValues={{ color: hair.color }}
+                          schema={z.object({ color: z.string() })}
+                          onSubmit={(data) => {
+                            updateHair(data);
+                          }}
+                        />
+                      </Flex>
+                    </Flex>
                   </Flex>
                   <Flex direction="column">
-                    <Text c="dimmed" size="xs">
-                      Description:
-                    </Text>
-                    <Text size="sm" w={500}>
-                      {hair.description}
-                    </Text>
+                    <Flex direction="column">
+                      <Text c="dimmed" size="xs">
+                        Description:
+                      </Text>
+                      <Flex direction="row" justify="space-between">
+                        <Text size="sm">{hair.description}</Text>
+                        <ReusableTextDrawer
+                          title={"Update Description"}
+                          initialValues={{ description: hair.description }}
+                          schema={z.object({ description: z.string() })}
+                          onSubmit={(data) => {
+                            updateHair(data);
+                          }}
+                        />
+                      </Flex>
+                    </Flex>
                   </Flex>
                   <Flex direction="column">
                     <Text c="dimmed" size="xs">
@@ -112,14 +162,16 @@ function HairSuspense({ hairId }: Props) {
                       </CopyButton>
                     </Flex>
                   </Flex>
-                  <Flex direction="column">
-                    <Text c="dimmed" size="xs">
-                      Received Weight:
-                    </Text>
-                    <Text size="sm" w={500}>
-                      {hair.weightReceived} g
-                    </Text>
-                  </Flex>
+                  {!hair.upc.startsWith("p+") && (
+                    <Flex direction="column">
+                      <Text c="dimmed" size="xs">
+                        Received Weight:
+                      </Text>
+                      <Text size="sm" w={500}>
+                        {hair.weightReceived} g
+                      </Text>
+                    </Flex>
+                  )}
                   <Flex direction="column">
                     <Text c="dimmed" size="xs">
                       Weight in Stock:
@@ -129,21 +181,33 @@ function HairSuspense({ hairId }: Props) {
                     </Text>
                   </Flex>
                   <Flex direction="column">
-                    <Text c="dimmed" size="xs">
-                      Length:
-                    </Text>
-                    <Text size="sm" w={500}>
-                      {hair.length} cm
-                    </Text>
+                    <Flex direction="column">
+                      <Text c="dimmed" size="xs">
+                        Length:
+                      </Text>
+                      <Flex direction="row" justify="space-between">
+                        <Text size="sm">{hair.length} cm</Text>
+                        <ReusableNumberDrawer
+                          title={"Update Length"}
+                          initialValues={{ length: hair.length }}
+                          schema={z.object({ length: z.number().positive() })}
+                          onSubmit={(data) => {
+                            updateHair(data);
+                          }}
+                        />
+                      </Flex>
+                    </Flex>
                   </Flex>
-                  <Flex direction="column">
-                    <Text c="dimmed" size="xs">
-                      Order:
-                    </Text>
-                    <Text size="sm" w={500}>
-                      {hair.hairOrderId}
-                    </Text>
-                  </Flex>
+                  {hair.hairOrderId && (
+                    <Flex direction="column">
+                      <Text c="dimmed" size="xs">
+                        Order:
+                      </Text>
+                      <Text size="sm" w={500}>
+                        {hair.hairOrderId}
+                      </Text>
+                    </Flex>
+                  )}
                 </Stack>
               </Paper>
             </Stack>
