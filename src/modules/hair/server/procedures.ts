@@ -89,6 +89,28 @@ export const hairRouter = createTRPCRouter({
 
       return newHair;
     }),
+  createBlankHair: protectedProcedure.mutation(async () => {
+    const letters = "ABCDFGHKLMNOPQRSTUVWXYZ";
+    let upc = "";
+    for (let i = 0; i < 5; i++) {
+      upc += letters.charAt(Math.floor(Math.random() * letters.length));
+    }
+
+    const createdHair = await prisma.hair.create({
+      data: {
+        color: "",
+        description: "",
+        weight: 0,
+        weightReceived: 0,
+        length: 0,
+        hairOrderId: undefined,
+        upc: `p+${upc}`,
+        price: 0,
+      },
+    });
+
+    return createdHair;
+  }),
   update: protectedProcedure
     .input(z.object({ hair: hairSchema }))
     .mutation(async ({ input }) => {
@@ -116,7 +138,7 @@ export const hairRouter = createTRPCRouter({
         },
       });
 
-      if (previousHair.weight !== hair.weight) {
+      if (previousHair.hairOrderId && previousHair.weight !== hair.weight) {
         const hairOrder = await prisma.hairOrder.findUnique({
           where: { id: previousHair.hairOrderId },
         });
@@ -192,6 +214,8 @@ export const hairRouter = createTRPCRouter({
           id: hairId,
         },
       });
+
+      if (!c.hairOrderId) return c;
 
       const hairOrder = await prisma.hairOrder.findUnique({
         where: { id: c.hairOrderId },

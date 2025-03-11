@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Button,
   Divider,
   Flex,
   Grid,
@@ -21,6 +22,8 @@ import { useRouter } from "next/navigation";
 import HairTable from "@/modules/hair/ui/components/hair-table";
 import useHairFilter from "@/modules/hair/hooks/useHairFilters";
 import { HairFilterDrawer } from "@/modules/hair/ui/components/hair-filter-drawer";
+import { notifications } from "@mantine/notifications";
+import { modals } from "@mantine/modals";
 
 dayjs.extend(isoWeek);
 
@@ -36,8 +39,40 @@ interface Props {
 }
 
 export const HairsView = ({ searchParams }: Props) => {
+  const utils = trpc.useUtils();
   const router = useRouter();
   const { label, createQueryString } = useHairFilter(searchParams);
+  const createBlankHair = trpc.hair.createBlankHair.useMutation({
+    onSuccess: async (data) => {
+      utils.hair.getAll.invalidate();
+      notifications.show({
+        color: "green",
+        title: "Success!",
+        message: "Blank Hair created.",
+      });
+      router.push(`/dashboard/hair/${data.id}`);
+    },
+    onError: async () => {
+      notifications.show({
+        color: "red",
+        title: "Error!",
+        message: "Failed to create Blank Hair.",
+      });
+    },
+  });
+
+  const openConfirmModal = () =>
+    modals.openConfirmModal({
+      title: "Create Blank Hair?",
+      centered: true,
+      children: (
+        <Text size="sm">Are you sure you want to create blank hair?</Text>
+      ),
+      labels: { confirm: "Create", cancel: "Cancel" },
+      confirmProps: { color: "green" },
+      onCancel: () => {},
+      onConfirm: () => createBlankHair.mutate(),
+    });
 
   return (
     <Stack gap="sm">
@@ -59,6 +94,13 @@ export const HairsView = ({ searchParams }: Props) => {
                 router.push(`/dashboard/hair${createQueryString(data)}`)
               }
             />
+            <Button
+              onClick={() => {
+                openConfirmModal();
+              }}
+            >
+              New
+            </Button>
           </Flex>
         </Flex>
       </Surface>
