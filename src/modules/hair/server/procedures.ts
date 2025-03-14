@@ -302,6 +302,34 @@ export const hairRouter = createTRPCRouter({
 
       return remaped;
     }),
+  getHairComponentsByHairId: protectedProcedure
+    .input(z.object({ hairId: z.string().cuid2() }))
+    .query(async ({ input }) => {
+      const { hairId } = input;
+
+      const hairComponents = await prisma.hairComponent.findMany({
+        where: { hairId },
+      });
+
+      return hairComponents;
+    }),
+  createHairComponent: protectedProcedure
+    .input(
+      z.object({ hairId: z.string().cuid2(), parentId: z.string().cuid2() }),
+    )
+    .mutation(async ({ input }) => {
+      const { hairId, parentId } = input;
+
+      const createdComponent = await prisma.hairComponent.create({
+        data: {
+          hairId,
+          parentId,
+          weight: 0,
+        },
+      });
+
+      return createdComponent;
+    }),
   getAll: protectedProcedure
     .input(
       z.object({
@@ -333,6 +361,33 @@ export const hairRouter = createTRPCRouter({
       const remaped = hair.map((h) => ({ ...h, price: h.price / 100 }));
 
       return remaped;
+    }),
+  getHairComponentOptionsForHairId: protectedProcedure
+    .input(
+      z.object({
+        hairId: z.string().cuid2(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { hairId } = input;
+
+      // Get all parentIds from HairComponent table
+      const excludedParentIds = await prisma.hairComponent.findMany({
+        select: { parentId: true },
+      });
+
+      const excludedIds = excludedParentIds.map((hc) => hc.parentId);
+
+      // Query Hair table
+      const hair = await prisma.hair.findMany({
+        where: {
+          weight: { gt: 0 }, // Weight greater than zero
+          id: { not: hairId }, // Exclude the provided hairId
+          NOT: { id: { in: excludedIds } }, // Exclude ids in HairComponent.parentId
+        },
+      });
+
+      return hair.map((h) => ({ ...h, price: h.price / 100 }));
     }),
   getById: protectedProcedure
     .input(

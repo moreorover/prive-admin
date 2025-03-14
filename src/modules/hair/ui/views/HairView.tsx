@@ -2,7 +2,6 @@
 
 import {
   ActionIcon,
-  Button,
   CopyButton,
   Divider,
   Flex,
@@ -27,6 +26,7 @@ import { ReusableTextDrawer } from "@/modules/ui/components/text-input-drawer";
 import { z } from "zod";
 import { notifications } from "@mantine/notifications";
 import { ReusableNumberDrawer } from "@/modules/ui/components/number-input-drawer";
+import { HairPickerDrawer } from "@/modules/hair/ui/components/hair-picker-drawer";
 
 dayjs.extend(isoWeek);
 
@@ -47,6 +47,11 @@ export const HairView = ({ hairId }: Props) => {
 function HairSuspense({ hairId }: Props) {
   const utils = trpc.useUtils();
   const [hair] = trpc.hair.getById.useSuspenseQuery({ hairId });
+  const [hairComponents] = trpc.hair.getHairComponentsByHairId.useSuspenseQuery(
+    { hairId },
+  );
+  const [hairOptions] =
+    trpc.hair.getHairComponentOptionsForHairId.useSuspenseQuery({ hairId });
 
   const updateHairMutation = trpc.hair.update.useMutation({
     onSuccess: () => {
@@ -66,6 +71,28 @@ function HairSuspense({ hairId }: Props) {
       });
     },
   });
+
+  const createHairComponentMutation = trpc.hair.createHairComponent.useMutation(
+    {
+      onSuccess: () => {
+        utils.hair.getHairComponentsByHairId.invalidate({ hairId });
+        utils.hair.getHairComponentOptionsForHairId.invalidate({ hairId });
+        notifications.show({
+          color: "green",
+          title: "Success!",
+          message: "Hair component created.",
+        });
+      },
+      onError: (e) => {
+        console.log({ e });
+        notifications.show({
+          color: "red",
+          title: "Error!",
+          message: "Failed to create Hair Component.",
+        });
+      },
+    },
+  );
 
   const updateHair = (data: {
     length?: number;
@@ -212,11 +239,28 @@ function HairSuspense({ hairId }: Props) {
               </Paper>
             </Stack>
           </GridCol>
-          <GridCol span={{ base: 12, lg: 9 }}>
-            <Paper withBorder p="md" radius="md" shadow="sm">
-              <Text c="gray">{hair.id}</Text>
-            </Paper>
-          </GridCol>
+          {!hair.hairOrderId && hair.upc.startsWith("p+") && (
+            <GridCol span={{ base: 12, lg: 9 }}>
+              <Paper withBorder p="md" radius="md" shadow="sm">
+                <Group justify="space-between" gap="sm">
+                  <Title order={4}>Made of</Title>
+                  <Group>
+                    <HairPickerDrawer
+                      hair={hairOptions}
+                      onSubmit={(data) => {
+                        createHairComponentMutation.mutate({
+                          hairId,
+                          parentId: data,
+                        });
+                      }}
+                      multiple={false}
+                    />
+                  </Group>
+                </Group>
+                {JSON.stringify(hairComponents, null, 2)}
+              </Paper>
+            </GridCol>
+          )}
         </Grid>
       </Stack>
     </>
