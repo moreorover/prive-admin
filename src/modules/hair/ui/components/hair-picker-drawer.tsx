@@ -12,11 +12,11 @@ import {
   TextInput,
 } from "@mantine/core";
 import { useState } from "react";
-import { GetAllHairInStock } from "@/modules/hair/types";
+import { GetAllHairOptions } from "@/modules/hair/types";
 import { useDisclosure } from "@mantine/hooks";
 
 interface Props<T extends boolean> {
-  hair: GetAllHairInStock;
+  hair: GetAllHairOptions;
   onSubmit: T extends true
     ? (hairId: string[]) => void
     : (hairId: string) => void;

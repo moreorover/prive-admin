@@ -27,6 +27,7 @@ import { z } from "zod";
 import { notifications } from "@mantine/notifications";
 import { ReusableNumberDrawer } from "@/modules/ui/components/number-input-drawer";
 import { HairPickerDrawer } from "@/modules/hair/ui/components/hair-picker-drawer";
+import HairComponentTable from "@/modules/hair/ui/components/hair-component-table";
 
 dayjs.extend(isoWeek);
 
@@ -257,7 +258,24 @@ function HairSuspense({ hairId }: Props) {
                     />
                   </Group>
                 </Group>
-                {JSON.stringify(hairComponents, null, 2)}
+                {/*{JSON.stringify(hairComponents, null, 2)}*/}
+                <HairComponentTable
+                  hairComponents={hairComponents}
+                  onUpdate={() => {
+                    utils.hair.getById.invalidate({ hairId });
+                    utils.hair.getHairComponentsByHairId.invalidate({ hairId });
+                    utils.hair.getHairComponentOptionsForHairId.invalidate({
+                      hairId,
+                    });
+                  }}
+                  onDelete={() => {
+                    utils.hair.getById.invalidate({ hairId });
+                    utils.hair.getHairComponentsByHairId.invalidate({ hairId });
+                    utils.hair.getHairComponentOptionsForHairId.invalidate({
+                      hairId,
+                    });
+                  }}
+                />
               </Paper>
             </GridCol>
           )}
