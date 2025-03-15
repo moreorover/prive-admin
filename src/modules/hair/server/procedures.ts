@@ -384,7 +384,9 @@ export const hairRouter = createTRPCRouter({
       });
 
       const hair = await prisma.hair.findFirst({
-        include: { components: true },
+        include: {
+          components: { include: { parent: { include: { hairOrder: true } } } },
+        },
         where: { id: hairId },
       });
 
@@ -397,10 +399,34 @@ export const hairRouter = createTRPCRouter({
         0,
       );
 
+      const totalPrice = hair.components.reduce(
+        (sum, component) =>
+          sum +
+          component.weight *
+            (component.parent.hairOrder?.pricePerGram
+              ? component.parent.hairOrder.pricePerGram / 100
+              : 0),
+        0,
+      );
+
       await prisma.hair.update({
-        data: { weight: totalWeight },
+        data: { weight: totalWeight, price: totalPrice * 100 },
         where: { id: hairId },
       });
+
+      const parentHair2 = await prisma.hair.findFirst({
+        where: { id: parentId },
+        include: { hairOrder: true },
+      });
+
+      if (parentHair2?.hairOrder) {
+        await prisma.hair.update({
+          where: { id: parentId },
+          data: {
+            price: parentHair2.hairOrder.pricePerGram * parentHair2.weight,
+          },
+        });
+      }
 
       return updatedComponent;
     }),
