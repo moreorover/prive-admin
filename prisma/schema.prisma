@@ -302,8 +302,8 @@ model HairComponent {
   hairId   String
   parentId String
 
-  hair   Hair @relation("HairComponentsAsChild", fields: [hairId], references: [id], onDelete: Cascade)
-  parent Hair @relation("HairComponentsAsParent", fields: [parentId], references: [id], onDelete: Cascade)
+  hair   Hair @relation("HairComponentsAsParent", fields: [hairId], references: [id], onDelete: Cascade)
+  parent Hair @relation("HairComponentsAsChild", fields: [parentId], references: [id], onDelete: Cascade)
 
   @@unique([hairId, parentId])
   @@map("hair_components")

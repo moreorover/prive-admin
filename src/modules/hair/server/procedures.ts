@@ -309,6 +309,10 @@ export const hairRouter = createTRPCRouter({
 
       const hairComponents = await prisma.hairComponent.findMany({
         where: { hairId },
+        include: {
+          hair: { include: { hairOrder: true } },
+          parent: { include: { hairOrder: true } },
+        },
       });
 
       return hairComponents;
@@ -329,6 +333,104 @@ export const hairRouter = createTRPCRouter({
       });
 
       return createdComponent;
+    }),
+  updateHairComponent: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().cuid2(),
+        hairId: z.string().cuid2(),
+        parentId: z.string().cuid2(),
+        weight: z.number().nonnegative(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { id, hairId, parentId, weight } = input;
+
+      const parentHair = await prisma.hair.findFirst({
+        where: { id: parentId },
+      });
+
+      const componentHair = await prisma.hairComponent.findFirst({
+        where: { id },
+        select: { weight: true },
+      });
+
+      if (!componentHair) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      if (!parentHair) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      const totalHairWeight = parentHair.weight + componentHair.weight;
+
+      if (totalHairWeight < weight) {
+        throw new TRPCError({ code: "CONFLICT" });
+      }
+
+      const updatedComponent = await prisma.hairComponent.update({
+        data: {
+          hairId,
+          parentId,
+          weight,
+        },
+        where: { id },
+      });
+
+      await prisma.hair.update({
+        data: { weight: totalHairWeight - weight },
+        where: { id: parentId },
+      });
+
+      const hair = await prisma.hair.findFirst({
+        include: { components: true },
+        where: { id: hairId },
+      });
+
+      if (!hair) {
+        return updatedComponent;
+      }
+
+      const totalWeight = hair.components.reduce(
+        (sum, component) => sum + component.weight,
+        0,
+      );
+
+      await prisma.hair.update({
+        data: { weight: totalWeight },
+        where: { id: hairId },
+      });
+
+      return updatedComponent;
+    }),
+  deleteHairComponent: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().cuid2(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { id } = input;
+
+      const componentHair = await prisma.hairComponent.findFirst({
+        where: { id },
+        select: { weight: true },
+      });
+
+      if (!componentHair) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      if (componentHair.weight > 0) {
+        throw new TRPCError({ code: "CONFLICT" });
+      }
+
+      const deletedComponent = await prisma.hairComponent.delete({
+        where: { id },
+      });
+
+      return deletedComponent;
     }),
   getAll: protectedProcedure
     .input(

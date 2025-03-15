@@ -20,6 +20,7 @@ import { NewHairOrderNoteDrawer } from "@/modules/hair_order_notes/ui/components
 import { EditHairOrderNoteDrawer } from "@/modules/hair_order_notes/ui/components/edit-appointment-note-drawer";
 import { NewHairDrawer } from "@/modules/hair/ui/components/new-hair-drawer";
 import { EditHairDrawer } from "@/modules/hair/ui/components/edit-hair-drawer";
+import { EditHairComponentDrawer } from "@/modules/hair/ui/components/edit-hair-component-drawer";
 
 export default function DrawerProvider() {
   return (
@@ -53,6 +54,8 @@ export default function DrawerProvider() {
 
       <NewHairDrawer />
       <EditHairDrawer />
+
+      <EditHairComponentDrawer />
     </>
   );
 }

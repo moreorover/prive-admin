@@ -34,15 +34,16 @@ export const EditHairDrawer = () => {
   });
 
   async function onSubmit(data: Hair) {
-    newHair.mutate({ hair: data });
+    const id = data.id;
+    if (id) newHair.mutate({ hair: { ...data, id } });
   }
 
   return (
     <Drawer
       opened={isOpen && onUpdated !== undefined}
-      onClose={() => openDrawer({ onCreated: () => {} })}
+      onClose={() => openDrawer({ onUpdated: () => {} })}
       position="right"
-      title="Create Hair"
+      title="Update Hair"
     >
       <HairForm
         onSubmitAction={onSubmit}
