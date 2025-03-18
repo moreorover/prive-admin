@@ -43,6 +43,7 @@ export const NewTransactionDrawer = () => {
       appointmentId: value.appointmentId,
       orderId: value.orderId,
       customerId: value.customerId,
+      hairOrderId: value.hairOrderId,
     });
   }
 

@@ -72,3 +72,56 @@ export const createAppointmentNote = (faker: Faker) => {
 };
 
 export const sizes = ["250ml", "500ml", "50g", "100g", "1L"];
+
+export const createHairOrder = (faker: Faker) => {
+  return {
+    placedAt: faker.helpers.arrayElement([
+      faker.date.recent({ days: 10 }),
+      faker.date.soon({ days: 10 }),
+    ]),
+    arrivedAt: faker.helpers.arrayElement([
+      faker.date.recent({ days: 10 }),
+      faker.date.soon({ days: 10 }),
+    ]),
+    status: faker.helpers.arrayElement(["PENDING", "COMPLETED"]),
+  };
+};
+
+export const createHairOrderNote = (faker: Faker) => {
+  return {
+    note: faker.lorem.sentence(),
+    createdAt: faker.helpers.arrayElement([
+      faker.date.recent({ days: 10 }),
+      faker.date.soon({ days: 10 }),
+    ]),
+  };
+};
+
+export const createHairOrderTransaction = (faker: Faker) => {
+  return {
+    ...createTransaction(faker),
+    name: faker.helpers.arrayElement(["Deposit", "Payment"]),
+    amount: faker.number.float({
+      min: -800,
+      max: -200,
+      multipleOf: 0.25,
+    }),
+  };
+};
+
+export const createHair = (faker: Faker) => {
+  return {
+    color: faker.color.human(),
+    description: faker.lorem.paragraph(),
+    upc: faker.git.commitSha({ length: 5 }),
+    length: faker.number.int({ min: 40, max: 100, multipleOf: 5 }),
+    weight: faker.number.int({
+      min: 30,
+      max: 220,
+    }),
+    price: faker.number.int({
+      min: 5000,
+      max: 50000,
+    }),
+  };
+};

@@ -14,8 +14,8 @@ datasource db {
 }
 
 model User {
-  id            String    @id
-  email         String    @unique
+  id            String          @id
+  email         String          @unique
   name          String?
   emailVerified Boolean
   image         String?
@@ -23,6 +23,8 @@ model User {
   updatedAt     DateTime
   Session       Session[]
   Account       Account[]
+  hairOrder     HairOrder[]
+  hairOrderNote HairOrderNote[]
 
   @@map("users")
 }
@@ -82,6 +84,7 @@ model Customer {
   transactions            Transaction[]
   appointmentsAsCustomer  Appointment[]
   appointmentsAsPersonnel PersonnelOnAppointments[]
+  hairOrders              HairOrder[]               @relation("CustomerOrders")
 
   @@map("customers")
 }
@@ -160,14 +163,6 @@ enum TransactionType {
   PAYPAL
 }
 
-model TransactionBatch {
-  id           String        @id @default(cuid(2))
-  createdAt    DateTime      @default(now())
-  transactions Transaction[]
-
-  @@map("transaction_batches")
-}
-
 enum TransactionStatus {
   PENDING
   COMPLETED
@@ -183,15 +178,14 @@ model Transaction {
   completedDateBy DateTime          @default(now()) @db.Date
   createdAt       DateTime          @default(now())
 
-  batchId String?
-  batch   TransactionBatch? @relation(fields: [batchId], references: [id], onDelete: Cascade)
-
   customerId    String
   customer      Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
   orderId       String?
   order         Order?       @relation(fields: [orderId], references: [id], onDelete: SetNull)
   appointmentId String?
   appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  hairOrderId   String?
+  hairOrder     HairOrder?   @relation(fields: [hairOrderId], references: [id], onDelete: SetNull)
 
   @@map("transactions")
 }
@@ -236,4 +230,81 @@ model PersonnelOnAppointments {
 
   @@id([personnelId, appointmentId])
   @@map("appointment_personnel")
+}
+
+enum HairOrderStatus {
+  PENDING
+  COMPLETED
+}
+
+model HairOrder {
+  id           String          @id @default(cuid(2))
+  placedAt     DateTime?       @db.Date
+  arrivedAt    DateTime?       @db.Date
+  status       HairOrderStatus @default(PENDING)
+  pricePerGram Int             @default(0) @db.Integer
+
+  customerId String?
+  customer   Customer? @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: SetNull)
+
+  transactions Transaction[]
+  notes        HairOrderNote[]
+  hair         Hair[]
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("hair_orders")
+}
+
+model HairOrderNote {
+  id   String @id @default(cuid(2))
+  note String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hairOrderId String
+  hairOrder   HairOrder @relation(fields: [hairOrderId], references: [id], onDelete: Cascade)
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@map("hair_order_notes")
+}
+
+model Hair {
+  id             String @id @default(cuid(2))
+  color          String
+  description    String
+  upc            String
+  length         Int    @db.Integer
+  weightReceived Int    @db.Integer
+  weight         Int    @db.Integer
+  price          Int    @db.Integer
+
+  hairOrderId String?
+  hairOrder   HairOrder? @relation(fields: [hairOrderId], references: [id], onDelete: Cascade)
+
+  components HairComponent[] @relation("HairComponentsAsParent")
+  usedIn     HairComponent[] @relation("HairComponentsAsChild")
+
+  @@map("hair")
+}
+
+model HairComponent {
+  id     String @id @default(cuid(2))
+  weight Int    @db.Integer
+
+  hairId   String
+  parentId String
+
+  hair   Hair @relation("HairComponentsAsParent", fields: [hairId], references: [id], onDelete: Cascade)
+  parent Hair @relation("HairComponentsAsChild", fields: [parentId], references: [id], onDelete: Cascade)
+
+  @@unique([hairId, parentId])
+  @@map("hair_components")
 }
