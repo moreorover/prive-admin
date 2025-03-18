@@ -43,7 +43,7 @@ export const HairOrdersView = () => {
       notifications.show({
         color: "green",
         title: "Success!",
-        message: "Appointment Note updated.",
+        message: "Hair Order created.",
       });
     },
     onError: (err) => {

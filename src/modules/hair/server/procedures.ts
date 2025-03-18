@@ -67,20 +67,22 @@ export const hairRouter = createTRPCRouter({
         );
       }
 
-      if (hairTotalWeight > 0 && transactionsTotal > 0) {
+      if (hairTotalWeight > 0 && transactionsTotal != 0) {
         const hairPricePerGram = +(transactionsTotal / hairTotalWeight).toFixed(
           2,
         );
 
         await prisma.hairOrder.update({
-          data: { pricePerGram: hairPricePerGram * 100 },
+          data: { pricePerGram: Math.abs(hairPricePerGram * 100) },
           where: { id: hairOrderId },
         });
 
         await Promise.all(
           hairOrderHair.map((hoh) =>
             prisma.hair.update({
-              data: { price: hoh.weightReceived * hairPricePerGram * 100 },
+              data: {
+                price: Math.abs(hoh.weightReceived * hairPricePerGram * 100),
+              },
               where: { id: hoh.id },
             }),
           ),
@@ -193,14 +195,16 @@ export const hairRouter = createTRPCRouter({
           ).toFixed(2);
 
           await prisma.hairOrder.update({
-            data: { pricePerGram: hairPricePerGram * 100 },
+            data: { pricePerGram: Math.abs(hairPricePerGram * 100) },
             where: { id: previousHair.hairOrderId },
           });
 
           await Promise.all(
             hairOrderHair.map((hoh) =>
               prisma.hair.update({
-                data: { price: hoh.weightReceived * hairPricePerGram * 100 },
+                data: {
+                  price: Math.abs(hoh.weightReceived * hairPricePerGram * 100),
+                },
                 where: { id: hoh.id },
               }),
             ),
@@ -265,20 +269,22 @@ export const hairRouter = createTRPCRouter({
         );
       }
 
-      if (hairTotalWeight > 0 && transactionsTotal > 0) {
+      if (hairTotalWeight > 0 && transactionsTotal != 0) {
         const hairPricePerGram = +(transactionsTotal / hairTotalWeight).toFixed(
           2,
         );
 
         await prisma.hairOrder.update({
-          data: { pricePerGram: hairPricePerGram * 100 },
+          data: { pricePerGram: Math.abs(hairPricePerGram * 100) },
           where: { id: c.hairOrderId },
         });
 
         await Promise.all(
           hairOrderHair.map((hoh) =>
             prisma.hair.update({
-              data: { price: hoh.weightReceived * hairPricePerGram * 100 },
+              data: {
+                price: Math.abs(hoh.weightReceived * hairPricePerGram * 100),
+              },
               where: { id: hoh.id },
             }),
           ),
@@ -404,7 +410,7 @@ export const hairRouter = createTRPCRouter({
           sum +
           component.weight *
             (component.parent.hairOrder?.pricePerGram
-              ? component.parent.hairOrder.pricePerGram / 100
+              ? Math.abs(component.parent.hairOrder.pricePerGram / 100)
               : 0),
         0,
       );
@@ -584,20 +590,22 @@ export const hairRouter = createTRPCRouter({
         );
       }
 
-      if (hairTotalWeight > 0 && transactionsTotal > 0) {
+      if (hairTotalWeight > 0 && transactionsTotal != 0) {
         const hairPricePerGram = +(transactionsTotal / hairTotalWeight).toFixed(
           2,
         );
 
         await prisma.hairOrder.update({
-          data: { pricePerGram: hairPricePerGram * 100 },
+          data: { pricePerGram: Math.abs(hairPricePerGram * 100) },
           where: { id: hairOrderId },
         });
 
         await Promise.all(
           hairOrderHair.map((hoh) =>
             prisma.hair.update({
-              data: { price: hoh.weightReceived * hairPricePerGram * 100 },
+              data: {
+                price: Math.abs(hoh.weightReceived * hairPricePerGram * 100),
+              },
               where: { id: hoh.id },
             }),
           ),
