@@ -38,7 +38,7 @@
     "jotai": "^2.12.1",
     "lucide-react": "^0.475.0",
     "mantine-form-zod-resolver": "^1.1.0",
-    "next": "^15.2.0",
+    "next": "^15.2.3",
     "prisma": "^6.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
