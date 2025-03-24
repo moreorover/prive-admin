@@ -7,6 +7,12 @@ CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'COMPLETED', 'CANCELLED');
 -- CreateEnum
 CREATE TYPE "TransactionType" AS ENUM ('BANK', 'CASH', 'PAYPAL');
 
+-- CreateEnum
+CREATE TYPE "TransactionStatus" AS ENUM ('PENDING', 'COMPLETED');
+
+-- CreateEnum
+CREATE TYPE "HairOrderStatus" AS ENUM ('PENDING', 'COMPLETED');
+
 -- CreateTable
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
@@ -69,6 +75,7 @@ CREATE TABLE "verifications" (
 CREATE TABLE "customers" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "phoneNumber" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3),
 
@@ -127,25 +134,19 @@ CREATE TABLE "order_items" (
 );
 
 -- CreateTable
-CREATE TABLE "transaction_batches" (
-    "id" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "transaction_batches_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "transactions" (
     "id" TEXT NOT NULL,
     "name" TEXT,
     "notes" TEXT,
     "amount" INTEGER NOT NULL,
     "type" "TransactionType" NOT NULL DEFAULT 'BANK',
+    "status" "TransactionStatus" NOT NULL DEFAULT 'PENDING',
+    "completedDateBy" DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "batchId" TEXT,
     "customerId" TEXT NOT NULL,
     "orderId" TEXT,
     "appointmentId" TEXT,
+    "hairOrderId" TEXT,
 
     CONSTRAINT "transactions_pkey" PRIMARY KEY ("id")
 );
@@ -154,7 +155,6 @@ CREATE TABLE "transactions" (
 CREATE TABLE "appointments" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "notes" TEXT,
     "startsAt" TIMESTAMP(3) NOT NULL,
     "clientId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -164,12 +164,75 @@ CREATE TABLE "appointments" (
 );
 
 -- CreateTable
+CREATE TABLE "appointment_notes" (
+    "id" TEXT NOT NULL,
+    "note" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "appointmentId" TEXT NOT NULL,
+
+    CONSTRAINT "appointment_notes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "appointment_personnel" (
     "appointmentId" TEXT NOT NULL,
     "personnelId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "appointment_personnel_pkey" PRIMARY KEY ("personnelId","appointmentId")
+);
+
+-- CreateTable
+CREATE TABLE "hair_orders" (
+    "id" TEXT NOT NULL,
+    "placedAt" DATE,
+    "arrivedAt" DATE,
+    "status" "HairOrderStatus" NOT NULL DEFAULT 'PENDING',
+    "pricePerGram" INTEGER NOT NULL DEFAULT 0,
+    "customerId" TEXT,
+    "createdById" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "hair_orders_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "hair_order_notes" (
+    "id" TEXT NOT NULL,
+    "note" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "hairOrderId" TEXT NOT NULL,
+    "createdById" TEXT NOT NULL,
+
+    CONSTRAINT "hair_order_notes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "hair" (
+    "id" TEXT NOT NULL,
+    "color" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "upc" TEXT NOT NULL,
+    "length" INTEGER NOT NULL,
+    "weightReceived" INTEGER NOT NULL,
+    "weight" INTEGER NOT NULL,
+    "price" INTEGER NOT NULL,
+    "hairOrderId" TEXT,
+
+    CONSTRAINT "hair_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "hair_components" (
+    "id" TEXT NOT NULL,
+    "weight" INTEGER NOT NULL,
+    "hairId" TEXT NOT NULL,
+    "parentId" TEXT NOT NULL,
+
+    CONSTRAINT "hair_components_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -186,6 +249,9 @@ CREATE UNIQUE INDEX "product_variants_productId_size_key" ON "product_variants"(
 
 -- CreateIndex
 CREATE UNIQUE INDEX "order_items_orderId_productVariantId_key" ON "order_items"("orderId", "productVariantId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "hair_components_hairId_parentId_key" ON "hair_components"("hairId", "parentId");
 
 -- AddForeignKey
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -206,9 +272,6 @@ ALTER TABLE "order_items" ADD CONSTRAINT "order_items_orderId_fkey" FOREIGN KEY 
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_productVariantId_fkey" FOREIGN KEY ("productVariantId") REFERENCES "product_variants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "transactions" ADD CONSTRAINT "transactions_batchId_fkey" FOREIGN KEY ("batchId") REFERENCES "transaction_batches"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -218,10 +281,37 @@ ALTER TABLE "transactions" ADD CONSTRAINT "transactions_orderId_fkey" FOREIGN KE
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_appointmentId_fkey" FOREIGN KEY ("appointmentId") REFERENCES "appointments"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "transactions" ADD CONSTRAINT "transactions_hairOrderId_fkey" FOREIGN KEY ("hairOrderId") REFERENCES "hair_orders"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "appointments" ADD CONSTRAINT "appointments_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "appointment_notes" ADD CONSTRAINT "appointment_notes_appointmentId_fkey" FOREIGN KEY ("appointmentId") REFERENCES "appointments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "appointment_personnel" ADD CONSTRAINT "appointment_personnel_appointmentId_fkey" FOREIGN KEY ("appointmentId") REFERENCES "appointments"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "appointment_personnel" ADD CONSTRAINT "appointment_personnel_personnelId_fkey" FOREIGN KEY ("personnelId") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "hair_orders" ADD CONSTRAINT "hair_orders_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "hair_orders" ADD CONSTRAINT "hair_orders_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "hair_order_notes" ADD CONSTRAINT "hair_order_notes_hairOrderId_fkey" FOREIGN KEY ("hairOrderId") REFERENCES "hair_orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "hair_order_notes" ADD CONSTRAINT "hair_order_notes_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "hair" ADD CONSTRAINT "hair_hairOrderId_fkey" FOREIGN KEY ("hairOrderId") REFERENCES "hair_orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "hair_components" ADD CONSTRAINT "hair_components_hairId_fkey" FOREIGN KEY ("hairId") REFERENCES "hair"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "hair_components" ADD CONSTRAINT "hair_components_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "hair"("id") ON DELETE CASCADE ON UPDATE CASCADE;
