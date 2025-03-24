@@ -1,16 +1,17 @@
-import { auth } from "@/lib/auth";
-import { toNextJsHandler } from "better-auth/next-js";
+import { handlers } from "@/lib/auth";
 
-const authHandler = toNextJsHandler(auth);
+// function withLogging(
+//   handler: (request: NextRequest) => Promise<Response>,
+// ): (request: NextRequest) => Promise<Response> {
+//   console.log({ handler });
+//   return async (request: NextRequest): Promise<Response> => {
+//     console.log({ request });
+//     console.log(`Request received: ${request.method} ${request.url}`);
+//     return handler(request);
+//   };
+// }
 
-function withLogging(
-  handler: (request: Request) => Promise<Response>,
-): (request: Request) => Promise<Response> {
-  return async (request: Request): Promise<Response> => {
-    console.log(`Request received: ${request.method} ${request.url}`);
-    return handler(request);
-  };
-}
+export const { GET, POST } = handlers;
 
-export const GET = withLogging(authHandler.GET);
-export const POST = withLogging(authHandler.POST);
+// export const GET = withLogging(handlers.GET);
+// export const POST = withLogging(handlers.POST);

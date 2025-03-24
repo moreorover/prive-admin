@@ -1,15 +1,59 @@
 services:
-  db:
+  prive_db:
     image: postgres:17.0
-    container_name: prive_admin_pg
+    container_name: prive_pg
     restart: always
-    env_file:
-      - ./.env
+    environment:
+      POSTGRES_USER: ${PRIVE_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${PRIVE_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${PRIVE_POSTGRES_DB}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - prive_postgres_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
 
+  keycloak_db:
+    image: postgres:17.0
+    container_name: keycloak_pg
+    restart: always
+    environment:
+      POSTGRES_USER: ${KEYCLOAK_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${KEYCLOAK_POSTGRES_DB}
+    volumes:
+      - keycloak_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1.4
+    container_name: prive_keycloak
+    restart: always
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak_db
+      KC_DB_URL_DATABASE: ${KEYCLOAK_POSTGRES_DB}
+      KC_DB_USERNAME: ${KEYCLOAK_POSTGRES_USER}
+      KC_DB_PASSWORD: ${KEYCLOAK_POSTGRES_PASSWORD}
+      KC_HOSTNAME: localhost
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_IMPORT: /opt/keycloak/data/import/realm-export.json
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
+    ports:
+      - "8080:8080"
+    depends_on:
+      - keycloak_db
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health/ready" ]
+      interval: 15s
+      timeout: 2s
+      retries: 15
+
 volumes:
-  postgres_data:
+  keycloak_postgres_data:
+    driver: local
+  prive_postgres_data:
     driver: local

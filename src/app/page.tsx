@@ -2,15 +2,18 @@ import {
   AppShell,
   AppShellHeader,
   AppShellMain,
+  Center,
   Group,
-  NavLink,
+  Stack,
   Text,
   Title,
 } from "@mantine/core";
 import { Logo } from "@/components/logo/Logo";
-import { Activity, ChevronRight } from "lucide-react";
+import { auth, signIn, signOut } from "@/lib/auth";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+
   return (
     <AppShell header={{ height: 60 }} padding="md">
       <AppShellHeader>
@@ -48,20 +51,49 @@ export default function Home() {
         >
           This is Admin portal.
         </Text>
-        <div className="flex justify-center mt-10">
-          <Group>
-            <NavLink
-              href="/signin"
-              label="Sign In"
-              leftSection={<Activity size="1rem" />}
-              rightSection={
-                <ChevronRight size="0.8rem" className="mantine-rotate-rtl" />
-              }
-              active
-            />
-          </Group>
-        </div>
+        <Center>
+          <Stack gap={"md"} justify="center">
+            {/*<NavLink*/}
+            {/*  href="/signin"*/}
+            {/*  label="Sign In"*/}
+            {/*  leftSection={<Activity size="1rem" />}*/}
+            {/*  rightSection={*/}
+            {/*    <ChevronRight size="0.8rem" className="mantine-rotate-rtl" />*/}
+            {/*  }*/}
+            {/*  active*/}
+            {/*/>*/}
+            <SignIn />
+            <SignOut />
+            {JSON.stringify(session, null, 2)}
+          </Stack>
+        </Center>
       </AppShellMain>
     </AppShell>
+  );
+}
+
+function SignIn() {
+  return (
+    <form
+      action={async () => {
+        "use server";
+        await signIn("keycloak");
+      }}
+    >
+      <button type="submit">Signin with Keycloak</button>
+    </form>
+  );
+}
+
+function SignOut() {
+  return (
+    <form
+      action={async () => {
+        "use server";
+        await signOut();
+      }}
+    >
+      <button type="submit">SignOut with Keycloak</button>
+    </form>
   );
 }

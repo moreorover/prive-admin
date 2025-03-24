@@ -13,13 +13,14 @@
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",
-    "db:dev": "prisma generate && prisma db push && prisma db seed",
+    "db:dev": "prisma generate && prisma db push",
     "db:studio": "prisma studio"
   },
   "prisma": {
     "seed": "tsx prisma/seed/seed.ts"
   },
   "dependencies": {
+    "@auth/prisma-adapter": "^2.8.0",
     "@faker-js/faker": "^9.6.0",
     "@mantine/charts": "^7.17.2",
     "@mantine/core": "^7.17.2",
@@ -39,6 +40,7 @@
     "lucide-react": "^0.475.0",
     "mantine-form-zod-resolver": "^1.1.0",
     "next": "^15.2.3",
+    "next-auth": "^5.0.0-beta.25",
     "prisma": "^6.5.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
