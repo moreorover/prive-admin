@@ -1,4 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
+import { Pool } from "pg";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 // Utility function to transform amount values
 const transformAmount = <
@@ -42,8 +44,8 @@ const generateQueryExtension = () => ({
     }),
 });
 
-const prismaClientSingleton = () => {
-  return new PrismaClient().$extends({
+const prismaClientSingleton = (adapter: PrismaPg) => {
+  return new PrismaClient({ adapter }).$extends({
     result: {
       transaction: {
         amount: {
@@ -62,7 +64,12 @@ declare const globalThis: {
   prismaGlobal?: ReturnType<typeof prismaClientSingleton>;
 } & typeof global;
 
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
+const connectionString = `${process.env.DATABASE_URL}`;
+
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+
+const prisma = globalThis.prismaGlobal ?? prismaClientSingleton(adapter);
 
 if (process.env.NODE_ENV !== "production") {
   globalThis.prismaGlobal = prisma;

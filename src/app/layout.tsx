@@ -16,6 +16,8 @@ import "@mantine/notifications/styles.css";
 import { breakpoints, colors } from "./theme";
 import React from "react";
 import { TRPCProvider } from "@/trpc/client";
+import { auth } from "@/lib/auth";
+import { SessionProvider } from "next-auth/react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -43,24 +45,28 @@ const theme = mergeMantineTheme(
   }),
 );
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <Head>
-        <ColorSchemeScript />
-      </Head>
-      <body className="antialiased">
-        <TRPCProvider>
-          <MantineProvider theme={theme}>
-            {children}
-            <Notifications />
-          </MantineProvider>
-        </TRPCProvider>
-      </body>
-    </html>
+    <SessionProvider session={session}>
+      <html lang="en" suppressHydrationWarning>
+        <Head>
+          <ColorSchemeScript />
+        </Head>
+        <body className="antialiased">
+          <TRPCProvider>
+            <MantineProvider theme={theme}>
+              {children}
+              <Notifications />
+            </MantineProvider>
+          </TRPCProvider>
+        </body>
+      </html>
+    </SessionProvider>
   );
 }

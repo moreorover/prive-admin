@@ -1,20 +1,75 @@
 import NextAuth from "next-auth";
-import Keycloak from "next-auth/providers/keycloak";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  debug: true,
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
-  providers: [
-    Keycloak({
-      profile(profile) {
-        return { ...profile, role: profile.role ?? "user" };
-      },
-    }),
-  ],
+import authConfig from "@/lib/auth.config";
+import { getUserById } from "@/data-access/user";
+
+export const {
+  handlers: { GET, POST },
+  auth,
+  signIn,
+  signOut,
+  unstable_update,
+} = NextAuth({
+  pages: {
+    signIn: "/auth/login",
+    error: "/auth/error",
+  },
+  events: {
+    async linkAccount({ user }) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerified: new Date() },
+      });
+    },
+  },
   callbacks: {
+    async signIn({ user, account }) {
+      // Allow OAuth without email verification
+      if (account?.provider !== "credentials") return true;
+
+      if (!user.id) return false;
+
+      const existingUser = await getUserById(user.id);
+
+      // Prevent sign in without email verification
+      if (!existingUser?.emailVerified) return false;
+
+      // if (existingUser.isTwoFactorEnabled) {
+      //   const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(existingUser.id);
+      //
+      //   if (!twoFactorConfirmation) return false;
+      //
+      //   // Delete two factor confirmation for next sign in
+      //   await db.twoFactorConfirmation.delete({
+      //     where: { id: twoFactorConfirmation.id }
+      //   });
+      // }
+
+      return true;
+    },
+    async session({ token, session }) {
+      if (token.sub && session.user) {
+        session.user.id = token.sub;
+      }
+
+      if (token.role && session.user) {
+        // session.user.role = token.role as UserRole;
+      }
+
+      // if (session.user) {
+      //   session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean;
+      // }
+
+      if (session.user) {
+        session.user.name = token.name;
+        // session.user.email = token.email;
+        // session.user.isOAuth = token.isOAuth as boolean;
+      }
+
+      return session;
+    },
     jwt({ token, user, profile }) {
       console.log({ profile });
       if (user) {
@@ -26,30 +81,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // }
       return token;
     },
-    session({ session, token, user }) {
-      // session.user.id = token.id as string;
-      // session.user.role = token.role;
-      // return session;
-      return session;
-    },
-    authorized: async ({ auth }) => {
-      // Logged in users are authenticated, otherwise redirect to login page
-      return !!auth;
-    },
   },
-  events: {
-    createUser({ user }) {
-      if (!user) {
-        console.log("created user", user);
-      }
-    },
-    updateUser({ user }) {
-      if (!user) {
-        console.log("updated user", user);
-      }
-    },
-    signIn({ user, account, profile, isNewUser }) {
-      console.log("signIn", user, account, profile, isNewUser);
-    },
-  },
+  adapter: PrismaAdapter(prisma),
+  session: { strategy: "jwt" },
+  ...authConfig,
 });

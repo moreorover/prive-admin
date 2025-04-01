@@ -1,24 +1,25 @@
 "use client";
 
-import { useSession } from "@/hooks/use-session";
-import { authClient } from "@/lib/auth-client";
 import { signInFormSchema } from "@/lib/auth-schema";
-import {
-  Anchor,
-  Button,
-  Card,
-  Checkbox,
-  Group,
-  PasswordInput,
-  TextInput,
-} from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import { Alert, Button, Card, PasswordInput, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { zodResolver } from "mantine-form-zod-resolver";
-import { redirect } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useState, useTransition } from "react";
+import { login } from "@/actions/login";
 
 export function LoginForm() {
-  const { session, isLoading } = useSession();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
+  const urlError =
+    searchParams.get("error") === "OAuthAccountNotLinked"
+      ? "Email already in use with different provider!"
+      : "";
+
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
+  const [error, setError] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm({
     mode: "uncontrolled",
@@ -30,45 +31,34 @@ export function LoginForm() {
     validate: zodResolver(signInFormSchema),
   });
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  const onSubmit = (values: typeof form.values) => {
+    setError("");
+    setSuccess("");
 
-  if (session) redirect("/dashboard");
+    startTransition(() => {
+      login(values, callbackUrl)
+        .then((data) => {
+          if (data?.error) {
+            form.reset();
+            setError(data.error);
+          }
 
-  async function handleSubmit(values: typeof form.values) {
-    const { email, password } = values;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { data, error } = await authClient.signIn.email(
-      {
-        email,
-        password,
-        callbackURL: "/dashboard",
-      },
-      {
-        onRequest: () => {
-          // toast({
-          //   title: "Please wait...",
-          // });
-        },
-        onSuccess: () => {
-          form.reset();
-        },
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        onError: (ctx) => {
-          notifications.show({
-            color: "red",
-            title: "Sign In Failed",
-            message: "Please make sure your email and password is correct.",
-          });
-        },
-      },
-    );
-  }
+          // if (data?.success) {
+          //   form.reset();
+          //   setSuccess(data.success);
+          // }
+          //
+          // if (data?.twoFactor) {
+          //   setShowTwoFactor(true);
+          // }
+        })
+        .catch(() => setError("Something went wrong"));
+    });
+  };
 
   return (
     <Card withBorder shadow="md" p={30} mt={30} radius="md">
-      <form onSubmit={form.onSubmit(handleSubmit)}>
+      <form onSubmit={form.onSubmit(onSubmit)}>
         <TextInput
           label="Email"
           placeholder="test@example.com"
@@ -88,12 +78,13 @@ export function LoginForm() {
           key={form.key("password")}
           {...form.getInputProps("password")}
         />
-        <Group mt="md" justify="space-between">
-          <Checkbox label="Remember me" />
-          <Anchor size="sm" href="#">
-            Forgot Password？
-          </Anchor>
-        </Group>
+        {/*<Group mt="md" justify="space-between">*/}
+        {/*  <Checkbox label="Remember me" />*/}
+        {/*  <Anchor size="sm" href="#">*/}
+        {/*    Forgot Password？*/}
+        {/*  </Anchor>*/}
+        {/*</Group>*/}
+        <Alert color="red">{error}</Alert>
         <Button fullWidth mt="xl" type="submit">
           Sign In
         </Button>

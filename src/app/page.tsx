@@ -9,10 +9,10 @@ import {
   Title,
 } from "@mantine/core";
 import { Logo } from "@/components/logo/Logo";
-import { auth, signIn, signOut } from "@/lib/auth";
+// import { auth, signIn, signOut } from "@/lib/auth";
 
 export default async function Home() {
-  const session = await auth();
+  // const session = await auth();
 
   return (
     <AppShell header={{ height: 60 }} padding="md">
@@ -62,38 +62,12 @@ export default async function Home() {
             {/*  }*/}
             {/*  active*/}
             {/*/>*/}
-            <SignIn />
-            <SignOut />
-            {JSON.stringify(session, null, 2)}
+            {/*<SignIn />*/}
+            {/*<SignOut />*/}
+            {/*{JSON.stringify(session, null, 2)}*/}
           </Stack>
         </Center>
       </AppShellMain>
     </AppShell>
-  );
-}
-
-function SignIn() {
-  return (
-    <form
-      action={async () => {
-        "use server";
-        await signIn("keycloak");
-      }}
-    >
-      <button type="submit">Signin with Keycloak</button>
-    </form>
-  );
-}
-
-function SignOut() {
-  return (
-    <form
-      action={async () => {
-        "use server";
-        await signOut();
-      }}
-    >
-      <button type="submit">SignOut with Keycloak</button>
-    </form>
   );
 }
