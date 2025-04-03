@@ -85,8 +85,6 @@ function TransactionsSuspense({ startDate, endDate }: Props) {
   // const chartData = aggregateTransactions(startDate, endDate, transactions);
   const data = aggregateTransactions(startDate, endDate, transactions);
 
-  console.log(data);
-
   return (
     <>
       <GridCol span={{ base: 12 }}>
