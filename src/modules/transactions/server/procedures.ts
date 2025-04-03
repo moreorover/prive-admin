@@ -23,13 +23,13 @@ export const transactionsRouter = createTRPCRouter({
 
       const transactions = await prisma.transaction.findMany({
         where: {
-          createdAt: {
+          completedDateBy: {
             gte: startOfWeek.toDate(),
             lte: endOfWeek.toDate(),
           },
         },
         orderBy: {
-          createdAt: "asc",
+          completedDateBy: "asc",
         },
         include: {
           customer: true,

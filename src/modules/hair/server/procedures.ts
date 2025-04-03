@@ -614,4 +614,56 @@ export const hairRouter = createTRPCRouter({
 
       return hairOrder;
     }),
+  getByAppointmentId: protectedProcedure
+    .input(z.object({ appointmentId: z.string().cuid2() }))
+    .query(async ({ input }) => {
+      const { appointmentId } = input;
+
+      const hair = await prisma.hair.findMany({
+        where: {
+          appointmentId,
+        },
+      });
+
+      const remaped = hair.map((h) => ({ ...h, price: h.price / 100 }));
+
+      return remaped;
+    }),
+  setAppointmentId: protectedProcedure
+    .input(
+      z.object({
+        hairIds: z.array(z.string().cuid2()),
+        appointmentId: z.string().cuid2().nullable(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const { hairIds, appointmentId } = input;
+
+      const c = await prisma.hair.updateMany({
+        where: {
+          id: {
+            in: hairIds,
+          },
+        },
+        data: {
+          appointmentId,
+        },
+      });
+
+      return c;
+    }),
+  getHairOptions: protectedProcedure.query(async () => {
+    const hair = await prisma.hair.findMany({
+      where: {
+        AND: {
+          appointmentId: null,
+          weight: { gt: 0 },
+        },
+      },
+    });
+
+    const remaped = hair.map((h) => ({ ...h, price: h.price / 100 }));
+
+    return remaped;
+  }),
 });
