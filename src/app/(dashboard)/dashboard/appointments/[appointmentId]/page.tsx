@@ -24,6 +24,8 @@ export default async function Page({ params }: Props) {
   void trpc.appointmentNotes.getNotesByAppointmentId.prefetch({
     appointmentId,
   });
+  void trpc.hair.getByAppointmentId.prefetch({ appointmentId });
+  void trpc.hair.getHairOptions.prefetch();
 
   const session = await auth.api.getSession({
     headers: await headers(),

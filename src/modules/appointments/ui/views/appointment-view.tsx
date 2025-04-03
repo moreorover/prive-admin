@@ -25,6 +25,9 @@ import { useSetAtom } from "jotai";
 import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
 import { useAppointmentNoteDrawerStore } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { DonutChart } from "@mantine/charts";
+import HairTable from "@/modules/appointments/ui/components/hair-table";
+import { HairPickerDrawer } from "@/modules/hair/ui/components/hair-picker-drawer";
+import { notifications } from "@mantine/notifications";
 
 interface Props {
   appointmentId: string;
@@ -65,10 +68,39 @@ function AppointmentSuspense({ appointmentId }: Props) {
       appointmentId,
     });
 
+  const [hair] = trpc.hair.getByAppointmentId.useSuspenseQuery({
+    appointmentId,
+  });
+
+  const [hairOptions] = trpc.hair.getHairOptions.useSuspenseQuery();
+
+  const hairAppointmentIdMutation = trpc.hair.setAppointmentId.useMutation({
+    onSuccess: () => {
+      notifications.show({
+        color: "green",
+        title: "Success!",
+        message: "Hair added.",
+      });
+      utils.hair.getByAppointmentId.invalidate({
+        appointmentId,
+      });
+      utils.hair.getHairOptions.invalidate();
+    },
+    onError: () => {
+      notifications.show({
+        color: "red",
+        title: "Failed to add hair",
+        message: "Please try again.",
+      });
+    },
+  });
+
   const transactionsTotal = transactions.reduce(
     (sum, transaction) => sum + transaction.amount,
     0,
   );
+
+  const hairTotal = hair.reduce((sum, h) => sum + h.price, 0);
 
   const transactionsCompletedTotal = transactions
     .filter((transaction) => transaction.status === "COMPLETED")
@@ -148,6 +180,14 @@ function AppointmentSuspense({ appointmentId }: Props) {
               Total: <b>£ {transactionsTotal.toFixed(2)}</b>
             </Text>
           </Paper>
+          <Paper withBorder p="md" radius="md" shadow="sm">
+            <Text size="lg" fw={700} ta="center">
+              Profit
+            </Text>
+            <Text size="md" ta="center" fw={500} mt="sm">
+              Total: <b>£ {(transactionsTotal - hairTotal).toFixed(2)}</b>
+            </Text>
+          </Paper>
         </Stack>
       </GridCol>
       <GridCol span={{ base: 12, lg: 9 }}>
@@ -199,6 +239,19 @@ function AppointmentSuspense({ appointmentId }: Props) {
               appointmentId={appointmentId}
               transactions={transactions}
             />
+          </Paper>
+          <Paper withBorder p="md" radius="md" shadow="sm">
+            <Group justify="space-between" gap="sm">
+              <Title order={4}>Hair</Title>
+              <HairPickerDrawer
+                hair={hairOptions}
+                onSubmit={(hairIds) =>
+                  hairAppointmentIdMutation.mutate({ hairIds, appointmentId })
+                }
+                multiple={true}
+              />
+            </Group>
+            <HairTable appointmentId={appointmentId} hair={hair} />
           </Paper>
         </Stack>
       </GridCol>
