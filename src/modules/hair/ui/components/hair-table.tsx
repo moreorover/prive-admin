@@ -50,6 +50,11 @@ export default function HairTable({ hair }: Props) {
             <Link href={`/dashboard/hair/${h.id}`}>
               <Menu.Item>View</Menu.Item>
             </Link>
+            {h.appointmentId && (
+              <Link href={`/dashboard/appointments/${h.appointmentId}`}>
+                <Menu.Item>View Appointment</Menu.Item>
+              </Link>
+            )}
           </Menu.Dropdown>
         </Menu>
       </Table.Td>
