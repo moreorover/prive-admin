@@ -6,7 +6,6 @@ import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import Link from "next/link";
 import { HairOrderHair } from "@/modules/hair_orders/types";
-import { useHairDrawerStore } from "@/modules/hair/ui/hair-drawer-store";
 
 interface Props {
   appointmentId: string;
@@ -15,8 +14,6 @@ interface Props {
 
 export default function HairTable({ appointmentId, hair }: Props) {
   const utils = trpc.useUtils();
-
-  const openEditHairDrawer = useHairDrawerStore((state) => state.openDrawer);
 
   const removeHair = trpc.hair.setAppointmentId.useMutation({
     onSuccess: () => {

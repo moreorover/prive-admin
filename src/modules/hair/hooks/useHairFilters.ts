@@ -39,7 +39,7 @@ function useHairFilter(searchParams: {
 
       return params.toString().trim() !== "" ? `?${params.toString()}` : "";
     },
-    [searchParams],
+    [],
   );
 
   // Create a human-readable label for the active filters
