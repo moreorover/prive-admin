@@ -1,12 +1,12 @@
 "use client";
 
-import { Badge, Button, Table, Text } from "@mantine/core";
+import { Badge, Button, Group, Table, Text, Tooltip } from "@mantine/core";
 import { GetAllTransactions } from "@/modules/transactions/types";
 import { trpc } from "@/trpc/client";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
-import { Trash2 } from "lucide-react";
-import dayjs from "dayjs";
+import { AlertTriangle, Check, Clock, Trash2 } from "lucide-react";
+import dayjs, { Dayjs } from "dayjs";
 
 interface Props {
   transactions: GetAllTransactions;
@@ -54,6 +54,20 @@ export default function TransactionsTable({
       onConfirm: () => deleteTransaction.mutate({ id: transactionId }),
     });
 
+  const getStatusProps = (status: string) => {
+    return status === "COMPLETED"
+      ? { color: "green", icon: <Check size={14} /> }
+      : { color: "pink", icon: <Clock size={14} /> };
+  };
+
+  const getCompletedDate = (date: string): Dayjs => dayjs(date);
+
+  const isPastDue = (status: string, date: string): boolean => {
+    return (
+      status === "PENDING" && getCompletedDate(date).isBefore(dayjs(), "day")
+    );
+  };
+
   // Generate table rows
   const rows = transactions.map((transaction) => {
     return [
@@ -61,6 +75,46 @@ export default function TransactionsTable({
       <Table.Tr key={transaction.id}>
         <Table.Td>
           {dayjs(transaction.createdAt).format("DD MMM YYYY HH:mm")}
+        </Table.Td>
+        <Table.Td>
+          <Group gap={"sm"} align="center">
+            <Badge
+              color={getStatusProps(transaction.status).color}
+              leftSection={getStatusProps(transaction.status).icon}
+              radius="sm"
+              size="sm"
+              variant="light"
+            >
+              {transaction.status}
+            </Badge>
+
+            <Group gap={"sm"}>
+              <Text
+                size="xs"
+                fw={500}
+                c={
+                  isPastDue(
+                    transaction.status,
+                    transaction.completedDateBy.toString(),
+                  )
+                    ? "red"
+                    : "dimmed"
+                }
+              >
+                {getCompletedDate(
+                  transaction.completedDateBy.toString(),
+                ).format("DD MMM YYYY")}
+              </Text>
+              {isPastDue(
+                transaction.status,
+                transaction.completedDateBy.toString(),
+              ) && (
+                <Tooltip label="This pending transaction is overdue" withArrow>
+                  <AlertTriangle size={14} color="red" />
+                </Tooltip>
+              )}
+            </Group>
+          </Group>
         </Table.Td>
         <Table.Td>
           <Text>{transaction.name}</Text>
@@ -97,6 +151,8 @@ export default function TransactionsTable({
       <Table.Thead>
         <Table.Tr>
           <Table.Th>Created At</Table.Th>
+          <Table.Th>Completed At</Table.Th>
+          <Table.Th>Status</Table.Th>
           <Table.Th>Transaction Name</Table.Th>
           <Table.Th>Type</Table.Th>
           <Table.Th>Amount</Table.Th>

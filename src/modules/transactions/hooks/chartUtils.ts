@@ -4,7 +4,7 @@ import dayjs, { Dayjs } from "dayjs";
 export type AggregatedResult = {
   date: string;
   completed: number;
-  pending: number;
+  pending: number; // This will actually show completed + pending
 }[];
 
 export function aggregateTransactions(
@@ -14,42 +14,43 @@ export function aggregateTransactions(
 ): AggregatedResult {
   const start: Dayjs = dayjs(startDate);
   const end: Dayjs = dayjs(endDate);
-  const result: Record<string, { completed: number; pending: number }> = {};
+  const dailyTotals: Record<string, { completed: number; pending: number }> =
+    {};
 
-  // Initialize the result object with each date in the range
+  // Initialize with all dates in range
   for (
     let date = start;
     date.isBefore(end) || date.isSame(end, "day");
     date = date.add(1, "day")
   ) {
-    const dateStr = date.format("MMM D"); // Format as "Mar 22"
-    result[dateStr] = { completed: 0, pending: 0 };
+    const dateStr = date.format("MMM D");
+    dailyTotals[dateStr] = { completed: 0, pending: 0 };
   }
 
-  // Sum up transactions by status and date
-  transactions.forEach(({ createdAt, amount, status }) => {
-    const date = dayjs(createdAt).format("MMM D");
-    if (result[date]) {
+  // Calculate daily totals
+  transactions.forEach(({ completedDateBy, amount, status }) => {
+    const date = dayjs(completedDateBy).format("MMM D");
+    if (dailyTotals[date]) {
       if (status === "COMPLETED") {
-        result[date].completed += amount;
+        dailyTotals[date].completed += amount;
       } else if (status === "PENDING") {
-        result[date].pending += amount;
+        dailyTotals[date].pending += amount;
       }
     }
   });
 
-  // Convert to array and calculate cumulative totals
+  // Calculate cumulative totals
   let cumulativeCompleted = 0;
-  let cumulativePending = 0;
+  let cumulativePendingTotal = 0; // This will track completed + pending
 
-  return Object.entries(result).map(([date, totals]) => {
+  return Object.entries(dailyTotals).map(([date, totals]) => {
     cumulativeCompleted += totals.completed;
-    cumulativePending += totals.pending;
+    cumulativePendingTotal += totals.completed + totals.pending;
 
     return {
       date,
       completed: cumulativeCompleted,
-      pending: cumulativePending,
+      pending: cumulativePendingTotal, // This is the running total of ALL transactions
     };
   });
 }
