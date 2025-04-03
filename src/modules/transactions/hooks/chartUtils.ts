@@ -3,7 +3,8 @@ import dayjs, { Dayjs } from "dayjs";
 
 export type AggregatedResult = {
   date: string;
-  total: number;
+  completed: number;
+  pending: number;
 }[];
 
 export function aggregateTransactions(
@@ -13,7 +14,7 @@ export function aggregateTransactions(
 ): AggregatedResult {
   const start: Dayjs = dayjs(startDate);
   const end: Dayjs = dayjs(endDate);
-  const result: Record<string, number> = {};
+  const result: Record<string, { completed: number; pending: number }> = {};
 
   // Initialize the result object with each date in the range
   for (
@@ -21,21 +22,34 @@ export function aggregateTransactions(
     date.isBefore(end) || date.isSame(end, "day");
     date = date.add(1, "day")
   ) {
-    result[date.format("YYYY-MM-DD")] = 0;
+    const dateStr = date.format("MMM D"); // Format as "Mar 22"
+    result[dateStr] = { completed: 0, pending: 0 };
   }
 
-  // Sum up transactions by date
-  transactions.forEach(({ createdAt, amount }) => {
-    const date = dayjs(createdAt).format("YYYY-MM-DD");
-    if (result.hasOwnProperty(date)) {
-      result[date] += amount;
+  // Sum up transactions by status and date
+  transactions.forEach(({ createdAt, amount, status }) => {
+    const date = dayjs(createdAt).format("MMM D");
+    if (result[date]) {
+      if (status === "COMPLETED") {
+        result[date].completed += amount;
+      } else if (status === "PENDING") {
+        result[date].pending += amount;
+      }
     }
   });
 
-  // Convert result object to an array and calculate cumulative totals
-  let cumulativeTotal = 0;
-  return Object.entries(result).map(([date, total]) => {
-    cumulativeTotal += total;
-    return { date, total: cumulativeTotal };
+  // Convert to array and calculate cumulative totals
+  let cumulativeCompleted = 0;
+  let cumulativePending = 0;
+
+  return Object.entries(result).map(([date, totals]) => {
+    cumulativeCompleted += totals.completed;
+    cumulativePending += totals.pending;
+
+    return {
+      date,
+      completed: cumulativeCompleted,
+      pending: cumulativePending,
+    };
   });
 }

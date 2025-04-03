@@ -82,7 +82,10 @@ function TransactionsSuspense({ startDate, endDate }: Props) {
       endDate,
     });
 
-  const chartData = aggregateTransactions(startDate, endDate, transactions);
+  // const chartData = aggregateTransactions(startDate, endDate, transactions);
+  const data = aggregateTransactions(startDate, endDate, transactions);
+
+  console.log(data);
 
   return (
     <>
@@ -91,10 +94,14 @@ function TransactionsSuspense({ startDate, endDate }: Props) {
           {transactions.length > 0 ? (
             <LineChart
               h={300}
-              data={chartData}
+              data={data}
               dataKey="date"
               unit="£"
-              series={[{ name: "total", color: "indigo.6" }]}
+              series={[
+                { name: "completed", color: "blue" },
+                { name: "pending", color: "gray", strokeDasharray: "5 5" }, // Dimmed color for pending
+                { name: "total", color: "red" }, // Dimmed color for pending
+              ]}
               curveType="natural"
             />
           ) : (
