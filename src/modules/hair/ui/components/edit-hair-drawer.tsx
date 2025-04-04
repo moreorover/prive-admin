@@ -12,7 +12,6 @@ export const EditHairDrawer = () => {
   const hair = useHairDrawerStore((state) => state.hair);
   const reset = useHairDrawerStore((state) => state.reset);
   const onUpdated = useHairDrawerStore((state) => state.onUpdated);
-  const openDrawer = useHairDrawerStore((state) => state.openDrawer);
 
   const newHair = trpc.hair.update.useMutation({
     onSuccess: () => {
@@ -41,7 +40,7 @@ export const EditHairDrawer = () => {
   return (
     <Drawer
       opened={isOpen && onUpdated !== undefined}
-      onClose={() => openDrawer({ onUpdated: () => {} })}
+      onClose={() => reset()}
       position="right"
       title="Update Hair"
     >
