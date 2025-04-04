@@ -77,7 +77,7 @@ function TransactionsSuspense({ startDate, endDate }: Props) {
   const utils = trpc.useUtils();
 
   const [transactions] =
-    trpc.transactions.getTransactionsBetweenDates.useSuspenseQuery({
+    trpc.transactions.getTransactionsPageBetweenDates.useSuspenseQuery({
       startDate,
       endDate,
     });
