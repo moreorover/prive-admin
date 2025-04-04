@@ -38,6 +38,32 @@ export const transactionsRouter = createTRPCRouter({
 
       return transactions;
     }),
+  getTransactionsPageBetweenDates: protectedProcedure
+    .input(z.object({ startDate: z.string(), endDate: z.string() }))
+    .query(async ({ input }) => {
+      const { startDate, endDate } = input;
+      const startOfWeek = dayjs(startDate).startOf("day");
+      const endOfWeek = dayjs(endDate).endOf("day");
+
+      const transactions = await prisma.transaction.findMany({
+        where: {
+          completedDateBy: {
+            gte: startOfWeek.toDate(),
+            lte: endOfWeek.toDate(),
+          },
+          hairOrderId: null,
+          orderId: null,
+        },
+        orderBy: {
+          completedDateBy: "asc",
+        },
+        include: {
+          customer: true,
+        }, // Include related allocations
+      });
+
+      return transactions;
+    }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string().cuid2() }))
     .query(async ({ input }) => {
