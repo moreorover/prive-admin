@@ -505,19 +505,11 @@ export const hairRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const { hairId } = input;
 
-      // Get all parentIds from HairComponent table
-      const excludedParentIds = await prisma.hairComponent.findMany({
-        select: { parentId: true },
-      });
-
-      const excludedIds = excludedParentIds.map((hc) => hc.parentId);
-
       // Query Hair table
       const hair = await prisma.hair.findMany({
         where: {
           weight: { gt: 0 }, // Weight greater than zero
           id: { not: hairId }, // Exclude the provided hairId
-          NOT: { id: { in: excludedIds } }, // Exclude ids in HairComponent.parentId
         },
       });
 
