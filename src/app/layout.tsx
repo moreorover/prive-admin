@@ -13,7 +13,7 @@ import "./globals.css";
 import "@mantine/charts/styles.css";
 import "@mantine/dates/styles.css";
 import "@mantine/notifications/styles.css";
-import { HairOrderTotalWeightModal } from "@/modules/hair_orders/ui/components/hair-order-total-weight-modal";
+import { providerModals } from "@/lib/modal-helper";
 import { TRPCProvider } from "@/trpc/client";
 import { ModalsProvider } from "@mantine/modals";
 import type React from "react";
@@ -58,9 +58,7 @@ export default function RootLayout({
 			<body className="antialiased">
 				<TRPCProvider>
 					<MantineProvider theme={theme}>
-						<ModalsProvider
-							modals={{ hairOrderTotalWeight: HairOrderTotalWeightModal }}
-						>
+						<ModalsProvider modals={providerModals}>
 							{children}
 							<Notifications />
 						</ModalsProvider>

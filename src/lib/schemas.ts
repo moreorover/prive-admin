@@ -95,6 +95,8 @@ export const hairOrderSchema = z.object({
 	placedAt: z.union([z.string(), z.date(), z.null()]),
 	arrivedAt: z.union([z.string(), z.date(), z.null()]),
 	customerId: z.string().cuid2().nullish(),
+	weightReceived: z.number(),
+	weightUsed: z.number(),
 });
 
 export const hairOrderTotalWeightSchema = z.object({

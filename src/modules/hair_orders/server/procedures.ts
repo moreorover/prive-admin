@@ -6,7 +6,9 @@ import { z } from "zod";
 
 export const hairOrderRouter = createTRPCRouter({
 	getAll: protectedProcedure.query(() => {
-		return prisma.hairOrder.findMany({ include: { createdBy: true } });
+		return prisma.hairOrder.findMany({
+			include: { createdBy: true, customer: true },
+		});
 	}),
 	getById: protectedProcedure
 		.input(z.object({ id: z.string().cuid2() }))

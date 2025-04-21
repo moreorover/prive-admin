@@ -1,15 +1,22 @@
+import { HairOrderTotalWeightModal } from "@/modules/hair_orders/ui/components/hair-order-total-weight-modal";
+import { HairOrderPickerModal } from "@/modules/ui/components/hair-order-picker-modal";
 import { type ContextModalProps, modals } from "@mantine/modals";
 
-export type ModalNames = "hairOrderTotalWeight";
+export type ModalNames = "hairOrderTotalWeight" | "hairOrderPicker";
 
 export const modalTitles: Record<ModalNames, string> = {
 	hairOrderTotalWeight: "Please input total weight in grams:",
+	hairOrderPicker: "Please select hair order:",
 };
 
 export interface ModalPropsMap {
 	hairOrderTotalWeight: {
 		weight: number;
 		onConfirm: (weight: number) => void;
+	};
+	hairOrderPicker: {
+		onConfirm: (id: string[]) => void;
+		multiple: boolean;
 	};
 }
 
@@ -23,12 +30,19 @@ export function openTypedContextModal<N extends ModalNames>(
 		title?: string;
 		innerProps: ModalPropsMap[N];
 		onClose?: () => void;
+		size?: "xs" | "sm" | "md" | "lg" | "xl" | "auto";
 	},
 ) {
 	modals.openContextModal({
 		modal: name,
+		size: options.size ?? "md",
 		title: options.title ?? modalTitles[name],
 		innerProps: options.innerProps,
 		onClose: options.onClose,
 	});
 }
+
+export const providerModals = {
+	hairOrderTotalWeight: HairOrderTotalWeightModal,
+	hairOrderPicker: HairOrderPickerModal,
+};

@@ -2,6 +2,7 @@
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { editAppointmentDrawerAtom } from "@/lib/atoms";
+import { openTypedContextModal } from "@/lib/modal-helper";
 import { useAppointmentNoteDrawerStore } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
 import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
@@ -207,6 +208,24 @@ function AppointmentSuspense({ appointmentId }: Props) {
 							appointmentId={appointmentId}
 							transactions={transactions}
 						/>
+					</Paper>
+					<Paper withBorder p="md" radius="md" shadow="sm">
+						<Group justify="space-between" gap="sm">
+							<Title order={4}>Hair</Title>
+							<Button
+								onClick={() =>
+									openTypedContextModal("hairOrderPicker", {
+										size: "auto",
+										innerProps: {
+											onConfirm: (data) => console.log({ data }),
+											multiple: false,
+										},
+									})
+								}
+							>
+								Pick
+							</Button>
+						</Group>
 					</Paper>
 				</Stack>
 			</GridCol>
