@@ -110,9 +110,29 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 		},
 	});
 
+	const recalculateHairOrderPrice =
+		trpc.hairOrders.recalculatePrices.useMutation({
+			onSuccess: () => {
+				utils.hairOrders.getById.invalidate({ id: hairOrderId });
+				notifications.show({
+					color: "green",
+					title: "Success!",
+					message: "Hair Order price recalculated.",
+				});
+			},
+			onError: () => {
+				notifications.show({
+					color: "red",
+					title: "Failed!",
+					message: "Something went wrong recalculating Hair Order.",
+				});
+			},
+		});
+
 	const updateHairOrderTotalWeightMutation =
 		trpc.hairOrders.updateTotalWeight.useMutation({
 			onSuccess: () => {
+				recalculateHairOrderPrice.mutate({ hairOrderId: hairOrder.id });
 				utils.hairOrders.getById.invalidate({ id: hairOrderId });
 				notifications.show({
 					color: "green",
@@ -285,7 +305,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 									Total hair weight available:
 								</Text>
 								<Text size="sm" w={500}>
-									{hairOrder.weightAvailable}g
+									{hairOrder.weightReceived - hairOrder.weightUsed}g
 								</Text>
 							</Flex>
 							<Flex direction="column">

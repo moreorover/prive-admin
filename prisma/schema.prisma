@@ -238,13 +238,13 @@ enum HairOrderStatus {
 }
 
 model HairOrder {
-  id              String          @id @default(cuid(2))
-  placedAt        DateTime?       @db.Date
-  arrivedAt       DateTime?       @db.Date
-  status          HairOrderStatus @default(PENDING)
-  weightReceived  Int             @default(0) @db.Integer
-  weightAvailable Int             @default(0) @db.Integer
-  pricePerGram    Int             @default(0) @db.Integer
+  id             String          @id @default(cuid(2))
+  placedAt       DateTime?       @db.Date
+  arrivedAt      DateTime?       @db.Date
+  status         HairOrderStatus @default(PENDING)
+  weightReceived Int             @default(0) @db.Integer
+  weightUsed     Int             @default(0) @db.Integer
+  pricePerGram   Int             @default(0) @db.Integer
 
   customerId String?
   customer   Customer? @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: SetNull)

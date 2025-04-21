@@ -52,4 +52,34 @@ export const hairOrderRouter = createTRPCRouter({
 			});
 			return c;
 		}),
+	recalculatePrices: protectedProcedure
+		.input(z.object({ hairOrderId: z.string().cuid2() }))
+		.mutation(async ({ input }) => {
+			const { hairOrderId } = input;
+			const hairOrder = await prisma.hairOrder.findUnique({
+				where: { id: hairOrderId },
+				include: { transactions: true },
+			});
+
+			if (!hairOrder) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			const transactionsTotal = hairOrder.transactions.reduce(
+				(sum, transaction) => sum + transaction.amount,
+				0,
+			);
+
+			const pricePerGram = Math.abs(
+				Math.round((transactionsTotal / hairOrder.weightReceived) * 100),
+			);
+
+			await prisma.hairOrder.update({
+				where: { id: hairOrderId },
+				data: { pricePerGram },
+			});
+
+			// TODO recalculate prices
+			return hairOrder;
+		}),
 });
