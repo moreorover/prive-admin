@@ -13,7 +13,15 @@ jobs:
     steps:
       # Checkout the code from the PR
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      # Biome Linting
+      - name: Setup Biome
+        uses: biomejs/setup-biome@v2
+        with:
+          version: latest
+      - name: Run Biome
+        run: biome ci src
 
       # Set up Node.js
       - name: Setup Node.js

@@ -204,8 +204,6 @@ model Appointment {
   updatedAt    DateTime      @updatedAt
   transactions Transaction[]
 
-  hair Hair[]
-
   @@map("appointments")
 }
 
@@ -240,18 +238,19 @@ enum HairOrderStatus {
 }
 
 model HairOrder {
-  id           String          @id @default(cuid(2))
-  placedAt     DateTime?       @db.Date
-  arrivedAt    DateTime?       @db.Date
-  status       HairOrderStatus @default(PENDING)
-  pricePerGram Int             @default(0) @db.Integer
+  id              String          @id @default(cuid(2))
+  placedAt        DateTime?       @db.Date
+  arrivedAt       DateTime?       @db.Date
+  status          HairOrderStatus @default(PENDING)
+  weightReceived  Int             @default(0) @db.Integer
+  weightAvailable Int             @default(0) @db.Integer
+  pricePerGram    Int             @default(0) @db.Integer
 
   customerId String?
   customer   Customer? @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: SetNull)
 
   transactions Transaction[]
   notes        HairOrderNote[]
-  hair         Hair[]
 
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
@@ -276,40 +275,4 @@ model HairOrderNote {
   createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
   @@map("hair_order_notes")
-}
-
-model Hair {
-  id             String @id @default(cuid(2))
-  color          String
-  description    String
-  upc            String
-  length         Int    @db.Integer
-  weightReceived Int    @db.Integer
-  weight         Int    @db.Integer
-  price          Int    @db.Integer
-
-  hairOrderId String?
-  hairOrder   HairOrder? @relation(fields: [hairOrderId], references: [id], onDelete: Cascade)
-
-  components HairComponent[] @relation("HairComponentsAsParent")
-  usedIn     HairComponent[] @relation("HairComponentsAsChild")
-
-  appointmentId String?
-  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
-
-  @@map("hair")
-}
-
-model HairComponent {
-  id     String @id @default(cuid(2))
-  weight Int    @db.Integer
-
-  hairId   String
-  parentId String
-
-  hair   Hair @relation("HairComponentsAsParent", fields: [hairId], references: [id], onDelete: Cascade)
-  parent Hair @relation("HairComponentsAsChild", fields: [parentId], references: [id], onDelete: Cascade)
-
-  @@unique([hairId, parentId])
-  @@map("hair_components")
 }

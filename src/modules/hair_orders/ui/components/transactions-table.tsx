@@ -1,24 +1,15 @@
 "use client";
 
-import {
-  Badge,
-  Button,
-  Group,
-  Menu,
-  ScrollArea,
-  Table,
-  Text,
-  Tooltip,
-} from "@mantine/core";
-import { trpc } from "@/trpc/client";
-import { notifications } from "@mantine/notifications";
-import { modals } from "@mantine/modals";
+import {Badge, Button, Group, Menu, ScrollArea, Table, Text, Tooltip,} from "@mantine/core";
+import {trpc} from "@/trpc/client";
+import {notifications} from "@mantine/notifications";
+import {modals} from "@mantine/modals";
 import Link from "next/link";
-import { useSetAtom } from "jotai/index";
-import { editTransactionDrawerAtom } from "@/lib/atoms";
-import dayjs, { Dayjs } from "dayjs";
-import { AlertTriangle, Check, Clock } from "lucide-react";
-import { HairOrderTransactions } from "@/modules/hair_orders/types";
+import {useSetAtom} from "jotai/index";
+import {editTransactionDrawerAtom} from "@/lib/atoms";
+import dayjs, {Dayjs} from "dayjs";
+import {AlertTriangle, Check, Clock} from "lucide-react";
+import {HairOrderTransactions} from "@/modules/hair_orders/types";
 
 interface Props {
   hairOrderId: string;
@@ -33,25 +24,6 @@ export default function TransactionsTable({
 
   const showEditTransactionDrawer = useSetAtom(editTransactionDrawerAtom);
 
-  const recalculatePrices = trpc.hair.recalculatePrices.useMutation({
-    onSuccess: () => {
-      utils.hairOrders.getById.invalidate({ id: hairOrderId });
-      utils.hair.getByHairOrderId.invalidate({ hairOrderId });
-      notifications.show({
-        color: "green",
-        title: "Success!",
-        message: "Prices recalculated.",
-      });
-    },
-    onError: () => {
-      notifications.show({
-        color: "red",
-        title: "Failed!",
-        message: "Something went wrong recalculating prices.",
-      });
-    },
-  });
-
   const deleteTransaction = trpc.transactions.delete.useMutation({
     onSuccess: () => {
       notifications.show({
@@ -63,7 +35,6 @@ export default function TransactionsTable({
         hairOrderId,
         includeCustomer: true,
       });
-      recalculatePrices.mutate({ hairOrderId });
     },
     onError: () => {
       notifications.show({
@@ -188,7 +159,6 @@ export default function TransactionsTable({
                       hairOrderId,
                       includeCustomer: true,
                     });
-                    recalculatePrices.mutate({ hairOrderId });
                   },
                 });
               }}

@@ -1,18 +1,17 @@
 "use client";
 
 import DrawerProvider from "@/components/providers/DrawerProvider";
-import React from "react";
-import { ModalsProvider } from "@mantine/modals";
+import type { ReactNode } from "react";
 
 export default function RootLayout({
-  children,
+	children,
 }: Readonly<{
-  children: React.ReactNode;
+	children: ReactNode;
 }>) {
-  return (
-    <ModalsProvider modals={{}}>
-      <DrawerProvider />
-      {children}
-    </ModalsProvider>
-  );
+	return (
+		<>
+			<DrawerProvider />
+			{children}
+		</>
+	);
 }
