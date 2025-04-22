@@ -4,11 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "next build --turbopack",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "format": "prettier --write .",
+    "format": "biome check --formatter-enabled=true --linter-enabled=true --organize-imports-enabled=true --write src",
     "migrate": "prisma migrate deploy",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",

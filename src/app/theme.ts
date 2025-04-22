@@ -1,8 +1,8 @@
 /** Custom theme */
 import {
-  DEFAULT_THEME,
-  type MantineThemeColors,
-  type MantineBreakpointsValues,
+	DEFAULT_THEME,
+	type MantineBreakpointsValues,
+	type MantineThemeColors,
 } from "@mantine/core";
 
 export const colors: MantineThemeColors = DEFAULT_THEME.colors;

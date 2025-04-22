@@ -1,21 +1,21 @@
 import { auth } from "@/lib/auth";
+import { TransactionsView } from "@/modules/transactions/ui/views/transactions-view";
+import { HydrateClient } from "@/trpc/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { HydrateClient } from "@/trpc/server";
-import { TransactionsView } from "@/modules/transactions/ui/views/transactions-view";
 
 export default async function Page() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
 
-  if (!session) {
-    return redirect("/");
-  }
+	if (!session) {
+		return redirect("/");
+	}
 
-  return (
-    <HydrateClient>
-      <TransactionsView />
-    </HydrateClient>
-  );
+	return (
+		<HydrateClient>
+			<TransactionsView />
+		</HydrateClient>
+	);
 }
