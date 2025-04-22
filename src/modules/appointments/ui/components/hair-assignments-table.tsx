@@ -78,7 +78,7 @@ export default function HairAssignmentToAppointmentTable({
 				<Text>{hairAssignment.weightInGrams}g</Text>
 			</Table.Td>
 			<Table.Td>
-				<Text>{formatAmount(hairAssignment.total)}</Text>
+				<Text>{formatAmount(hairAssignment.total / 100)}</Text>
 			</Table.Td>
 			<Table.Td>
 				<Menu shadow="md" width={200}>

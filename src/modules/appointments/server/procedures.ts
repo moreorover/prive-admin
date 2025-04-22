@@ -199,20 +199,33 @@ export const appointmentsRouter = createTRPCRouter({
 				throw new TRPCError({ code: "NOT_FOUND" });
 			}
 
-			const total = Math.round(
-				(hairAssignmentSaved.hairOrder.pricePerGram /
-					hairAssignment.weightInGrams) *
-					100,
-			);
+			const total =
+				hairAssignmentSaved.hairOrder.pricePerGram *
+				hairAssignment.weightInGrams;
 
-			const c = await prisma.hairAssignedToAppointment.update({
-				data: {
-					weightInGrams: hairAssignment.weightInGrams,
-					total,
-				},
-				where: { id: hairAssignment.id },
+			const hairAssignmentUpdated =
+				await prisma.hairAssignedToAppointment.update({
+					data: {
+						weightInGrams: hairAssignment.weightInGrams,
+						total,
+					},
+					where: { id: hairAssignment.id },
+				});
+
+			const totalWeightInGrams =
+				await prisma.hairAssignedToAppointment.aggregate({
+					where: { hairOrderId: hairAssignment.hairOrderId },
+					_sum: {
+						weightInGrams: true,
+					},
+				});
+
+			await prisma.hairOrder.update({
+				where: { id: hairAssignment.hairOrderId },
+				data: { weightUsed: totalWeightInGrams._sum.weightInGrams ?? 0 },
 			});
-			return c;
+
+			return hairAssignmentUpdated;
 		}),
 	getHairAssignments: protectedProcedure
 		.input(z.object({ appointmentId: z.string().cuid2() }))
@@ -233,6 +246,19 @@ export const appointmentsRouter = createTRPCRouter({
 
 			const hairAssignment = await prisma.hairAssignedToAppointment.delete({
 				where: { id: hairAssignmentId },
+			});
+
+			const totalWeightInGrams =
+				await prisma.hairAssignedToAppointment.aggregate({
+					where: { hairOrderId: hairAssignment.hairOrderId },
+					_sum: {
+						weightInGrams: true,
+					},
+				});
+
+			await prisma.hairOrder.update({
+				where: { id: hairAssignment.hairOrderId },
+				data: { weightUsed: totalWeightInGrams._sum.weightInGrams ?? 0 },
 			});
 
 			return hairAssignment;
