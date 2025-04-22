@@ -35,7 +35,7 @@ import { ErrorBoundary } from "react-error-boundary";
 dayjs.extend(isoWeek);
 
 interface Props {
-	hairOrderId: string;
+	hairOrderId: number;
 }
 
 export const HairOrderView = ({ hairOrderId }: Props) => {

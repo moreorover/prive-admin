@@ -22,6 +22,7 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import { useSetAtom } from "jotai";
 import { Suspense } from "react";
@@ -102,6 +103,24 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	const openNewAppointmentNoteDrawer = useAppointmentNoteDrawerStore(
 		(state) => state.openDrawer,
 	);
+
+	const createHairAssignmentMutation =
+		trpc.appointments.createHairAssignment.useMutation({
+			onSuccess: () => {
+				notifications.show({
+					color: "green",
+					title: "Success!",
+					message: "Appointment updated.",
+				});
+			},
+			onError: () => {
+				notifications.show({
+					color: "red",
+					title: "Failed!",
+					message: "Something went wrong updating Appointment.",
+				});
+			},
+		});
 
 	return (
 		<Grid grow>
@@ -217,7 +236,11 @@ function AppointmentSuspense({ appointmentId }: Props) {
 									openTypedContextModal("hairOrderPicker", {
 										size: "auto",
 										innerProps: {
-											onConfirm: (data) => console.log({ data }),
+											onConfirm: (data) =>
+												createHairAssignmentMutation.mutate({
+													appointmentId,
+													hairOrderId: data[0],
+												}),
 											multiple: false,
 										},
 									})
