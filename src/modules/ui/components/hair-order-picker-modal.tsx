@@ -24,7 +24,9 @@ export const HairOrderPickerModal = ({
 	const [selectedRows, setSelectedRows] = useState<number[]>([]);
 	const [selectedRow, setSelectedRow] = useState<number>();
 
-	const hairOrderOptions = trpc.hairOrders.getAll.useQuery();
+	const hairOrderOptions = trpc.hairOrders.getHairOrderOptions.useQuery({
+		appointmentId: innerProps.appointmentId,
+	});
 
 	const toggleRowSelection = (id: number) => {
 		if (innerProps.multiple) {

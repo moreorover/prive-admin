@@ -10,6 +10,22 @@ export const hairOrderRouter = createTRPCRouter({
 			include: { createdBy: true, customer: true },
 		});
 	}),
+	getHairOrderOptions: protectedProcedure
+		.input(z.object({ appointmentId: z.string().cuid2() }))
+		.query(async ({ input }) => {
+			const { appointmentId } = input;
+			return prisma.hairOrder.findMany({
+				where: {
+					hairAssignedToAppointment: {
+						none: {
+							appointmentId,
+						},
+					},
+				},
+				include: { createdBy: true, customer: true },
+				orderBy: { id: "asc" },
+			});
+		}),
 	getById: protectedProcedure
 		.input(z.object({ id: z.number().positive() }))
 		.query(async ({ input }) => {

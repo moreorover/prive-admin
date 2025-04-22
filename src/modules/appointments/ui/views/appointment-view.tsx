@@ -112,6 +112,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 		trpc.appointments.createHairAssignment.useMutation({
 			onSuccess: () => {
 				utils.appointments.getHairAssignments.invalidate({ appointmentId });
+				utils.hairOrders.getHairOrderOptions.invalidate({ appointmentId });
 				notifications.show({
 					color: "green",
 					title: "Success!",
@@ -241,6 +242,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 									openTypedContextModal("hairOrderPicker", {
 										size: "auto",
 										innerProps: {
+											appointmentId,
 											onConfirm: (data) =>
 												createHairAssignmentMutation.mutate({
 													appointmentId,
