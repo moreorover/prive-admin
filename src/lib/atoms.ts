@@ -1,6 +1,7 @@
 import type {
 	Appointment,
 	Customer,
+	HairAssignedToAppointment,
 	Order,
 	OrderItem,
 	Product,
@@ -150,3 +151,18 @@ export const personnelPickerModalAtom = atom<{
 	personnel: Customer[];
 	onConfirmAction: (selectedTransactions: string[]) => void;
 }>({ isOpen: false, personnel: [], onConfirmAction: () => {} });
+
+export const editHairAssignmentToAppointmentDrawerAtom = atom<{
+	isOpen: boolean;
+	hairAssignment: HairAssignedToAppointment;
+	onUpdated: () => void;
+}>({
+	isOpen: false,
+	hairAssignment: {
+		id: "",
+		hairOrderId: 0,
+		appointmentId: "",
+		weightInGrams: 0,
+	},
+	onUpdated: () => {},
+});

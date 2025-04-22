@@ -1,9 +1,9 @@
-import { inferRouterOutputs } from "@trpc/server";
+import type { inferRouterOutputs } from "@trpc/server";
 
-import { AppRouter } from "@/trpc/routers/_app";
+import type { AppRouter } from "@/trpc/routers/_app";
 
 export type GetAllTransactions =
-  inferRouterOutputs<AppRouter>["transactions"]["getAll"];
+	inferRouterOutputs<AppRouter>["transactions"]["getAll"];
 
 export type GetTransactionsByAppointment =
-  inferRouterOutputs<AppRouter>["transactions"]["getByAppointmentId"];
+	inferRouterOutputs<AppRouter>["transactions"]["getByAppointmentId"];

@@ -5,6 +5,7 @@ import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useAppointmentNoteDrawerStore } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
+import HairAssignmentToAppointmentTable from "@/modules/appointments/ui/components/hair-assignments-table";
 import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
@@ -62,6 +63,9 @@ function AppointmentSuspense({ appointmentId }: Props) {
 			appointmentId,
 		});
 
+	const [hairAssignments] =
+		trpc.appointments.getHairAssignments.useSuspenseQuery({ appointmentId });
+
 	const [notes] =
 		trpc.appointmentNotes.getNotesByAppointmentId.useSuspenseQuery({
 			appointmentId,
@@ -107,6 +111,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	const createHairAssignmentMutation =
 		trpc.appointments.createHairAssignment.useMutation({
 			onSuccess: () => {
+				utils.appointments.getHairAssignments.invalidate({ appointmentId });
 				notifications.show({
 					color: "green",
 					title: "Success!",
@@ -249,6 +254,10 @@ function AppointmentSuspense({ appointmentId }: Props) {
 								Pick
 							</Button>
 						</Group>
+						<HairAssignmentToAppointmentTable
+							appointmentId={appointmentId}
+							hairAssignments={hairAssignments}
+						/>
 					</Paper>
 				</Stack>
 			</GridCol>

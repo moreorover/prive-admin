@@ -1,5 +1,9 @@
 import prisma from "@/lib/prisma";
-import { appointmentNoteSchema, appointmentSchema } from "@/lib/schemas";
+import {
+	appointmentNoteSchema,
+	appointmentSchema,
+	hairAssignedToAppointmentShcema,
+} from "@/lib/schemas";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import dayjs from "dayjs";
@@ -175,5 +179,62 @@ export const appointmentsRouter = createTRPCRouter({
 				},
 			});
 			return c;
+		}),
+	updateHairAssignment: protectedProcedure
+		.input(
+			z.object({
+				hairAssignment: hairAssignedToAppointmentShcema,
+			}),
+		)
+		.mutation(async ({ input }) => {
+			const { hairAssignment } = input;
+
+			const hairAssignmentSaved =
+				await prisma.hairAssignedToAppointment.findUnique({
+					where: { id: hairAssignment.id },
+					include: { hairOrder: true },
+				});
+
+			if (!hairAssignmentSaved) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			const total = Math.round(
+				(hairAssignmentSaved.hairOrder.pricePerGram /
+					hairAssignment.weightInGrams) *
+					100,
+			);
+
+			const c = await prisma.hairAssignedToAppointment.update({
+				data: {
+					weightInGrams: hairAssignment.weightInGrams,
+					total,
+				},
+				where: { id: hairAssignment.id },
+			});
+			return c;
+		}),
+	getHairAssignments: protectedProcedure
+		.input(z.object({ appointmentId: z.string().cuid2() }))
+		.query(async ({ input }) => {
+			const { appointmentId } = input;
+
+			const hairAssignments = await prisma.hairAssignedToAppointment.findMany({
+				where: { appointmentId },
+				include: { hairOrder: true },
+			});
+
+			return hairAssignments;
+		}),
+	deleteHairAssignment: protectedProcedure
+		.input(z.object({ hairAssignmentId: z.string().cuid2() }))
+		.mutation(async ({ input }) => {
+			const { hairAssignmentId } = input;
+
+			const hairAssignment = await prisma.hairAssignedToAppointment.delete({
+				where: { id: hairAssignmentId },
+			});
+
+			return hairAssignment;
 		}),
 });

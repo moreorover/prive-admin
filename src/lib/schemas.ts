@@ -133,3 +133,14 @@ export const hairComponentSchema = z.object({
 });
 
 export type HairComponent = z.infer<typeof hairComponentSchema>;
+
+export const hairAssignedToAppointmentShcema = z.object({
+	id: z.string().cuid2(),
+	hairOrderId: z.number().positive(),
+	appointmentId: z.string().cuid2(),
+	weightInGrams: z.number().positive(),
+});
+
+export type HairAssignedToAppointment = z.infer<
+	typeof hairAssignedToAppointmentShcema
+>;
