@@ -5,11 +5,12 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 type Props = {
-	params: Promise<{ hairOrderId: number }>;
+	params: Promise<{ hairOrderId: string }>;
 };
 
 export default async function Page({ params }: Props) {
 	const { hairOrderId } = await params;
+	const parsedHairOrderId = Number.parseInt(hairOrderId);
 
 	const session = await auth.api.getSession({
 		headers: await headers(),
@@ -19,11 +20,11 @@ export default async function Page({ params }: Props) {
 		return redirect("/");
 	}
 
-	void trpc.hairOrders.getById.prefetch({ id: hairOrderId });
+	void trpc.hairOrders.getById.prefetch({ id: parsedHairOrderId });
 
 	return (
 		<HydrateClient>
-			<HairOrderView hairOrderId={hairOrderId} />
+			<HairOrderView hairOrderId={parsedHairOrderId} />
 		</HydrateClient>
 	);
 }
