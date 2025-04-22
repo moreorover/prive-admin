@@ -20,6 +20,9 @@ export default function HairOrdersTable({ hairOrders }: Props) {
 	const rows = hairOrders.map((hairOrder) => (
 		<Table.Tr key={hairOrder.id}>
 			<Table.Td>
+				<Text>{hairOrder.id}</Text>
+			</Table.Td>
+			<Table.Td>
 				<Text>
 					{hairOrder.placedAt
 						? dayjs(hairOrder.placedAt).format("ddd MMM YYYY")
@@ -69,6 +72,7 @@ export default function HairOrdersTable({ hairOrders }: Props) {
 			<Table striped highlightOnHover>
 				<Table.Thead>
 					<Table.Tr>
+						<Table.Th>ID</Table.Th>
 						<Table.Th>Placed At</Table.Th>
 						<Table.Th>Arrived At</Table.Th>
 						<Table.Th>Status</Table.Th>

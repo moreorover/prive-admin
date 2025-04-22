@@ -35,7 +35,7 @@ export function openTypedContextModal<N extends ModalNames>(
 ) {
 	modals.openContextModal({
 		modal: name,
-		size: options.size ?? "md",
+		size: options.size ?? "auto",
 		title: options.title ?? modalTitles[name],
 		innerProps: options.innerProps,
 		onClose: options.onClose,
