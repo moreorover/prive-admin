@@ -1,12 +1,20 @@
 "use client";
-
 import { editHairAssignmentToAppointmentDrawerAtom } from "@/lib/atoms";
 import type { GetHairAssignmentsByAppointmentId } from "@/modules/appointments/types";
 import { trpc } from "@/trpc/client";
-import { Button, Menu, ScrollArea, Table, Text } from "@mantine/core";
+import {
+	Button,
+	Group,
+	Menu,
+	ScrollArea,
+	Table,
+	Text,
+	Tooltip,
+} from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { useSetAtom } from "jotai/index";
+import { TriangleAlertIcon } from "lucide-react";
 
 interface Props {
 	appointmentId: string;
@@ -74,8 +82,20 @@ export default function HairAssignmentToAppointmentTable({
 			<Table.Td>
 				<Text>{hairAssignment.hairOrderId}</Text>
 			</Table.Td>
-			<Table.Td>
-				<Text>{hairAssignment.weightInGrams}g</Text>
+			<Table.Td
+				style={{
+					backgroundColor:
+						hairAssignment.weightInGrams === 0 ? "#ffe6e6" : undefined, // light pink
+				}}
+			>
+				<Group>
+					<Text>{hairAssignment.weightInGrams}g</Text>
+					{hairAssignment.weightInGrams === 0 && (
+						<Tooltip label="Weight not assigned">
+							<TriangleAlertIcon size={16} color="red" />
+						</Tooltip>
+					)}
+				</Group>
 			</Table.Td>
 			<Table.Td>
 				<Text>{formatAmount(hairAssignment.total / 100)}</Text>
