@@ -76,7 +76,7 @@ export const HairOrderPickerModal = ({
 					/>
 				</Table.Td>
 				<Table.Td>
-					<Text>{hairOrder.id}</Text>
+					<Text>{hairOrder.uid}</Text>
 				</Table.Td>
 				<Table.Td>
 					<Text>{hairOrder.customer?.name}</Text>
@@ -118,7 +118,7 @@ export const HairOrderPickerModal = ({
 					<Table.Thead>
 						<Table.Tr>
 							<Table.Th style={{ width: 40 }} />
-							<Table.Th>ID</Table.Th>
+							<Table.Th>Hair Order UID</Table.Th>
 							<Table.Th>Customer Name</Table.Th>
 							<Table.Th>Placed At</Table.Th>
 							<Table.Th>Arrived At</Table.Th>
