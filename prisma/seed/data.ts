@@ -1,127 +1,110 @@
-import { Faker } from "@faker-js/faker";
+import type { Faker } from "@faker-js/faker";
 
 export const generateObjects = <T>(count: number, generator: () => T): T[] => {
-  return Array.from({ length: count }, generator);
+	return Array.from({ length: count }, generator);
 };
 
 export const createCustomer = (faker: Faker) => {
-  return {
-    name: faker.person.fullName(),
-    phoneNumber: faker.phone.number({ style: "international" }),
-  };
+	return {
+		name: faker.person.fullName(),
+		phoneNumber: faker.phone.number({ style: "international" }),
+	};
 };
 
 export const createProduct = (faker: Faker) => {
-  return {
-    name: faker.commerce.productName(),
-    description: faker.commerce.productDescription(),
-  };
+	return {
+		name: faker.commerce.productName(),
+		description: faker.commerce.productDescription(),
+	};
 };
 
 export const createProductVariant = (faker: Faker, size: string) => {
-  return {
-    size,
-    price: faker.number.int({ min: 500, max: 20000 }),
-    stock: faker.number.int({ min: 0, max: 100 }),
-  };
+	return {
+		size,
+		price: faker.number.int({ min: 500, max: 20000 }),
+		stock: faker.number.int({ min: 0, max: 100 }),
+	};
 };
 
 export const createTransaction = (faker: Faker) => {
-  return {
-    name: faker.helpers.arrayElement(["Booking Fee", "Payment"]),
-    amount: faker.number.float({
-      min: -800,
-      max: 800,
-      multipleOf: 0.25,
-    }),
-    createdAt: faker.helpers.arrayElement([
-      faker.date.recent({ days: 10 }),
-      faker.date.soon({ days: 10 }),
-    ]),
-    type: faker.helpers.arrayElement(["BANK", "CASH", "PAYPAL"]),
-    status: faker.helpers.arrayElement(["PENDING", "COMPLETED"]),
-    completedDateBy: faker.helpers.arrayElement([
-      faker.date.recent({ days: 10 }),
-      faker.date.soon({ days: 10 }),
-    ]),
-  };
+	return {
+		name: faker.helpers.arrayElement(["Booking Fee", "Payment"]),
+		amount: faker.number.float({
+			min: -800,
+			max: 800,
+			multipleOf: 0.25,
+		}),
+		createdAt: faker.helpers.arrayElement([
+			faker.date.recent({ days: 10 }),
+			faker.date.soon({ days: 10 }),
+		]),
+		type: faker.helpers.arrayElement(["BANK", "CASH", "PAYPAL"]),
+		status: faker.helpers.arrayElement(["PENDING", "COMPLETED"]),
+		completedDateBy: faker.helpers.arrayElement([
+			faker.date.recent({ days: 10 }),
+			faker.date.soon({ days: 10 }),
+		]),
+	};
 };
 
 export const createAppointment = (faker: Faker) => {
-  return {
-    name: faker.helpers.arrayElement([
-      "Consultation",
-      "Correction",
-      "New hair set",
-    ]),
-    startsAt: faker.helpers.arrayElement([
-      faker.date.recent({ days: 10 }),
-      faker.date.soon({ days: 10 }),
-    ]),
-  };
+	return {
+		name: faker.helpers.arrayElement([
+			"Consultation",
+			"Correction",
+			"New hair set",
+		]),
+		startsAt: faker.helpers.arrayElement([
+			faker.date.recent({ days: 10 }),
+			faker.date.soon({ days: 10 }),
+		]),
+	};
 };
 
 export const createAppointmentNote = (faker: Faker) => {
-  return {
-    note: faker.lorem.sentence(),
-    createdAt: faker.helpers.arrayElement([
-      faker.date.recent({ days: 10 }),
-      faker.date.soon({ days: 10 }),
-    ]),
-  };
+	return {
+		note: faker.lorem.sentence(),
+		createdAt: faker.helpers.arrayElement([
+			faker.date.recent({ days: 10 }),
+			faker.date.soon({ days: 10 }),
+		]),
+	};
 };
 
 export const sizes = ["250ml", "500ml", "50g", "100g", "1L"];
 
 export const createHairOrder = (faker: Faker) => {
-  return {
-    placedAt: faker.helpers.arrayElement([
-      faker.date.recent({ days: 10 }),
-      faker.date.soon({ days: 10 }),
-    ]),
-    arrivedAt: faker.helpers.arrayElement([
-      faker.date.recent({ days: 10 }),
-      faker.date.soon({ days: 10 }),
-    ]),
-    status: faker.helpers.arrayElement(["PENDING", "COMPLETED"]),
-  };
+	return {
+		placedAt: faker.helpers.arrayElement([
+			faker.date.recent({ days: 10 }),
+			faker.date.soon({ days: 10 }),
+		]),
+		arrivedAt: faker.helpers.arrayElement([
+			faker.date.recent({ days: 10 }),
+			faker.date.soon({ days: 10 }),
+		]),
+		status: faker.helpers.arrayElement(["PENDING", "COMPLETED"]),
+	};
 };
 
 export const createHairOrderNote = (faker: Faker) => {
-  return {
-    note: faker.lorem.sentence(),
-    createdAt: faker.helpers.arrayElement([
-      faker.date.recent({ days: 10 }),
-      faker.date.soon({ days: 10 }),
-    ]),
-  };
+	return {
+		note: faker.lorem.sentence(),
+		createdAt: faker.helpers.arrayElement([
+			faker.date.recent({ days: 10 }),
+			faker.date.soon({ days: 10 }),
+		]),
+	};
 };
 
 export const createHairOrderTransaction = (faker: Faker) => {
-  return {
-    ...createTransaction(faker),
-    name: faker.helpers.arrayElement(["Deposit", "Payment"]),
-    amount: faker.number.float({
-      min: -800,
-      max: -200,
-      multipleOf: 0.25,
-    }),
-  };
-};
-
-export const createHair = (faker: Faker) => {
-  return {
-    color: faker.color.human(),
-    description: faker.lorem.paragraph(),
-    upc: faker.git.commitSha({ length: 5 }),
-    length: faker.number.int({ min: 40, max: 100, multipleOf: 5 }),
-    weight: faker.number.int({
-      min: 30,
-      max: 220,
-    }),
-    price: faker.number.int({
-      min: 5000,
-      max: 50000,
-    }),
-  };
+	return {
+		...createTransaction(faker),
+		name: faker.helpers.arrayElement(["Deposit", "Payment"]),
+		amount: faker.number.float({
+			min: -800,
+			max: -200,
+			multipleOf: 0.25,
+		}),
+	};
 };
