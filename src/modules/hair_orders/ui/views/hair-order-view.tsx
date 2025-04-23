@@ -4,6 +4,7 @@ import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { newTransactionDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
+import HairAssignmentToAppointmentTable from "@/modules/hair_orders/ui/components/hair-assignments-table";
 import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table";
 import TransactionsTable from "@/modules/hair_orders/ui/components/transactions-table";
 import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
@@ -85,6 +86,9 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 		includeCustomer: true,
 	});
 	const [customerOptions] = trpc.customers.getAll.useSuspenseQuery();
+	const [hairAssignments] = trpc.hairOrders.getHairAssignments.useSuspenseQuery(
+		{ hairOrderId },
+	);
 
 	const openNewHairOrderNoteDrawer = useHairOrderNoteDrawerStore(
 		(state) => state.openDrawer,
@@ -393,6 +397,14 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 						<TransactionsTable
 							hairOrderId={hairOrderId}
 							transactions={transactions}
+						/>
+					</Paper>
+					<Paper withBorder p="md" radius="md" shadow="sm">
+						<Group justify="space-between" gap="sm">
+							<Title order={4}>Hair Assignments</Title>
+						</Group>
+						<HairAssignmentToAppointmentTable
+							hairAssignments={hairAssignments}
 						/>
 					</Paper>
 				</Stack>
