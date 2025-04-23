@@ -27,7 +27,7 @@ export const hairOrderRouter = createTRPCRouter({
 			});
 		}),
 	getById: protectedProcedure
-		.input(z.object({ id: z.number().positive() }))
+		.input(z.object({ id: z.string().cuid2() }))
 		.query(async ({ input }) => {
 			const { id } = input;
 			const hairOrder = await prisma.hairOrder.findFirst({
@@ -71,7 +71,7 @@ export const hairOrderRouter = createTRPCRouter({
 			return c;
 		}),
 	recalculatePrices: protectedProcedure
-		.input(z.object({ hairOrderId: z.number().positive() }))
+		.input(z.object({ hairOrderId: z.string().cuid2() }))
 		.mutation(async ({ input }) => {
 			const { hairOrderId } = input;
 			const hairOrder = await prisma.hairOrder.findUnique({
@@ -111,7 +111,7 @@ export const hairOrderRouter = createTRPCRouter({
 			return hairOrder;
 		}),
 	getHairAssignments: protectedProcedure
-		.input(z.object({ hairOrderId: z.number().positive() }))
+		.input(z.object({ hairOrderId: z.string().cuid2() }))
 		.query(async ({ input }) => {
 			const { hairOrderId } = input;
 			const hairAssignments = await prisma.hairAssignedToAppointment.findMany({

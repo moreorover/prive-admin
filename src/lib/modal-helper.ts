@@ -16,7 +16,7 @@ export interface ModalPropsMap {
 	};
 	hairOrderPicker: {
 		appointmentId: string;
-		onConfirm: (id: number[]) => void;
+		onConfirm: (id: string[]) => void;
 		multiple: boolean;
 	};
 }

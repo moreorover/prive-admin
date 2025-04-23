@@ -10,7 +10,6 @@ type Props = {
 
 export default async function Page({ params }: Props) {
 	const { hairOrderId } = await params;
-	const parsedHairOrderId = Number.parseInt(hairOrderId);
 
 	const session = await auth.api.getSession({
 		headers: await headers(),
@@ -20,11 +19,11 @@ export default async function Page({ params }: Props) {
 		return redirect("/");
 	}
 
-	void trpc.hairOrders.getById.prefetch({ id: parsedHairOrderId });
+	void trpc.hairOrders.getById.prefetch({ id: hairOrderId });
 
 	return (
 		<HydrateClient>
-			<HairOrderView hairOrderId={parsedHairOrderId} />
+			<HairOrderView hairOrderId={hairOrderId} />
 		</HydrateClient>
 	);
 }

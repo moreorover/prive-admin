@@ -184,7 +184,7 @@ model Transaction {
   order         Order?       @relation(fields: [orderId], references: [id], onDelete: SetNull)
   appointmentId String?
   appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
-  hairOrderId   Int?
+  hairOrderId   String?
   hairOrder     HairOrder?   @relation(fields: [hairOrderId], references: [id], onDelete: SetNull)
 
   @@map("transactions")
@@ -239,7 +239,8 @@ enum HairOrderStatus {
 }
 
 model HairOrder {
-  id             Int             @id @default(autoincrement())
+  id             String          @id @default(cuid(2))
+  uid            Int             @unique @default(autoincrement())
   placedAt       DateTime?       @db.Date
   arrivedAt      DateTime?       @db.Date
   status         HairOrderStatus @default(PENDING)
@@ -270,7 +271,7 @@ model HairOrderNote {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  hairOrderId Int
+  hairOrderId String
   hairOrder   HairOrder @relation(fields: [hairOrderId], references: [id], onDelete: Cascade)
 
   createdById String
@@ -285,7 +286,7 @@ model HairAssignedToAppointment {
   appointmentId String
 
   hairOrder   HairOrder @relation(fields: [hairOrderId], references: [id], onDelete: Cascade)
-  hairOrderId Int
+  hairOrderId String
 
   weightInGrams Int @default(0)
   total         Int @default(0)

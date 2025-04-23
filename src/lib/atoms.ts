@@ -103,7 +103,7 @@ export const newTransactionDrawerAtom = atom<{
 	isOpen: boolean;
 	orderId?: string | null;
 	appointmentId?: string | null;
-	hairOrderId?: number | null;
+	hairOrderId?: string | null;
 	customerId: string;
 	onCreated: () => void;
 }>({
@@ -161,7 +161,7 @@ export const editHairAssignmentToAppointmentDrawerAtom = atom<{
 	isOpen: false,
 	hairAssignment: {
 		id: "",
-		hairOrderId: 0,
+		hairOrderId: "",
 		appointmentId: "",
 		weightInGrams: 0,
 	},

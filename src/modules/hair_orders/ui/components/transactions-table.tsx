@@ -21,7 +21,7 @@ import { AlertTriangle, Check, Clock } from "lucide-react";
 import Link from "next/link";
 
 interface Props {
-	hairOrderId: number;
+	hairOrderId: string;
 	transactions: HairOrderTransactions;
 }
 

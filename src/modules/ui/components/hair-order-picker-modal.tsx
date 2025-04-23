@@ -21,14 +21,14 @@ export const HairOrderPickerModal = ({
 	id,
 	innerProps,
 }: TypedContextModalProps<"hairOrderPicker">) => {
-	const [selectedRows, setSelectedRows] = useState<number[]>([]);
-	const [selectedRow, setSelectedRow] = useState<number>();
+	const [selectedRows, setSelectedRows] = useState<string[]>([]);
+	const [selectedRow, setSelectedRow] = useState<string>();
 
 	const hairOrderOptions = trpc.hairOrders.getHairOrderOptions.useQuery({
 		appointmentId: innerProps.appointmentId,
 	});
 
-	const toggleRowSelection = (id: number) => {
+	const toggleRowSelection = (id: string) => {
 		if (innerProps.multiple) {
 			setSelectedRows((prevSelected) =>
 				prevSelected.includes(id)
@@ -57,22 +57,22 @@ export const HairOrderPickerModal = ({
 			<Table.Tr
 				key={hairOrder.id}
 				style={{
-					backgroundColor: selectedRows.includes(hairOrder.id as number)
+					backgroundColor: selectedRows.includes(hairOrder.id as string)
 						? "var(--mantine-color-blue-light)"
 						: undefined,
 					cursor: "pointer",
 				}}
-				onClick={() => toggleRowSelection(hairOrder.id as number)}
+				onClick={() => toggleRowSelection(hairOrder.id as string)}
 			>
 				<Table.Td style={{ width: 40 }}>
 					<Checkbox
 						aria-label="Select Hair Order"
 						checked={
-							selectedRows.includes(hairOrder.id as number) ||
+							selectedRows.includes(hairOrder.id as string) ||
 							selectedRow === hairOrder.id
 						}
 						onClick={(e) => e.stopPropagation()}
-						onChange={() => toggleRowSelection(hairOrder.id as number)}
+						onChange={() => toggleRowSelection(hairOrder.id as string)}
 					/>
 				</Table.Td>
 				<Table.Td>
@@ -135,7 +135,7 @@ export const HairOrderPickerModal = ({
 						onClick={() => {
 							onConfirmAction();
 							setSelectedRows([]);
-							setSelectedRow(0);
+							setSelectedRow("");
 						}}
 					>
 						Confirm

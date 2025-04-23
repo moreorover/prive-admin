@@ -3,7 +3,7 @@ import { create } from "zustand";
 
 type State = {
 	isOpen: boolean;
-	hairOrderId: number;
+	hairOrderId: string;
 	note: HairOrderNote;
 	onCreated?: () => void;
 	onUpdated?: () => void;
@@ -16,7 +16,7 @@ type Action = {
 
 const initialState: State = {
 	isOpen: false,
-	hairOrderId: 0,
+	hairOrderId: "",
 	note: { note: "" },
 	onCreated: undefined,
 	onUpdated: undefined,

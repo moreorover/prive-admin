@@ -24,7 +24,7 @@ export const EditHairAssignmentToAppointmentDrawer = () => {
 					isOpen: false,
 					hairAssignment: {
 						id: "",
-						hairOrderId: 0,
+						hairOrderId: "",
 						appointmentId: "",
 						weightInGrams: 0,
 					},
@@ -57,7 +57,7 @@ export const EditHairAssignmentToAppointmentDrawer = () => {
 						isOpen: false,
 						hairAssignment: {
 							id: "",
-							hairOrderId: 0,
+							hairOrderId: "",
 							appointmentId: "",
 							weightInGrams: 0,
 						},

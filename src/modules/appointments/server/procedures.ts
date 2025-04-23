@@ -166,7 +166,7 @@ export const appointmentsRouter = createTRPCRouter({
 		.input(
 			z.object({
 				appointmentId: z.string().cuid2(),
-				hairOrderId: z.number().positive(),
+				hairOrderId: z.string().cuid2(),
 			}),
 		)
 		.mutation(async ({ input }) => {

@@ -120,7 +120,7 @@ export const transactionsRouter = createTRPCRouter({
 	getByHairOrderId: protectedProcedure
 		.input(
 			z.object({
-				hairOrderId: z.number().positive().nullable(),
+				hairOrderId: z.string().cuid2().nullable(),
 				includeCustomer: z.boolean(),
 			}),
 		)
@@ -142,7 +142,7 @@ export const transactionsRouter = createTRPCRouter({
 				transaction: transactionSchema,
 				appointmentId: z.string().cuid2().nullish(),
 				orderId: z.string().cuid2().nullish(),
-				hairOrderId: z.number().positive().nullish(),
+				hairOrderId: z.string().cuid2().nullish(),
 				customerId: z.string().cuid2(),
 			}),
 		)

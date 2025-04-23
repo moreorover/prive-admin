@@ -9,7 +9,7 @@ import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 
 interface Props {
-	hairOrderId: number;
+	hairOrderId: string;
 	notes: HairOrderNotes;
 }
 

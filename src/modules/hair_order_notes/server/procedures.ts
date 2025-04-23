@@ -7,7 +7,7 @@ export const hairOrderNotesRouter = createTRPCRouter({
 	create: protectedProcedure
 		.input(
 			z.object({
-				hairOrderId: z.number().positive(),
+				hairOrderId: z.string().cuid2(),
 				note: hairOrderNoteSchema,
 			}),
 		)
@@ -52,7 +52,7 @@ export const hairOrderNotesRouter = createTRPCRouter({
 			return c;
 		}),
 	getNotesByHairOrderId: protectedProcedure
-		.input(z.object({ hairOrderId: z.number().positive() }))
+		.input(z.object({ hairOrderId: z.string().cuid2() }))
 		.query(async ({ input }) => {
 			const { hairOrderId } = input;
 

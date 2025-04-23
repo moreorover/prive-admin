@@ -91,7 +91,7 @@ export const appointmentNoteSchema = z.object({
 export type AppointmentNote = z.infer<typeof appointmentNoteSchema>;
 
 export const hairOrderSchema = z.object({
-	id: z.number().positive().optional(),
+	id: z.string().cuid2().optional(),
 	placedAt: z.union([z.string(), z.date(), z.null()]),
 	arrivedAt: z.union([z.string(), z.date(), z.null()]),
 	customerId: z.string().cuid2().nullish(),
@@ -100,7 +100,7 @@ export const hairOrderSchema = z.object({
 });
 
 export const hairOrderTotalWeightSchema = z.object({
-	id: z.number().positive(),
+	id: z.string().cuid2(),
 	weightReceived: z.number().positive(),
 });
 
@@ -136,7 +136,7 @@ export type HairComponent = z.infer<typeof hairComponentSchema>;
 
 export const hairAssignedToAppointmentSchema = z.object({
 	id: z.string().cuid2(),
-	hairOrderId: z.number().positive(),
+	hairOrderId: z.string().cuid2(),
 	appointmentId: z.string().cuid2(),
 	weightInGrams: z.number().positive(),
 });
@@ -144,7 +144,7 @@ export const hairAssignedToAppointmentSchema = z.object({
 export const hairAssignedToAppointmentFormSchema = (maxWeight: number) =>
 	z.object({
 		id: z.string().cuid2(),
-		hairOrderId: z.number().positive(),
+		hairOrderId: z.string().cuid2(),
 		appointmentId: z.string().cuid2(),
 		weightInGrams: z.number().positive().max(maxWeight),
 	});
