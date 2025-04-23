@@ -17,7 +17,7 @@ function useDateRange() {
 			params.set("start", dayjs(start).format("YYYY-MM-DD"));
 			params.set("end", dayjs(end).format("YYYY-MM-DD"));
 
-			return `? + ${params.toString()}`;
+			return `?${params.toString()}`;
 		},
 		[searchParams],
 	);
