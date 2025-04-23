@@ -51,59 +51,64 @@ export const HairOrderPickerModal = ({
 		}
 	}
 
-	const rows = hairOrderOptions.data?.map((hairOrder) => (
-		<Table.Tr
-			key={hairOrder.id}
-			style={{
-				backgroundColor: selectedRows.includes(hairOrder.id as number)
-					? "var(--mantine-color-blue-light)"
-					: undefined,
-				cursor: "pointer",
-			}}
-			onClick={() => toggleRowSelection(hairOrder.id as number)}
-		>
-			<Table.Td style={{ width: 40 }}>
-				<Checkbox
-					aria-label="Select Hair Order"
-					checked={
-						selectedRows.includes(hairOrder.id as number) ||
-						selectedRow === hairOrder.id
-					}
-					onClick={(e) => e.stopPropagation()}
-					onChange={() => toggleRowSelection(hairOrder.id as number)}
-				/>
-			</Table.Td>
-			<Table.Td>
-				<Text>{hairOrder.id}</Text>
-			</Table.Td>
-			<Table.Td>
-				<Text>{hairOrder.customer?.name}</Text>
-			</Table.Td>
-			<Table.Td>
-				<Text>
-					{hairOrder.placedAt
-						? dayjs(hairOrder.placedAt).format("ddd MMM YYYY")
-						: ""}
-				</Text>
-			</Table.Td>
-			<Table.Td>
-				<Text>
-					{hairOrder.arrivedAt
-						? dayjs(hairOrder.arrivedAt).format("ddd MMM YYYY")
-						: ""}
-				</Text>
-			</Table.Td>
-			<Table.Td>
-				<Text>{formatAmount(hairOrder.pricePerGram)}</Text>
-			</Table.Td>
-			<Table.Td>
-				<Text>{hairOrder.weightReceived}g</Text>
-			</Table.Td>
-			<Table.Td>
-				<Text>{hairOrder.weightUsed}g</Text>
-			</Table.Td>
-		</Table.Tr>
-	));
+	const rows = hairOrderOptions.data
+		?.filter((hairOrder) => hairOrder.weightReceived - hairOrder.weightUsed > 0)
+		.map((hairOrder) => (
+			<Table.Tr
+				key={hairOrder.id}
+				style={{
+					backgroundColor: selectedRows.includes(hairOrder.id as number)
+						? "var(--mantine-color-blue-light)"
+						: undefined,
+					cursor: "pointer",
+				}}
+				onClick={() => toggleRowSelection(hairOrder.id as number)}
+			>
+				<Table.Td style={{ width: 40 }}>
+					<Checkbox
+						aria-label="Select Hair Order"
+						checked={
+							selectedRows.includes(hairOrder.id as number) ||
+							selectedRow === hairOrder.id
+						}
+						onClick={(e) => e.stopPropagation()}
+						onChange={() => toggleRowSelection(hairOrder.id as number)}
+					/>
+				</Table.Td>
+				<Table.Td>
+					<Text>{hairOrder.id}</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>{hairOrder.customer?.name}</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>
+						{hairOrder.placedAt
+							? dayjs(hairOrder.placedAt).format("ddd MMM YYYY")
+							: ""}
+					</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>
+						{hairOrder.arrivedAt
+							? dayjs(hairOrder.arrivedAt).format("ddd MMM YYYY")
+							: ""}
+					</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>{formatAmount(hairOrder.pricePerGram)}</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>{hairOrder.weightReceived}g</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>{hairOrder.weightUsed}g</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>{hairOrder.weightReceived - hairOrder.weightUsed}g</Text>
+				</Table.Td>
+			</Table.Tr>
+		));
 
 	return (
 		<Container>
@@ -120,6 +125,7 @@ export const HairOrderPickerModal = ({
 							<Table.Th>Price per Gram</Table.Th>
 							<Table.Th>Weight received</Table.Th>
 							<Table.Th>Weight Used</Table.Th>
+							<Table.Th>Weight Available</Table.Th>
 						</Table.Tr>
 					</Table.Thead>
 					<Table.Tbody>{rows}</Table.Tbody>

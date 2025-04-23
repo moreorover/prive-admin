@@ -93,6 +93,11 @@ export default function HairAssignmentToAppointmentTable({
 								showEditHairAssignmentToAppointmentDrawer({
 									isOpen: true,
 									hairAssignment: hairAssignment,
+									maxWeight: Math.abs(
+										hairAssignment.hairOrder.weightReceived -
+											hairAssignment.hairOrder.weightUsed +
+											hairAssignment.weightInGrams,
+									),
 									onUpdated: () => {
 										utils.appointments.getHairAssignments.invalidate({
 											appointmentId,

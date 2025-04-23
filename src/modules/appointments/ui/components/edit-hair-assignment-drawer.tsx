@@ -28,6 +28,7 @@ export const EditHairAssignmentToAppointmentDrawer = () => {
 						appointmentId: "",
 						weightInGrams: 0,
 					},
+					maxWeight: 0,
 					onUpdated: () => {},
 				});
 			},
@@ -60,6 +61,7 @@ export const EditHairAssignmentToAppointmentDrawer = () => {
 							appointmentId: "",
 							weightInGrams: 0,
 						},
+						maxWeight: 0,
 						onUpdated: () => {},
 					})
 				}
@@ -69,6 +71,7 @@ export const EditHairAssignmentToAppointmentDrawer = () => {
 				<HairAssignmentForm
 					onSubmitAction={onSubmit}
 					hairAssignment={value.hairAssignment}
+					maxWeight={value.maxWeight}
 					disabled={editHairAssignment.isPending}
 				/>
 			</Drawer>

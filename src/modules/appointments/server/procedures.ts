@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import {
 	appointmentNoteSchema,
 	appointmentSchema,
-	hairAssignedToAppointmentShcema,
+	hairAssignedToAppointmentSchema,
 } from "@/lib/schemas";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
@@ -183,7 +183,7 @@ export const appointmentsRouter = createTRPCRouter({
 	updateHairAssignment: protectedProcedure
 		.input(
 			z.object({
-				hairAssignment: hairAssignedToAppointmentShcema,
+				hairAssignment: hairAssignedToAppointmentSchema,
 			}),
 		)
 		.mutation(async ({ input }) => {

@@ -156,6 +156,7 @@ export const editHairAssignmentToAppointmentDrawerAtom = atom<{
 	isOpen: boolean;
 	hairAssignment: HairAssignedToAppointment;
 	onUpdated: () => void;
+	maxWeight: number;
 }>({
 	isOpen: false,
 	hairAssignment: {
@@ -164,5 +165,6 @@ export const editHairAssignmentToAppointmentDrawerAtom = atom<{
 		appointmentId: "",
 		weightInGrams: 0,
 	},
+	maxWeight: 0,
 	onUpdated: () => {},
 });
