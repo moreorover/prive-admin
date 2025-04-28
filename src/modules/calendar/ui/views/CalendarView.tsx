@@ -81,12 +81,8 @@ const WeekdayHeader = ({ weekdays }: { weekdays: string[] }) => {
 
 const CalendarEventBadge = ({
 	event,
-	isMobile = false,
-	isTablet = false,
 }: {
 	event: GetAppointmentsBetweenDates[0];
-	isMobile?: boolean;
-	isTablet?: boolean;
 }) => {
 	return (
 		<Tooltip
@@ -95,13 +91,9 @@ const CalendarEventBadge = ({
 			withArrow
 		>
 			<Badge style={{ cursor: "pointer" }} fullWidth size="xs">
-				{isMobile || isTablet
-					? event.name.length > 6
-						? `${event.name.substring(0, 5)}...`
-						: event.name
-					: event.name.length > 12
-						? `${event.name.substring(0, 11)}...`
-						: event.name}
+				{event.name.length > 6
+					? `${dayjs(event.startsAt).format("hh:MM")} ${event.name.substring(0, 5)}...`
+					: event.name}
 			</Badge>
 		</Tooltip>
 	);
@@ -150,11 +142,7 @@ const DayCell = ({
 					{events.length > 0 && (
 						<>
 							{events.slice(0, isTablet ? 2 : 3).map((event) => (
-								<CalendarEventBadge
-									key={event.id}
-									event={event}
-									isTablet={isTablet}
-								/>
+								<CalendarEventBadge key={event.id} event={event} />
 							))}
 							{events.length > (isTablet ? 2 : 3) && (
 								<Text size="xs" ta="center" c="dimmed">
