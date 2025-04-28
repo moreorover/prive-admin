@@ -19,7 +19,7 @@ import {
 import { useViewportSize } from "@mantine/hooks";
 import dayjs, { type Dayjs } from "dayjs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 // Helper functions
@@ -300,10 +300,19 @@ const MobileCalendarView = ({
 
 interface MonthlyCalendarProps {
 	appointments: GetAppointmentsBetweenDates;
+	startDate: Dayjs;
+	endDate: Dayjs;
+	onPrevMonth?: () => void;
+	onNextMonth?: () => void;
 }
 
-export function MonthlyCalendar({ appointments }: MonthlyCalendarProps) {
-	const [currentDate, setCurrentDate] = useState(dayjs());
+export function MonthlyCalendar({
+	appointments,
+	startDate,
+	endDate,
+	onPrevMonth,
+	onNextMonth,
+}: MonthlyCalendarProps) {
 	const { width } = useViewportSize();
 
 	const isMobile = width < 768;
@@ -311,11 +320,11 @@ export function MonthlyCalendar({ appointments }: MonthlyCalendarProps) {
 
 	// Handling month navigation
 	const prevMonth = () => {
-		setCurrentDate(currentDate.subtract(1, "month"));
+		onPrevMonth?.();
 	};
 
 	const nextMonth = () => {
-		setCurrentDate(currentDate.add(1, "month"));
+		onNextMonth?.();
 	};
 
 	// Get necessary calendar calculations
@@ -325,19 +334,19 @@ export function MonthlyCalendar({ appointments }: MonthlyCalendarProps) {
 		<Box p={isMobile ? rem(8) : rem(16)}>
 			<Paper p={isMobile ? rem(8) : rem(16)} withBorder radius="md">
 				<CalendarHeader
-					currentDate={currentDate}
+					currentDate={startDate}
 					onPrevMonth={prevMonth}
 					onNextMonth={nextMonth}
 					isMobile={isMobile}
 				/>
 
 				{isMobile ? (
-					<MobileCalendarView currentDate={currentDate} events={appointments} />
+					<MobileCalendarView currentDate={startDate} events={appointments} />
 				) : (
 					<>
 						<WeekdayHeader weekdays={weekdays} />
 						<CalendarGrid
-							currentDate={currentDate}
+							currentDate={startDate}
 							events={appointments}
 							isTablet={isTablet}
 						/>
@@ -367,5 +376,11 @@ function CalendarSuspense() {
 			endDate,
 		});
 
-	return <MonthlyCalendar appointments={appointments} />;
+	return (
+		<MonthlyCalendar
+			appointments={appointments}
+			startDate={dayjs(startDate)}
+			endDate={dayjs(endDate)}
+		/>
+	);
 }
