@@ -10,11 +10,11 @@ import {
   Text,
   Title,
   Tooltip,
-  UnstyledButton
+  UnstyledButton,
+  rem
 } from '@mantine/core';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
 
 // Sample event data - in a real app, this would come from an API or database
 interface Event {
@@ -23,45 +23,69 @@ interface Event {
   date: Date;
   color?: string;
   description?: string;
+  time?: string;
 }
 
-const SAMPLE_EVENTS: Event[] = [
-  {
-    id: '1',
-    title: 'Team Meeting',
-    date: new Date(2025, 3, 12), // April 12, 2025
-    color: 'blue',
-    description: 'Quarterly planning session'
-  },
-  {
-    id: '2',
-    title: 'Product Launch',
-    date: new Date(2025, 3, 15), // April 15, 2025
-    color: 'green',
-    description: 'New feature release'
-  },
-  {
-    id: '3',
-    title: 'Client Presentation',
-    date: new Date(2025, 3, 18), // April 18, 2025
-    color: 'red',
-    description: 'Stakeholder review'
-  },
-  {
-    id: '4',
-    title: 'Workshop',
-    date: new Date(2025, 3, 22), // April 22, 2025
-    color: 'grape',
-    description: 'Design thinking session'
-  },
-  {
-    id: '5',
-    title: 'Conference Call',
-    date: new Date(2025, 3, 22), // April 22, 2025 (same day as Workshop)
-    color: 'orange',
-    description: 'Partner sync-up'
-  }
-];
+// Helper to generate current month events
+const getCurrentMonthEvents = (): Event[] => {
+  const today = new Date();
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+  
+  // Generate some sample events for the current month
+  return [
+    {
+      id: '1',
+      title: 'Team Meeting',
+      date: new Date(currentYear, currentMonth, 12),
+      color: 'blue',
+      description: 'Quarterly planning session',
+      time: '10:00 AM'
+    },
+    {
+      id: '2',
+      title: 'Product Launch',
+      date: new Date(currentYear, currentMonth, 15),
+      color: 'green',
+      description: 'New feature release',
+      time: '2:00 PM'
+    },
+    {
+      id: '3',
+      title: 'Client Presentation',
+      date: new Date(currentYear, currentMonth, 18),
+      color: 'red',
+      description: 'Stakeholder review',
+      time: '11:30 AM'
+    },
+    {
+      id: '4',
+      title: 'Workshop',
+      date: new Date(currentYear, currentMonth, 22),
+      color: 'grape',
+      description: 'Design thinking session',
+      time: '9:00 AM'
+    },
+    {
+      id: '5',
+      title: 'Conference Call',
+      date: new Date(currentYear, currentMonth, 22),
+      color: 'orange',
+      description: 'Partner sync-up',
+      time: '3:30 PM'
+    },
+    {
+      id: '6',
+      title: 'Deadline',
+      date: new Date(currentYear, currentMonth, today.getDate()),
+      color: 'cyan',
+      description: 'Project submission',
+      time: '5:00 PM'
+    }
+  ];
+};
+
+const SAMPLE_EVENTS: Event[] = getCurrentMonthEvents();
 
 // Helper functions
 const getDaysInMonth = (year: number, month: number): number => {
@@ -79,10 +103,35 @@ const formatMonthYear = (date: Date): string => {
   });
 };
 
-export default function CalendarView() {
+const formatFullDate = (date: Date): string => {
+  return date.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'long',
+    weekday: 'long'
+  });
+};
+
+export default function MonthlyCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const month = currentDate.getMonth();
   const year = currentDate.getFullYear();
+  
+  // Use CSS media query for responsive design
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  const isMobile = windowWidth < 768;
+  const isTablet = windowWidth >= 768 && windowWidth < 1024;
   
   // Handling month navigation
   const prevMonth = () => {
@@ -105,11 +154,11 @@ export default function CalendarView() {
   
   // Generate calendar grid
   const generateCalendarGrid = () => {
-    const days = [];
+    const days: React.JSX.Element[] = [];
     
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(<Box key={`empty-${i}`} w="14.28%" p="md" />);
+      days.push(<Box key={`empty-${i}`} w="14.28%" p={{ base: 'xs', md: 'md' }} display={{ base: firstDayOfMonth > 3 ? 'none' : 'block', sm: 'block' }} />);
     }
     
     // Add cells for each day in the month
@@ -120,32 +169,65 @@ export default function CalendarView() {
         event => event.date.getDate() === day
       );
       
+      const isToday = new Date().getDate() === day && 
+                       new Date().getMonth() === month && 
+                       new Date().getFullYear() === year;
+      
       days.push(
-        <Box key={`day-${day}`} w="14.28%" p="xs">
+        <Box key={`day-${day}`} w={{ base: '25%', sm: '14.28%' }} p={{ base: 'xxs', sm: 'xs' }}>
           <Paper 
-            p="xs" 
-            h={120} 
+            p={{ base: 'xxs', sm: 'xs' }}
+            h={{ base: 80, sm: 100, md: 120 }}
             withBorder 
-            style={{ overflow: 'hidden' }}
+            style={{ 
+              overflow: 'hidden',
+              backgroundColor: isToday ? 'var(--mantine-color-blue-light)' : undefined
+            }}
           >
-            <Text fw={600} mb={5}>{day}</Text>
-            <Stack spacing={5}>
-              {dayEvents.map(event => (
-                <Tooltip 
-                  key={event.id} 
-                  label={event.description || event.title}
-                  position="bottom"
-                  withArrow
-                >
-                  <Badge 
-                    color={event.color || 'blue'}
-                    style={{ cursor: 'pointer' }}
-                    fullWidth
-                  >
-                    {event.title}
-                  </Badge>
-                </Tooltip>
-              ))}
+            <Text fw={isToday ? 700 : 600} mb={5} size="sm">{day}</Text>
+            <Stack gap="sm">
+              {dayEvents.length > 0 && (
+                <>
+                  {/* Mobile view - just show indicator dots */}
+                  <Group gap={4} display={{ base: 'flex', sm: 'none' }}>
+                    {dayEvents.map(event => (
+                      <Box 
+                        key={event.id}
+                        w={8}
+                        h={8}
+                        style={{ 
+                          borderRadius: '50%', 
+                          backgroundColor: `var(--mantine-color-${event.color || 'blue'}-filled)`
+                        }}
+                      />
+                    ))}
+                  </Group>
+                  
+                  {/* Tablet and desktop view - show full badges */}
+                  <Box display={{ base: 'none', sm: 'block' }}>
+                    {dayEvents.map(event => (
+                      <Tooltip 
+                        key={event.id} 
+                        label={event.description || event.title}
+                        position="bottom"
+                        withArrow
+                      >
+                        <Badge 
+                          color={event.color || 'blue'}
+                          style={{ cursor: 'pointer' }}
+                          fullWidth
+                          size="xs"
+                          mb={2}
+                        >
+                          {event.title.length > 10 
+                            ? `${event.title.substring(0, 9)}...` 
+                            : event.title}
+                        </Badge>
+                      </Tooltip>
+                    ))}
+                  </Box>
+                </>
+              )}
             </Stack>
           </Paper>
         </Box>
@@ -156,11 +238,11 @@ export default function CalendarView() {
   };
   
   return (
-    <Box p="xl">
-      <Paper p="lg" withBorder radius="md">
+    <Box p={isMobile ? rem(8) : rem(16)}>
+      <Paper p={isMobile ? rem(8) : rem(16)} withBorder radius="md">
         {/* Calendar Header */}
-        <Group justify="apart" mb="md">
-          <Title order={2}>{formatMonthYear(currentDate)}</Title>
+        <Group justify="apart" mb="md" wrap="wrap">
+          <Title order={isMobile ? 3 : 2}>{formatMonthYear(currentDate)}</Title>
           <Group gap="xs">
             <UnstyledButton onClick={prevMonth}>
               <ChevronLeft size={20} />
@@ -171,19 +253,75 @@ export default function CalendarView() {
           </Group>
         </Group>
         
-        {/* Weekday Headers */}
-        <Flex mb="sm">
-          {weekdays.map(day => (
-            <Box key={day} w="14.28%" p="xs">
-              <Text fw={700} ta="center">{day}</Text>
-            </Box>
-          ))}
-        </Flex>
-        
-        {/* Calendar Grid */}
-        <Flex wrap="wrap">
-          {generateCalendarGrid()}
-        </Flex>
+        {/* Mobile View - Single column list */}
+        {isMobile ? (
+          <Stack>
+            {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
+              const date = new Date(year, month, day);
+              const dayEvents = eventsThisMonth.filter(
+                event => event.date.getDate() === day
+              );
+              const isToday = new Date().getDate() === day && 
+                             new Date().getMonth() === month && 
+                             new Date().getFullYear() === year;
+              
+              return (
+                <Paper 
+                  key={`mobile-day-${day}`} 
+                  p="sm" 
+                  withBorder 
+                  radius="md"
+                  style={{ 
+                    backgroundColor: isToday ? 'var(--mantine-color-blue-0)' : undefined 
+                  }}
+                >
+                  <Text fw={700} mb="xs">{formatFullDate(date)}</Text>
+                  {dayEvents.length > 0 ? (
+                    <Stack gap="xs">
+                      {dayEvents.map(event => (
+                        <Group key={event.id} gap="xs">
+                          <Box 
+                            w={12}
+                            h={12}
+                            style={{ 
+                              borderRadius: '50%', 
+                              backgroundColor: `var(--mantine-color-${event.color || 'blue'}-filled)`
+                            }}
+                          />
+                          <Text size="sm">
+                            {event.title}
+                            {event.time && <Text component="span" size="xs" c="dimmed"> - {event.time}</Text>}
+                          </Text>
+                        </Group>
+                      ))}
+                    </Stack>
+                  ) : (
+                    <Text c="dimmed" size="sm">No events</Text>
+                  )}
+                </Paper>
+              );
+            })}
+          </Stack>
+        ) : (
+          // Desktop View - Calendar Grid
+          <>
+            {/* Weekday Headers */}
+            <Flex mb="sm">
+              {weekdays.map(day => (
+                <Box key={day} w="14.28%" p="xs">
+                  <Text fw={700} ta="center" size="sm">
+                    {day}
+                  </Text>
+                </Box>
+              ))}
+            </Flex>
+            
+            {/* Calendar Grid */}
+            <Flex wrap="wrap">
+              {generateCalendarGrid()}
+            </Flex>
+          </>
+        )}
       </Paper>
     </Box>
   );
