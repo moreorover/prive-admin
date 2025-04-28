@@ -16,3 +16,6 @@ export type GetAppointmentNotes =
 
 export type GetHairAssignmentsByAppointmentId =
 	inferRouterOutputs<AppRouter>["appointments"]["getHairAssignments"];
+
+export type GetAppointmentsBetweenDates =
+	inferRouterOutputs<AppRouter>["appointments"]["getAppointmentsBetweenDates"];

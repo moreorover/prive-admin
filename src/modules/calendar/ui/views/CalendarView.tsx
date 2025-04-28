@@ -1,6 +1,8 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
+import type { GetAppointmentsBetweenDates } from "@/modules/appointments/types";
+import { trpc } from "@/trpc/client";
 import {
 	Badge,
 	Box,
@@ -20,16 +22,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
-// Types
-interface Event {
-	id: string;
-	title: string;
-	date: Dayjs;
-	color?: string;
-	description?: string;
-	time?: string;
-}
-
 // Helper functions
 const getDaysInMonth = (date: Dayjs): number => {
 	return date.daysInMonth();
@@ -45,61 +37,6 @@ const formatMonthYear = (date: Dayjs): string => {
 
 const formatFullDate = (date: Dayjs): string => {
 	return date.format("dddd, MMMM D");
-};
-
-// Helper to generate current month events
-const getCurrentMonthEvents = (): Event[] => {
-	// Generate some sample events for the current month
-	return [
-		{
-			id: "1",
-			title: "Team Meeting",
-			date: dayjs().date(12).hour(10).minute(0),
-			color: "blue",
-			description: "Quarterly planning session",
-			time: "10:00 AM",
-		},
-		{
-			id: "2",
-			title: "Product Launch",
-			date: dayjs().date(15).hour(14).minute(0),
-			color: "green",
-			description: "New feature release",
-			time: "2:00 PM",
-		},
-		{
-			id: "3",
-			title: "Client Presentation",
-			date: dayjs().date(18).hour(11).minute(30),
-			color: "red",
-			description: "Stakeholder review",
-			time: "11:30 AM",
-		},
-		{
-			id: "4",
-			title: "Workshop",
-			date: dayjs().date(22).hour(9).minute(0),
-			color: "grape",
-			description: "Design thinking session",
-			time: "9:00 AM",
-		},
-		{
-			id: "5",
-			title: "Conference Call",
-			date: dayjs().date(22).hour(15).minute(30),
-			color: "orange",
-			description: "Partner sync-up",
-			time: "3:30 PM",
-		},
-		{
-			id: "6",
-			title: "Deadline",
-			date: dayjs().hour(17).minute(0),
-			color: "cyan",
-			description: "Project submission",
-			time: "5:00 PM",
-		},
-	];
 };
 
 // Components
@@ -147,29 +84,24 @@ const CalendarEventBadge = ({
 	isMobile = false,
 	isTablet = false,
 }: {
-	event: Event;
+	event: GetAppointmentsBetweenDates[0];
 	isMobile?: boolean;
 	isTablet?: boolean;
 }) => {
 	return (
 		<Tooltip
-			label={`${event.title}${event.time ? ` - ${event.time}` : ""}\n${event.description || ""}`}
+			label={`${event.name}${event.startsAt ? ` - ${event.startsAt}` : ""}`}
 			position="bottom"
 			withArrow
 		>
-			<Badge
-				color={event.color || "blue"}
-				style={{ cursor: "pointer" }}
-				fullWidth
-				size="xs"
-			>
+			<Badge style={{ cursor: "pointer" }} fullWidth size="xs">
 				{isMobile || isTablet
-					? event.title.length > 6
-						? `${event.title.substring(0, 5)}...`
-						: event.title
-					: event.title.length > 12
-						? `${event.title.substring(0, 11)}...`
-						: event.title}
+					? event.name.length > 6
+						? `${event.name.substring(0, 5)}...`
+						: event.name
+					: event.name.length > 12
+						? `${event.name.substring(0, 11)}...`
+						: event.name}
 			</Badge>
 		</Tooltip>
 	);
@@ -194,7 +126,7 @@ const DayCell = ({
 	isTablet,
 }: {
 	date: Dayjs;
-	events: Event[];
+	events: GetAppointmentsBetweenDates;
 	isTablet: boolean;
 }) => {
 	const isToday = dayjs().isSame(date, "day");
@@ -247,7 +179,7 @@ const CalendarGrid = ({
 	isTablet,
 }: {
 	currentDate: Dayjs;
-	events: Event[];
+	events: GetAppointmentsBetweenDates;
 	isTablet: boolean;
 }) => {
 	const firstDayOfMonth = getFirstDayOfMonth(currentDate);
@@ -265,7 +197,9 @@ const CalendarGrid = ({
 		const date = currentDate.date(day);
 
 		// Find events for this day
-		const dayEvents = events.filter((event) => event.date.date() === day);
+		const dayEvents = events.filter(
+			(event) => dayjs(event.startsAt).date() === day,
+		);
 
 		days.push(
 			<DayCell
@@ -280,16 +214,18 @@ const CalendarGrid = ({
 	return <Flex wrap="wrap">{days}</Flex>;
 };
 
-const MobileEventItem = ({ event }: { event: Event }) => {
+const MobileEventItem = ({
+	event,
+}: { event: GetAppointmentsBetweenDates[0] }) => {
 	return (
 		<Group key={event.id} gap="xs">
-			<EventDot color={event.color} />
+			<EventDot />
 			<Text size="sm">
-				{event.title}
-				{event.time && (
+				{event.name}
+				{event.startsAt && (
 					<Text component="span" size="xs" c="dimmed">
 						{" "}
-						- {event.time}
+						- {dayjs(event.startsAt).format("h:mm A")}
 					</Text>
 				)}
 			</Text>
@@ -302,7 +238,7 @@ const MobileDayCard = ({
 	events,
 }: {
 	date: Dayjs;
-	events: Event[];
+	events: GetAppointmentsBetweenDates;
 }) => {
 	const isToday = dayjs().isSame(date, "day");
 
@@ -338,7 +274,7 @@ const MobileCalendarView = ({
 	events,
 }: {
 	currentDate: Dayjs;
-	events: Event[];
+	events: GetAppointmentsBetweenDates;
 }) => {
 	const daysInMonth = getDaysInMonth(currentDate);
 
@@ -346,7 +282,9 @@ const MobileCalendarView = ({
 		<Stack>
 			{Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
 				const date = currentDate.date(day);
-				const dayEvents = events.filter((event) => event.date.date() === day);
+				const dayEvents = events.filter(
+					(event) => dayjs(event.startsAt).date() === day,
+				);
 
 				return (
 					<MobileDayCard
@@ -360,7 +298,11 @@ const MobileCalendarView = ({
 	);
 };
 
-export function MonthlyCalendar() {
+interface MonthlyCalendarProps {
+	appointments: GetAppointmentsBetweenDates;
+}
+
+export function MonthlyCalendar({ appointments }: MonthlyCalendarProps) {
 	const [currentDate, setCurrentDate] = useState(dayjs());
 	const { width } = useViewportSize();
 
@@ -379,14 +321,6 @@ export function MonthlyCalendar() {
 	// Get necessary calendar calculations
 	const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-	// Get events for the current month
-	const SAMPLE_EVENTS = getCurrentMonthEvents();
-	const eventsThisMonth = SAMPLE_EVENTS.filter(
-		(event) =>
-			event.date.month() === currentDate.month() &&
-			event.date.year() === currentDate.year(),
-	);
-
 	return (
 		<Box p={isMobile ? rem(8) : rem(16)}>
 			<Paper p={isMobile ? rem(8) : rem(16)} withBorder radius="md">
@@ -398,16 +332,13 @@ export function MonthlyCalendar() {
 				/>
 
 				{isMobile ? (
-					<MobileCalendarView
-						currentDate={currentDate}
-						events={eventsThisMonth}
-					/>
+					<MobileCalendarView currentDate={currentDate} events={appointments} />
 				) : (
 					<>
 						<WeekdayHeader weekdays={weekdays} />
 						<CalendarGrid
 							currentDate={currentDate}
-							events={eventsThisMonth}
+							events={appointments}
 							isTablet={isTablet}
 						/>
 					</>
@@ -428,5 +359,13 @@ export default function CalendarView() {
 }
 
 function CalendarSuspense() {
-	return <MonthlyCalendar />;
+	const startDate = dayjs().startOf("month").format("YYYY-MM-DD");
+	const endDate = dayjs().endOf("month").format("YYYY-MM-DD");
+	const [appointments] =
+		trpc.appointments.getAppointmentsBetweenDates.useSuspenseQuery({
+			startDate,
+			endDate,
+		});
+
+	return <MonthlyCalendar appointments={appointments} />;
 }
