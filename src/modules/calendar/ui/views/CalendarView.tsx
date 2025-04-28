@@ -16,7 +16,7 @@ import {
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-// Sample event data - in a real app, this would come from an API or database
+// Types
 interface Event {
   id: string;
   title: string;
@@ -25,6 +25,30 @@ interface Event {
   description?: string;
   time?: string;
 }
+
+// Helper functions
+const getDaysInMonth = (year: number, month: number): number => {
+  return new Date(year, month + 1, 0).getDate();
+};
+
+const getFirstDayOfMonth = (year: number, month: number): number => {
+  return new Date(year, month, 1).getDay();
+};
+
+const formatMonthYear = (date: Date): string => {
+  return date.toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric'
+  });
+};
+
+const formatFullDate = (date: Date): string => {
+  return date.toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'long',
+    weekday: 'long'
+  });
+};
 
 // Helper to generate current month events
 const getCurrentMonthEvents = (): Event[] => {
@@ -85,40 +109,278 @@ const getCurrentMonthEvents = (): Event[] => {
   ];
 };
 
-const SAMPLE_EVENTS: Event[] = getCurrentMonthEvents();
-
-// Helper functions
-const getDaysInMonth = (year: number, month: number): number => {
-  return new Date(year, month + 1, 0).getDate();
+// Components
+const CalendarHeader = ({ 
+  currentDate, 
+  onPrevMonth, 
+  onNextMonth 
+}: { 
+  currentDate: Date; 
+  onPrevMonth: () => void;
+  onNextMonth: () => void;
+  isMobile: boolean;
+}) => {
+  return (
+    <Group justify="apart" mb="md" wrap="wrap">
+      <Title order={3}>{formatMonthYear(currentDate)}</Title>
+      <Group gap="xs">
+        <UnstyledButton onClick={onPrevMonth}>
+          <ChevronLeft size={20} />
+        </UnstyledButton>
+        <UnstyledButton onClick={onNextMonth}>
+          <ChevronRight size={20} />
+        </UnstyledButton>
+      </Group>
+    </Group>
+  );
 };
 
-const getFirstDayOfMonth = (year: number, month: number): number => {
-  return new Date(year, month, 1).getDay();
+const WeekdayHeader = ({ weekdays }: { weekdays: string[] }) => {
+  return (
+    <Flex mb="sm">
+      {weekdays.map(day => (
+        <Box key={day} w="14.28%" p="xs">
+          <Text fw={700} ta="center" size="sm">
+            {day}
+          </Text>
+        </Box>
+      ))}
+    </Flex>
+  );
 };
 
-const formatMonthYear = (date: Date): string => {
-  return date.toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric'
-  });
+const CalendarEventBadge = ({ 
+  event, 
+  isMobile = false,
+  isTablet = false
+}: { 
+  event: Event; 
+  isMobile?: boolean;
+  isTablet?: boolean;
+}) => {
+  return (
+    <Tooltip 
+      label={`${event.title}${event.time ? ` - ${event.time}` : ''}\n${event.description || ''}`}
+      position="bottom"
+      withArrow
+    >
+      <Badge 
+        color={event.color || 'blue'}
+        style={{ cursor: 'pointer' }}
+        fullWidth
+        size="xs"
+      >
+        {isMobile || isTablet ? 
+          (event.title.length > 6 ? `${event.title.substring(0, 5)}...` : event.title) :
+          (event.title.length > 12 ? `${event.title.substring(0, 11)}...` : event.title)
+        }
+      </Badge>
+    </Tooltip>
+  );
 };
 
-const formatFullDate = (date: Date): string => {
-  return date.toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'long',
-    weekday: 'long'
-  });
+const EventDot = ({ color = 'blue' }: { color?: string }) => {
+  return (
+    <Box 
+      w={8}
+      h={8}
+      style={{ 
+        borderRadius: '50%', 
+        backgroundColor: `var(--mantine-color-${color}-filled)`
+      }}
+    />
+  );
 };
 
+const DayCell = ({ 
+  day, 
+  month, 
+  year, 
+  events, 
+  isTablet
+}: { 
+  day: number; 
+  month: number; 
+  year: number; 
+  events: Event[];
+  isTablet: boolean;
+}) => {
+  const isToday = new Date().getDate() === day && 
+                  new Date().getMonth() === month && 
+                  new Date().getFullYear() === year;
+                  
+  return (
+    <Box w="14.28%" p={rem(4)}>
+      <Paper 
+        p={rem(8)}
+        h={isTablet ? rem(80) : rem(120)}
+        withBorder 
+        style={{ 
+          overflow: 'hidden',
+          backgroundColor: isToday ? 'var(--mantine-color-blue-0)' : undefined
+        }}
+      >
+        <Text fw={isToday ? 700 : 600} mb={5} size="sm">{day}</Text>
+        <Stack gap={rem(4)}>
+          {events.length > 0 && (
+            <>
+              {events.slice(0, isTablet ? 2 : 3).map(event => (
+                <CalendarEventBadge 
+                  key={event.id} 
+                  event={event} 
+                  isTablet={isTablet} 
+                />
+              ))}
+              {events.length > (isTablet ? 2 : 3) && (
+                <Text size="xs" ta="center" c="dimmed">+{events.length - (isTablet ? 2 : 3)} more</Text>
+              )}
+            </>
+          )}
+        </Stack>
+      </Paper>
+    </Box>
+  );
+};
+
+const EmptyCell = ({ index }: { index: number }) => {
+  return <Box key={`empty-${index}`} w="14.28%" p={rem(8)} />;
+};
+
+const CalendarGrid = ({ 
+  year, 
+  month, 
+  firstDayOfMonth,
+  daysInMonth,
+  events,
+  isTablet
+}: { 
+  year: number; 
+  month: number;
+  firstDayOfMonth: number;
+  daysInMonth: number;
+  events: Event[];
+  isTablet: boolean;
+}) => {
+  const days: JSX.Element[] = [];
+  
+  // Add empty cells for days before the first day of the month
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    days.push(<EmptyCell key={`empty-${i}`} index={i} />);
+  }
+  
+  // Add cells for each day in the month
+  for (let day = 1; day <= daysInMonth; day++) {
+    // Find events for this day
+    const dayEvents = events.filter(
+      event => event.date.getDate() === day
+    );
+    
+    days.push(
+      <DayCell 
+        key={`day-${day}`}
+        day={day}
+        month={month}
+        year={year}
+        events={dayEvents}
+        isTablet={isTablet}
+      />
+    );
+  }
+  
+  return <Flex wrap="wrap">{days}</Flex>;
+};
+
+const MobileEventItem = ({ event }: { event: Event }) => {
+  return (
+    <Group key={event.id} gap="xs">
+      <EventDot color={event.color} />
+      <Text size="sm">
+        {event.title}
+        {event.time && <Text component="span" size="xs" c="dimmed"> - {event.time}</Text>}
+      </Text>
+    </Group>
+  );
+};
+
+const MobileDayCard = ({ 
+  day, 
+  month, 
+  year, 
+  events 
+}: { 
+  day: number; 
+  month: number; 
+  year: number; 
+  events: Event[];
+}) => {
+  const date = new Date(year, month, day);
+  const isToday = new Date().getDate() === day && 
+                  new Date().getMonth() === month && 
+                  new Date().getFullYear() === year;
+  
+  return (
+    <Paper 
+      p="sm" 
+      withBorder 
+      radius="md"
+      style={{ 
+        backgroundColor: isToday ? 'var(--mantine-color-blue-0)' : undefined 
+      }}
+    >
+      <Text fw={700} mb="xs">{formatFullDate(date)}</Text>
+      {events.length > 0 ? (
+        <Stack gap="xs">
+          {events.map(event => (
+            <MobileEventItem key={event.id} event={event} />
+          ))}
+        </Stack>
+      ) : (
+        <Text c="dimmed" size="sm">No events</Text>
+      )}
+    </Paper>
+  );
+};
+
+const MobileCalendarView = ({ 
+  year, 
+  month, 
+  daysInMonth,
+  events
+}: { 
+  year: number; 
+  month: number;
+  daysInMonth: number;
+  events: Event[];
+}) => {
+  return (
+    <Stack>
+      {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
+        const dayEvents = events.filter(
+          event => event.date.getDate() === day
+        );
+        
+        return (
+          <MobileDayCard 
+            key={`mobile-day-${day}`}
+            day={day}
+            month={month}
+            year={year}
+            events={dayEvents}
+          />
+        );
+      })}
+    </Stack>
+  );
+};
+
+// Main component
 export default function MonthlyCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const month = currentDate.getMonth();
   const year = currentDate.getFullYear();
   
   // Use CSS media query for responsive design
-  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
-
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
@@ -129,7 +391,7 @@ export default function MonthlyCalendar() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
+
   const isMobile = windowWidth < 768;
   const isTablet = windowWidth >= 768 && windowWidth < 1024;
   
@@ -147,179 +409,40 @@ export default function MonthlyCalendar() {
   const firstDayOfMonth = getFirstDayOfMonth(year, month);
   const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   
-  // Filter events for the current month
+  // Get events for the current month
+  const SAMPLE_EVENTS = getCurrentMonthEvents();
   const eventsThisMonth = SAMPLE_EVENTS.filter(event => 
     event.date.getMonth() === month && event.date.getFullYear() === year
   );
   
-  // Generate calendar grid
-  const generateCalendarGrid = () => {
-    const days: React.JSX.Element[] = [];
-    
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(<Box key={`empty-${i}`} w="14.28%" p={{ base: 'xs', md: 'md' }} display={{ base: firstDayOfMonth > 3 ? 'none' : 'block', sm: 'block' }} />);
-    }
-    
-    // Add cells for each day in the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      // Find events for this day
-      const dayDate = new Date(year, month, day);
-      const dayEvents = eventsThisMonth.filter(
-        event => event.date.getDate() === day
-      );
-      
-      const isToday = new Date().getDate() === day && 
-                       new Date().getMonth() === month && 
-                       new Date().getFullYear() === year;
-      
-      days.push(
-        <Box key={`day-${day}`} w={{ base: '25%', sm: '14.28%' }} p={{ base: 'xxs', sm: 'xs' }}>
-          <Paper 
-            p={{ base: 'xxs', sm: 'xs' }}
-            h={{ base: 80, sm: 100, md: 120 }}
-            withBorder 
-            style={{ 
-              overflow: 'hidden',
-              backgroundColor: isToday ? 'var(--mantine-color-blue-light)' : undefined
-            }}
-          >
-            <Text fw={isToday ? 700 : 600} mb={5} size="sm">{day}</Text>
-            <Stack gap="sm">
-              {dayEvents.length > 0 && (
-                <>
-                  {/* Mobile view - just show indicator dots */}
-                  <Group gap={4} display={{ base: 'flex', sm: 'none' }}>
-                    {dayEvents.map(event => (
-                      <Box 
-                        key={event.id}
-                        w={8}
-                        h={8}
-                        style={{ 
-                          borderRadius: '50%', 
-                          backgroundColor: `var(--mantine-color-${event.color || 'blue'}-filled)`
-                        }}
-                      />
-                    ))}
-                  </Group>
-                  
-                  {/* Tablet and desktop view - show full badges */}
-                  <Box display={{ base: 'none', sm: 'block' }}>
-                    {dayEvents.map(event => (
-                      <Tooltip 
-                        key={event.id} 
-                        label={event.description || event.title}
-                        position="bottom"
-                        withArrow
-                      >
-                        <Badge 
-                          color={event.color || 'blue'}
-                          style={{ cursor: 'pointer' }}
-                          fullWidth
-                          size="xs"
-                          mb={2}
-                        >
-                          {event.title.length > 10 
-                            ? `${event.title.substring(0, 9)}...` 
-                            : event.title}
-                        </Badge>
-                      </Tooltip>
-                    ))}
-                  </Box>
-                </>
-              )}
-            </Stack>
-          </Paper>
-        </Box>
-      );
-    }
-    
-    return days;
-  };
-  
   return (
     <Box p={isMobile ? rem(8) : rem(16)}>
       <Paper p={isMobile ? rem(8) : rem(16)} withBorder radius="md">
-        {/* Calendar Header */}
-        <Group justify="apart" mb="md" wrap="wrap">
-          <Title order={isMobile ? 3 : 2}>{formatMonthYear(currentDate)}</Title>
-          <Group gap="xs">
-            <UnstyledButton onClick={prevMonth}>
-              <ChevronLeft size={20} />
-            </UnstyledButton>
-            <UnstyledButton onClick={nextMonth}>
-              <ChevronRight size={20} />
-            </UnstyledButton>
-          </Group>
-        </Group>
+        <CalendarHeader 
+          currentDate={currentDate} 
+          onPrevMonth={prevMonth} 
+          onNextMonth={nextMonth}
+          isMobile={isMobile}
+        />
         
-        {/* Mobile View - Single column list */}
         {isMobile ? (
-          <Stack>
-            {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
-              const date = new Date(year, month, day);
-              const dayEvents = eventsThisMonth.filter(
-                event => event.date.getDate() === day
-              );
-              const isToday = new Date().getDate() === day && 
-                             new Date().getMonth() === month && 
-                             new Date().getFullYear() === year;
-              
-              return (
-                <Paper 
-                  key={`mobile-day-${day}`} 
-                  p="sm" 
-                  withBorder 
-                  radius="md"
-                  style={{ 
-                    backgroundColor: isToday ? 'var(--mantine-color-blue-0)' : undefined 
-                  }}
-                >
-                  <Text fw={700} mb="xs">{formatFullDate(date)}</Text>
-                  {dayEvents.length > 0 ? (
-                    <Stack gap="xs">
-                      {dayEvents.map(event => (
-                        <Group key={event.id} gap="xs">
-                          <Box 
-                            w={12}
-                            h={12}
-                            style={{ 
-                              borderRadius: '50%', 
-                              backgroundColor: `var(--mantine-color-${event.color || 'blue'}-filled)`
-                            }}
-                          />
-                          <Text size="sm">
-                            {event.title}
-                            {event.time && <Text component="span" size="xs" c="dimmed"> - {event.time}</Text>}
-                          </Text>
-                        </Group>
-                      ))}
-                    </Stack>
-                  ) : (
-                    <Text c="dimmed" size="sm">No events</Text>
-                  )}
-                </Paper>
-              );
-            })}
-          </Stack>
+          <MobileCalendarView 
+            year={year}
+            month={month}
+            daysInMonth={daysInMonth}
+            events={eventsThisMonth}
+          />
         ) : (
-          // Desktop View - Calendar Grid
           <>
-            {/* Weekday Headers */}
-            <Flex mb="sm">
-              {weekdays.map(day => (
-                <Box key={day} w="14.28%" p="xs">
-                  <Text fw={700} ta="center" size="sm">
-                    {day}
-                  </Text>
-                </Box>
-              ))}
-            </Flex>
-            
-            {/* Calendar Grid */}
-            <Flex wrap="wrap">
-              {generateCalendarGrid()}
-            </Flex>
+            <WeekdayHeader weekdays={weekdays} />
+            <CalendarGrid 
+              year={year}
+              month={month}
+              firstDayOfMonth={firstDayOfMonth}
+              daysInMonth={daysInMonth}
+              events={eventsThisMonth}
+              isTablet={isTablet}
+            />
           </>
         )}
       </Paper>
