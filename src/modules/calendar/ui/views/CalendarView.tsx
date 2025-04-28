@@ -13,55 +13,46 @@ import {
   UnstyledButton,
   rem
 } from '@mantine/core';
+import dayjs, { type Dayjs } from 'dayjs';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
+
 
 // Types
 interface Event {
   id: string;
   title: string;
-  date: Date;
+  date: Dayjs;
   color?: string;
   description?: string;
   time?: string;
 }
 
 // Helper functions
-const getDaysInMonth = (year: number, month: number): number => {
-  return new Date(year, month + 1, 0).getDate();
+const getDaysInMonth = (date: Dayjs): number => {
+  return date.daysInMonth();
 };
 
-const getFirstDayOfMonth = (year: number, month: number): number => {
-  return new Date(year, month, 1).getDay();
+const getFirstDayOfMonth = (date: Dayjs): number => {
+  return date.startOf('month').day();
 };
 
-const formatMonthYear = (date: Date): string => {
-  return date.toLocaleDateString('en-US', {
-    month: 'long',
-    year: 'numeric'
-  });
+const formatMonthYear = (date: Dayjs): string => {
+  return date.format('MMMM YYYY');
 };
 
-const formatFullDate = (date: Date): string => {
-  return date.toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'long',
-    weekday: 'long'
-  });
+const formatFullDate = (date: Dayjs): string => {
+  return date.format('dddd, MMMM D');
 };
 
 // Helper to generate current month events
-const getCurrentMonthEvents = (): Event[] => {
-  const today = new Date();
-  const currentMonth = today.getMonth();
-  const currentYear = today.getFullYear();
-  
+const getCurrentMonthEvents = (): Event[] => {  
   // Generate some sample events for the current month
   return [
     {
       id: '1',
       title: 'Team Meeting',
-      date: new Date(currentYear, currentMonth, 12),
+      date: dayjs().date(12).hour(10).minute(0),
       color: 'blue',
       description: 'Quarterly planning session',
       time: '10:00 AM'
@@ -69,7 +60,7 @@ const getCurrentMonthEvents = (): Event[] => {
     {
       id: '2',
       title: 'Product Launch',
-      date: new Date(currentYear, currentMonth, 15),
+      date: dayjs().date(15).hour(14).minute(0),
       color: 'green',
       description: 'New feature release',
       time: '2:00 PM'
@@ -77,7 +68,7 @@ const getCurrentMonthEvents = (): Event[] => {
     {
       id: '3',
       title: 'Client Presentation',
-      date: new Date(currentYear, currentMonth, 18),
+      date: dayjs().date(18).hour(11).minute(30),
       color: 'red',
       description: 'Stakeholder review',
       time: '11:30 AM'
@@ -85,7 +76,7 @@ const getCurrentMonthEvents = (): Event[] => {
     {
       id: '4',
       title: 'Workshop',
-      date: new Date(currentYear, currentMonth, 22),
+      date: dayjs().date(22).hour(9).minute(0),
       color: 'grape',
       description: 'Design thinking session',
       time: '9:00 AM'
@@ -93,7 +84,7 @@ const getCurrentMonthEvents = (): Event[] => {
     {
       id: '5',
       title: 'Conference Call',
-      date: new Date(currentYear, currentMonth, 22),
+      date: dayjs().date(22).hour(15).minute(30),
       color: 'orange',
       description: 'Partner sync-up',
       time: '3:30 PM'
@@ -101,7 +92,7 @@ const getCurrentMonthEvents = (): Event[] => {
     {
       id: '6',
       title: 'Deadline',
-      date: new Date(currentYear, currentMonth, today.getDate()),
+      date: dayjs().hour(17).minute(0),
       color: 'cyan',
       description: 'Project submission',
       time: '5:00 PM'
@@ -115,7 +106,7 @@ const CalendarHeader = ({
   onPrevMonth, 
   onNextMonth 
 }: { 
-  currentDate: Date; 
+  currentDate: Dayjs; 
   onPrevMonth: () => void;
   onNextMonth: () => void;
   isMobile: boolean;
@@ -193,21 +184,16 @@ const EventDot = ({ color = 'blue' }: { color?: string }) => {
 };
 
 const DayCell = ({ 
-  day, 
-  month, 
-  year, 
+  date, 
   events, 
   isTablet
 }: { 
-  day: number; 
-  month: number; 
-  year: number; 
+  date: Dayjs; 
   events: Event[];
   isTablet: boolean;
 }) => {
-  const isToday = new Date().getDate() === day && 
-                  new Date().getMonth() === month && 
-                  new Date().getFullYear() === year;
+  const isToday = dayjs().isSame(date, 'day');
+  const day = date.date();
                   
   return (
     <Box w="14.28%" p={rem(4)}>
@@ -247,20 +233,16 @@ const EmptyCell = ({ index }: { index: number }) => {
 };
 
 const CalendarGrid = ({ 
-  year, 
-  month, 
-  firstDayOfMonth,
-  daysInMonth,
+  currentDate,
   events,
   isTablet
 }: { 
-  year: number; 
-  month: number;
-  firstDayOfMonth: number;
-  daysInMonth: number;
+  currentDate: Dayjs;
   events: Event[];
   isTablet: boolean;
 }) => {
+  const firstDayOfMonth = getFirstDayOfMonth(currentDate);
+  const daysInMonth = getDaysInMonth(currentDate);
   const days: JSX.Element[] = [];
   
   // Add empty cells for days before the first day of the month
@@ -270,17 +252,18 @@ const CalendarGrid = ({
   
   // Add cells for each day in the month
   for (let day = 1; day <= daysInMonth; day++) {
+    // Create date for this day
+    const date = currentDate.date(day);
+    
     // Find events for this day
     const dayEvents = events.filter(
-      event => event.date.getDate() === day
+      event => event.date.date() === day
     );
     
     days.push(
       <DayCell 
         key={`day-${day}`}
-        day={day}
-        month={month}
-        year={year}
+        date={date}
         events={dayEvents}
         isTablet={isTablet}
       />
@@ -303,20 +286,13 @@ const MobileEventItem = ({ event }: { event: Event }) => {
 };
 
 const MobileDayCard = ({ 
-  day, 
-  month, 
-  year, 
+  date, 
   events 
 }: { 
-  day: number; 
-  month: number; 
-  year: number; 
+  date: Dayjs; 
   events: Event[];
 }) => {
-  const date = new Date(year, month, day);
-  const isToday = new Date().getDate() === day && 
-                  new Date().getMonth() === month && 
-                  new Date().getFullYear() === year;
+  const isToday = dayjs().isSame(date, 'day');
   
   return (
     <Paper 
@@ -342,29 +318,26 @@ const MobileDayCard = ({
 };
 
 const MobileCalendarView = ({ 
-  year, 
-  month, 
-  daysInMonth,
+  currentDate,
   events
 }: { 
-  year: number; 
-  month: number;
-  daysInMonth: number;
+  currentDate: Dayjs;
   events: Event[];
 }) => {
+  const daysInMonth = getDaysInMonth(currentDate);
+  
   return (
     <Stack>
       {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
+        const date = currentDate.date(day);
         const dayEvents = events.filter(
-          event => event.date.getDate() === day
+          event => event.date.date() === day
         );
         
         return (
           <MobileDayCard 
             key={`mobile-day-${day}`}
-            day={day}
-            month={month}
-            year={year}
+            date={date}
             events={dayEvents}
           />
         );
@@ -375,10 +348,8 @@ const MobileCalendarView = ({
 
 // Main component
 export default function MonthlyCalendar() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(dayjs());
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
-  const month = currentDate.getMonth();
-  const year = currentDate.getFullYear();
   
   // Use CSS media query for responsive design
   useEffect(() => {
@@ -397,22 +368,21 @@ export default function MonthlyCalendar() {
   
   // Handling month navigation
   const prevMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
+    setCurrentDate(currentDate.subtract(1, 'month'));
   };
   
   const nextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
+    setCurrentDate(currentDate.add(1, 'month'));
   };
   
   // Get necessary calendar calculations
-  const daysInMonth = getDaysInMonth(year, month);
-  const firstDayOfMonth = getFirstDayOfMonth(year, month);
   const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   
   // Get events for the current month
   const SAMPLE_EVENTS = getCurrentMonthEvents();
   const eventsThisMonth = SAMPLE_EVENTS.filter(event => 
-    event.date.getMonth() === month && event.date.getFullYear() === year
+    event.date.month() === currentDate.month() && 
+    event.date.year() === currentDate.year()
   );
   
   return (
@@ -427,19 +397,14 @@ export default function MonthlyCalendar() {
         
         {isMobile ? (
           <MobileCalendarView 
-            year={year}
-            month={month}
-            daysInMonth={daysInMonth}
+            currentDate={currentDate}
             events={eventsThisMonth}
           />
         ) : (
           <>
             <WeekdayHeader weekdays={weekdays} />
             <CalendarGrid 
-              year={year}
-              month={month}
-              firstDayOfMonth={firstDayOfMonth}
-              daysInMonth={daysInMonth}
+              currentDate={currentDate}
               events={eventsThisMonth}
               isTablet={isTablet}
             />
