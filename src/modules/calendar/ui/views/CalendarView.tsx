@@ -19,7 +19,7 @@ import {
 import { useViewportSize } from "@mantine/hooks";
 import dayjs, { type Dayjs } from "dayjs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 // Helper functions
@@ -368,19 +368,35 @@ export default function CalendarView() {
 }
 
 function CalendarSuspense() {
-	const startDate = dayjs().startOf("month").format("YYYY-MM-DD");
-	const endDate = dayjs().endOf("month").format("YYYY-MM-DD");
+	const [startDate, setStartDate] = useState(
+		dayjs().startOf("month").format("YYYY-MM-DD"),
+	);
+	const [endDate, setEndDate] = useState(
+		dayjs().endOf("month").format("YYYY-MM-DD"),
+	);
 	const [appointments] =
 		trpc.appointments.getAppointmentsBetweenDates.useSuspenseQuery({
 			startDate,
 			endDate,
 		});
 
+	const onPrevMonth = () => {
+		setStartDate(dayjs(startDate).subtract(1, "month").format("YYYY-MM-DD"));
+		setEndDate(dayjs(endDate).subtract(1, "month").format("YYYY-MM-DD"));
+	};
+
+	const onNextMonth = () => {
+		setStartDate(dayjs(startDate).add(1, "month").format("YYYY-MM-DD"));
+		setEndDate(dayjs(endDate).add(1, "month").format("YYYY-MM-DD"));
+	};
+
 	return (
 		<MonthlyCalendar
 			appointments={appointments}
 			startDate={dayjs(startDate)}
 			endDate={dayjs(endDate)}
+			onNextMonth={onNextMonth}
+			onPrevMonth={onPrevMonth}
 		/>
 	);
 }

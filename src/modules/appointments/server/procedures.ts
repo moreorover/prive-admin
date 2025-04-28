@@ -104,6 +104,9 @@ export const appointmentsRouter = createTRPCRouter({
 			const startOfWeek = dayjs(startDate).startOf("day");
 			const endOfWeek = dayjs(endDate).endOf("day");
 
+			console.log("startOfWeek", startOfWeek.toDate());
+			console.log("endOfWeek", endOfWeek.toDate());
+
 			const appointments = await prisma.appointment.findMany({
 				where: {
 					startsAt: {
