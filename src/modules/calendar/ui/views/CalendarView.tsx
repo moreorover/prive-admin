@@ -196,7 +196,7 @@ const DayCell = ({
   const day = date.date();
                   
   return (
-    <Box w="14.28%" p={rem(4)}>
+    <Box w="14.28%">
       <Paper 
         p={rem(8)}
         h={isTablet ? rem(80) : rem(120)}
