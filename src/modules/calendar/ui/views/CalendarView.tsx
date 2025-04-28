@@ -11,12 +11,12 @@ import {
   Title,
   Tooltip,
   UnstyledButton,
-  rem
+  rem,
 } from '@mantine/core';
+import { useViewportSize } from '@mantine/hooks';
 import dayjs, { type Dayjs } from 'dayjs';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
-
+import { useState } from 'react';
 
 // Types
 interface Event {
@@ -243,7 +243,7 @@ const CalendarGrid = ({
 }) => {
   const firstDayOfMonth = getFirstDayOfMonth(currentDate);
   const daysInMonth = getDaysInMonth(currentDate);
-  const days: JSX.Element[] = [];
+  const days: JSX.Element[]= [];
   
   // Add empty cells for days before the first day of the month
   for (let i = 0; i < firstDayOfMonth; i++) {
@@ -349,22 +349,10 @@ const MobileCalendarView = ({
 // Main component
 export default function MonthlyCalendar() {
   const [currentDate, setCurrentDate] = useState(dayjs());
-  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  const { width } = useViewportSize();
   
-  // Use CSS media query for responsive design
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const isMobile = windowWidth < 768;
-  const isTablet = windowWidth >= 768 && windowWidth < 1024;
+  const isMobile = width < 768;
+  const isTablet = width >= 768 && width < 1024;
   
   // Handling month navigation
   const prevMonth = () => {
