@@ -22,6 +22,12 @@ export default function HairAssignmentToAppointmentTable({
 			<Table.Td>
 				<Text>{formatAmount(hairAssignment.total / 100)}</Text>
 			</Table.Td>
+			<Table.Td>
+				<Text>{formatAmount(hairAssignment.soldFor / 100)}</Text>
+			</Table.Td>
+			<Table.Td>
+				<Text>{formatAmount(hairAssignment.profit / 100)}</Text>
+			</Table.Td>
 		</Table.Tr>
 	));
 
@@ -33,6 +39,8 @@ export default function HairAssignmentToAppointmentTable({
 						<Table.Th>Appointment ID</Table.Th>
 						<Table.Th>Weight in grams</Table.Th>
 						<Table.Th>Total</Table.Th>
+						<Table.Th>Sold For</Table.Th>
+						<Table.Th>Profit</Table.Th>
 					</Table.Tr>
 				</Table.Thead>
 				<Table.Tbody>{rows}</Table.Tbody>
