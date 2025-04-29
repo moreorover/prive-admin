@@ -15,6 +15,7 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { useSetAtom } from "jotai/index";
 import { TriangleAlertIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Props {
 	appointmentId: string;
@@ -26,6 +27,7 @@ export default function HairAssignmentToAppointmentTable({
 	hairAssignments,
 }: Props) {
 	const utils = trpc.useUtils();
+	const router = useRouter();
 
 	const showEditHairAssignmentToAppointmentDrawer = useSetAtom(
 		editHairAssignmentToAppointmentDrawerAtom,
@@ -100,8 +102,20 @@ export default function HairAssignmentToAppointmentTable({
 			<Table.Td>
 				<Text>{formatAmount(hairAssignment.total / 100)}</Text>
 			</Table.Td>
-			<Table.Td>
-				<Text>{formatAmount(hairAssignment.soldFor / 100)}</Text>
+			<Table.Td
+				style={{
+					backgroundColor:
+						hairAssignment.weightInGrams === 0 ? "#ffe6e6" : undefined, // light pink
+				}}
+			>
+				<Group>
+					<Text>{formatAmount(hairAssignment.soldFor / 100)}</Text>
+					{hairAssignment.weightInGrams === 0 && (
+						<Tooltip label="Sold for price not assigned">
+							<TriangleAlertIcon size={16} color="red" />
+						</Tooltip>
+					)}
+				</Group>
 			</Table.Td>
 			<Table.Td>
 				<Text>
@@ -145,6 +159,15 @@ export default function HairAssignmentToAppointmentTable({
 							}}
 						>
 							Delete
+						</Menu.Item>
+						<Menu.Item
+							onClick={() =>
+								router.push(
+									`/dashboard/hair-orders/${hairAssignment.hairOrderId}`,
+								)
+							}
+						>
+							View Hair Order
 						</Menu.Item>
 					</Menu.Dropdown>
 				</Menu>

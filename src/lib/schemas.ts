@@ -148,6 +148,7 @@ export const hairAssignedToAppointmentFormSchema = (maxWeight: number) =>
 		hairOrderId: z.string().cuid2(),
 		appointmentId: z.string().cuid2(),
 		weightInGrams: z.number().positive().max(maxWeight),
+		soldFor: z.number().positive(),
 	});
 
 export type HairAssignedToAppointment = z.infer<
