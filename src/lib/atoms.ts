@@ -164,6 +164,7 @@ export const editHairAssignmentToAppointmentDrawerAtom = atom<{
 		hairOrderId: "",
 		appointmentId: "",
 		weightInGrams: 0,
+		soldFor: 0,
 	},
 	maxWeight: 0,
 	onUpdated: () => {},
