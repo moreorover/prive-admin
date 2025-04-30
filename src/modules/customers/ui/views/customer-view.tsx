@@ -18,6 +18,7 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { useSetAtom } from "jotai";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -50,6 +51,20 @@ function CustomerSuspense({ customerId }: Props) {
 	const showCreateOrderDrawer = useSetAtom(newOrderDrawerAtom);
 	const showCreateAppointmentDrawer = useSetAtom(newAppointmentDrawerAtom);
 
+	const openCreateHairSalesOrderModal = () =>
+		modals.openConfirmModal({
+			title: "Please confirm creating Hair Sales Order",
+			children: (
+				<Text size="sm">
+					This action is so important that you are required to confirm it with a
+					modal. Please click one of these buttons to proceed.
+				</Text>
+			),
+			labels: { confirm: "Confirm", cancel: "Cancel" },
+			onCancel: () => console.log("Cancel"),
+			onConfirm: () => console.log("Confirmed"),
+		});
+
 	return (
 		<Grid>
 			<GridCol span={12}>
@@ -69,6 +84,9 @@ function CustomerSuspense({ customerId }: Props) {
 								}}
 							>
 								Edit
+							</Button>
+							<Button onClick={openCreateHairSalesOrderModal}>
+								Create Hair Sales Order
 							</Button>
 						</Group>
 					</Group>
