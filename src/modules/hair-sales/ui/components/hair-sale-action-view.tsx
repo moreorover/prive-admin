@@ -8,7 +8,7 @@ function HairSaleActionView() {
 	return (
 		<Button
 			component={Link}
-			href={`/dashboard/hair-hairSales/${hairSale.id}`}
+			href={`/dashboard/hair-sales/${hairSale.id}`}
 			variant="light"
 			color="blue"
 			size="sm"

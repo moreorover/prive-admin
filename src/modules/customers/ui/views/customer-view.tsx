@@ -147,19 +147,10 @@ function CustomerSuspense({ customerId }: Props) {
 									<HairSaleCard
 										key={sale.id}
 										hairSale={sale}
-										title={<HairSaleCard.Title />}
-										weight={<HairSaleCard.Weight />}
-										pricePerGram={<HairSaleCard.PricePerGram />}
-										total={<HairSaleCard.Total />}
 										owners={
 											<HairSaleCard.Owners>
 												<HairSaleCard.Creator />
 											</HairSaleCard.Owners>
-										}
-										actions={
-											<HairSaleCard.Actions>
-												<HairSaleCard.ActionView />
-											</HairSaleCard.Actions>
 										}
 									/>
 								))}

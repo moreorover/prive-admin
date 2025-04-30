@@ -2,7 +2,7 @@ import { useHairSaleCardContext } from "@/modules/hair-sales/ui/components/hair-
 import { Group, Text } from "@mantine/core";
 import { Coins } from "lucide-react";
 
-function HairSaleWeight() {
+function HairSalePricePerGram() {
 	const { hairSale } = useHairSaleCardContext();
 	return (
 		<Group gap="xs">
@@ -13,4 +13,4 @@ function HairSaleWeight() {
 	);
 }
 
-export default HairSaleWeight;
+export default HairSalePricePerGram;

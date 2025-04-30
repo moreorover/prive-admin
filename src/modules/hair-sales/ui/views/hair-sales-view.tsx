@@ -1,16 +1,19 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import HairSalesGrid from "@/modules/hair-sales/ui/components/hair-sales-grid";
+import HairSaleCard from "@/modules/hair-sales/ui/components/hair-sale-card";
 import Surface from "@/modules/ui/components/surface";
 import { trpc } from "@/trpc/client";
 import {
+	Box,
 	Divider,
 	Flex,
 	Grid,
 	GridCol,
 	Paper,
+	SimpleGrid,
 	Stack,
+	Text,
 	Title,
 } from "@mantine/core";
 import dayjs from "dayjs";
@@ -53,8 +56,22 @@ function HairSalesSuspense() {
 	const [hairSales] = trpc.hairSales.getAll.useSuspenseQuery();
 	return (
 		<>
-			<HairSalesGrid hairSales={hairSales} />
-			{/*<SalesPage />*/}
+			<SimpleGrid
+				cols={{ base: 1, md: 2, lg: 3 }}
+				spacing={{ base: "md", sm: "lg" }}
+				pt={"sm"}
+			>
+				{hairSales.map((sale) => (
+					<HairSaleCard key={sale.id} hairSale={sale} />
+				))}
+			</SimpleGrid>
+
+			{/* Show message when no results are found */}
+			{hairSales.length === 0 && (
+				<Box ta="center" mt="xl">
+					<Text size="lg">No hair sales records found.</Text>
+				</Box>
+			)}
 		</>
 	);
 }

@@ -2,8 +2,8 @@ import type { GetAllHairSales } from "@/modules/hair-sales/types";
 import HairSaleActionView from "@/modules/hair-sales/ui/components/hair-sale-action-view";
 import HairSaleActions from "@/modules/hair-sales/ui/components/hair-sale-actions";
 import HairSaleCardContext from "@/modules/hair-sales/ui/components/hair-sale-card-context";
-import HairSaleCardPricePerGram from "@/modules/hair-sales/ui/components/hair-sale-card-pricePerGram";
-import HairSaleCardWeight from "@/modules/hair-sales/ui/components/hair-sale-card-weight";
+import HairSalePricePerGram from "@/modules/hair-sales/ui/components/hair-sale-card-pricePerGram";
+import HairSaleWeight from "@/modules/hair-sales/ui/components/hair-sale-card-weight";
 import HairSaleCreator from "@/modules/hair-sales/ui/components/hair-sale-creator";
 import HairSaleCustomer from "@/modules/hair-sales/ui/components/hair-sale-customer";
 import HairSaleOwners from "@/modules/hair-sales/ui/components/hair-sale-owners";
@@ -24,12 +24,21 @@ interface Props {
 
 function HairSaleCard({
 	hairSale,
-	title,
-	weight,
-	pricePerGram,
-	total,
-	owners,
-	actions,
+	title = <HairSaleTitle />,
+	weight = <HairSaleWeight />,
+	pricePerGram = <HairSalePricePerGram />,
+	total = <HairSaleTotal />,
+	owners = (
+		<HairSaleOwners>
+			<HairSaleCustomer />
+			<HairSaleCreator />
+		</HairSaleOwners>
+	),
+	actions = (
+		<HairSaleActions>
+			<HairSaleActionView />
+		</HairSaleActions>
+	),
 }: Props) {
 	return (
 		<HairSaleCardContext.Provider value={{ hairSale }}>
@@ -59,8 +68,8 @@ function HairSaleCard({
 }
 
 HairSaleCard.Title = HairSaleTitle;
-HairSaleCard.Weight = HairSaleCardWeight;
-HairSaleCard.PricePerGram = HairSaleCardPricePerGram;
+HairSaleCard.Weight = HairSaleWeight;
+HairSaleCard.PricePerGram = HairSalePricePerGram;
 HairSaleCard.Total = HairSaleTotal;
 HairSaleCard.Owners = HairSaleOwners;
 HairSaleCard.Customer = HairSaleCustomer;
