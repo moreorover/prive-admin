@@ -312,7 +312,7 @@ model HairSale {
   pricePerGram  Int @default(0)
 
   customerId String
-  customer   Customer @relation("CustomerHairSales", fields: [customerId], references: [id], onDelete: SetNull)
+  customer   Customer @relation("CustomerHairSales", fields: [customerId], references: [id], onDelete: Cascade)
 
   transactions Transaction[]
 

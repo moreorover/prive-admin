@@ -22,6 +22,7 @@ import {
 	Title,
 } from "@mantine/core";
 import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
 import { useSetAtom } from "jotai";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -57,6 +58,24 @@ function CustomerSuspense({ customerId }: Props) {
 	const showCreateOrderDrawer = useSetAtom(newOrderDrawerAtom);
 	const showCreateAppointmentDrawer = useSetAtom(newAppointmentDrawerAtom);
 
+	const createHairSalesOrder = trpc.hairSales.create.useMutation({
+		onSuccess: () => {
+			utils.hairSales.getByCustomerId.invalidate({ customerId });
+			notifications.show({
+				color: "green",
+				title: "Success!",
+				message: "Hair Sale created.",
+			});
+		},
+		onError: () => {
+			notifications.show({
+				color: "red",
+				title: "Error",
+				message: "Please try again.",
+			});
+		},
+	});
+
 	const openCreateHairSalesOrderModal = () =>
 		modals.openConfirmModal({
 			title: "Please confirm creating Hair Sales Order",
@@ -67,8 +86,7 @@ function CustomerSuspense({ customerId }: Props) {
 				</Text>
 			),
 			labels: { confirm: "Confirm", cancel: "Cancel" },
-			onCancel: () => console.log("Cancel"),
-			onConfirm: () => console.log("Confirmed"),
+			onConfirm: () => createHairSalesOrder.mutate({ customerId }),
 		});
 
 	return (

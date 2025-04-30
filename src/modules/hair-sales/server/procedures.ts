@@ -22,4 +22,16 @@ export const hairSalesRouter = createTRPCRouter({
 
 			return hairSales;
 		}),
+	create: protectedProcedure
+		.input(z.object({ customerId: z.string().cuid2() }))
+		.mutation(async ({ input, ctx }) => {
+			const { customerId } = input;
+			const { user } = ctx;
+
+			const hairSale = await prisma.hairSale.create({
+				data: { customerId, createdById: user.id },
+			});
+
+			return hairSale;
+		}),
 });
