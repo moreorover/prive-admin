@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { z } from "zod";
 
 export const hairSalesRouter = createTRPCRouter({
 	getAll: protectedProcedure.query(() => {
@@ -7,4 +8,15 @@ export const hairSalesRouter = createTRPCRouter({
 			include: { createdBy: true, customer: true },
 		});
 	}),
+	getByCustomerId: protectedProcedure
+		.input(z.object({ customerId: z.string().cuid2() }))
+		.query(async ({ input }) => {
+			const { customerId } = input;
+
+			const hairSales = await prisma.hairSale.findMany({
+				where: { customerId },
+			});
+
+			return hairSales;
+		}),
 });

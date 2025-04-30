@@ -15,6 +15,7 @@ import {
 	GridCol,
 	Group,
 	Paper,
+	Stack,
 	Text,
 	Title,
 } from "@mantine/core";
@@ -47,6 +48,9 @@ function CustomerSuspense({ customerId }: Props) {
 	const [orders] = trpc.orders.getOrdersByCustomerId.useSuspenseQuery({
 		customerId,
 	});
+	const [hairSales] = trpc.hairSales.getByCustomerId.useSuspenseQuery({
+		customerId,
+	});
 	const showUpdateCustomerDrawer = useSetAtom(editCustomerDrawerAtom);
 	const showCreateOrderDrawer = useSetAtom(newOrderDrawerAtom);
 	const showCreateAppointmentDrawer = useSetAtom(newAppointmentDrawerAtom);
@@ -66,100 +70,124 @@ function CustomerSuspense({ customerId }: Props) {
 		});
 
 	return (
-		<Grid>
-			<GridCol span={12}>
-				<Paper withBorder p="md" radius="md" shadow="sm">
-					<Group justify="space-between">
-						<Title order={4}>{customer.name}</Title>
-						<Group>
-							<Button
-								onClick={() => {
-									showUpdateCustomerDrawer({
-										isOpen: true,
-										customer,
-										onUpdated: () => {
-											utils.customers.getOne.invalidate({ id: customerId });
-										},
-									});
-								}}
-							>
-								Edit
-							</Button>
-							<Button onClick={openCreateHairSalesOrderModal}>
-								Create Hair Sales Order
-							</Button>
-						</Group>
-					</Group>
-				</Paper>
-			</GridCol>
-			<GridCol span={3}>
-				<Paper withBorder p="md" radius="md" shadow="sm">
-					<Title order={4}>Customer Details</Title>
-					<Text size="sm" mt="xs">
-						<strong>Phone Number:</strong> {customer.phoneNumber || "N/A"}
-					</Text>
-				</Paper>
-			</GridCol>
-			<GridCol span={12}>
-				<Paper withBorder p="md" radius="md" shadow="sm">
-					<Group justify="space-between">
-						<Title order={4}>Appointments</Title>
-						<Group>
-							<Button
-								onClick={() => {
-									showCreateAppointmentDrawer({
-										isOpen: true,
-										clientId: customer.id,
-										onCreated: () => {
-											utils.appointments.getAppointmentsByCustomerId.invalidate(
-												{ customerId },
-											);
-										},
-									});
-								}}
-							>
-								New
-							</Button>
-						</Group>
-					</Group>
-					{appointments.length > 0 ? (
-						<>
-							<AppointmentsTable appointments={appointments} />
-						</>
-					) : (
-						<Text c="gray">No Appointments found.</Text>
-					)}
-				</Paper>
-			</GridCol>
-			<GridCol span={12}>
-				<Paper withBorder p="md" radius="md" shadow="sm">
-					<Group justify="space-between">
-						<Title order={4}>Orders</Title>
-						<Group>
-							<Button
-								onClick={() => {
-									showCreateOrderDrawer({
-										isOpen: true,
-										customerId,
-										onCreated: () => {
-											utils.orders.getOrdersByCustomerId.invalidate({
-												customerId,
+		<>
+			<Grid grow>
+				<GridCol span={{ base: 12, lg: 3 }}>
+					<Stack>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Stack gap="xs">
+								<Title order={4}>Customer Details</Title>
+								<Text size="sm" mt="xs">
+									<strong>Phone Number:</strong> {customer.phoneNumber || "N/A"}
+								</Text>
+								<Button
+									onClick={() => {
+										showUpdateCustomerDrawer({
+											isOpen: true,
+											customer,
+											onUpdated: () => {
+												utils.customers.getOne.invalidate({ id: customerId });
+											},
+										});
+									}}
+								>
+									Edit
+								</Button>
+								<Button onClick={openCreateHairSalesOrderModal}>
+									Create Hair Sales Order
+								</Button>
+							</Stack>
+						</Paper>
+					</Stack>
+				</GridCol>
+				<GridCol span={{ base: 12, lg: 9 }}>
+					<Stack gap={"sm"}>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between">
+								<Title order={4}>Appointments</Title>
+								<Group>
+									<Button
+										onClick={() => {
+											showCreateAppointmentDrawer({
+												isOpen: true,
+												clientId: customer.id,
+												onCreated: () => {
+													utils.appointments.getAppointmentsByCustomerId.invalidate(
+														{ customerId },
+													);
+												},
 											});
-										},
-									});
-								}}
-							>
-								New
-							</Button>
-						</Group>
-					</Group>
-					{orders.length > 0 ? (
-						<OrdersTable orders={orders} />
-					) : (
-						<Text c="gray">No Orders found.</Text>
-					)}
-				</Paper>
-			</GridCol>
-		</Grid>
+										}}
+									>
+										New
+									</Button>
+								</Group>
+							</Group>
+							{appointments.length > 0 ? (
+								<>
+									<AppointmentsTable appointments={appointments} />
+								</>
+							) : (
+								<Text c="gray">No Appointments found.</Text>
+							)}
+						</Paper>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between">
+								<Title order={4}>Hair Sales</Title>
+								<Group>
+									<Button
+										onClick={() => {
+											showCreateOrderDrawer({
+												isOpen: true,
+												customerId,
+												onCreated: () => {
+													utils.orders.getOrdersByCustomerId.invalidate({
+														customerId,
+													});
+												},
+											});
+										}}
+									>
+										New
+									</Button>
+								</Group>
+							</Group>
+							{orders.length > 0 ? (
+								<OrdersTable orders={orders} />
+							) : (
+								<Text c="gray">No Hair Sales found.</Text>
+							)}
+						</Paper>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between">
+								<Title order={4}>Orders</Title>
+								<Group>
+									<Button
+										onClick={() => {
+											showCreateOrderDrawer({
+												isOpen: true,
+												customerId,
+												onCreated: () => {
+													utils.orders.getOrdersByCustomerId.invalidate({
+														customerId,
+													});
+												},
+											});
+										}}
+									>
+										New
+									</Button>
+								</Group>
+							</Group>
+							{orders.length > 0 ? (
+								<OrdersTable orders={orders} />
+							) : (
+								<Text c="gray">No Orders found.</Text>
+							)}
+						</Paper>
+					</Stack>
+				</GridCol>
+			</Grid>
+		</>
 	);
 }
