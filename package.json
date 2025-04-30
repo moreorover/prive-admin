@@ -11,6 +11,7 @@
     "format": "biome check --formatter-enabled=true --linter-enabled=true --organize-imports-enabled=true --write src",
     "migrate": "prisma migrate deploy",
     "db:migrate": "prisma migrate dev",
+    "db:createMigration": "prisma migrate dev --create-only",
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",
     "db:dev": "prisma generate && prisma db push && prisma db seed",

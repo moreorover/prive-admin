@@ -36,6 +36,13 @@ export const HairAssignmentForm = ({
 				key={form.key("weightInGrams")}
 				{...form.getInputProps("weightInGrams")}
 			/>
+			<NumberInput
+				label="Sold for"
+				placeholder="99.99"
+				prefix="£"
+				key={form.key("soldFor")}
+				{...form.getInputProps("soldFor")}
+			/>
 			<Button disabled={disabled} fullWidth mt="xl" type="submit">
 				{hairAssignment.id ? "Update" : "Create"}
 			</Button>

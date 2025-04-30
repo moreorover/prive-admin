@@ -203,11 +203,15 @@ export const appointmentsRouter = createTRPCRouter({
 				hairAssignmentSaved.hairOrder.pricePerGram *
 				hairAssignment.weightInGrams;
 
+			const soldFor = hairAssignment.soldFor * 100;
+
 			const hairAssignmentUpdated =
 				await prisma.hairAssignedToAppointment.update({
 					data: {
 						weightInGrams: hairAssignment.weightInGrams,
 						total,
+						soldFor,
+						profit: soldFor - total,
 					},
 					where: { id: hairAssignment.id },
 				});

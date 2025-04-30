@@ -66,6 +66,12 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	const [hairAssignments] =
 		trpc.appointments.getHairAssignments.useSuspenseQuery({ appointmentId });
 
+	const hairTotal =
+		hairAssignments.reduce(
+			(sum, hairAssignment) => sum + hairAssignment.total,
+			0,
+		) / 100;
+
 	const [notes] =
 		trpc.appointmentNotes.getNotesByAppointmentId.useSuspenseQuery({
 			appointmentId,
@@ -179,7 +185,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 							Profit
 						</Text>
 						<Text size="md" ta="center" fw={500} mt="sm">
-							Total: <b>£ {transactionsTotal.toFixed(2)}</b>
+							Total: <b>£ {(transactionsTotal - hairTotal).toFixed(2)}</b>
 						</Text>
 					</Paper>
 				</Stack>
