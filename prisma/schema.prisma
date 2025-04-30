@@ -25,6 +25,7 @@ model User {
   Account       Account[]
   hairOrder     HairOrder[]
   hairOrderNote HairOrderNote[]
+  hairSale      HairSale[]
 
   @@map("users")
 }
@@ -85,6 +86,7 @@ model Customer {
   appointmentsAsCustomer  Appointment[]
   appointmentsAsPersonnel PersonnelOnAppointments[]
   hairOrders              HairOrder[]               @relation("CustomerOrders")
+  hairSales               HairSale[]                @relation("CustomerHairSales")
 
   @@map("customers")
 }
@@ -186,6 +188,8 @@ model Transaction {
   appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
   hairOrderId   String?
   hairOrder     HairOrder?   @relation(fields: [hairOrderId], references: [id], onDelete: SetNull)
+  hairSaleId    String?
+  hairSale      HairSale?    @relation(fields: [hairSaleId], references: [id], onDelete: SetNull)
 
   @@map("transactions")
 }
@@ -298,4 +302,25 @@ model HairAssignedToAppointment {
 
   @@unique([appointmentId, hairOrderId])
   @@map("hair_appointment_assignments")
+}
+
+model HairSale {
+  id       String    @id @default(cuid(2))
+  placedAt DateTime? @db.Date
+
+  weightInGrams Int @default(0)
+  pricePerGram  Int @default(0)
+
+  customerId String
+  customer   Customer @relation("CustomerHairSales", fields: [customerId], references: [id], onDelete: SetNull)
+
+  transactions Transaction[]
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("hair_sales")
 }
