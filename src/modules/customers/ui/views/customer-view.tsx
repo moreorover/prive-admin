@@ -7,8 +7,8 @@ import {
 	newOrderDrawerAtom,
 } from "@/lib/atoms";
 import { AppointmentsTable } from "@/modules/customers/ui/components/appointments-table";
+import { HairSalesTable } from "@/modules/customers/ui/components/hair-sales-table";
 import { OrdersTable } from "@/modules/orders/ui/components/orders-table";
-import HairSaleCard from "@/modules/ui/components/hair-sale-card/hair-sale-card";
 import { trpc } from "@/trpc/client";
 import {
 	Box,
@@ -17,7 +17,6 @@ import {
 	GridCol,
 	Group,
 	Paper,
-	SimpleGrid,
 	Stack,
 	Text,
 	Title,
@@ -138,23 +137,7 @@ function CustomerSuspense({ customerId }: Props) {
 									<Button onClick={openCreateHairSalesOrderModal}>New</Button>
 								</Group>
 							</Group>
-							<SimpleGrid
-								cols={{ base: 1, md: 2, lg: 3 }}
-								spacing={{ base: "md", sm: "lg" }}
-								pt={"sm"}
-							>
-								{hairSales.map((sale) => (
-									<HairSaleCard
-										key={sale.id}
-										hairSale={sale}
-										owners={
-											<HairSaleCard.Owners>
-												<HairSaleCard.Creator />
-											</HairSaleCard.Owners>
-										}
-									/>
-								))}
-							</SimpleGrid>
+							<HairSalesTable hairSales={hairSales} />
 
 							{/* Show message when no results are found */}
 							{hairSales.length === 0 && (
