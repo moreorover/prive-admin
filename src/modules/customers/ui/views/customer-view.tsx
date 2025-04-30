@@ -135,7 +135,7 @@ function CustomerSuspense({ customerId }: Props) {
 									<Button onClick={openCreateHairSalesOrderModal}>New</Button>
 								</Group>
 							</Group>
-							{orders.length > 0 ? (
+							{hairSales.length > 0 ? (
 								<OrdersTable orders={orders} />
 							) : (
 								<Text c="gray">No Hair Sales found.</Text>
