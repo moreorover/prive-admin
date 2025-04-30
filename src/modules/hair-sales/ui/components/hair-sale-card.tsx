@@ -22,7 +22,7 @@ export default function HairSaleCard({ hairSale }: Props) {
 			<Flex direction="column" gap="sm">
 				<Group justify="space-between">
 					<Badge size="lg" radius="sm" leftSection={<Calendar size={14} />}>
-						{dayjs(hairSale.placedAt).format("MMM D, YYYY h:mm A")}
+						{dayjs(hairSale.placedAt).format("MMM D, YYYY")}
 					</Badge>
 					<Text fw={700} c="dimmed" size="sm">
 						#{hairSale.id}
