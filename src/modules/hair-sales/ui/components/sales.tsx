@@ -2,6 +2,7 @@ import {
 	ActionIcon,
 	Badge,
 	Box,
+	Button,
 	Divider,
 	Flex,
 	Group,
@@ -16,16 +17,30 @@ import dayjs from "dayjs";
 import {
 	Calendar,
 	Coins,
+	Eye,
 	Scale,
 	Search,
 	SortAsc,
 	SortDesc,
 	UserCircle,
 } from "lucide-react";
+import Link from "next/link";
+// pages/sales.tsx
 import { useState } from "react";
 
+// Define Sale type
+interface Sale {
+	id: number;
+	placedAt: string;
+	weightInGrams: number;
+	pricePerGram: number;
+	totalPrice: number;
+	customerName: string;
+	creatorName: string;
+}
+
 // Mock data for sales
-const mockSales = [
+const mockSales: Sale[] = [
 	{
 		id: 1,
 		placedAt: "2025-04-28T10:30:00",
@@ -84,10 +99,12 @@ const mockSales = [
 
 export default function SalesPage() {
 	// biome-ignore lint/correctness/noUnusedVariables: <explanation>
-	const [sales, setSales] = useState(mockSales);
+	const [sales, setSales] = useState<Sale[]>(mockSales);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [sortField, setSortField] = useState("placedAt");
-	const [sortDirection, setSortDirection] = useState("desc");
+	const [sortField, setSortField] = useState<
+		"placedAt" | "totalPrice" | "weightInGrams"
+	>("placedAt");
+	const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
 	// Filter sales based on search query
 	const filteredSales = sales.filter(
@@ -123,7 +140,6 @@ export default function SalesPage() {
 
 	return (
 		<>
-			{/*<Container size="xl" py="xl">*/}
 			<Title order={1} mb="lg">
 				Sales Records
 			</Title>
@@ -133,7 +149,7 @@ export default function SalesPage() {
 				<TextInput
 					placeholder="Search by customer or creator"
 					value={searchQuery}
-					onChange={(e) => setSearchQuery(e.target.value)}
+					onChange={(e) => setSearchQuery(e.currentTarget.value)}
 					leftSection={<Search size={16} />}
 					style={{ flexGrow: 1 }}
 				/>
@@ -147,8 +163,10 @@ export default function SalesPage() {
 							{ value: "weightInGrams", label: "Weight" },
 						]}
 						value={sortField}
-						// biome-ignore lint/style/noNonNullAssertion: <explanation>
-						onChange={(e) => setSortField(e!)}
+						onChange={(value) =>
+							value &&
+							setSortField(value as "placedAt" | "totalPrice" | "weightInGrams")
+						}
 						style={{ width: 150 }}
 					/>
 
@@ -221,6 +239,20 @@ export default function SalesPage() {
 									<Text>{sale.creatorName}</Text>
 								</Group>
 							</Flex>
+
+							{/* Button at the bottom of the card */}
+							<Button
+								component={Link}
+								href={`/sales/${sale.id}`}
+								variant="light"
+								color="blue"
+								size="sm"
+								mt="md"
+								leftSection={<Eye size={16} />}
+								fullWidth
+							>
+								View Details
+							</Button>
 						</Flex>
 					</Paper>
 				))}
@@ -232,7 +264,6 @@ export default function SalesPage() {
 					<Text size="lg">No sales records found.</Text>
 				</Box>
 			)}
-			{/*</Container>*/}
 		</>
 	);
 }
