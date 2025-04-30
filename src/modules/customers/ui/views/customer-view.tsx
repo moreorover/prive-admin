@@ -93,9 +93,6 @@ function CustomerSuspense({ customerId }: Props) {
 								>
 									Edit
 								</Button>
-								<Button onClick={openCreateHairSalesOrderModal}>
-									Create Hair Sales Order
-								</Button>
 							</Stack>
 						</Paper>
 					</Stack>
@@ -135,21 +132,7 @@ function CustomerSuspense({ customerId }: Props) {
 							<Group justify="space-between">
 								<Title order={4}>Hair Sales</Title>
 								<Group>
-									<Button
-										onClick={() => {
-											showCreateOrderDrawer({
-												isOpen: true,
-												customerId,
-												onCreated: () => {
-													utils.orders.getOrdersByCustomerId.invalidate({
-														customerId,
-													});
-												},
-											});
-										}}
-									>
-										New
-									</Button>
+									<Button onClick={openCreateHairSalesOrderModal}>New</Button>
 								</Group>
 							</Group>
 							{orders.length > 0 ? (
