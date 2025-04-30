@@ -7,14 +7,17 @@ import {
 	newOrderDrawerAtom,
 } from "@/lib/atoms";
 import { AppointmentsTable } from "@/modules/customers/ui/components/appointments-table";
+import HairSaleCard from "@/modules/hair-sales/ui/components/hair-sale-card";
 import { OrdersTable } from "@/modules/orders/ui/components/orders-table";
 import { trpc } from "@/trpc/client";
 import {
+	Box,
 	Button,
 	Grid,
 	GridCol,
 	Group,
 	Paper,
+	SimpleGrid,
 	Stack,
 	Text,
 	Title,
@@ -135,10 +138,27 @@ function CustomerSuspense({ customerId }: Props) {
 									<Button onClick={openCreateHairSalesOrderModal}>New</Button>
 								</Group>
 							</Group>
-							{hairSales.length > 0 ? (
-								<OrdersTable orders={orders} />
-							) : (
-								<Text c="gray">No Hair Sales found.</Text>
+							<SimpleGrid
+								cols={{ base: 1, md: 2, lg: 3 }}
+								spacing={{ base: "md", sm: "lg" }}
+								pt={"sm"}
+							>
+								{hairSales.map((sale) => (
+									<HairSaleCard
+										key={sale.id}
+										hairSale={sale}
+										title={<HairSaleCard.Title />}
+										weight={<HairSaleCard.Weight />}
+										pricePerGram={<HairSaleCard.PricePerGram />}
+									/>
+								))}
+							</SimpleGrid>
+
+							{/* Show message when no results are found */}
+							{hairSales.length === 0 && (
+								<Box ta="center" mt="xl">
+									<Text size="lg">No hair sales records found.</Text>
+								</Box>
 							)}
 						</Paper>
 						<Paper withBorder p="md" radius="md" shadow="sm">

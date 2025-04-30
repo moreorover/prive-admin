@@ -12,6 +12,7 @@ export default function HairSalesGrid({ hairSales }: Props) {
 			<SimpleGrid
 				cols={{ base: 1, md: 2, lg: 3 }}
 				spacing={{ base: "md", sm: "lg" }}
+				pt={"sm"}
 			>
 				{hairSales.map((sale) => (
 					<HairSaleCard key={sale.id} hairSale={sale} />

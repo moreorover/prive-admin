@@ -8,6 +8,7 @@ import {
 	createHairOrder,
 	createHairOrderNote,
 	createHairOrderTransaction,
+	createHairSale,
 	createProduct,
 	createProductVariant,
 	createTransaction,
@@ -144,6 +145,25 @@ const seedHairOrders = async (): Promise<void> => {
 	}
 };
 
+const seedHairSales = async (): Promise<void> => {
+	const user = await prisma.user.findFirst({ select: { id: true } });
+
+	if (!user) {
+		throw Error("User does not exist");
+	}
+
+	for (const customerId of customerIds) {
+		for (const hairSale of generateObjects(
+			faker.number.int({ min: 2, max: 20 }),
+			() => createHairSale(faker),
+		)) {
+			await prisma.hairSale.create({
+				data: { ...hairSale, customerId, createdById: user.id },
+			});
+		}
+	}
+};
+
 async function main() {
 	console.log("🛠 Seeding database...");
 
@@ -152,6 +172,7 @@ async function main() {
 	await prisma.transaction.deleteMany();
 	await prisma.appointment.deleteMany();
 	await prisma.hairOrder.deleteMany();
+	await prisma.hairSale.deleteMany();
 
 	await seedUsers();
 	await seedCustomers();
@@ -159,6 +180,7 @@ async function main() {
 	await seedTransactions();
 	await seedAppointments();
 	await seedHairOrders();
+	await seedHairSales();
 
 	console.log("🌱 Database seeded successfully!");
 }

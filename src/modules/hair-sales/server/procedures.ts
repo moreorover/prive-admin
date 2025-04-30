@@ -15,6 +15,7 @@ export const hairSalesRouter = createTRPCRouter({
 
 			const hairSales = await prisma.hairSale.findMany({
 				where: { customerId },
+				include: { createdBy: true, customer: true },
 			});
 
 			return hairSales;

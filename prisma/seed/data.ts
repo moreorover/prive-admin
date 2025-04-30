@@ -108,3 +108,14 @@ export const createHairOrderTransaction = (faker: Faker) => {
 		}),
 	};
 };
+
+export const createHairSale = (faker: Faker) => {
+	return {
+		weightInGrams: faker.number.int({ min: 100, max: 1000 }),
+		pricePerGram: faker.number.int({ min: 500, max: 20000 }),
+		placedAt: faker.helpers.arrayElement([
+			faker.date.recent({ days: 10 }),
+			faker.date.soon({ days: 10 }),
+		]),
+	};
+};
