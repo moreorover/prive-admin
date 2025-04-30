@@ -1,7 +1,7 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import HairSaleCard from "@/modules/hair-sales/ui/components/hair-sale-card";
+import HairSaleCard from "@/modules/ui/components/hair-sale-card/hair-sale-card";
 import Surface from "@/modules/ui/components/surface";
 import { trpc } from "@/trpc/client";
 import {

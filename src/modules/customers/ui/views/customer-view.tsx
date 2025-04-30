@@ -7,8 +7,8 @@ import {
 	newOrderDrawerAtom,
 } from "@/lib/atoms";
 import { AppointmentsTable } from "@/modules/customers/ui/components/appointments-table";
-import HairSaleCard from "@/modules/hair-sales/ui/components/hair-sale-card";
 import { OrdersTable } from "@/modules/orders/ui/components/orders-table";
+import HairSaleCard from "@/modules/ui/components/hair-sale-card/hair-sale-card";
 import { trpc } from "@/trpc/client";
 import {
 	Box,

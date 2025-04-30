@@ -1,4 +1,4 @@
-import { useHairSaleCardContext } from "@/modules/hair-sales/ui/components/hair-sale-card-context";
+import { useHairSaleCardContext } from "@/modules/ui/components/hair-sale-card/hair-sale-card-context";
 import { Badge, Group } from "@mantine/core";
 import dayjs from "dayjs";
 import { Calendar } from "lucide-react";

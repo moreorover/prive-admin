@@ -1,4 +1,4 @@
-import { useHairSaleCardContext } from "@/modules/hair-sales/ui/components/hair-sale-card-context";
+import { useHairSaleCardContext } from "@/modules/ui/components/hair-sale-card/hair-sale-card-context";
 import { Group, Text } from "@mantine/core";
 
 function HairSaleTotal() {

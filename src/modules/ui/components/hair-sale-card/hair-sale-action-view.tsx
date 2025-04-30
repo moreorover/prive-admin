@@ -1,4 +1,4 @@
-import { useHairSaleCardContext } from "@/modules/hair-sales/ui/components/hair-sale-card-context";
+import { useHairSaleCardContext } from "@/modules/ui/components/hair-sale-card/hair-sale-card-context";
 import { Button } from "@mantine/core";
 import { Eye } from "lucide-react";
 import Link from "next/link";

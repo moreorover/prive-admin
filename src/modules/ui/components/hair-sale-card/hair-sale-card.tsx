@@ -1,14 +1,14 @@
 import type { GetAllHairSales } from "@/modules/hair-sales/types";
-import HairSaleActionView from "@/modules/hair-sales/ui/components/hair-sale-action-view";
-import HairSaleActions from "@/modules/hair-sales/ui/components/hair-sale-actions";
-import HairSaleCardContext from "@/modules/hair-sales/ui/components/hair-sale-card-context";
-import HairSalePricePerGram from "@/modules/hair-sales/ui/components/hair-sale-card-pricePerGram";
-import HairSaleWeight from "@/modules/hair-sales/ui/components/hair-sale-card-weight";
-import HairSaleCreator from "@/modules/hair-sales/ui/components/hair-sale-creator";
-import HairSaleCustomer from "@/modules/hair-sales/ui/components/hair-sale-customer";
-import HairSaleOwners from "@/modules/hair-sales/ui/components/hair-sale-owners";
-import HairSaleTitle from "@/modules/hair-sales/ui/components/hair-sale-title";
-import HairSaleTotal from "@/modules/hair-sales/ui/components/hair-sale-total";
+import HairSaleActionView from "@/modules/ui/components/hair-sale-card/hair-sale-action-view";
+import HairSaleActions from "@/modules/ui/components/hair-sale-card/hair-sale-actions";
+import HairSaleCardContext from "@/modules/ui/components/hair-sale-card/hair-sale-card-context";
+import HairSalePricePerGram from "@/modules/ui/components/hair-sale-card/hair-sale-card-pricePerGram";
+import HairSaleWeight from "@/modules/ui/components/hair-sale-card/hair-sale-card-weight";
+import HairSaleCreator from "@/modules/ui/components/hair-sale-card/hair-sale-creator";
+import HairSaleCustomer from "@/modules/ui/components/hair-sale-card/hair-sale-customer";
+import HairSaleOwners from "@/modules/ui/components/hair-sale-card/hair-sale-owners";
+import HairSaleTitle from "@/modules/ui/components/hair-sale-card/hair-sale-title";
+import HairSaleTotal from "@/modules/ui/components/hair-sale-card/hair-sale-total";
 import { Divider, Flex, Paper } from "@mantine/core";
 import type { ReactNode } from "react";
 
