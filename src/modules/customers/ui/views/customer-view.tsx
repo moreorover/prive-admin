@@ -150,6 +150,17 @@ function CustomerSuspense({ customerId }: Props) {
 										title={<HairSaleCard.Title />}
 										weight={<HairSaleCard.Weight />}
 										pricePerGram={<HairSaleCard.PricePerGram />}
+										total={<HairSaleCard.Total />}
+										owners={
+											<HairSaleCard.Owners>
+												<HairSaleCard.Creator />
+											</HairSaleCard.Owners>
+										}
+										actions={
+											<HairSaleCard.Actions>
+												<HairSaleCard.ActionView />
+											</HairSaleCard.Actions>
+										}
 									/>
 								))}
 							</SimpleGrid>
