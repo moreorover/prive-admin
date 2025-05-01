@@ -154,3 +154,12 @@ export const hairAssignedToAppointmentFormSchema = (maxWeight: number) =>
 export type HairAssignedToAppointment = z.infer<
 	typeof hairAssignedToAppointmentSchema
 >;
+
+export const hairSaleSchema = z.object({
+	id: z.string().cuid2().optional(),
+	placedAt: z.union([z.string(), z.date(), z.null()]),
+	weightInGrams: z.number(),
+	pricePerGram: z.number(),
+});
+
+export type HairSale = z.infer<typeof hairSaleSchema>;

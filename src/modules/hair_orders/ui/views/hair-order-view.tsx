@@ -211,7 +211,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 								</Text>
 								{hairOrder.placedAt ? (
 									<Text size="sm" w={500}>
-										{dayjs(hairOrder.placedAt).format("ddd MMM YYYY")}
+										{dayjs(hairOrder.placedAt).format("DD MMM YYYY")}
 									</Text>
 								) : (
 									<DatePickerDrawer
@@ -233,7 +233,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 								</Text>
 								{hairOrder.arrivedAt ? (
 									<Text size="sm" w={500}>
-										{dayjs(hairOrder.arrivedAt).format("ddd MMM YYYY")}
+										{dayjs(hairOrder.arrivedAt).format("DD MMM YYYY")}
 									</Text>
 								) : (
 									<DatePickerDrawer
