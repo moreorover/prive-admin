@@ -27,7 +27,7 @@ export function HairSalesTable({ hairSales }: Props) {
 				<Text>{hairSale.createdBy.name}</Text>
 			</Table.Td>
 			<Table.Td>
-				<Button component={Link} href={`/dashboard/customers/${hairSale.id}`}>
+				<Button component={Link} href={`/dashboard/hair-sales/${hairSale.id}`}>
 					View
 				</Button>
 			</Table.Td>
