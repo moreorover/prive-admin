@@ -1,9 +1,13 @@
 import { auth } from "@/lib/auth";
-import { trpc } from "@/trpc/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export default async function Page() {
+type Props = {
+	params: Promise<{ customerId: string }>;
+};
+
+export default async function Page({ params }: Props) {
+	const { customerId } = await params;
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
@@ -12,7 +16,7 @@ export default async function Page() {
 		return redirect("/");
 	}
 
-	void trpc.customers.getAll.prefetch();
+	return redirect(`/dashboard/customers/${customerId}/appointments`);
 
-	return <div>Customer</div>;
+	// return <CustomerAppointmentsView customerId={customerId} />;
 }
