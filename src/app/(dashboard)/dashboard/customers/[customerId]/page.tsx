@@ -1,16 +1,9 @@
 import { auth } from "@/lib/auth";
-import { CustomerView } from "@/modules/customers/ui/views/customer-view";
-import { HydrateClient, trpc } from "@/trpc/server";
+import { trpc } from "@/trpc/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-type Props = {
-	params: Promise<{ customerId: string }>;
-};
-
-export default async function Page({ params }: Props) {
-	const { customerId } = await params;
-
+export default async function Page() {
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
@@ -19,13 +12,7 @@ export default async function Page({ params }: Props) {
 		return redirect("/");
 	}
 
-	void trpc.customers.getOne.prefetch({ id: customerId });
-	void trpc.appointments.getAppointmentsByCustomerId.prefetch({ customerId });
-	// TODO: prefetch orders
+	void trpc.customers.getAll.prefetch();
 
-	return (
-		<HydrateClient>
-			<CustomerView customerId={customerId} />
-		</HydrateClient>
-	);
+	return <div>Customer</div>;
 }
