@@ -84,6 +84,12 @@ function CustomerSuspense({ customerId }: Props) {
 					>
 						Hair Sales
 					</Button>
+					<Button
+						component={Link}
+						href={`/dashboard/customers/${customerId}/orders`}
+					>
+						Orders
+					</Button>
 				</Stack>
 			</Paper>
 		</Stack>
