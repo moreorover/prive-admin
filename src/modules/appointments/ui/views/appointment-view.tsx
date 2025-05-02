@@ -66,9 +66,15 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	const [hairAssignments] =
 		trpc.appointments.getHairAssignments.useSuspenseQuery({ appointmentId });
 
-	const hairTotal =
+	const hairCost =
 		hairAssignments.reduce(
 			(sum, hairAssignment) => sum + hairAssignment.total,
+			0,
+		) / 100;
+
+	const hairSoldFor =
+		hairAssignments.reduce(
+			(sum, hairAssignment) => sum + hairAssignment.soldFor,
 			0,
 		) / 100;
 
@@ -185,8 +191,37 @@ function AppointmentSuspense({ appointmentId }: Props) {
 							Profit
 						</Text>
 						<Text size="md" ta="center" fw={500} mt="sm">
-							Total: <b>£ {(transactionsTotal - hairTotal).toFixed(2)}</b>
+							Total: <b>£ {transactionsTotal.toFixed(2)}</b>
 						</Text>
+					</Paper>
+					<Paper withBorder p="md" radius="md" shadow="sm">
+						<Text size="lg" fw={700} ta="center">
+							Hair
+						</Text>
+						<Group justify="space-between" mt="sm">
+							<Text size="md" ta="center" fw={500} mt="sm">
+								Raw material cost:
+							</Text>
+							<Text size="md" ta="center" fw={500} mt="sm">
+								<b>£ {hairCost.toFixed(2)}</b>
+							</Text>
+						</Group>
+						<Group justify="space-between" mt="sm">
+							<Text size="md" ta="center" fw={500} mt="sm">
+								Profit:
+							</Text>
+							<Text size="md" ta="center" fw={500} mt="sm">
+								<b>£ {(hairSoldFor - hairCost).toFixed(2)}</b>
+							</Text>
+						</Group>
+						<Group justify="space-between" mt="sm">
+							<Text size="md" ta="center" fw={500} mt="sm">
+								Total:
+							</Text>
+							<Text size="md" ta="center" fw={500} mt="sm">
+								<b>£ {hairSoldFor.toFixed(2)}</b>
+							</Text>
+						</Group>
 					</Paper>
 				</Stack>
 			</GridCol>
