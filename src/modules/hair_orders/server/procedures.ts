@@ -23,7 +23,7 @@ export const hairOrderRouter = createTRPCRouter({
 					},
 				},
 				include: { createdBy: true, customer: true },
-				orderBy: { id: "asc" },
+				orderBy: { uid: "asc" },
 			});
 		}),
 	getById: protectedProcedure

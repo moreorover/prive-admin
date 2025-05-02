@@ -1,10 +1,13 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
+import { openTypedContextModal } from "@/lib/modal-helper";
+import HairAssignmentToSaleTable from "@/modules/hair-sales/ui/components/hair-assignments-table";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
 import { trpc } from "@/trpc/client";
 import {
 	ActionIcon,
+	Button,
 	Flex,
 	Grid,
 	GridCol,
@@ -39,6 +42,10 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 		hairSaleId,
 	});
 
+	const [hairAssignments] = trpc.hairSales.getHairAssignments.useSuspenseQuery({
+		hairSaleId,
+	});
+
 	const updateHairSale = trpc.hairSales.update.useMutation({
 		onSuccess: () => {
 			utils.hairSales.getById.invalidate({ hairSaleId });
@@ -56,6 +63,26 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 			});
 		},
 	});
+
+	const createHairAssignmentMutation =
+		trpc.hairSales.createHairAssignment.useMutation({
+			onSuccess: () => {
+				utils.hairSales.getHairAssignments.invalidate({ hairSaleId });
+				utils.hairSales.getHairSaleOptions.invalidate({ hairSaleId });
+				notifications.show({
+					color: "green",
+					title: "Success!",
+					message: "Appointment updated.",
+				});
+			},
+			onError: () => {
+				notifications.show({
+					color: "red",
+					title: "Failed!",
+					message: "Something went wrong updating Appointment.",
+				});
+			},
+		});
 
 	return (
 		<Grid grow>
@@ -138,7 +165,32 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 				</Stack>
 			</GridCol>
 			<GridCol span={{ base: 12, lg: 9 }}>
-				<Stack>S</Stack>
+				<Stack gap={"sm"}>
+					<Paper withBorder p="md" radius="md" shadow="sm">
+						<Group justify="space-between" gap="sm">
+							<Title order={4}>Hair Assignments</Title>
+							<Button
+								onClick={() =>
+									openTypedContextModal("hairSalePicker", {
+										size: "auto",
+										innerProps: {
+											hairSaleId,
+											onConfirm: (data) =>
+												createHairAssignmentMutation.mutate({
+													hairSaleId,
+													hairOrderId: data[0],
+												}),
+											multiple: false,
+										},
+									})
+								}
+							>
+								Pick
+							</Button>
+						</Group>
+						<HairAssignmentToSaleTable hairAssignments={hairAssignments} />
+					</Paper>
+				</Stack>
 			</GridCol>
 		</Grid>
 	);
