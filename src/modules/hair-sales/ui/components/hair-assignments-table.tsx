@@ -15,7 +15,7 @@ import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { useSetAtom } from "jotai/index";
 import { TriangleAlertIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface Props {
 	hairSaleId: string;
@@ -27,7 +27,6 @@ export default function HairAssignmentToSaleTable({
 	hairAssignments,
 }: Props) {
 	const utils = trpc.useUtils();
-	const router = useRouter();
 
 	const showEditHairAssignmentToSaleDrawer = useSetAtom(
 		editHairAssignmentToSaleDrawerAtom,
@@ -163,11 +162,8 @@ export default function HairAssignmentToSaleTable({
 							Delete
 						</Menu.Item>
 						<Menu.Item
-							onClick={() =>
-								router.push(
-									`/dashboard/hair-orders/${hairAssignment.hairOrderId}`,
-								)
-							}
+							component={Link}
+							href={`/dashboard/hair-orders/${hairAssignment.hairOrderId}`}
 						>
 							View Hair Order
 						</Menu.Item>
