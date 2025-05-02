@@ -1,7 +1,10 @@
 import { auth } from "@/lib/auth";
 import { HairSaleView } from "@/modules/hair-sales/ui/views/hair-sale-view";
+import { HydrateClient } from "@/trpc/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 
 type Props = {
 	params: Promise<{ hairSaleId: string }>;
@@ -17,5 +20,9 @@ export default async function Page({ params }: Props) {
 		return redirect("/");
 	}
 
-	return <HairSaleView hairSaleId={hairSaleId} />;
+	return (
+		<HydrateClient>
+			<HairSaleView hairSaleId={hairSaleId} />
+		</HydrateClient>
+	);
 }
