@@ -170,6 +170,9 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 			0,
 		) / 100;
 
+	const hairTotalSoldForSale =
+		hairSales.reduce((sum, hairSale) => sum + hairSale.soldFor, 0) / 100;
+
 	const transactionsCompletedTotal = transactions
 		.filter((transaction) => transaction.status === "COMPLETED")
 		.reduce((sum, transaction) => sum + transaction.amount, 0);
@@ -364,7 +367,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 						<Center>
 							<RecoveryCard
 								spent={transactionsTotal}
-								recovered={hairTotalSoldFor}
+								recovered={hairTotalSoldFor + hairTotalSoldForSale}
 							/>
 						</Center>
 					</Paper>

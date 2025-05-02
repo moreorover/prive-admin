@@ -76,7 +76,11 @@ export const hairOrderRouter = createTRPCRouter({
 			const { hairOrderId } = input;
 			const hairOrder = await prisma.hairOrder.findUnique({
 				where: { id: hairOrderId },
-				include: { transactions: true, hairAssignedToAppointment: true },
+				include: {
+					transactions: true,
+					hairAssignedToAppointment: true,
+					hairAssignedToSale: true,
+				},
 			});
 
 			if (!hairOrder) {
@@ -104,6 +108,20 @@ export const hairOrderRouter = createTRPCRouter({
 				const profit = hairAssignedToAppointment.soldFor - total;
 				await prisma.hairAssignedToAppointment.update({
 					where: { id: hairAssignedToAppointment.id },
+					data: {
+						total,
+						profit,
+					},
+				});
+			}
+
+			for (const hairAssignedToSale of hairOrder.hairAssignedToSale) {
+				const total = Math.round(
+					pricePerGram * hairAssignedToSale.weightInGrams,
+				);
+				const profit = hairAssignedToSale.soldFor - total;
+				await prisma.hairAssignedToSale.update({
+					where: { id: hairAssignedToSale.id },
 					data: {
 						total,
 						profit,
