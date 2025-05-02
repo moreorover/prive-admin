@@ -123,4 +123,14 @@ export const hairOrderRouter = createTRPCRouter({
 
 			return hairAssignments;
 		}),
+	getHairSales: protectedProcedure
+		.input(z.object({ hairOrderId: z.string().cuid2() }))
+		.query(async ({ input }) => {
+			const { hairOrderId } = input;
+			const hairAssignments = await prisma.hairAssignedToSale.findMany({
+				where: { hairOrderId },
+			});
+
+			return hairAssignments;
+		}),
 });

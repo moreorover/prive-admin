@@ -5,6 +5,7 @@ import { newTransactionDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
 import HairAssignmentToAppointmentTable from "@/modules/hair_orders/ui/components/hair-assignments-table";
+import HairAssignmentToSaleTable from "@/modules/hair_orders/ui/components/hair-sales-table";
 import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table";
 import TransactionsTable from "@/modules/hair_orders/ui/components/transactions-table";
 import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
@@ -91,6 +92,9 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 	const [hairAssignments] = trpc.hairOrders.getHairAssignments.useSuspenseQuery(
 		{ hairOrderId },
 	);
+	const [hairSales] = trpc.hairOrders.getHairSales.useSuspenseQuery({
+		hairOrderId,
+	});
 
 	const openNewHairOrderNoteDrawer = useHairOrderNoteDrawerStore(
 		(state) => state.openDrawer,
@@ -248,6 +252,14 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 										}
 									/>
 								)}
+							</Flex>
+							<Flex direction="column">
+								<Text c="dimmed" size="xs">
+									UID:
+								</Text>
+								<Text size="sm" w={500}>
+									{hairOrder.uid}
+								</Text>
 							</Flex>
 							<Flex direction="column">
 								<Text c="dimmed" size="xs">
@@ -420,11 +432,17 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 					</Paper>
 					<Paper withBorder p="md" radius="md" shadow="sm">
 						<Group justify="space-between" gap="sm">
-							<Title order={4}>Hair Assignments</Title>
+							<Title order={4}>Hair used in Appointments</Title>
 						</Group>
 						<HairAssignmentToAppointmentTable
 							hairAssignments={hairAssignments}
 						/>
+					</Paper>
+					<Paper withBorder p="md" radius="md" shadow="sm">
+						<Group justify="space-between" gap="sm">
+							<Title order={4}>Hair Sales</Title>
+						</Group>
+						<HairAssignmentToSaleTable hairAssignments={hairSales} />
 					</Paper>
 				</Stack>
 			</GridCol>
