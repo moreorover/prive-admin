@@ -2,7 +2,7 @@
 
 import { editHairAssignmentToAppointmentDrawerAtom } from "@/lib/atoms";
 import type { HairAssignedToAppointment } from "@/lib/schemas";
-import { HairAssignmentForm } from "@/modules/appointments/ui/components/hair-assignment-form";
+import { HairAssignmentToAppointmentForm } from "@/modules/appointments/ui/components/hair-assignment-to-appointment-form";
 import { trpc } from "@/trpc/client";
 import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
@@ -70,7 +70,7 @@ export const EditHairAssignmentToAppointmentDrawer = () => {
 				position="right"
 				title="Update Hair Assignment"
 			>
-				<HairAssignmentForm
+				<HairAssignmentToAppointmentForm
 					onSubmitAction={onSubmit}
 					hairAssignment={value.hairAssignment}
 					maxWeight={value.maxWeight}

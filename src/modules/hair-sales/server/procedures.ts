@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { hairSaleSchema } from "@/lib/schemas";
+import { hairAssignedToSaleSchema, hairSaleSchema } from "@/lib/schemas";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -80,6 +80,7 @@ export const hairSalesRouter = createTRPCRouter({
 			const { hairSaleId } = input;
 			const hairAssignments = await prisma.hairAssignedToSale.findMany({
 				where: { hairSaleId },
+				include: { hairOrder: true },
 			});
 
 			return hairAssignments;
@@ -117,5 +118,76 @@ export const hairSalesRouter = createTRPCRouter({
 				},
 			});
 			return c;
+		}),
+	deleteHairAssignment: protectedProcedure
+		.input(z.object({ hairAssignmentId: z.string().cuid2() }))
+		.mutation(async ({ input }) => {
+			const { hairAssignmentId } = input;
+
+			const hairAssignment = await prisma.hairAssignedToSale.delete({
+				where: { id: hairAssignmentId },
+			});
+
+			const totalWeightInGrams = await prisma.hairAssignedToSale.aggregate({
+				where: { hairOrderId: hairAssignment.hairOrderId },
+				_sum: {
+					weightInGrams: true,
+				},
+			});
+
+			await prisma.hairSale.update({
+				where: { id: hairAssignment.hairOrderId },
+				data: { weightInGrams: totalWeightInGrams._sum.weightInGrams ?? 0 },
+			});
+
+			return hairAssignment;
+		}),
+	updateHairAssignment: protectedProcedure
+		.input(
+			z.object({
+				hairAssignment: hairAssignedToSaleSchema,
+			}),
+		)
+		.mutation(async ({ input }) => {
+			const { hairAssignment } = input;
+
+			const hairAssignmentSaved = await prisma.hairAssignedToSale.findUnique({
+				where: { id: hairAssignment.id },
+				include: { hairOrder: true },
+			});
+
+			if (!hairAssignmentSaved) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			const total =
+				hairAssignmentSaved.hairOrder.pricePerGram *
+				hairAssignment.weightInGrams;
+
+			const soldFor = hairAssignment.soldFor * 100;
+
+			const hairAssignmentUpdated = await prisma.hairAssignedToSale.update({
+				data: {
+					weightInGrams: hairAssignment.weightInGrams,
+					total,
+					soldFor,
+					profit: soldFor - total,
+				},
+				where: { id: hairAssignment.id },
+			});
+
+			const totalWeightInGrams = await prisma.hairAssignedToSale.aggregate({
+				where: { hairOrderId: hairAssignment.hairOrderId },
+				_sum: {
+					weightInGrams: true,
+				},
+			});
+
+			await prisma.hairOrder.update({
+				where: { id: hairAssignment.hairOrderId },
+				data: { weightUsed: totalWeightInGrams._sum.weightInGrams ?? 0 },
+			});
+
+			return hairAssignmentUpdated;
 		}),
 });

@@ -188,7 +188,10 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 								Pick
 							</Button>
 						</Group>
-						<HairAssignmentToSaleTable hairAssignments={hairAssignments} />
+						<HairAssignmentToSaleTable
+							hairSaleId={hairSaleId}
+							hairAssignments={hairAssignments}
+						/>
 					</Paper>
 				</Stack>
 			</GridCol>
