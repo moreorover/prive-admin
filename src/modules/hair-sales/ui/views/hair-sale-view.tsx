@@ -5,6 +5,7 @@ import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
 import { trpc } from "@/trpc/client";
 import {
 	ActionIcon,
+	Flex,
 	Grid,
 	GridCol,
 	Group,
@@ -78,13 +79,6 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 					<Paper withBorder p="md" radius="md" shadow="sm">
 						<Group justify="space-between" gap="sm">
 							<Title order={4}>HairSale Details</Title>
-							{/*<Button*/}
-							{/*	onClick={() => {*/}
-							{/*		showEditHairSaleDrawer({ isOpen: true, hairSale });*/}
-							{/*	}}*/}
-							{/*>*/}
-							{/*	Edit*/}
-							{/*</Button>*/}
 						</Group>
 						<Group justify="space-between" gap="sm">
 							<Text size="sm" mt="xs">
@@ -114,6 +108,32 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 								)}
 							</DatePickerDrawer>
 						</Group>
+						<Flex direction="column">
+							<Text c="dimmed" size="xs">
+								Created By:
+							</Text>
+							<Text size="sm">{hairSale.createdBy.name}</Text>
+						</Flex>
+						<Flex direction="column">
+							<Text c="dimmed" size="xs">
+								Total wight in grams:
+							</Text>
+							<Text size="sm">{hairSale.weightInGrams}g</Text>
+						</Flex>
+						<Flex direction="column">
+							<Text c="dimmed" size="xs">
+								Price per gram:
+							</Text>
+							<Text size="sm">£ {hairSale.pricePerGram / 100}</Text>
+						</Flex>
+						<Flex direction="column">
+							<Text c="dimmed" size="xs">
+								Total price:
+							</Text>
+							<Text size="sm">
+								£ {(hairSale.weightInGrams * hairSale.pricePerGram) / 100}
+							</Text>
+						</Flex>
 					</Paper>
 				</Stack>
 			</GridCol>
