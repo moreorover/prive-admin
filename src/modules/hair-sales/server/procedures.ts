@@ -169,7 +169,6 @@ export const hairSalesRouter = createTRPCRouter({
 			const hairAssignmentUpdated = await prisma.hairAssignedToSale.update({
 				data: {
 					weightInGrams: hairAssignment.weightInGrams,
-					total,
 					soldFor,
 					profit: soldFor - total,
 				},
