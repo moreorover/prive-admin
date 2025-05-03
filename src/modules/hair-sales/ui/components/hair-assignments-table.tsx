@@ -1,6 +1,6 @@
 "use client";
 import { editHairAssignmentToSaleDrawerAtom } from "@/lib/atoms";
-import type { GetHairAssignmentsToSale } from "@/modules/hair-sales/types";
+import type { GetHairAssignmentsByHairSaleId } from "@/modules/hair-sales/types";
 import { trpc } from "@/trpc/client";
 import {
 	Button,
@@ -19,7 +19,7 @@ import Link from "next/link";
 
 interface Props {
 	hairSaleId: string;
-	hairAssignments: GetHairAssignmentsToSale;
+	hairAssignments: GetHairAssignmentsByHairSaleId;
 }
 
 export default function HairAssignmentToSaleTable({
@@ -34,13 +34,14 @@ export default function HairAssignmentToSaleTable({
 
 	const deleteHairAssignment = trpc.hairSales.deleteHairAssignment.useMutation({
 		onSuccess: () => {
+			utils.hairSales.getById.invalidate({ hairSaleId });
+			utils.hairSales.getHairAssignments.invalidate({
+				hairSaleId,
+			});
 			notifications.show({
 				color: "green",
 				title: "Success!",
 				message: "Hair assignment deleted.",
-			});
-			utils.hairSales.getHairAssignments.invalidate({
-				hairSaleId,
 			});
 		},
 		onError: () => {
@@ -98,7 +99,9 @@ export default function HairAssignmentToSaleTable({
 				</Group>
 			</Table.Td>
 			<Table.Td>
-				<Text>{formatAmount(hairAssignment.total / 100)}</Text>
+				<Text>
+					{formatAmount((hairAssignment.soldFor - hairAssignment.profit) / 100)}
+				</Text>
 			</Table.Td>
 			<Table.Td
 				style={{
@@ -116,9 +119,7 @@ export default function HairAssignmentToSaleTable({
 				</Group>
 			</Table.Td>
 			<Table.Td>
-				<Text>
-					{formatAmount((hairAssignment.soldFor - hairAssignment.total) / 100)}
-				</Text>
+				<Text>{formatAmount(hairAssignment.profit / 100)}</Text>
 			</Table.Td>
 			<Table.Td>
 				<Menu shadow="md" width={200}>
@@ -143,6 +144,9 @@ export default function HairAssignmentToSaleTable({
 									),
 									onUpdated: () => {
 										utils.hairSales.getHairAssignments.invalidate({
+											hairSaleId,
+										});
+										utils.hairSales.getById.invalidate({
 											hairSaleId,
 										});
 									},
