@@ -3,9 +3,13 @@
 import { Button, Drawer, Group } from "@mantine/core";
 import { DatePicker } from "@mantine/dates";
 import { useForm } from "@mantine/form";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { zodResolver } from "mantine-form-zod-resolver";
-import { useState } from "react";
+import { type ReactNode, cloneElement, isValidElement, useState } from "react";
 import { z } from "zod";
+
+dayjs.extend(utc);
 
 const dateSchema = z.date({
 	required_error: "Date is required",
@@ -19,9 +23,10 @@ const schema = z.object({
 interface Props {
 	date: Date | null;
 	onSelected: (date: Date | null) => void;
+	children?: ReactNode;
 }
 
-export const DatePickerDrawer = ({ date, onSelected }: Props) => {
+export const DatePickerDrawer = ({ date, onSelected, children }: Props) => {
 	const [open, setOpen] = useState(false);
 
 	const form = useForm({
@@ -31,14 +36,38 @@ export const DatePickerDrawer = ({ date, onSelected }: Props) => {
 	});
 
 	async function handleSubmit(values: typeof form.values) {
-		const date = values.date;
-		onSelected(date);
+		const selectedDate = values.date;
+
+		let normalizedDate: Date | null = null;
+
+		if (selectedDate) {
+			// Create a new Date set to UTC midnight for this date
+			normalizedDate = new Date(
+				Date.UTC(
+					selectedDate.getFullYear(),
+					selectedDate.getMonth(),
+					selectedDate.getDate(),
+				),
+			);
+		}
+
+		onSelected(normalizedDate);
 		setOpen(false);
 	}
 
+	// Since we know children will always be a valid React element (ActionIcon or Button),
+	// we can simplify the logic to just clone the element with the onClick handler
+	const triggerElement = children ? (
+		cloneElement(isValidElement(children) ? children : <Button>Pick</Button>, {
+			onClick: () => setOpen(true),
+		})
+	) : (
+		<Button onClick={() => setOpen(true)}>Pick</Button>
+	);
+
 	return (
 		<>
-			<Button onClick={() => setOpen(true)}>Pick</Button>
+			{triggerElement}
 			<Drawer
 				opened={open}
 				onClose={() => setOpen(false)}

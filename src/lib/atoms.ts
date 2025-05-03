@@ -2,6 +2,7 @@ import type {
 	Appointment,
 	Customer,
 	HairAssignedToAppointment,
+	HairAssignedToSale,
 	Order,
 	OrderItem,
 	Product,
@@ -163,6 +164,24 @@ export const editHairAssignmentToAppointmentDrawerAtom = atom<{
 		id: "",
 		hairOrderId: "",
 		appointmentId: "",
+		weightInGrams: 0,
+		soldFor: 0,
+	},
+	maxWeight: 0,
+	onUpdated: () => {},
+});
+
+export const editHairAssignmentToSaleDrawerAtom = atom<{
+	isOpen: boolean;
+	hairAssignment: HairAssignedToSale;
+	onUpdated: () => void;
+	maxWeight: number;
+}>({
+	isOpen: false,
+	hairAssignment: {
+		id: "",
+		hairOrderId: "",
+		hairSaleId: "",
 		weightInGrams: 0,
 		soldFor: 0,
 	},

@@ -5,6 +5,7 @@ import { newTransactionDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
 import HairAssignmentToAppointmentTable from "@/modules/hair_orders/ui/components/hair-assignments-table";
+import HairAssignmentToSaleTable from "@/modules/hair_orders/ui/components/hair-sales-table";
 import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table";
 import TransactionsTable from "@/modules/hair_orders/ui/components/transactions-table";
 import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
@@ -91,6 +92,9 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 	const [hairAssignments] = trpc.hairOrders.getHairAssignments.useSuspenseQuery(
 		{ hairOrderId },
 	);
+	const [hairSales] = trpc.hairOrders.getHairSales.useSuspenseQuery({
+		hairOrderId,
+	});
 
 	const openNewHairOrderNoteDrawer = useHairOrderNoteDrawerStore(
 		(state) => state.openDrawer,
@@ -138,7 +142,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 	const updateHairOrderTotalWeightMutation =
 		trpc.hairOrders.updateTotalWeight.useMutation({
 			onSuccess: () => {
-				recalculateHairOrderPrice.mutate({ hairOrderId: hairOrder.id });
+				recalculateHairOrderPrice.mutate({ hairOrderId });
 				utils.hairOrders.getById.invalidate({ id: hairOrderId });
 				notifications.show({
 					color: "green",
@@ -165,6 +169,9 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 			(sum, hairAssignment) => sum + hairAssignment.soldFor,
 			0,
 		) / 100;
+
+	const hairTotalSoldForSale =
+		hairSales.reduce((sum, hairSale) => sum + hairSale.soldFor, 0) / 100;
 
 	const transactionsCompletedTotal = transactions
 		.filter((transaction) => transaction.status === "COMPLETED")
@@ -211,7 +218,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 								</Text>
 								{hairOrder.placedAt ? (
 									<Text size="sm" w={500}>
-										{dayjs(hairOrder.placedAt).format("ddd MMM YYYY")}
+										{dayjs(hairOrder.placedAt).format("DD MMM YYYY")}
 									</Text>
 								) : (
 									<DatePickerDrawer
@@ -233,7 +240,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 								</Text>
 								{hairOrder.arrivedAt ? (
 									<Text size="sm" w={500}>
-										{dayjs(hairOrder.arrivedAt).format("ddd MMM YYYY")}
+										{dayjs(hairOrder.arrivedAt).format("DD MMM YYYY")}
 									</Text>
 								) : (
 									<DatePickerDrawer
@@ -248,6 +255,14 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 										}
 									/>
 								)}
+							</Flex>
+							<Flex direction="column">
+								<Text c="dimmed" size="xs">
+									UID:
+								</Text>
+								<Text size="sm" w={500}>
+									{hairOrder.uid}
+								</Text>
 							</Flex>
 							<Flex direction="column">
 								<Text c="dimmed" size="xs">
@@ -352,7 +367,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 						<Center>
 							<RecoveryCard
 								spent={transactionsTotal}
-								recovered={hairTotalSoldFor}
+								recovered={hairTotalSoldFor + hairTotalSoldForSale}
 							/>
 						</Center>
 					</Paper>
@@ -406,6 +421,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 											utils.transactions.getByHairOrderId.invalidate({
 												hairOrderId,
 											});
+											recalculateHairOrderPrice.mutate({ hairOrderId });
 										},
 									});
 								}}
@@ -416,15 +432,33 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 						<TransactionsTable
 							hairOrderId={hairOrderId}
 							transactions={transactions}
+							onDeleted={() => {
+								recalculateHairOrderPrice.mutate({ hairOrderId });
+								utils.transactions.getByHairOrderId.invalidate({
+									hairOrderId,
+								});
+							}}
+							onUpdated={() => {
+								recalculateHairOrderPrice.mutate({ hairOrderId });
+								utils.transactions.getByHairOrderId.invalidate({
+									hairOrderId,
+								});
+							}}
 						/>
 					</Paper>
 					<Paper withBorder p="md" radius="md" shadow="sm">
 						<Group justify="space-between" gap="sm">
-							<Title order={4}>Hair Assignments</Title>
+							<Title order={4}>Hair used in Appointments</Title>
 						</Group>
 						<HairAssignmentToAppointmentTable
 							hairAssignments={hairAssignments}
 						/>
+					</Paper>
+					<Paper withBorder p="md" radius="md" shadow="sm">
+						<Group justify="space-between" gap="sm">
+							<Title order={4}>Hair Sales</Title>
+						</Group>
+						<HairAssignmentToSaleTable hairAssignments={hairSales} />
 					</Paper>
 				</Stack>
 			</GridCol>

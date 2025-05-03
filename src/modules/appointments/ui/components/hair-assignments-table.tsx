@@ -134,7 +134,10 @@ export default function HairAssignmentToAppointmentTable({
 							onClick={() => {
 								showEditHairAssignmentToAppointmentDrawer({
 									isOpen: true,
-									hairAssignment: hairAssignment,
+									hairAssignment: {
+										...hairAssignment,
+										soldFor: hairAssignment.soldFor / 100,
+									},
 									maxWeight: Math.abs(
 										hairAssignment.hairOrder.weightReceived -
 											hairAssignment.hairOrder.weightUsed +

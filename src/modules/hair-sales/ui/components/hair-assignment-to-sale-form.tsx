@@ -1,21 +1,21 @@
 "use client";
 
 import {
-	type HairAssignedToAppointment,
-	hairAssignedToAppointmentFormSchema,
+	type HairAssignedToSale,
+	hairAssignedToSaleFormSchema,
 } from "@/lib/schemas";
 import { Button, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { zodResolver } from "mantine-form-zod-resolver";
 
 type Props = {
-	hairAssignment: HairAssignedToAppointment;
+	hairAssignment: HairAssignedToSale;
 	maxWeight: number;
-	onSubmitAction: (values: HairAssignedToAppointment) => void;
+	onSubmitAction: (values: HairAssignedToSale) => void;
 	disabled: boolean;
 };
 
-export const HairAssignmentForm = ({
+export const HairAssignmentToSaleForm = ({
 	hairAssignment,
 	maxWeight,
 	onSubmitAction,
@@ -24,7 +24,7 @@ export const HairAssignmentForm = ({
 	const form = useForm({
 		mode: "uncontrolled",
 		initialValues: hairAssignment,
-		validate: zodResolver(hairAssignedToAppointmentFormSchema(maxWeight)),
+		validate: zodResolver(hairAssignedToSaleFormSchema(maxWeight)),
 	});
 
 	return (

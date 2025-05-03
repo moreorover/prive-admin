@@ -17,7 +17,7 @@ export const EditTransactionDrawer = () => {
 			notifications.show({
 				color: "green",
 				title: "Success!",
-				message: "Transaction created.",
+				message: "Transaction updated.",
 			});
 			value.onUpdated();
 			setOpen({
@@ -36,7 +36,7 @@ export const EditTransactionDrawer = () => {
 		onError: () => {
 			notifications.show({
 				color: "red",
-				title: "Failed to create Transaction",
+				title: "Failed to update Transaction",
 				message: "Please try again.",
 			});
 		},

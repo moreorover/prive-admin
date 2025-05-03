@@ -23,7 +23,7 @@ export const hairOrderRouter = createTRPCRouter({
 					},
 				},
 				include: { createdBy: true, customer: true },
-				orderBy: { id: "asc" },
+				orderBy: { uid: "asc" },
 			});
 		}),
 	getById: protectedProcedure
@@ -76,7 +76,11 @@ export const hairOrderRouter = createTRPCRouter({
 			const { hairOrderId } = input;
 			const hairOrder = await prisma.hairOrder.findUnique({
 				where: { id: hairOrderId },
-				include: { transactions: true, hairAssignedToAppointment: true },
+				include: {
+					transactions: true,
+					hairAssignedToAppointment: true,
+					hairAssignedToSale: true,
+				},
 			});
 
 			if (!hairOrder) {
@@ -111,6 +115,19 @@ export const hairOrderRouter = createTRPCRouter({
 				});
 			}
 
+			for (const hairAssignedToSale of hairOrder.hairAssignedToSale) {
+				const total = Math.round(
+					pricePerGram * hairAssignedToSale.weightInGrams,
+				);
+				const profit = hairAssignedToSale.soldFor - total;
+				await prisma.hairAssignedToSale.update({
+					where: { id: hairAssignedToSale.id },
+					data: {
+						profit,
+					},
+				});
+			}
+
 			return hairOrder;
 		}),
 	getHairAssignments: protectedProcedure
@@ -118,6 +135,16 @@ export const hairOrderRouter = createTRPCRouter({
 		.query(async ({ input }) => {
 			const { hairOrderId } = input;
 			const hairAssignments = await prisma.hairAssignedToAppointment.findMany({
+				where: { hairOrderId },
+			});
+
+			return hairAssignments;
+		}),
+	getHairSales: protectedProcedure
+		.input(z.object({ hairOrderId: z.string().cuid2() }))
+		.query(async ({ input }) => {
+			const { hairOrderId } = input;
+			const hairAssignments = await prisma.hairAssignedToSale.findMany({
 				where: { hairOrderId },
 			});
 

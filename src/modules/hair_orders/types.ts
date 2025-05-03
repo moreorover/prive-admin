@@ -13,3 +13,6 @@ export type HairOrderTransactions =
 
 export type GetHairAssignmentsToAppointment =
 	inferRouterOutputs<AppRouter>["hairOrders"]["getHairAssignments"];
+
+export type GetHairAssignmentsToSales =
+	inferRouterOutputs<AppRouter>["hairOrders"]["getHairSales"];
