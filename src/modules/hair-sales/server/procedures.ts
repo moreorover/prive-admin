@@ -184,6 +184,15 @@ export const hairSalesRouter = createTRPCRouter({
 					},
 				});
 
+			const totalWeightInGramsForSale2 =
+				await prisma.hairAssignedToSale.aggregate({
+					where: { hairOrderId: hairAssignment.hairOrderId },
+					_sum: {
+						weightInGrams: true,
+						soldFor: true,
+					},
+				});
+
 			const totalWeightInGramsForSale =
 				await prisma.hairAssignedToSale.aggregate({
 					where: { hairSaleId: hairAssignment.hairSaleId },
@@ -193,10 +202,8 @@ export const hairSalesRouter = createTRPCRouter({
 					},
 				});
 
-			console.log({ totalWeightInGramsForSale });
-
 			const totalWeightInGrams =
-				(totalWeightInGramsForSale._sum.weightInGrams ?? 0) +
+				(totalWeightInGramsForSale2._sum.weightInGrams ?? 0) +
 				(totalWeightInGramsForAppointment._sum.weightInGrams ?? 0);
 
 			await prisma.hairOrder.update({

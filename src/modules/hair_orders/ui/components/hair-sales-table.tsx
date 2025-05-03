@@ -18,7 +18,9 @@ export default function HairAssignmentToSaleTable({ hairAssignments }: Props) {
 				<Text>{hairAssignment.weightInGrams}g</Text>
 			</Table.Td>
 			<Table.Td>
-				<Text>{formatAmount(hairAssignment.total / 100)}</Text>
+				<Text>
+					{formatAmount((hairAssignment.soldFor - hairAssignment.profit) / 100)}
+				</Text>
 			</Table.Td>
 			<Table.Td>
 				<Text>{formatAmount(hairAssignment.soldFor / 100)}</Text>
