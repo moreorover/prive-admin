@@ -23,11 +23,15 @@ import Link from "next/link";
 interface Props {
 	hairOrderId: string;
 	transactions: HairOrderTransactions;
+	onDeleted: () => void;
+	onUpdated: () => void;
 }
 
 export default function TransactionsTable({
 	hairOrderId,
 	transactions,
+	onDeleted,
+	onUpdated,
 }: Props) {
 	const utils = trpc.useUtils();
 
@@ -35,6 +39,7 @@ export default function TransactionsTable({
 
 	const deleteTransaction = trpc.transactions.delete.useMutation({
 		onSuccess: () => {
+			onDeleted();
 			notifications.show({
 				color: "green",
 				title: "Success!",
@@ -168,6 +173,7 @@ export default function TransactionsTable({
 											hairOrderId,
 											includeCustomer: true,
 										});
+										onUpdated();
 									},
 								});
 							}}

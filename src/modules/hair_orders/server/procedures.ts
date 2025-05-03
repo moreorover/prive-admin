@@ -123,7 +123,6 @@ export const hairOrderRouter = createTRPCRouter({
 				await prisma.hairAssignedToSale.update({
 					where: { id: hairAssignedToSale.id },
 					data: {
-						total,
 						profit,
 					},
 				});

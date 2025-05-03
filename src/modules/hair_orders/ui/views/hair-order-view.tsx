@@ -142,7 +142,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 	const updateHairOrderTotalWeightMutation =
 		trpc.hairOrders.updateTotalWeight.useMutation({
 			onSuccess: () => {
-				recalculateHairOrderPrice.mutate({ hairOrderId: hairOrder.id });
+				recalculateHairOrderPrice.mutate({ hairOrderId });
 				utils.hairOrders.getById.invalidate({ id: hairOrderId });
 				notifications.show({
 					color: "green",
@@ -421,6 +421,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 											utils.transactions.getByHairOrderId.invalidate({
 												hairOrderId,
 											});
+											recalculateHairOrderPrice.mutate({ hairOrderId });
 										},
 									});
 								}}
@@ -431,6 +432,18 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 						<TransactionsTable
 							hairOrderId={hairOrderId}
 							transactions={transactions}
+							onDeleted={() => {
+								recalculateHairOrderPrice.mutate({ hairOrderId });
+								utils.transactions.getByHairOrderId.invalidate({
+									hairOrderId,
+								});
+							}}
+							onUpdated={() => {
+								recalculateHairOrderPrice.mutate({ hairOrderId });
+								utils.transactions.getByHairOrderId.invalidate({
+									hairOrderId,
+								});
+							}}
 						/>
 					</Paper>
 					<Paper withBorder p="md" radius="md" shadow="sm">
