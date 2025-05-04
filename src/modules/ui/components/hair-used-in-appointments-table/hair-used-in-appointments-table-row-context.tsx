@@ -1,8 +1,8 @@
-import type { GetHairAssignmentsToAppointment } from "@/modules/hair_orders/types";
+import type { Hair } from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table";
 import { createContext, useContext } from "react";
 
 const HairUsedInAppointmentsTableRowContext = createContext<{
-	hair: GetHairAssignmentsToAppointment[0];
+	hair: Hair;
 } | null>(null);
 
 export function useHairUsedInAppointmentsTableRowContext() {
