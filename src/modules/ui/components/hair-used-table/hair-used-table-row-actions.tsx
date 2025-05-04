@@ -6,9 +6,7 @@ export type Props = {
 	children: ReactNode;
 };
 
-export default function HairUsedInAppointmentsTableRowActions({
-	children,
-}: Props) {
+export default function HairUsedTableRowActions({ children }: Props) {
 	return (
 		<Table.Td>
 			<Menu shadow="md" width={200}>

@@ -9,7 +9,7 @@ import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table
 import TransactionsTable from "@/modules/hair_orders/ui/components/transactions-table";
 import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
-import HairUsedInAppointmentsTable from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table";
+import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
 import Surface from "@/modules/ui/components/surface";
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";
@@ -444,18 +444,18 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 						<Group justify="space-between" gap="sm">
 							<Title order={4}>Hair used in Appointments</Title>
 						</Group>
-						<HairUsedInAppointmentsTable
+						<HairUsedTable
 							hair={hairAssignments}
 							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
 							row={
 								<>
-									<HairUsedInAppointmentsTable.RowWeight />
-									<HairUsedInAppointmentsTable.RowTotal />
-									<HairUsedInAppointmentsTable.RowSoldFor />
-									<HairUsedInAppointmentsTable.RowProfit />
-									<HairUsedInAppointmentsTable.RowActions>
-										<HairUsedInAppointmentsTable.RowActionViewAppointment />
-									</HairUsedInAppointmentsTable.RowActions>
+									<HairUsedTable.RowWeight />
+									<HairUsedTable.RowTotal />
+									<HairUsedTable.RowSoldFor />
+									<HairUsedTable.RowProfit />
+									<HairUsedTable.RowActions>
+										<HairUsedTable.RowActionViewAppointment />
+									</HairUsedTable.RowActions>
 								</>
 							}
 						/>
@@ -464,7 +464,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 						<Group justify="space-between" gap="sm">
 							<Title order={4}>Hair Sales</Title>
 						</Group>
-						<HairUsedInAppointmentsTable
+						<HairUsedTable
 							hair={hairSales.map((hairAssignment) => ({
 								...hairAssignment,
 								total: hairAssignment.soldFor - hairAssignment.profit,
@@ -472,13 +472,13 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
 							row={
 								<>
-									<HairUsedInAppointmentsTable.RowWeight />
-									<HairUsedInAppointmentsTable.RowTotal />
-									<HairUsedInAppointmentsTable.RowSoldFor />
-									<HairUsedInAppointmentsTable.RowProfit />
-									<HairUsedInAppointmentsTable.RowActions>
-										<HairUsedInAppointmentsTable.RowActionViewHairSale />
-									</HairUsedInAppointmentsTable.RowActions>
+									<HairUsedTable.RowWeight />
+									<HairUsedTable.RowTotal />
+									<HairUsedTable.RowSoldFor />
+									<HairUsedTable.RowProfit />
+									<HairUsedTable.RowActions>
+										<HairUsedTable.RowActionViewHairSale />
+									</HairUsedTable.RowActions>
 								</>
 							}
 						/>

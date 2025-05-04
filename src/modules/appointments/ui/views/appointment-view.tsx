@@ -12,7 +12,7 @@ import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-ta
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
 import TransactionsTable from "@/modules/appointments/ui/components/transactions-table";
-import HairUsedInAppointmentsTable from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table";
+import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";
 import {
@@ -344,18 +344,18 @@ function AppointmentSuspense({ appointmentId }: Props) {
 								Pick
 							</Button>
 						</Group>
-						<HairUsedInAppointmentsTable
+						<HairUsedTable
 							hair={hairAssignments}
 							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
 							row={
 								<>
-									<HairUsedInAppointmentsTable.RowWeight />
-									<HairUsedInAppointmentsTable.RowTotal />
-									<HairUsedInAppointmentsTable.RowSoldFor />
-									<HairUsedInAppointmentsTable.RowProfit />
-									<HairUsedInAppointmentsTable.RowActions>
-										<HairUsedInAppointmentsTable.RowActionViewHairOrder />
-										<HairUsedInAppointmentsTable.RowActionUpdate
+									<HairUsedTable.RowWeight />
+									<HairUsedTable.RowTotal />
+									<HairUsedTable.RowSoldFor />
+									<HairUsedTable.RowProfit />
+									<HairUsedTable.RowActions>
+										<HairUsedTable.RowActionViewHairOrder />
+										<HairUsedTable.RowActionUpdate
 											onAction={(id) => {
 												const hairAssignment = hairAssignments.find(
 													(h) => h.id === id,
@@ -382,10 +382,10 @@ function AppointmentSuspense({ appointmentId }: Props) {
 												});
 											}}
 										/>
-										<HairUsedInAppointmentsTable.RowActionDelete
+										<HairUsedTable.RowActionDelete
 											onAction={(id) => openDeleteModal(id)}
 										/>
-									</HairUsedInAppointmentsTable.RowActions>
+									</HairUsedTable.RowActions>
 								</>
 							}
 						/>

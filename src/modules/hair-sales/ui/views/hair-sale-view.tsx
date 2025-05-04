@@ -4,7 +4,7 @@ import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { editHairAssignmentToSaleDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
-import HairUsedInAppointmentsTable from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table";
+import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
 import { trpc } from "@/trpc/client";
 import {
 	ActionIcon,
@@ -234,7 +234,7 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 								Pick
 							</Button>
 						</Group>
-						<HairUsedInAppointmentsTable
+						<HairUsedTable
 							hair={hairAssignments.map((hairAssignment) => ({
 								...hairAssignment,
 								total: hairAssignment.soldFor - hairAssignment.profit,
@@ -242,13 +242,13 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
 							row={
 								<>
-									<HairUsedInAppointmentsTable.RowWeight />
-									<HairUsedInAppointmentsTable.RowTotal />
-									<HairUsedInAppointmentsTable.RowSoldFor />
-									<HairUsedInAppointmentsTable.RowProfit />
-									<HairUsedInAppointmentsTable.RowActions>
-										<HairUsedInAppointmentsTable.RowActionViewHairOrder />
-										<HairUsedInAppointmentsTable.RowActionUpdate
+									<HairUsedTable.RowWeight />
+									<HairUsedTable.RowTotal />
+									<HairUsedTable.RowSoldFor />
+									<HairUsedTable.RowProfit />
+									<HairUsedTable.RowActions>
+										<HairUsedTable.RowActionViewHairOrder />
+										<HairUsedTable.RowActionUpdate
 											onAction={(id) => {
 												const hairAssignment = hairAssignments.find(
 													(h) => h.id === id,
@@ -276,10 +276,10 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 												});
 											}}
 										/>
-										<HairUsedInAppointmentsTable.RowActionDelete
+										<HairUsedTable.RowActionDelete
 											onAction={(id) => openDeleteModal(id)}
 										/>
-									</HairUsedInAppointmentsTable.RowActions>
+									</HairUsedTable.RowActions>
 								</>
 							}
 						/>
