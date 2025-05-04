@@ -1,5 +1,6 @@
 "use client";
 
+import { formatAmount } from "@/lib/helpers";
 import type { GetAllTransactions } from "@/modules/transactions/types";
 import { trpc } from "@/trpc/client";
 import { Badge, Button, Group, Table, Text, Tooltip } from "@mantine/core";
@@ -17,12 +18,6 @@ export default function TransactionsTable({
 	transactions,
 	onUpdateAction,
 }: Props) {
-	const formatAmount = (amount: number) =>
-		new Intl.NumberFormat("en-UK", {
-			style: "currency",
-			currency: "GBP",
-		}).format(amount);
-
 	const deleteTransaction = trpc.transactions.delete.useMutation({
 		onSuccess: () => {
 			onUpdateAction();

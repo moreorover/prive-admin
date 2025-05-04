@@ -1,6 +1,7 @@
 "use client";
 
 import { editTransactionDrawerAtom } from "@/lib/atoms";
+import { formatAmount } from "@/lib/helpers";
 import type { GetOrderTransactions } from "@/modules/orders/types";
 import { trpc } from "@/trpc/client";
 import { Badge, Button, Menu, ScrollArea, Table, Text } from "@mantine/core";
@@ -39,13 +40,6 @@ export default function TransactionsTable({ orderId, transactions }: Props) {
 			});
 		},
 	});
-
-	// Helper to format the amount (assuming amount is stored in cents)
-	const formatAmount = (amount: number) =>
-		new Intl.NumberFormat("en-UK", {
-			style: "currency",
-			currency: "GBP",
-		}).format(amount);
 
 	const openDeleteModal = (transactionId: string) =>
 		modals.openConfirmModal({

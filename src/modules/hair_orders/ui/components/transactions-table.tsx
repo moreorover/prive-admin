@@ -1,6 +1,7 @@
 "use client";
 
 import { editTransactionDrawerAtom } from "@/lib/atoms";
+import { formatAmount } from "@/lib/helpers";
 import type { HairOrderTransactions } from "@/modules/hair_orders/types";
 import { trpc } from "@/trpc/client";
 import {
@@ -72,13 +73,6 @@ export default function TransactionsTable({
 			status === "PENDING" && getCompletedDate(date).isBefore(dayjs(), "day")
 		);
 	};
-
-	// Helper to format the amount (assuming amount is stored in cents)
-	const formatAmount = (amount: number) =>
-		new Intl.NumberFormat("en-UK", {
-			style: "currency",
-			currency: "GBP",
-		}).format(amount);
 
 	const openDeleteModal = (transactionId: string) =>
 		modals.openConfirmModal({
