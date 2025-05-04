@@ -4,12 +4,12 @@ import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { newTransactionDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
-import HairAssignmentToAppointmentTable from "@/modules/hair_orders/ui/components/hair-assignments-table";
 import HairAssignmentToSaleTable from "@/modules/hair_orders/ui/components/hair-sales-table";
 import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table";
 import TransactionsTable from "@/modules/hair_orders/ui/components/transactions-table";
 import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
+import HairUsedInAppointmentsTable from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table";
 import Surface from "@/modules/ui/components/surface";
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";
@@ -450,8 +450,20 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 						<Group justify="space-between" gap="sm">
 							<Title order={4}>Hair used in Appointments</Title>
 						</Group>
-						<HairAssignmentToAppointmentTable
-							hairAssignments={hairAssignments}
+						<HairUsedInAppointmentsTable
+							hair={hairAssignments}
+							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
+							row={
+								<>
+									<HairUsedInAppointmentsTable.RowWeight />
+									<HairUsedInAppointmentsTable.RowTotal />
+									<HairUsedInAppointmentsTable.RowSoldFor />
+									<HairUsedInAppointmentsTable.RowProfit />
+									<HairUsedInAppointmentsTable.RowActions>
+										<HairUsedInAppointmentsTable.RowActionViewAppointment />
+									</HairUsedInAppointmentsTable.RowActions>
+								</>
+							}
 						/>
 					</Paper>
 					<Paper withBorder p="md" radius="md" shadow="sm">
