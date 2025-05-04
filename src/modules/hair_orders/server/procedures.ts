@@ -8,6 +8,7 @@ export const hairOrderRouter = createTRPCRouter({
 	getAll: protectedProcedure.query(() => {
 		return prisma.hairOrder.findMany({
 			include: { createdBy: true, customer: true },
+			orderBy: { uid: "asc" },
 		});
 	}),
 	getHairOrderOptions: protectedProcedure
