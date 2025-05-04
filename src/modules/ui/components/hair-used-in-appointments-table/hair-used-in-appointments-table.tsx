@@ -1,4 +1,5 @@
 import HairUsedInAppointmentsTableRowActionViewAppointment from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table-row-action-navigate-to-appointment";
+import HairUsedInAppointmentsTableRowActionViewHairOrder from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table-row-action-navigate-to-hairOrder";
 import HairUsedInAppointmentsTableRowActionUpdate from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table-row-action-update";
 import HairUsedInAppointmentsTableRowActions from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table-row-actions";
 import HairUsedInAppointmentsTableRowContext from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table-row-context";
@@ -17,6 +18,7 @@ export type Hair = {
 	soldFor: number;
 	total: number;
 	appointmentId: string;
+	hairOrderId: string;
 };
 
 interface Props {
@@ -56,6 +58,8 @@ HairUsedInAppointmentsTable.RowProfit = HairUsedInAppointmentsTableRowProfit;
 HairUsedInAppointmentsTable.RowActions = HairUsedInAppointmentsTableRowActions;
 HairUsedInAppointmentsTable.RowActionViewAppointment =
 	HairUsedInAppointmentsTableRowActionViewAppointment;
+HairUsedInAppointmentsTable.RowActionViewHairOrder =
+	HairUsedInAppointmentsTableRowActionViewHairOrder;
 HairUsedInAppointmentsTable.RowActionUpdate =
 	HairUsedInAppointmentsTableRowActionUpdate;
 HairUsedInAppointmentsTable.RowActionDelete =

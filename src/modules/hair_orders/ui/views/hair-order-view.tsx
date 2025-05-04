@@ -2,6 +2,7 @@
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { newTransactionDrawerAtom } from "@/lib/atoms";
+import { formatAmount } from "@/lib/helpers";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
 import HairAssignmentToSaleTable from "@/modules/hair_orders/ui/components/hair-sales-table";
@@ -199,12 +200,6 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 			color: "pink.6",
 		}, // Red
 	];
-
-	const formatAmount = (amount: number) =>
-		new Intl.NumberFormat("en-UK", {
-			style: "currency",
-			currency: "GBP",
-		}).format(amount);
 
 	return (
 		<Grid>

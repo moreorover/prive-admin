@@ -1,7 +1,10 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { editAppointmentDrawerAtom } from "@/lib/atoms";
+import {
+	editAppointmentDrawerAtom,
+	editHairAssignmentToAppointmentDrawerAtom,
+} from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useAppointmentNoteDrawerStore } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
@@ -23,6 +26,7 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import { useSetAtom } from "jotai";
@@ -138,6 +142,49 @@ function AppointmentSuspense({ appointmentId }: Props) {
 					message: "Something went wrong updating Appointment.",
 				});
 			},
+		});
+
+	const showEditHairAssignmentToAppointmentDrawer = useSetAtom(
+		editHairAssignmentToAppointmentDrawerAtom,
+	);
+
+	const deleteHairAssignment =
+		trpc.appointments.deleteHairAssignment.useMutation({
+			onSuccess: () => {
+				notifications.show({
+					color: "green",
+					title: "Success!",
+					message: "Hair assignment deleted.",
+				});
+				utils.appointments.getHairAssignments.invalidate({
+					appointmentId,
+				});
+			},
+			onError: () => {
+				notifications.show({
+					color: "red",
+					title: "Failed to delete Hair assignment",
+					message: "Please try again.",
+				});
+			},
+		});
+
+	const openDeleteModal = (hairAssignmentId: string) =>
+		modals.openConfirmModal({
+			title: "Delete Hair Assignment?",
+			centered: true,
+			children: (
+				<Text size="sm">
+					Are you sure you want to delete this hair assignment?
+				</Text>
+			),
+			labels: { confirm: "Delete Hair Assignment", cancel: "Cancel" },
+			confirmProps: { color: "red" },
+			onCancel: () => {},
+			onConfirm: () =>
+				deleteHairAssignment.mutate({
+					hairAssignmentId,
+				}),
 		});
 
 	return (
@@ -307,12 +354,36 @@ function AppointmentSuspense({ appointmentId }: Props) {
 									<HairUsedInAppointmentsTable.RowSoldFor />
 									<HairUsedInAppointmentsTable.RowProfit />
 									<HairUsedInAppointmentsTable.RowActions>
-										<HairUsedInAppointmentsTable.RowActionViewAppointment />
+										<HairUsedInAppointmentsTable.RowActionViewHairOrder />
 										<HairUsedInAppointmentsTable.RowActionUpdate
-											onAction={(id) => console.log(id)}
+											onAction={(id) => {
+												const hairAssignment = hairAssignments.find(
+													(h) => h.id === id,
+												);
+
+												if (!hairAssignment) return;
+
+												showEditHairAssignmentToAppointmentDrawer({
+													isOpen: true,
+													hairAssignment: {
+														...hairAssignment,
+														soldFor: hairAssignment.soldFor / 100,
+													},
+													maxWeight: Math.abs(
+														hairAssignment.hairOrder.weightReceived -
+															hairAssignment.hairOrder.weightUsed +
+															hairAssignment.weightInGrams,
+													),
+													onUpdated: () => {
+														utils.appointments.getHairAssignments.invalidate({
+															appointmentId,
+														});
+													},
+												});
+											}}
 										/>
 										<HairUsedInAppointmentsTable.RowActionDelete
-											onAction={(id) => console.log(id)}
+											onAction={(id) => openDeleteModal(id)}
 										/>
 									</HairUsedInAppointmentsTable.RowActions>
 								</>
