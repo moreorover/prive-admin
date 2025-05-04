@@ -461,6 +461,12 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 									<HairUsedInAppointmentsTable.RowProfit />
 									<HairUsedInAppointmentsTable.RowActions>
 										<HairUsedInAppointmentsTable.RowActionViewAppointment />
+										<HairUsedInAppointmentsTable.RowActionUpdate
+											onAction={(id) => console.log(id)}
+										/>
+										<HairUsedInAppointmentsTable.RowActionDelete
+											onAction={(id) => console.log(id)}
+										/>
 									</HairUsedInAppointmentsTable.RowActions>
 								</>
 							}

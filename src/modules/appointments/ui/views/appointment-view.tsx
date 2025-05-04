@@ -5,11 +5,11 @@ import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useAppointmentNoteDrawerStore } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
-import HairAssignmentToAppointmentTable from "@/modules/appointments/ui/components/hair-assignments-table";
 import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
 import TransactionsTable from "@/modules/appointments/ui/components/transactions-table";
+import HairUsedInAppointmentsTable from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table";
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";
 import {
@@ -297,9 +297,26 @@ function AppointmentSuspense({ appointmentId }: Props) {
 								Pick
 							</Button>
 						</Group>
-						<HairAssignmentToAppointmentTable
-							appointmentId={appointmentId}
-							hairAssignments={hairAssignments}
+						<HairUsedInAppointmentsTable
+							hair={hairAssignments}
+							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
+							row={
+								<>
+									<HairUsedInAppointmentsTable.RowWeight />
+									<HairUsedInAppointmentsTable.RowTotal />
+									<HairUsedInAppointmentsTable.RowSoldFor />
+									<HairUsedInAppointmentsTable.RowProfit />
+									<HairUsedInAppointmentsTable.RowActions>
+										<HairUsedInAppointmentsTable.RowActionViewAppointment />
+										<HairUsedInAppointmentsTable.RowActionUpdate
+											onAction={(id) => console.log(id)}
+										/>
+										<HairUsedInAppointmentsTable.RowActionDelete
+											onAction={(id) => console.log(id)}
+										/>
+									</HairUsedInAppointmentsTable.RowActions>
+								</>
+							}
 						/>
 					</Paper>
 				</Stack>

@@ -22,6 +22,7 @@ interface Props {
 	hairAssignments: GetHairAssignmentsByAppointmentId;
 }
 
+// TODO: delete this component
 export default function HairAssignmentToAppointmentTable({
 	appointmentId,
 	hairAssignments,

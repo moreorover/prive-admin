@@ -1,4 +1,5 @@
 import HairUsedInAppointmentsTableRowActionViewAppointment from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table-row-action-navigate-to-appointment";
+import HairUsedInAppointmentsTableRowActionUpdate from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table-row-action-update";
 import HairUsedInAppointmentsTableRowActions from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table-row-actions";
 import HairUsedInAppointmentsTableRowContext from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table-row-context";
 import HairUsedInAppointmentsTableRowProfit from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table-row-profit";
@@ -6,6 +7,7 @@ import HairUsedInAppointmentsTableRowSoldFor from "@/modules/ui/components/hair-
 import HairUsedInAppointmentsTableRowWeight from "@/modules/ui/components/hair-used-in-appointments-table/hair-used-in-appointments-table-row-weight";
 import { Table } from "@mantine/core";
 import type { ReactNode } from "react";
+import HairUsedInAppointmentsTableRowActionDelete from "./hair-used-in-appointments-table-row-action-delete";
 import HairUsedInAppointmentsTableRowTotal from "./hair-used-in-appointments-table-row-total";
 
 export type Hair = {
@@ -14,6 +16,7 @@ export type Hair = {
 	profit: number;
 	soldFor: number;
 	total: number;
+	appointmentId: string;
 };
 
 interface Props {
@@ -53,5 +56,9 @@ HairUsedInAppointmentsTable.RowProfit = HairUsedInAppointmentsTableRowProfit;
 HairUsedInAppointmentsTable.RowActions = HairUsedInAppointmentsTableRowActions;
 HairUsedInAppointmentsTable.RowActionViewAppointment =
 	HairUsedInAppointmentsTableRowActionViewAppointment;
+HairUsedInAppointmentsTable.RowActionUpdate =
+	HairUsedInAppointmentsTableRowActionUpdate;
+HairUsedInAppointmentsTable.RowActionDelete =
+	HairUsedInAppointmentsTableRowActionDelete;
 
 export default HairUsedInAppointmentsTable;
