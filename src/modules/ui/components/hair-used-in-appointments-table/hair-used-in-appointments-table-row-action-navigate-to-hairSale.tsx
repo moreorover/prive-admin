@@ -2,18 +2,18 @@ import { useHairUsedInAppointmentsTableRowContext } from "@/modules/ui/component
 import { Menu } from "@mantine/core";
 import Link from "next/link";
 
-export default function HairUsedInAppointmentsTableRowActionViewHairOrder() {
+export default function HairUsedInAppointmentsTableRowActionViewHairSale() {
 	const { hair } = useHairUsedInAppointmentsTableRowContext();
 
-	if (!hair.hairOrderId) return null;
+	if (!hair.hairSaleId) return null;
 
 	return (
 		<Menu.Item
 			component={Link}
-			href={`/dashboard/hair-orders/${hair.hairOrderId}`}
-			disabled={!hair.hairOrderId}
+			href={`/dashboard/hair-sales/${hair.hairSaleId}`}
+			disabled={!hair.hairSaleId}
 		>
-			View Hair Order
+			View Hair Sale
 		</Menu.Item>
 	);
 }

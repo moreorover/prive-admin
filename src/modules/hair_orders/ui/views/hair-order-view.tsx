@@ -5,7 +5,6 @@ import { newTransactionDrawerAtom } from "@/lib/atoms";
 import { formatAmount } from "@/lib/helpers";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
-import HairAssignmentToSaleTable from "@/modules/hair_orders/ui/components/hair-sales-table";
 import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table";
 import TransactionsTable from "@/modules/hair_orders/ui/components/transactions-table";
 import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
@@ -465,7 +464,24 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 						<Group justify="space-between" gap="sm">
 							<Title order={4}>Hair Sales</Title>
 						</Group>
-						<HairAssignmentToSaleTable hairAssignments={hairSales} />
+						<HairUsedInAppointmentsTable
+							hair={hairSales.map((hairAssignment) => ({
+								...hairAssignment,
+								total: hairAssignment.soldFor - hairAssignment.profit,
+							}))}
+							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
+							row={
+								<>
+									<HairUsedInAppointmentsTable.RowWeight />
+									<HairUsedInAppointmentsTable.RowTotal />
+									<HairUsedInAppointmentsTable.RowSoldFor />
+									<HairUsedInAppointmentsTable.RowProfit />
+									<HairUsedInAppointmentsTable.RowActions>
+										<HairUsedInAppointmentsTable.RowActionViewHairSale />
+									</HairUsedInAppointmentsTable.RowActions>
+								</>
+							}
+						/>
 					</Paper>
 				</Stack>
 			</GridCol>
