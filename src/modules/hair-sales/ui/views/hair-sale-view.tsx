@@ -1,8 +1,8 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { editHairAssignmentToSaleDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
+import { useEditHairAssignmentToSaleStoreActions } from "@/modules/hair-sales/ui/components/editHairAssignementToSaleStore";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
 import { trpc } from "@/trpc/client";
@@ -21,7 +21,6 @@ import {
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
-import { useSetAtom } from "jotai";
 import { CalendarDays, Pencil } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -87,9 +86,8 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 			},
 		});
 
-	const showEditHairAssignmentToSaleDrawer = useSetAtom(
-		editHairAssignmentToSaleDrawerAtom,
-	);
+	const { openEditHairAssignmentDrawer } =
+		useEditHairAssignmentToSaleStoreActions();
 
 	const deleteHairAssignment = trpc.hairSales.deleteHairAssignment.useMutation({
 		onSuccess: () => {
@@ -254,8 +252,7 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 													(h) => h.id === id,
 												);
 												if (!hairAssignment) return;
-												showEditHairAssignmentToSaleDrawer({
-													isOpen: true,
+												openEditHairAssignmentDrawer({
 													hairAssignment: {
 														...hairAssignment,
 														soldFor: hairAssignment.soldFor / 100,

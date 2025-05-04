@@ -1,13 +1,11 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import {
-	editAppointmentDrawerAtom,
-	editHairAssignmentToAppointmentDrawerAtom,
-} from "@/lib/atoms";
+import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useAppointmentNoteDrawerStore } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
+import { useEditHairAssignmentToAppointmentStoreActions } from "@/modules/appointments/ui/components/editHairAssignementToAppointmentStore";
 import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
@@ -144,9 +142,8 @@ function AppointmentSuspense({ appointmentId }: Props) {
 			},
 		});
 
-	const showEditHairAssignmentToAppointmentDrawer = useSetAtom(
-		editHairAssignmentToAppointmentDrawerAtom,
-	);
+	const { openEditHairAssignmentDrawer } =
+		useEditHairAssignmentToAppointmentStoreActions();
 
 	const deleteHairAssignment =
 		trpc.appointments.deleteHairAssignment.useMutation({
@@ -363,8 +360,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 
 												if (!hairAssignment) return;
 
-												showEditHairAssignmentToAppointmentDrawer({
-													isOpen: true,
+												openEditHairAssignmentDrawer({
 													hairAssignment: {
 														...hairAssignment,
 														soldFor: hairAssignment.soldFor / 100,
