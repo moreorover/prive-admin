@@ -136,7 +136,7 @@ export const hairSalesRouter = createTRPCRouter({
 			});
 
 			await prisma.hairSale.update({
-				where: { id: hairAssignment.hairOrderId },
+				where: { id: hairAssignment.hairSaleId },
 				data: { weightInGrams: totalWeightInGrams._sum.weightInGrams ?? 0 },
 			});
 

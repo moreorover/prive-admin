@@ -1,15 +1,24 @@
 "use client";
 
-import { editHairAssignmentToSaleDrawerAtom } from "@/lib/atoms";
 import type { HairAssignedToSale } from "@/lib/schemas";
+import {
+	useEditHairAssignmentToSaleStoreActions,
+	useEditHairAssignmentToSaleStoreDrawerHairAssignment,
+	useEditHairAssignmentToSaleStoreDrawerIsOpen,
+	useEditHairAssignmentToSaleStoreDrawerMaxWeight,
+	useEditHairAssignmentToSaleStoreDrawerOnUpdated,
+} from "@/modules/hair-sales/ui/components/editHairAssignementToSaleStore";
 import { HairAssignmentToSaleForm } from "@/modules/hair-sales/ui/components/hair-assignment-to-sale-form";
 import { trpc } from "@/trpc/client";
 import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { useAtom } from "jotai/index";
 
 export const EditHairAssignmentToSaleDrawer = () => {
-	const [value, setOpen] = useAtom(editHairAssignmentToSaleDrawerAtom);
+	const isOpen = useEditHairAssignmentToSaleStoreDrawerIsOpen();
+	const { reset } = useEditHairAssignmentToSaleStoreActions();
+	const onUpdated = useEditHairAssignmentToSaleStoreDrawerOnUpdated();
+	const hairAssignment = useEditHairAssignmentToSaleStoreDrawerHairAssignment();
+	const maxWeight = useEditHairAssignmentToSaleStoreDrawerMaxWeight();
 
 	const editHairAssignment = trpc.hairSales.updateHairAssignment.useMutation({
 		onSuccess: () => {
@@ -18,19 +27,8 @@ export const EditHairAssignmentToSaleDrawer = () => {
 				title: "Success!",
 				message: "Hair assignment updated.",
 			});
-			value.onUpdated();
-			setOpen({
-				isOpen: false,
-				hairAssignment: {
-					id: "",
-					hairOrderId: "",
-					hairSaleId: "",
-					weightInGrams: 0,
-					soldFor: 0,
-				},
-				maxWeight: 0,
-				onUpdated: () => {},
-			});
+			onUpdated();
+			reset();
 		},
 		onError: (e) => {
 			console.error(e);
@@ -51,28 +49,15 @@ export const EditHairAssignmentToSaleDrawer = () => {
 	return (
 		<>
 			<Drawer
-				opened={value.isOpen}
-				onClose={() =>
-					setOpen({
-						isOpen: false,
-						hairAssignment: {
-							id: "",
-							hairOrderId: "",
-							hairSaleId: "",
-							weightInGrams: 0,
-							soldFor: 0,
-						},
-						maxWeight: 0,
-						onUpdated: () => {},
-					})
-				}
+				opened={isOpen}
+				onClose={() => reset()}
 				position="right"
 				title="Update Hair Assignment"
 			>
 				<HairAssignmentToSaleForm
 					onSubmitAction={onSubmit}
-					hairAssignment={value.hairAssignment}
-					maxWeight={value.maxWeight}
+					hairAssignment={hairAssignment}
+					maxWeight={maxWeight}
 					disabled={editHairAssignment.isPending}
 				/>
 			</Drawer>

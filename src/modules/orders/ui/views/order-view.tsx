@@ -6,7 +6,6 @@ import {
 	newTransactionDrawerAtom,
 } from "@/lib/atoms";
 import { OrderItemsTable } from "@/modules/order_item/ui/components/order-items-table";
-import TransactionsTable from "@/modules/orders/ui/components/transactions-table";
 import { trpc } from "@/trpc/client";
 import {
 	Badge,
@@ -37,10 +36,6 @@ export const OrderView = ({ orderId }: Props) => {
 	});
 	const [orderItemOptions] =
 		trpc.orderItems.getProductOptionsByOrderId.useSuspenseQuery({ orderId });
-	const [orderTransactions] = trpc.transactions.getByOrderId.useSuspenseQuery({
-		orderId,
-		includeCustomer: true,
-	});
 
 	return (
 		<Grid>
@@ -151,10 +146,6 @@ export const OrderView = ({ orderId }: Props) => {
 							</Button>
 						</Group>
 					</Group>
-					<TransactionsTable
-						orderId={orderId}
-						transactions={orderTransactions}
-					/>
 				</Paper>
 			</GridCol>
 		</Grid>

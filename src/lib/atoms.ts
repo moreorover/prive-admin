@@ -1,13 +1,10 @@
 import type {
 	Appointment,
 	Customer,
-	HairAssignedToAppointment,
-	HairAssignedToSale,
 	Order,
 	OrderItem,
 	Product,
 	ProductVariant,
-	Transaction,
 } from "@/lib/schemas";
 import dayjs from "dayjs";
 import { atom } from "jotai";
@@ -116,23 +113,6 @@ export const newTransactionDrawerAtom = atom<{
 	onCreated: () => {},
 });
 
-export const editTransactionDrawerAtom = atom<{
-	isOpen: boolean;
-	transaction: Transaction;
-	onUpdated: () => void;
-}>({
-	isOpen: false,
-	transaction: {
-		name: "",
-		notes: "",
-		amount: 0,
-		type: "CASH",
-		status: "PENDING",
-		completedDateBy: dayjs().toDate(),
-	},
-	onUpdated: () => {},
-});
-
 export const newAppointmentDrawerAtom = atom<{
 	isOpen: boolean;
 	clientId: string;
@@ -152,39 +132,3 @@ export const personnelPickerModalAtom = atom<{
 	personnel: Customer[];
 	onConfirmAction: (selectedTransactions: string[]) => void;
 }>({ isOpen: false, personnel: [], onConfirmAction: () => {} });
-
-export const editHairAssignmentToAppointmentDrawerAtom = atom<{
-	isOpen: boolean;
-	hairAssignment: HairAssignedToAppointment;
-	onUpdated: () => void;
-	maxWeight: number;
-}>({
-	isOpen: false,
-	hairAssignment: {
-		id: "",
-		hairOrderId: "",
-		appointmentId: "",
-		weightInGrams: 0,
-		soldFor: 0,
-	},
-	maxWeight: 0,
-	onUpdated: () => {},
-});
-
-export const editHairAssignmentToSaleDrawerAtom = atom<{
-	isOpen: boolean;
-	hairAssignment: HairAssignedToSale;
-	onUpdated: () => void;
-	maxWeight: number;
-}>({
-	isOpen: false,
-	hairAssignment: {
-		id: "",
-		hairOrderId: "",
-		hairSaleId: "",
-		weightInGrams: 0,
-		soldFor: 0,
-	},
-	maxWeight: 0,
-	onUpdated: () => {},
-});

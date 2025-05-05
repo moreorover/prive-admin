@@ -9,7 +9,7 @@ type State = {
 	onUpdated?: () => void;
 };
 
-type Action = {
+type Actions = {
 	openDrawer: (data: Partial<State>) => void;
 	reset: () => void;
 };
@@ -22,10 +22,33 @@ const initialState: State = {
 	onUpdated: undefined,
 };
 
-export const useAppointmentNoteDrawerStore = create<State & Action>((set) => ({
+type Store = State & { actions: Actions };
+
+const useAppointmentNoteDrawerStore = create<Store>((set) => ({
 	...initialState,
-	openDrawer: (data: Partial<State>) => set(() => ({ ...data })),
-	reset: () => {
-		set(initialState);
+	actions: {
+		openDrawer: (data: Partial<State>) =>
+			set(() => ({ ...data, isOpen: true })),
+		reset: () => {
+			set(initialState);
+		},
 	},
 }));
+
+export const useAppointmentNoteDrawerStoreIsOpen = () =>
+	useAppointmentNoteDrawerStore((state) => state.isOpen);
+
+export const useAppointmentNoteDrawerStoreAppointmentId = () =>
+	useAppointmentNoteDrawerStore((state) => state.appointmentId);
+
+export const useAppointmentNoteDrawerStoreNote = () =>
+	useAppointmentNoteDrawerStore((state) => state.note);
+
+export const useAppointmentNoteDrawerStoreActions = () =>
+	useAppointmentNoteDrawerStore((state) => state.actions);
+
+export const useAppointmentNoteDrawerStoreOnUpdated = () =>
+	useAppointmentNoteDrawerStore((state) => state.onUpdated);
+
+export const useAppointmentNoteDrawerStoreOnCreated = () =>
+	useAppointmentNoteDrawerStore((state) => state.onCreated);

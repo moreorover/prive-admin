@@ -2,15 +2,16 @@
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { newTransactionDrawerAtom } from "@/lib/atoms";
+import { formatAmount } from "@/lib/helpers";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
-import HairAssignmentToAppointmentTable from "@/modules/hair_orders/ui/components/hair-assignments-table";
-import HairAssignmentToSaleTable from "@/modules/hair_orders/ui/components/hair-sales-table";
 import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table";
-import TransactionsTable from "@/modules/hair_orders/ui/components/transactions-table";
+import { useEditTransactionStoreActions } from "@/modules/transactions/ui/components/editTransactionStore";
 import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
+import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
 import Surface from "@/modules/ui/components/surface";
+import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";
 import {
@@ -28,6 +29,7 @@ import {
 	ThemeIcon,
 	Title,
 } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -200,11 +202,48 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 		}, // Red
 	];
 
-	const formatAmount = (amount: number) =>
-		new Intl.NumberFormat("en-UK", {
-			style: "currency",
-			currency: "GBP",
-		}).format(amount);
+	const { openEditTransactionDrawer } = useEditTransactionStoreActions();
+
+	const openDeleteModalForTransaction = (transactionId: string) =>
+		modals.openConfirmModal({
+			title: "Delete Transaction?",
+			centered: true,
+			children: (
+				<Text size="sm">Are you sure you want to delete this transaction?</Text>
+			),
+			labels: { confirm: "Delete Transaction", cancel: "Cancel" },
+			confirmProps: { color: "red" },
+			onCancel: () => {},
+			onConfirm: () =>
+				deleteTransaction.mutate({
+					id: transactionId,
+				}),
+		});
+
+	const deleteTransaction = trpc.transactions.delete.useMutation({
+		onSuccess: () => {
+			recalculateHairOrderPrice.mutate({ hairOrderId });
+			utils.transactions.getByHairOrderId.invalidate({
+				hairOrderId,
+			});
+			notifications.show({
+				color: "green",
+				title: "Success!",
+				message: "Transaction deleted.",
+			});
+			utils.transactions.getByHairOrderId.invalidate({
+				hairOrderId,
+				includeCustomer: true,
+			});
+		},
+		onError: () => {
+			notifications.show({
+				color: "red",
+				title: "Failed to delete transaction",
+				message: "Please try again.",
+			});
+		},
+	});
 
 	return (
 		<Grid>
@@ -430,35 +469,92 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 							</Button>
 						</Group>
 						<TransactionsTable
-							hairOrderId={hairOrderId}
 							transactions={transactions}
-							onDeleted={() => {
-								recalculateHairOrderPrice.mutate({ hairOrderId });
-								utils.transactions.getByHairOrderId.invalidate({
-									hairOrderId,
-								});
-							}}
-							onUpdated={() => {
-								recalculateHairOrderPrice.mutate({ hairOrderId });
-								utils.transactions.getByHairOrderId.invalidate({
-									hairOrderId,
-								});
-							}}
+							columns={[
+								"Customer",
+								"Transaction Name",
+								"Type",
+								"Amount",
+								"Completed At",
+								"",
+							]}
+							row={
+								<>
+									<TransactionsTable.RowCustomerName />
+									<TransactionsTable.RowTransactionName />
+									<TransactionsTable.RowType />
+									<TransactionsTable.RowAmount />
+									<TransactionsTable.RowCompletedAt />
+									<TransactionsTable.RowActions>
+										<TransactionsTable.RowActionViewTransaction />
+										<TransactionsTable.RowActionUpdate
+											onAction={(id) => {
+												const transaction = transactions.find(
+													(t) => t.id === id,
+												);
+												if (!transaction) return;
+												openEditTransactionDrawer({
+													transaction,
+													onUpdated: () => {
+														recalculateHairOrderPrice.mutate({ hairOrderId });
+														utils.transactions.getByHairOrderId.invalidate({
+															hairOrderId,
+															includeCustomer: true,
+														});
+													},
+												});
+											}}
+										/>
+										<TransactionsTable.RowActionDelete
+											onAction={(id) => openDeleteModalForTransaction(id)}
+										/>
+									</TransactionsTable.RowActions>
+								</>
+							}
 						/>
 					</Paper>
 					<Paper withBorder p="md" radius="md" shadow="sm">
 						<Group justify="space-between" gap="sm">
 							<Title order={4}>Hair used in Appointments</Title>
 						</Group>
-						<HairAssignmentToAppointmentTable
-							hairAssignments={hairAssignments}
+						<HairUsedTable
+							hair={hairAssignments}
+							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
+							row={
+								<>
+									<HairUsedTable.RowWeight />
+									<HairUsedTable.RowTotal />
+									<HairUsedTable.RowSoldFor />
+									<HairUsedTable.RowProfit />
+									<HairUsedTable.RowActions>
+										<HairUsedTable.RowActionViewAppointment />
+									</HairUsedTable.RowActions>
+								</>
+							}
 						/>
 					</Paper>
 					<Paper withBorder p="md" radius="md" shadow="sm">
 						<Group justify="space-between" gap="sm">
 							<Title order={4}>Hair Sales</Title>
 						</Group>
-						<HairAssignmentToSaleTable hairAssignments={hairSales} />
+						<HairUsedTable
+							hair={hairSales.map((hairAssignment) => ({
+								...hairAssignment,
+								total: hairAssignment.soldFor - hairAssignment.profit,
+							}))}
+							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
+							row={
+								<>
+									<HairUsedTable.RowWeight />
+									<HairUsedTable.RowTotal />
+									<HairUsedTable.RowSoldFor />
+									<HairUsedTable.RowProfit />
+									<HairUsedTable.RowActions>
+										<HairUsedTable.RowActionViewHairSale />
+									</HairUsedTable.RowActions>
+								</>
+							}
+						/>
 					</Paper>
 				</Stack>
 			</GridCol>

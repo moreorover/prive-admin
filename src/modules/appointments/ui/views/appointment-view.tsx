@@ -3,13 +3,15 @@
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
-import { useAppointmentNoteDrawerStore } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
+import { useAppointmentNoteDrawerStoreActions } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
-import HairAssignmentToAppointmentTable from "@/modules/appointments/ui/components/hair-assignments-table";
+import { useEditHairAssignmentToAppointmentStoreActions } from "@/modules/appointments/ui/components/editHairAssignementToAppointmentStore";
 import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
-import TransactionsTable from "@/modules/appointments/ui/components/transactions-table";
+import { useEditTransactionStoreActions } from "@/modules/transactions/ui/components/editTransactionStore";
+import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
+import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";
 import {
@@ -23,6 +25,7 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import { useSetAtom } from "jotai";
@@ -116,9 +119,8 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	];
 
 	const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
-	const openNewAppointmentNoteDrawer = useAppointmentNoteDrawerStore(
-		(state) => state.openDrawer,
-	);
+	const { openDrawer: openNewAppointmentNoteDrawer } =
+		useAppointmentNoteDrawerStoreActions();
 
 	const createHairAssignmentMutation =
 		trpc.appointments.createHairAssignment.useMutation({
@@ -139,6 +141,87 @@ function AppointmentSuspense({ appointmentId }: Props) {
 				});
 			},
 		});
+
+	const { openEditHairAssignmentDrawer } =
+		useEditHairAssignmentToAppointmentStoreActions();
+
+	const deleteHairAssignment =
+		trpc.appointments.deleteHairAssignment.useMutation({
+			onSuccess: () => {
+				notifications.show({
+					color: "green",
+					title: "Success!",
+					message: "Hair assignment deleted.",
+				});
+				utils.appointments.getHairAssignments.invalidate({
+					appointmentId,
+				});
+			},
+			onError: () => {
+				notifications.show({
+					color: "red",
+					title: "Failed to delete Hair assignment",
+					message: "Please try again.",
+				});
+			},
+		});
+
+	const openDeleteModalForHairAssignment = (hairAssignmentId: string) =>
+		modals.openConfirmModal({
+			title: "Delete Hair Assignment?",
+			centered: true,
+			children: (
+				<Text size="sm">
+					Are you sure you want to delete this hair assignment?
+				</Text>
+			),
+			labels: { confirm: "Delete Hair Assignment", cancel: "Cancel" },
+			confirmProps: { color: "red" },
+			onCancel: () => {},
+			onConfirm: () =>
+				deleteHairAssignment.mutate({
+					hairAssignmentId,
+				}),
+		});
+
+	const openDeleteModalForTransaction = (transactionId: string) =>
+		modals.openConfirmModal({
+			title: "Delete Transaction?",
+			centered: true,
+			children: (
+				<Text size="sm">Are you sure you want to delete this transaction?</Text>
+			),
+			labels: { confirm: "Delete Transaction", cancel: "Cancel" },
+			confirmProps: { color: "red" },
+			onCancel: () => {},
+			onConfirm: () =>
+				deleteTransaction.mutate({
+					id: transactionId,
+				}),
+		});
+
+	const deleteTransaction = trpc.transactions.delete.useMutation({
+		onSuccess: () => {
+			notifications.show({
+				color: "green",
+				title: "Success!",
+				message: "Transaction deleted.",
+			});
+			utils.transactions.getByAppointmentId.invalidate({
+				appointmentId,
+				includeCustomer: true,
+			});
+		},
+		onError: () => {
+			notifications.show({
+				color: "red",
+				title: "Failed to delete transaction",
+				message: "Please try again.",
+			});
+		},
+	});
+
+	const { openEditTransactionDrawer } = useEditTransactionStoreActions();
 
 	return (
 		<Grid grow>
@@ -234,7 +317,6 @@ function AppointmentSuspense({ appointmentId }: Props) {
 								onClick={() => {
 									openNewAppointmentNoteDrawer({
 										appointmentId,
-										isOpen: true,
 										onCreated: () => {
 											utils.appointmentNotes.getNotesByAppointmentId.invalidate(
 												{
@@ -271,8 +353,47 @@ function AppointmentSuspense({ appointmentId }: Props) {
 							<Title order={4}>Transactions</Title>
 						</Group>
 						<TransactionsTable
-							appointmentId={appointmentId}
 							transactions={transactions}
+							columns={[
+								"Customer",
+								"Transaction Name",
+								"Type",
+								"Amount",
+								"Completed At",
+								"",
+							]}
+							row={
+								<>
+									<TransactionsTable.RowCustomerName />
+									<TransactionsTable.RowTransactionName />
+									<TransactionsTable.RowType />
+									<TransactionsTable.RowAmount />
+									<TransactionsTable.RowCompletedAt />
+									<TransactionsTable.RowActions>
+										<TransactionsTable.RowActionViewTransaction />
+										<TransactionsTable.RowActionUpdate
+											onAction={(id) => {
+												const transaction = transactions.find(
+													(t) => t.id === id,
+												);
+												if (!transaction) return;
+												openEditTransactionDrawer({
+													transaction,
+													onUpdated: () => {
+														utils.transactions.getByAppointmentId.invalidate({
+															appointmentId,
+															includeCustomer: true,
+														});
+													},
+												});
+											}}
+										/>
+										<TransactionsTable.RowActionDelete
+											onAction={(id) => openDeleteModalForTransaction(id)}
+										/>
+									</TransactionsTable.RowActions>
+								</>
+							}
 						/>
 					</Paper>
 					<Paper withBorder p="md" radius="md" shadow="sm">
@@ -297,9 +418,49 @@ function AppointmentSuspense({ appointmentId }: Props) {
 								Pick
 							</Button>
 						</Group>
-						<HairAssignmentToAppointmentTable
-							appointmentId={appointmentId}
-							hairAssignments={hairAssignments}
+						<HairUsedTable
+							hair={hairAssignments}
+							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
+							row={
+								<>
+									<HairUsedTable.RowWeight />
+									<HairUsedTable.RowTotal />
+									<HairUsedTable.RowSoldFor />
+									<HairUsedTable.RowProfit />
+									<HairUsedTable.RowActions>
+										<HairUsedTable.RowActionViewHairOrder />
+										<HairUsedTable.RowActionUpdate
+											onAction={(id) => {
+												const hairAssignment = hairAssignments.find(
+													(h) => h.id === id,
+												);
+
+												if (!hairAssignment) return;
+
+												openEditHairAssignmentDrawer({
+													hairAssignment: {
+														...hairAssignment,
+														soldFor: hairAssignment.soldFor / 100,
+													},
+													maxWeight: Math.abs(
+														hairAssignment.hairOrder.weightReceived -
+															hairAssignment.hairOrder.weightUsed +
+															hairAssignment.weightInGrams,
+													),
+													onUpdated: () => {
+														utils.appointments.getHairAssignments.invalidate({
+															appointmentId,
+														});
+													},
+												});
+											}}
+										/>
+										<HairUsedTable.RowActionDelete
+											onAction={(id) => openDeleteModalForHairAssignment(id)}
+										/>
+									</HairUsedTable.RowActions>
+								</>
+							}
 						/>
 					</Paper>
 				</Stack>

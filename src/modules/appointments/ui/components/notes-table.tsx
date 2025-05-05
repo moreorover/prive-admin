@@ -1,6 +1,6 @@
 "use client";
 
-import { useAppointmentNoteDrawerStore } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
+import { useAppointmentNoteDrawerStoreActions } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import type { GetAppointmentNotes } from "@/modules/appointments/types";
 import { trpc } from "@/trpc/client";
 import { Button, Menu, ScrollArea, Table, Text } from "@mantine/core";
@@ -16,7 +16,7 @@ interface Props {
 export default function AppointmentNotesTable({ appointmentId, notes }: Props) {
 	const utils = trpc.useUtils();
 
-	const openDrawer = useAppointmentNoteDrawerStore((state) => state.openDrawer);
+	const { openDrawer } = useAppointmentNoteDrawerStoreActions();
 
 	const deleteAppointmentNote = trpc.appointmentNotes.delete.useMutation({
 		onSuccess: () => {
