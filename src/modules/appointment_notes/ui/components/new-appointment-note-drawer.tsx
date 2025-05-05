@@ -1,30 +1,34 @@
 "use client";
 
 import type { AppointmentNote } from "@/lib/schemas";
-import { useAppointmentNoteDrawerStore } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
+import {
+	useAppointmentNoteDrawerStoreActions,
+	useAppointmentNoteDrawerStoreAppointmentId,
+	useAppointmentNoteDrawerStoreIsOpen,
+	useAppointmentNoteDrawerStoreNote,
+	useAppointmentNoteDrawerStoreOnCreated,
+} from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { AppointmentNoteForm } from "@/modules/appointment_notes/ui/components/appointment-note-form";
 import { trpc } from "@/trpc/client";
 import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 
 export const NewAppointmentNoteDrawer = () => {
-	const isOpen = useAppointmentNoteDrawerStore((state) => state.isOpen);
-	const appointmentId = useAppointmentNoteDrawerStore(
-		(state) => state.appointmentId,
-	);
-	const appointmentNote = useAppointmentNoteDrawerStore((state) => state.note);
-	const reset = useAppointmentNoteDrawerStore((state) => state.reset);
-	const onCreated = useAppointmentNoteDrawerStore((state) => state.onCreated);
+	const isOpen = useAppointmentNoteDrawerStoreIsOpen();
+	const appointmentId = useAppointmentNoteDrawerStoreAppointmentId();
+	const appointmentNote = useAppointmentNoteDrawerStoreNote();
+	const { reset } = useAppointmentNoteDrawerStoreActions();
+	const onCreated = useAppointmentNoteDrawerStoreOnCreated();
 
 	const newAppointmentNote = trpc.appointmentNotes.create.useMutation({
 		onSuccess: () => {
+			reset();
+			onCreated?.();
 			notifications.show({
 				color: "green",
 				title: "Success!",
 				message: "Appointment Note created.",
 			});
-			reset();
-			onCreated?.();
 		},
 		onError: () => {
 			notifications.show({
@@ -46,7 +50,7 @@ export const NewAppointmentNoteDrawer = () => {
 	return (
 		<Drawer
 			opened={isOpen && onCreated !== undefined}
-			onClose={() => reset()}
+			onClose={reset}
 			position="right"
 			title="Create Appointment Note"
 		>

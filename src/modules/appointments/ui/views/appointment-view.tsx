@@ -3,7 +3,7 @@
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
-import { useAppointmentNoteDrawerStore } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
+import { useAppointmentNoteDrawerStoreActions } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
 import { useEditHairAssignmentToAppointmentStoreActions } from "@/modules/appointments/ui/components/editHairAssignementToAppointmentStore";
 import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
@@ -119,9 +119,8 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	];
 
 	const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
-	const openNewAppointmentNoteDrawer = useAppointmentNoteDrawerStore(
-		(state) => state.openDrawer,
-	);
+	const { openDrawer: openNewAppointmentNoteDrawer } =
+		useAppointmentNoteDrawerStoreActions();
 
 	const createHairAssignmentMutation =
 		trpc.appointments.createHairAssignment.useMutation({
@@ -318,7 +317,6 @@ function AppointmentSuspense({ appointmentId }: Props) {
 								onClick={() => {
 									openNewAppointmentNoteDrawer({
 										appointmentId,
-										isOpen: true,
 										onCreated: () => {
 											utils.appointmentNotes.getNotesByAppointmentId.invalidate(
 												{
