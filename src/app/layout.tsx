@@ -38,7 +38,7 @@ export default function RootLayout({
 			</head>
 			<body className="antialiased">
 				<TRPCProvider>
-					<MantineProvider defaultColorScheme="dark" theme={theme}>
+					<MantineProvider defaultColorScheme="light" theme={theme}>
 						<ModalsProvider modals={providerModals}>
 							{children}
 							<Notifications />
