@@ -2,7 +2,7 @@ import { useHairUsedTableRowContext } from "@/modules/ui/components/hair-used-ta
 import { Group, Table, Text, Tooltip } from "@mantine/core";
 import { TriangleAlertIcon } from "lucide-react";
 
-function HairUsedTableRowWeight() {
+export default function HairUsedTableRowWeight() {
 	const { hair } = useHairUsedTableRowContext();
 	return (
 		<Table.Td
@@ -21,5 +21,3 @@ function HairUsedTableRowWeight() {
 		</Table.Td>
 	);
 }
-
-export default HairUsedTableRowWeight;

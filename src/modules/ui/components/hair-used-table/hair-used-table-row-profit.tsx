@@ -2,7 +2,7 @@ import { formatAmount } from "@/lib/helpers";
 import { useHairUsedTableRowContext } from "@/modules/ui/components/hair-used-table/hair-used-table-row-context";
 import { Table, Text } from "@mantine/core";
 
-function HairUsedTableRowProfit() {
+export default function HairUsedTableRowProfit() {
 	const { hair } = useHairUsedTableRowContext();
 	return (
 		<Table.Td>
@@ -10,5 +10,3 @@ function HairUsedTableRowProfit() {
 		</Table.Td>
 	);
 }
-
-export default HairUsedTableRowProfit;
