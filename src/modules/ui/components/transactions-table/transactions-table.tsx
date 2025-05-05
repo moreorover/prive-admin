@@ -1,6 +1,7 @@
 import TransactionTableRowActionViewTransaction from "@/modules/ui/components/transactions-table/transactions-table-row-action-navigate-to-transaction";
 import TransactionTableRowActionUpdate from "@/modules/ui/components/transactions-table/transactions-table-row-action-update";
 import TransactionTableRowActions from "@/modules/ui/components/transactions-table/transactions-table-row-actions";
+import TransactionsTableRowCreatedAt from "@/modules/ui/components/transactions-table/transactions-table-row-createdAt";
 import TransactionsTableRowTransactionName from "@/modules/ui/components/transactions-table/transactions-table-row-transactionName";
 import TransactionsTableRowType from "@/modules/ui/components/transactions-table/transactions-table-row-type";
 import { Table } from "@mantine/core";
@@ -19,6 +20,7 @@ export type Transaction = {
 	type: string;
 	status: string;
 	completedDateBy: Date;
+	createdAt: Date;
 };
 
 interface Props {
@@ -56,6 +58,7 @@ TransactionsTable.RowCustomerName = TransactionsTableRowCustomerName;
 TransactionsTable.RowTransactionName = TransactionsTableRowTransactionName;
 TransactionsTable.RowType = TransactionsTableRowType;
 TransactionsTable.RowCompletedAt = TransactionsTableRowCompletedAt;
+TransactionsTable.RowCreatedAt = TransactionsTableRowCreatedAt;
 TransactionsTable.RowActions = TransactionTableRowActions;
 TransactionsTable.RowActionViewTransaction =
 	TransactionTableRowActionViewTransaction;
