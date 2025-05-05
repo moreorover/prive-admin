@@ -1,16 +1,21 @@
 "use client";
-
-import { editTransactionDrawerAtom } from "@/lib/atoms";
 import type { Transaction } from "@/lib/schemas";
+import {
+	useEditTransactionStoreActions,
+	useEditTransactionStoreDrawerIsOpen,
+	useEditTransactionStoreDrawerOnUpdated,
+	useEditTransactionStoreDrawerTransaction,
+} from "@/modules/transactions/ui/components/editTransactionStore";
 import { TransactionForm } from "@/modules/transactions/ui/components/transaction-form";
 import { trpc } from "@/trpc/client";
 import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import dayjs from "dayjs";
-import { useAtom } from "jotai/index";
 
 export const EditTransactionDrawer = () => {
-	const [value, setOpen] = useAtom(editTransactionDrawerAtom);
+	const isOpen = useEditTransactionStoreDrawerIsOpen();
+	const onUpdated = useEditTransactionStoreDrawerOnUpdated();
+	const { reset } = useEditTransactionStoreActions();
+	const transaction = useEditTransactionStoreDrawerTransaction();
 
 	const editTransaction = trpc.transactions.update.useMutation({
 		onSuccess: () => {
@@ -19,19 +24,8 @@ export const EditTransactionDrawer = () => {
 				title: "Success!",
 				message: "Transaction updated.",
 			});
-			value.onUpdated();
-			setOpen({
-				isOpen: false,
-				transaction: {
-					name: "",
-					notes: "",
-					amount: 0,
-					type: "CASH",
-					status: "PENDING",
-					completedDateBy: dayjs().toDate(),
-				},
-				onUpdated: () => {},
-			});
+			onUpdated();
+			reset();
 		},
 		onError: () => {
 			notifications.show({
@@ -51,27 +45,14 @@ export const EditTransactionDrawer = () => {
 	return (
 		<>
 			<Drawer
-				opened={value.isOpen}
-				onClose={() =>
-					setOpen({
-						isOpen: false,
-						transaction: {
-							name: "",
-							notes: "",
-							amount: 0,
-							type: "CASH",
-							status: "PENDING",
-							completedDateBy: dayjs().toDate(),
-						},
-						onUpdated: () => {},
-					})
-				}
+				opened={isOpen}
+				onClose={() => reset()}
 				position="right"
 				title="Update Transaction"
 			>
 				<TransactionForm
 					onSubmitAction={onSubmit}
-					transaction={value.transaction}
+					transaction={transaction}
 					disabled={editTransaction.isPending}
 				/>
 			</Drawer>
