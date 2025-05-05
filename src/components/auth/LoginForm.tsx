@@ -1,6 +1,4 @@
 "use client";
-
-import { useSession } from "@/hooks/use-session";
 import { authClient } from "@/lib/auth-client";
 import { signInFormSchema } from "@/lib/auth-schema";
 import {
@@ -15,11 +13,8 @@ import {
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { zodResolver } from "mantine-form-zod-resolver";
-import { redirect } from "next/navigation";
 
 export function LoginForm() {
-	const { session, isLoading } = useSession();
-
 	const form = useForm({
 		mode: "uncontrolled",
 		initialValues: {
@@ -29,12 +24,6 @@ export function LoginForm() {
 
 		validate: zodResolver(signInFormSchema),
 	});
-
-	if (isLoading) {
-		return <div>Loading...</div>;
-	}
-
-	if (session) redirect("/dashboard");
 
 	async function handleSubmit(values: typeof form.values) {
 		const { email, password } = values;
