@@ -5,7 +5,6 @@ import type {
 	OrderItem,
 	Product,
 	ProductVariant,
-	Transaction,
 } from "@/lib/schemas";
 import dayjs from "dayjs";
 import { atom } from "jotai";
@@ -112,23 +111,6 @@ export const newTransactionDrawerAtom = atom<{
 	hairOrderId: undefined,
 	customerId: "",
 	onCreated: () => {},
-});
-
-export const editTransactionDrawerAtom = atom<{
-	isOpen: boolean;
-	transaction: Transaction;
-	onUpdated: () => void;
-}>({
-	isOpen: false,
-	transaction: {
-		name: "",
-		notes: "",
-		amount: 0,
-		type: "CASH",
-		status: "PENDING",
-		completedDateBy: dayjs().toDate(),
-	},
-	onUpdated: () => {},
 });
 
 export const newAppointmentDrawerAtom = atom<{

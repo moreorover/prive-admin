@@ -356,7 +356,14 @@ function AppointmentSuspense({ appointmentId }: Props) {
 						</Group>
 						<TransactionsTable
 							transactions={transactions}
-							columns={[]}
+							columns={[
+								"Customer",
+								"Transaction Name",
+								"Type",
+								"Amount",
+								"Completed At",
+								"",
+							]}
 							row={
 								<>
 									<TransactionsTable.RowCustomerName />
