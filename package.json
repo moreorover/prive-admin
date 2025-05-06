@@ -51,6 +51,7 @@
     "server-only": "^0.0.1",
     "superjson": "^2.2.2",
     "tailwind-preset-mantine": "^2.1.0",
+    "ua-parser-js": "^2.0.3",
     "zod": "^3.24.4",
     "zustand": "^5.0.4"
   },
