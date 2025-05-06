@@ -1,11 +1,21 @@
+import { useEditTransactionStoreActions } from "@/modules/transactions/ui/components/editTransactionStore";
 import { useTransactionsTableRowContext } from "@/modules/ui/components/transactions-table/transactions-table-row-context";
 import { Menu } from "@mantine/core";
 
 interface Props {
-	onAction: (id: string) => void;
+	onUpdated: () => void;
 }
 
-export default function TransactionsTableRowActionUpdate({ onAction }: Props) {
+export default function TransactionsTableRowActionUpdate({ onUpdated }: Props) {
 	const { transaction } = useTransactionsTableRowContext();
-	return <Menu.Item onClick={() => onAction(transaction.id)}>Update</Menu.Item>;
+	const { openEditTransactionDrawer } = useEditTransactionStoreActions();
+	return (
+		<Menu.Item
+			onClick={() =>
+				openEditTransactionDrawer({ transactionId: transaction.id, onUpdated })
+			}
+		>
+			Update
+		</Menu.Item>
+	);
 }

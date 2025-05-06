@@ -10,8 +10,6 @@ import { useEditHairAssignmentToAppointmentStoreActions } from "@/modules/appoin
 import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
-import { useDeleteTransactionStoreActions } from "@/modules/transactions/ui/components/deleteTransactionStore";
-import { useEditTransactionStoreActions } from "@/modules/transactions/ui/components/editTransactionStore";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
 import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
 import { trpc } from "@/trpc/client";
@@ -149,10 +147,6 @@ function AppointmentSuspense({ appointmentId }: Props) {
 
 	const { openDeleteHairAssignmentDrawer } =
 		useDeleteHairAssignmentToAppointmentStoreActions();
-
-	const { openDeleteTransactionDrawer } = useDeleteTransactionStoreActions();
-
-	const { openEditTransactionDrawer } = useEditTransactionStoreActions();
 
 	return (
 		<Container size="xl">
@@ -304,27 +298,18 @@ function AppointmentSuspense({ appointmentId }: Props) {
 										<TransactionsTable.RowActions>
 											<TransactionsTable.RowActionViewTransaction />
 											<TransactionsTable.RowActionUpdate
-												onAction={(id) => {
-													openEditTransactionDrawer({
-														transactionId: id,
-														onUpdated: () => {
-															utils.transactions.getByAppointmentId.invalidate({
-																appointmentId,
-																includeCustomer: true,
-															});
-														},
-													});
-												}}
+												onUpdated={() =>
+													utils.transactions.getByAppointmentId.invalidate({
+														appointmentId,
+														includeCustomer: true,
+													})
+												}
 											/>
 											<TransactionsTable.RowActionDelete
-												onAction={(id) =>
-													openDeleteTransactionDrawer({
-														transactionId: id,
-														onDeleted: () =>
-															utils.transactions.getByAppointmentId.invalidate({
-																appointmentId,
-																includeCustomer: true,
-															}),
+												onDeleted={() =>
+													utils.transactions.getByAppointmentId.invalidate({
+														appointmentId,
+														includeCustomer: true,
 													})
 												}
 											/>

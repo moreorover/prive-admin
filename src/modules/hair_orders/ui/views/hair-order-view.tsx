@@ -6,8 +6,6 @@ import { formatAmount } from "@/lib/helpers";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
 import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table";
-import { useDeleteTransactionStoreActions } from "@/modules/transactions/ui/components/deleteTransactionStore";
-import { useEditTransactionStoreActions } from "@/modules/transactions/ui/components/editTransactionStore";
 import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
@@ -201,10 +199,6 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 			color: "pink.6",
 		}, // Red
 	];
-
-	const { openEditTransactionDrawer } = useEditTransactionStoreActions();
-
-	const { openDeleteTransactionDrawer } = useDeleteTransactionStoreActions();
 
 	return (
 		<Grid>
@@ -449,31 +443,21 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 									<TransactionsTable.RowActions>
 										<TransactionsTable.RowActionViewTransaction />
 										<TransactionsTable.RowActionUpdate
-											onAction={(id) => {
-												openEditTransactionDrawer({
-													transactionId: id,
-													onUpdated: () => {
-														recalculateHairOrderPrice.mutate({ hairOrderId });
-														utils.transactions.getByHairOrderId.invalidate({
-															hairOrderId,
-															includeCustomer: true,
-														});
-													},
+											onUpdated={() => {
+												recalculateHairOrderPrice.mutate({ hairOrderId });
+												utils.transactions.getByHairOrderId.invalidate({
+													hairOrderId,
+													includeCustomer: true,
 												});
 											}}
 										/>
 										<TransactionsTable.RowActionDelete
-											onAction={(id) =>
-												openDeleteTransactionDrawer({
-													transactionId: id,
-													onDeleted: () => {
-														recalculateHairOrderPrice.mutate({ hairOrderId });
-														utils.transactions.getByHairOrderId.invalidate({
-															hairOrderId,
-														});
-													},
-												})
-											}
+											onDeleted={() => {
+												recalculateHairOrderPrice.mutate({ hairOrderId });
+												utils.transactions.getByHairOrderId.invalidate({
+													hairOrderId,
+												});
+											}}
 										/>
 									</TransactionsTable.RowActions>
 								</>

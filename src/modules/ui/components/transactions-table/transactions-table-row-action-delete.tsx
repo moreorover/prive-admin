@@ -1,11 +1,26 @@
+import { useDeleteTransactionStoreActions } from "@/modules/transactions/ui/components/deleteTransactionStore";
 import { useTransactionsTableRowContext } from "@/modules/ui/components/transactions-table/transactions-table-row-context";
 import { Menu } from "@mantine/core";
 
 interface Props {
-	onAction: (id: string) => void;
+	onDeleted: () => void;
 }
 
-export default function TransactionsTableRowActionDelete({ onAction }: Props) {
+export default function TransactionsTableRowActionDelete({ onDeleted }: Props) {
 	const { transaction } = useTransactionsTableRowContext();
-	return <Menu.Item onClick={() => onAction(transaction.id)}>Delete</Menu.Item>;
+
+	const { openDeleteTransactionDrawer } = useDeleteTransactionStoreActions();
+
+	return (
+		<Menu.Item
+			onClick={() =>
+				openDeleteTransactionDrawer({
+					transactionId: transaction.id,
+					onDeleted,
+				})
+			}
+		>
+			Delete
+		</Menu.Item>
+	);
 }
