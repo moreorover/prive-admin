@@ -1,10 +1,12 @@
 "use client";
+
+import { LoaderSkeleton } from "@/components/loader-skeleton";
 import type { Transaction } from "@/lib/schemas";
 import {
 	useEditTransactionStoreActions,
 	useEditTransactionStoreDrawerIsOpen,
 	useEditTransactionStoreDrawerOnUpdated,
-	useEditTransactionStoreDrawerTransaction,
+	useEditTransactionStoreDrawerTransactionId,
 } from "@/modules/transactions/ui/components/editTransactionStore";
 import { TransactionForm } from "@/modules/transactions/ui/components/transaction-form";
 import { trpc } from "@/trpc/client";
@@ -15,7 +17,14 @@ export const EditTransactionDrawer = () => {
 	const isOpen = useEditTransactionStoreDrawerIsOpen();
 	const onUpdated = useEditTransactionStoreDrawerOnUpdated();
 	const { reset } = useEditTransactionStoreActions();
-	const transaction = useEditTransactionStoreDrawerTransaction();
+	const transactionId = useEditTransactionStoreDrawerTransactionId();
+
+	const { data: t, isLoading } = trpc.transactions.getById.useQuery(
+		{ id: transactionId },
+		{
+			enabled: !!transactionId,
+		},
+	);
 
 	const editTransaction = trpc.transactions.update.useMutation({
 		onSuccess: () => {
@@ -46,15 +55,19 @@ export const EditTransactionDrawer = () => {
 		<>
 			<Drawer
 				opened={isOpen}
-				onClose={() => reset()}
+				onClose={reset}
 				position="right"
 				title="Update Transaction"
 			>
-				<TransactionForm
-					onSubmitAction={onSubmit}
-					transaction={transaction}
-					disabled={editTransaction.isPending}
-				/>
+				{isLoading || !t ? (
+					<LoaderSkeleton />
+				) : (
+					<TransactionForm
+						onSubmitAction={onSubmit}
+						transaction={t}
+						disabled={editTransaction.isPending}
+					/>
+				)}
 			</Drawer>
 		</>
 	);

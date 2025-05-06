@@ -64,10 +64,14 @@ export const transactionsRouter = createTRPCRouter({
 
 			return transactions;
 		}),
-	getOne: protectedProcedure
-		.input(z.object({ id: z.string().cuid2() }))
+	getById: protectedProcedure
+		.input(z.object({ id: z.string().cuid2().nullable() }))
 		.query(async ({ input }) => {
 			const { id } = input;
+
+			if (!id) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
 
 			const transaction = await prisma.transaction.findUnique({
 				where: { id },

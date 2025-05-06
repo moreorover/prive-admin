@@ -375,12 +375,8 @@ function AppointmentSuspense({ appointmentId }: Props) {
 											<TransactionsTable.RowActionViewTransaction />
 											<TransactionsTable.RowActionUpdate
 												onAction={(id) => {
-													const transaction = transactions.find(
-														(t) => t.id === id,
-													);
-													if (!transaction) return;
 													openEditTransactionDrawer({
-														transaction,
+														transactionId: id,
 														onUpdated: () => {
 															utils.transactions.getByAppointmentId.invalidate({
 																appointmentId,

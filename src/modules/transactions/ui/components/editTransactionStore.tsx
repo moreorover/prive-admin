@@ -5,6 +5,7 @@ import { create } from "zustand";
 type State = {
 	isOpen: boolean;
 	transaction: Transaction;
+	transactionId: string | null;
 	onUpdated: () => void;
 };
 
@@ -15,6 +16,7 @@ type Actions = {
 
 const initialState: State = {
 	isOpen: false,
+	transactionId: null,
 	transaction: {
 		name: "",
 		notes: "",
@@ -42,8 +44,8 @@ export const useEditTransactionStore = create<State & { actions: Actions }>(
 export const useEditTransactionStoreDrawerIsOpen = () =>
 	useEditTransactionStore((state) => state.isOpen);
 
-export const useEditTransactionStoreDrawerTransaction = () =>
-	useEditTransactionStore((state) => state.transaction);
+export const useEditTransactionStoreDrawerTransactionId = () =>
+	useEditTransactionStore((state) => state.transactionId);
 
 export const useEditTransactionStoreDrawerOnUpdated = () =>
 	useEditTransactionStore((state) => state.onUpdated);
