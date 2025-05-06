@@ -255,6 +255,26 @@ export const appointmentsRouter = createTRPCRouter({
 
 			return hairAssignments;
 		}),
+	getHairAssignmentById: protectedProcedure
+		.input(z.object({ hairAssignmentId: z.string().cuid2().nullable() }))
+		.query(async ({ input }) => {
+			const { hairAssignmentId } = input;
+
+			if (!hairAssignmentId) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			const hairAssignment = await prisma.hairAssignedToAppointment.findFirst({
+				where: { id: hairAssignmentId },
+				include: { hairOrder: true },
+			});
+
+			if (!hairAssignment) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			return hairAssignment;
+		}),
 	deleteHairAssignment: protectedProcedure
 		.input(z.object({ hairAssignmentId: z.string().cuid2() }))
 		.mutation(async ({ input }) => {

@@ -14,6 +14,7 @@ import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 
 export const EditTransactionDrawer = () => {
+	const utils = trpc.useUtils();
 	const isOpen = useEditTransactionStoreDrawerIsOpen();
 	const onUpdated = useEditTransactionStoreDrawerOnUpdated();
 	const { reset } = useEditTransactionStoreActions();
@@ -28,13 +29,14 @@ export const EditTransactionDrawer = () => {
 
 	const editTransaction = trpc.transactions.update.useMutation({
 		onSuccess: () => {
+			utils.transactions.getById.invalidate({ id: transactionId });
+			onUpdated();
+			reset();
 			notifications.show({
 				color: "green",
 				title: "Success!",
 				message: "Transaction updated.",
 			});
-			onUpdated();
-			reset();
 		},
 		onError: () => {
 			notifications.show({

@@ -429,22 +429,8 @@ function AppointmentSuspense({ appointmentId }: Props) {
 											<HairUsedTable.RowActionViewHairOrder />
 											<HairUsedTable.RowActionUpdate
 												onAction={(id) => {
-													const hairAssignment = hairAssignments.find(
-														(h) => h.id === id,
-													);
-
-													if (!hairAssignment) return;
-
 													openEditHairAssignmentDrawer({
-														hairAssignment: {
-															...hairAssignment,
-															soldFor: hairAssignment.soldFor / 100,
-														},
-														maxWeight: Math.abs(
-															hairAssignment.hairOrder.weightReceived -
-																hairAssignment.hairOrder.weightUsed +
-																hairAssignment.weightInGrams,
-														),
+														hairAssignmentId: id,
 														onUpdated: () => {
 															utils.appointments.getHairAssignments.invalidate({
 																appointmentId,
