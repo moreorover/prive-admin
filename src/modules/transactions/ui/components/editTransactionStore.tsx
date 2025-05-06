@@ -1,10 +1,7 @@
-import type { Transaction } from "@/lib/schemas";
-import dayjs from "dayjs";
 import { create } from "zustand";
 
 type State = {
 	isOpen: boolean;
-	transaction: Transaction;
 	transactionId: string | null;
 	onUpdated: () => void;
 };
@@ -17,14 +14,6 @@ type Actions = {
 const initialState: State = {
 	isOpen: false,
 	transactionId: null,
-	transaction: {
-		name: "",
-		notes: "",
-		amount: 0,
-		type: "CASH",
-		status: "PENDING",
-		completedDateBy: dayjs().toDate(),
-	},
 	onUpdated: () => {},
 };
 
