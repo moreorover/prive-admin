@@ -10,6 +10,7 @@ import { useEditHairAssignmentToAppointmentStoreActions } from "@/modules/appoin
 import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
+import { useDeleteTransactionStoreActions } from "@/modules/transactions/ui/components/deleteTransactionStore";
 import { useEditTransactionStoreActions } from "@/modules/transactions/ui/components/editTransactionStore";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
 import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
@@ -27,7 +28,6 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
-import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import { useSetAtom } from "jotai";
@@ -150,42 +150,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	const { openDeleteHairAssignmentDrawer } =
 		useDeleteHairAssignmentToAppointmentStoreActions();
 
-	const openDeleteModalForTransaction = (transactionId: string) =>
-		modals.openConfirmModal({
-			title: "Delete Transaction?",
-			centered: true,
-			children: (
-				<Text size="sm">Are you sure you want to delete this transaction?</Text>
-			),
-			labels: { confirm: "Delete Transaction", cancel: "Cancel" },
-			confirmProps: { color: "red" },
-			onCancel: () => {},
-			onConfirm: () =>
-				deleteTransaction.mutate({
-					id: transactionId,
-				}),
-		});
-
-	const deleteTransaction = trpc.transactions.delete.useMutation({
-		onSuccess: () => {
-			notifications.show({
-				color: "green",
-				title: "Success!",
-				message: "Transaction deleted.",
-			});
-			utils.transactions.getByAppointmentId.invalidate({
-				appointmentId,
-				includeCustomer: true,
-			});
-		},
-		onError: () => {
-			notifications.show({
-				color: "red",
-				title: "Failed to delete transaction",
-				message: "Please try again.",
-			});
-		},
-	});
+	const { openDeleteTransactionDrawer } = useDeleteTransactionStoreActions();
 
 	const { openEditTransactionDrawer } = useEditTransactionStoreActions();
 
@@ -352,7 +317,16 @@ function AppointmentSuspense({ appointmentId }: Props) {
 												}}
 											/>
 											<TransactionsTable.RowActionDelete
-												onAction={(id) => openDeleteModalForTransaction(id)}
+												onAction={(id) =>
+													openDeleteTransactionDrawer({
+														transactionId: id,
+														onDeleted: () =>
+															utils.transactions.getByAppointmentId.invalidate({
+																appointmentId,
+																includeCustomer: true,
+															}),
+													})
+												}
 											/>
 										</TransactionsTable.RowActions>
 									</>

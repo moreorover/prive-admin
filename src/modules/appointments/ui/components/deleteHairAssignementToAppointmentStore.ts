@@ -17,7 +17,7 @@ const initialState: State = {
 	onDeleted: () => {},
 };
 
-export const useDeleteHairAssignmentToAppointmentStore = create<
+const useDeleteHairAssignmentToAppointmentStore = create<
 	State & { actions: Actions }
 >((set) => ({
 	...initialState,

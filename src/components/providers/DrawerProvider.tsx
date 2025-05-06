@@ -19,6 +19,7 @@ import { EditProductVariantDrawer } from "@/modules/product_variants/ui/componen
 import { NewProductVariantDrawer } from "@/modules/product_variants/ui/components/new-product-variant-drawer";
 import { EditProductDrawer } from "@/modules/products/ui/components/edit-product-drawer";
 import { NewProductDrawer } from "@/modules/products/ui/components/new-product-drawer";
+import { DeleteTransactionDrawer } from "@/modules/transactions/ui/components/delete-transaction-drawer";
 import { EditTransactionDrawer } from "@/modules/transactions/ui/components/edit-transaction-drawer";
 import { NewTransactionDrawer } from "@/modules/transactions/ui/components/new-transaction-drawer";
 
@@ -42,6 +43,7 @@ export default function DrawerProvider() {
 
 			<NewTransactionDrawer />
 			<EditTransactionDrawer />
+			<DeleteTransactionDrawer />
 
 			<NewAppointmentDrawer />
 			<EditAppointmentDrawer />

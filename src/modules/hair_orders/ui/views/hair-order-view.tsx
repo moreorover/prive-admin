@@ -6,6 +6,7 @@ import { formatAmount } from "@/lib/helpers";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
 import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table";
+import { useDeleteTransactionStoreActions } from "@/modules/transactions/ui/components/deleteTransactionStore";
 import { useEditTransactionStoreActions } from "@/modules/transactions/ui/components/editTransactionStore";
 import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
@@ -29,7 +30,6 @@ import {
 	ThemeIcon,
 	Title,
 } from "@mantine/core";
-import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -204,46 +204,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 
 	const { openEditTransactionDrawer } = useEditTransactionStoreActions();
 
-	const openDeleteModalForTransaction = (transactionId: string) =>
-		modals.openConfirmModal({
-			title: "Delete Transaction?",
-			centered: true,
-			children: (
-				<Text size="sm">Are you sure you want to delete this transaction?</Text>
-			),
-			labels: { confirm: "Delete Transaction", cancel: "Cancel" },
-			confirmProps: { color: "red" },
-			onCancel: () => {},
-			onConfirm: () =>
-				deleteTransaction.mutate({
-					id: transactionId,
-				}),
-		});
-
-	const deleteTransaction = trpc.transactions.delete.useMutation({
-		onSuccess: () => {
-			recalculateHairOrderPrice.mutate({ hairOrderId });
-			utils.transactions.getByHairOrderId.invalidate({
-				hairOrderId,
-			});
-			notifications.show({
-				color: "green",
-				title: "Success!",
-				message: "Transaction deleted.",
-			});
-			utils.transactions.getByHairOrderId.invalidate({
-				hairOrderId,
-				includeCustomer: true,
-			});
-		},
-		onError: () => {
-			notifications.show({
-				color: "red",
-				title: "Failed to delete transaction",
-				message: "Please try again.",
-			});
-		},
-	});
+	const { openDeleteTransactionDrawer } = useDeleteTransactionStoreActions();
 
 	return (
 		<Grid>
@@ -502,7 +463,17 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 											}}
 										/>
 										<TransactionsTable.RowActionDelete
-											onAction={(id) => openDeleteModalForTransaction(id)}
+											onAction={(id) =>
+												openDeleteTransactionDrawer({
+													transactionId: id,
+													onDeleted: () => {
+														recalculateHairOrderPrice.mutate({ hairOrderId });
+														utils.transactions.getByHairOrderId.invalidate({
+															hairOrderId,
+														});
+													},
+												})
+											}
 										/>
 									</TransactionsTable.RowActions>
 								</>
