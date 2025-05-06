@@ -11,7 +11,8 @@ export default function AuthLayout({ children }: Props) {
 		<Center className={classes.wrapper}>
 			<Box>
 				<Text
-					inherit
+					size="xl"
+					fw={900}
 					variant="gradient"
 					component="span"
 					gradient={{ from: "pink", to: "yellow" }}
@@ -19,7 +20,8 @@ export default function AuthLayout({ children }: Props) {
 					PRIVÉ
 				</Text>{" "}
 				<Text
-					inherit
+					size="xl"
+					fw={900}
 					variant="gradient"
 					component="span"
 					gradient={{ from: "blue", to: "green" }}

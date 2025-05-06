@@ -26,7 +26,7 @@ export function HeaderAuth() {
 	if (!data?.user)
 		return (
 			<Group visibleFrom="sm">
-				<Button component={Link} variant="default" href={"/sign-in"}>
+				<Button component={Link} variant="default" href={"/signin"}>
 					Sign in
 				</Button>
 				<Button>Sign up</Button>
@@ -35,11 +35,6 @@ export function HeaderAuth() {
 
 	return (
 		<>
-			{data.user.role === "admin" && (
-				<Button component={Link} href="/admin" variant="light" size="xs">
-					admin
-				</Button>
-			)}
 			<Menu>
 				<Menu.Target>
 					{!data.user.emailVerified ? (
@@ -82,7 +77,7 @@ export function HeaderAuth() {
 							await authClient.signOut({
 								fetchOptions: {
 									onSuccess() {
-										router.push("/sign-in");
+										router.push("/signin");
 										router.refresh();
 									},
 								},

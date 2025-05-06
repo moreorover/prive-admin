@@ -31,7 +31,7 @@ export function LoginForm() {
 			{
 				email,
 				password,
-				callbackURL: "/dashboard",
+				callbackURL: "/dashboard/customers",
 			},
 			{
 				onSuccess: () => {

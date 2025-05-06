@@ -18,7 +18,7 @@ import { usePathname } from "next/navigation";
 
 import { HeaderAuth } from "@/components/header-auth";
 import classes from "@/components/header.module.css";
-import { Logo } from "@/components/logo";
+import { LogoGradient } from "./logo-gradient";
 
 const links = [
 	{ link: "/dashboard/customers", label: "Customers" },
@@ -34,7 +34,7 @@ export function Header() {
 	const pathname = usePathname();
 	const { colorScheme, setColorScheme } = useMantineColorScheme();
 
-	const logo = <Logo href="/" imageProps={{ h: 32 }} />;
+	const logo = <LogoGradient href="/" />;
 
 	const items = links.map((link) => (
 		<Link
