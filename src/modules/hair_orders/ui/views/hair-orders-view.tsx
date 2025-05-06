@@ -3,11 +3,11 @@
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import HairOrdersTable from "@/modules/hair_orders/ui/components/hair-orders-table";
 import { FilterDateMenu } from "@/modules/ui/components/filter-date-menu";
-import Surface from "@/modules/ui/components/surface";
 import useDateRange from "@/modules/ui/hooks/useDateRange";
 import { trpc } from "@/trpc/client";
 import {
 	Button,
+	Container,
 	Divider,
 	Flex,
 	Grid,
@@ -69,8 +69,8 @@ export const HairOrdersView = () => {
 		});
 
 	return (
-		<Stack gap="sm">
-			<Surface component={Paper} style={{ backgroundColor: "transparent" }}>
+		<Container size="lg">
+			<Stack gap="sm">
 				<Flex
 					justify="space-between"
 					direction={{ base: "column", sm: "row" }}
@@ -94,18 +94,18 @@ export const HairOrdersView = () => {
 						<Button onClick={openCreateHairOrderModal}>New</Button>
 					</Flex>
 				</Flex>
-			</Surface>
-			<Divider />
-			<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
-				<GridCol span={12}>
-					<Suspense fallback={<LoaderSkeleton />}>
-						<ErrorBoundary fallback={<p>Error</p>}>
-							<HairOrdersSuspense startDate={start} endDate={end} />
-						</ErrorBoundary>
-					</Suspense>
-				</GridCol>
-			</Grid>
-		</Stack>
+				<Divider />
+				<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
+					<GridCol span={12}>
+						<Suspense fallback={<LoaderSkeleton />}>
+							<ErrorBoundary fallback={<p>Error</p>}>
+								<HairOrdersSuspense startDate={start} endDate={end} />
+							</ErrorBoundary>
+						</Suspense>
+					</GridCol>
+				</Grid>
+			</Stack>
+		</Container>
 	);
 };
 

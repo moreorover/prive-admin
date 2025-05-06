@@ -5,6 +5,7 @@ import { editCustomerDrawerAtom } from "@/lib/atoms";
 import { trpc } from "@/trpc/client";
 import {
 	Button,
+	Container,
 	Grid,
 	GridCol,
 	Paper,
@@ -24,16 +25,18 @@ interface LayoutProps {
 
 export const CustomerLayout = ({ customerId, children }: LayoutProps) => {
 	return (
-		<Grid grow>
-			<GridCol span={{ base: 12, lg: 3 }}>
-				<Suspense fallback={<LoaderSkeleton />}>
-					<ErrorBoundary fallback={<p>Error</p>}>
-						<CustomerSuspense customerId={customerId} />
-					</ErrorBoundary>
-				</Suspense>
-			</GridCol>
-			<GridCol span={{ base: 12, lg: 9 }}>{children}</GridCol>
-		</Grid>
+		<Container size="lg">
+			<Grid grow>
+				<GridCol span={{ base: 12, lg: 3 }}>
+					<Suspense fallback={<LoaderSkeleton />}>
+						<ErrorBoundary fallback={<p>Error</p>}>
+							<CustomerSuspense customerId={customerId} />
+						</ErrorBoundary>
+					</Suspense>
+				</GridCol>
+				<GridCol span={{ base: 12, lg: 9 }}>{children}</GridCol>
+			</Grid>
+		</Container>
 	);
 };
 

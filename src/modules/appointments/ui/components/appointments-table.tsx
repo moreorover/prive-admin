@@ -1,7 +1,7 @@
 "use client";
 
 import type { GetAppointmentsForWeek } from "@/modules/appointments/types";
-import { Button, Paper, Table } from "@mantine/core";
+import { Button, Table } from "@mantine/core";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import Link from "next/link";
@@ -54,17 +54,15 @@ export function AppointmentsTable({ appointments }: Props) {
 	});
 
 	return (
-		<Paper withBorder p="md" radius="md" shadow="sm">
-			<Table striped highlightOnHover>
-				<Table.Thead>
-					<Table.Tr>
-						<Table.Th>Name</Table.Th>
-						<Table.Th>Client</Table.Th>
-						<Table.Th>Starts At</Table.Th>
-					</Table.Tr>
-				</Table.Thead>
-				<Table.Tbody>{rows}</Table.Tbody>
-			</Table>
-		</Paper>
+		<Table striped highlightOnHover>
+			<Table.Thead>
+				<Table.Tr>
+					<Table.Th>Name</Table.Th>
+					<Table.Th>Client</Table.Th>
+					<Table.Th>Starts At</Table.Th>
+				</Table.Tr>
+			</Table.Thead>
+			<Table.Tbody>{rows}</Table.Tbody>
+		</Table>
 	);
 }

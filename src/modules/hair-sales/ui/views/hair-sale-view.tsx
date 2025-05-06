@@ -9,6 +9,7 @@ import { trpc } from "@/trpc/client";
 import {
 	ActionIcon,
 	Button,
+	Container,
 	Flex,
 	Grid,
 	GridCol,
@@ -129,160 +130,162 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 		});
 
 	return (
-		<Grid grow>
-			<GridCol span={{ base: 12, lg: 3 }}>
-				<Stack>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Group justify="space-between" gap="sm">
-							<Title order={4}>Client</Title>
-							{/*<HairSaleTransactionMenu*/}
-							{/*	hairSaleId={hairSaleId}*/}
-							{/*	customer={hairSale.client}*/}
-							{/*/>*/}
-						</Group>
-						<Text size="sm" mt="xs">
-							<strong>Name:</strong> {hairSale.customer.name}
-						</Text>
-						<Text size="sm" mt="xs">
-							<strong>Number:</strong> {hairSale.customer.phoneNumber}
-						</Text>
-					</Paper>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Group justify="space-between" gap="sm">
-							<Title order={4}>HairSale Details</Title>
-						</Group>
-						<Group justify="space-between" gap="sm">
+		<Container size="lg">
+			<Grid grow>
+				<GridCol span={{ base: 12, lg: 3 }}>
+					<Stack>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between" gap="sm">
+								<Title order={4}>Client</Title>
+								{/*<HairSaleTransactionMenu*/}
+								{/*	hairSaleId={hairSaleId}*/}
+								{/*	customer={hairSale.client}*/}
+								{/*/>*/}
+							</Group>
 							<Text size="sm" mt="xs">
-								<strong>Placed At:</strong>{" "}
-								{dayjs(hairSale.placedAt).format("DD MMMM YYYY")}
+								<strong>Name:</strong> {hairSale.customer.name}
 							</Text>
-							<DatePickerDrawer
-								date={hairSale.placedAt}
-								onSelected={(data) => {
-									console.log(data);
-									updateHairSale.mutate({
-										hairSale: {
-											...hairSale,
-											placedAt: data,
-										},
-									});
-								}}
-							>
-								{hairSale.placedAt ? (
-									<ActionIcon variant="light">
-										<Pencil size={14} />
-									</ActionIcon>
-								) : (
-									<ActionIcon color="red">
-										<CalendarDays size={14} />
-									</ActionIcon>
-								)}
-							</DatePickerDrawer>
-						</Group>
-						<Flex direction="column">
-							<Text c="dimmed" size="xs">
-								Created By:
+							<Text size="sm" mt="xs">
+								<strong>Number:</strong> {hairSale.customer.phoneNumber}
 							</Text>
-							<Text size="sm">{hairSale.createdBy.name}</Text>
-						</Flex>
-						<Flex direction="column">
-							<Text c="dimmed" size="xs">
-								Total wight in grams:
-							</Text>
-							<Text size="sm">{hairSale.weightInGrams}g</Text>
-						</Flex>
-						<Flex direction="column">
-							<Text c="dimmed" size="xs">
-								Price per gram:
-							</Text>
-							<Text size="sm">£ {hairSale.pricePerGram / 100}</Text>
-						</Flex>
-						<Flex direction="column">
-							<Text c="dimmed" size="xs">
-								Total price:
-							</Text>
-							<Text size="sm">
-								£ {(hairSale.weightInGrams * hairSale.pricePerGram) / 100}
-							</Text>
-						</Flex>
-					</Paper>
-				</Stack>
-			</GridCol>
-			<GridCol span={{ base: 12, lg: 9 }}>
-				<Stack gap={"sm"}>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Group justify="space-between" gap="sm">
-							<Title order={4}>Hair Assignments</Title>
-							<Button
-								onClick={() =>
-									openTypedContextModal("hairSalePicker", {
-										size: "auto",
-										innerProps: {
-											hairSaleId,
-											onConfirm: (data) =>
-												createHairAssignmentMutation.mutate({
-													hairSaleId,
-													hairOrderId: data[0],
-												}),
-											multiple: false,
-										},
-									})
+						</Paper>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between" gap="sm">
+								<Title order={4}>HairSale Details</Title>
+							</Group>
+							<Group justify="space-between" gap="sm">
+								<Text size="sm" mt="xs">
+									<strong>Placed At:</strong>{" "}
+									{dayjs(hairSale.placedAt).format("DD MMMM YYYY")}
+								</Text>
+								<DatePickerDrawer
+									date={hairSale.placedAt}
+									onSelected={(data) => {
+										console.log(data);
+										updateHairSale.mutate({
+											hairSale: {
+												...hairSale,
+												placedAt: data,
+											},
+										});
+									}}
+								>
+									{hairSale.placedAt ? (
+										<ActionIcon variant="light">
+											<Pencil size={14} />
+										</ActionIcon>
+									) : (
+										<ActionIcon color="red">
+											<CalendarDays size={14} />
+										</ActionIcon>
+									)}
+								</DatePickerDrawer>
+							</Group>
+							<Flex direction="column">
+								<Text c="dimmed" size="xs">
+									Created By:
+								</Text>
+								<Text size="sm">{hairSale.createdBy.name}</Text>
+							</Flex>
+							<Flex direction="column">
+								<Text c="dimmed" size="xs">
+									Total wight in grams:
+								</Text>
+								<Text size="sm">{hairSale.weightInGrams}g</Text>
+							</Flex>
+							<Flex direction="column">
+								<Text c="dimmed" size="xs">
+									Price per gram:
+								</Text>
+								<Text size="sm">£ {hairSale.pricePerGram / 100}</Text>
+							</Flex>
+							<Flex direction="column">
+								<Text c="dimmed" size="xs">
+									Total price:
+								</Text>
+								<Text size="sm">
+									£ {(hairSale.weightInGrams * hairSale.pricePerGram) / 100}
+								</Text>
+							</Flex>
+						</Paper>
+					</Stack>
+				</GridCol>
+				<GridCol span={{ base: 12, lg: 9 }}>
+					<Stack gap={"sm"}>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between" gap="sm">
+								<Title order={4}>Hair Assignments</Title>
+								<Button
+									onClick={() =>
+										openTypedContextModal("hairSalePicker", {
+											size: "auto",
+											innerProps: {
+												hairSaleId,
+												onConfirm: (data) =>
+													createHairAssignmentMutation.mutate({
+														hairSaleId,
+														hairOrderId: data[0],
+													}),
+												multiple: false,
+											},
+										})
+									}
+								>
+									Pick
+								</Button>
+							</Group>
+							<HairUsedTable
+								hair={hairAssignments.map((hairAssignment) => ({
+									...hairAssignment,
+									total: hairAssignment.soldFor - hairAssignment.profit,
+								}))}
+								columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
+								row={
+									<>
+										<HairUsedTable.RowWeight />
+										<HairUsedTable.RowTotal />
+										<HairUsedTable.RowSoldFor />
+										<HairUsedTable.RowProfit />
+										<HairUsedTable.RowActions>
+											<HairUsedTable.RowActionViewHairOrder />
+											<HairUsedTable.RowActionUpdate
+												onAction={(id) => {
+													const hairAssignment = hairAssignments.find(
+														(h) => h.id === id,
+													);
+													if (!hairAssignment) return;
+													openEditHairAssignmentDrawer({
+														hairAssignment: {
+															...hairAssignment,
+															soldFor: hairAssignment.soldFor / 100,
+														},
+														maxWeight: Math.abs(
+															hairAssignment.hairOrder.weightReceived -
+																hairAssignment.hairOrder.weightUsed +
+																hairAssignment.weightInGrams,
+														),
+														onUpdated: () => {
+															utils.hairSales.getHairAssignments.invalidate({
+																hairSaleId,
+															});
+															utils.hairSales.getById.invalidate({
+																hairSaleId,
+															});
+														},
+													});
+												}}
+											/>
+											<HairUsedTable.RowActionDelete
+												onAction={(id) => openDeleteModal(id)}
+											/>
+										</HairUsedTable.RowActions>
+									</>
 								}
-							>
-								Pick
-							</Button>
-						</Group>
-						<HairUsedTable
-							hair={hairAssignments.map((hairAssignment) => ({
-								...hairAssignment,
-								total: hairAssignment.soldFor - hairAssignment.profit,
-							}))}
-							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
-							row={
-								<>
-									<HairUsedTable.RowWeight />
-									<HairUsedTable.RowTotal />
-									<HairUsedTable.RowSoldFor />
-									<HairUsedTable.RowProfit />
-									<HairUsedTable.RowActions>
-										<HairUsedTable.RowActionViewHairOrder />
-										<HairUsedTable.RowActionUpdate
-											onAction={(id) => {
-												const hairAssignment = hairAssignments.find(
-													(h) => h.id === id,
-												);
-												if (!hairAssignment) return;
-												openEditHairAssignmentDrawer({
-													hairAssignment: {
-														...hairAssignment,
-														soldFor: hairAssignment.soldFor / 100,
-													},
-													maxWeight: Math.abs(
-														hairAssignment.hairOrder.weightReceived -
-															hairAssignment.hairOrder.weightUsed +
-															hairAssignment.weightInGrams,
-													),
-													onUpdated: () => {
-														utils.hairSales.getHairAssignments.invalidate({
-															hairSaleId,
-														});
-														utils.hairSales.getById.invalidate({
-															hairSaleId,
-														});
-													},
-												});
-											}}
-										/>
-										<HairUsedTable.RowActionDelete
-											onAction={(id) => openDeleteModal(id)}
-										/>
-									</HairUsedTable.RowActions>
-								</>
-							}
-						/>
-					</Paper>
-				</Stack>
-			</GridCol>
-		</Grid>
+							/>
+						</Paper>
+					</Stack>
+				</GridCol>
+			</Grid>
+		</Container>
 	);
 }
