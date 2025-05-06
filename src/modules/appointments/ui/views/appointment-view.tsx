@@ -17,6 +17,7 @@ import { DonutChart } from "@mantine/charts";
 import {
 	Button,
 	Center,
+	Container,
 	Grid,
 	GridCol,
 	Group,
@@ -224,247 +225,249 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	const { openEditTransactionDrawer } = useEditTransactionStoreActions();
 
 	return (
-		<Grid grow>
-			<GridCol span={{ base: 12, lg: 3 }}>
-				<Stack>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Group justify="space-between" gap="sm">
-							<Title order={4}>Client</Title>
-							<AppointmentTransactionMenu
-								appointmentId={appointmentId}
-								customer={appointment.client}
-							/>
-						</Group>
-						<Text size="sm" mt="xs">
-							<strong>Name:</strong> {appointment.client.name}
-						</Text>
-						<Text size="sm" mt="xs">
-							<strong>Number:</strong> {appointment.client.phoneNumber}
-						</Text>
-					</Paper>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Group justify="space-between" gap="sm">
-							<Title order={4}>Appointment Details</Title>
-							<Button
-								onClick={() => {
-									showEditAppointmentDrawer({ isOpen: true, appointment });
-								}}
-							>
-								Edit
-							</Button>
-						</Group>
-						<Text size="sm" mt="xs">
-							<strong>Scheduled At:</strong>{" "}
-							{dayjs(appointment.startsAt).format("DD MMMM YYYY HH:mm")}
-						</Text>
-					</Paper>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Text size="lg" fw={700} ta="center">
-							Transactions Summary
-						</Text>
-						<Center>
-							<DonutChart size={124} thickness={15} data={chartData} />
-						</Center>
-						<Text size="md" ta="center" fw={500} mt="sm">
-							Total: <b>£ {transactionsTotal.toFixed(2)}</b>
-						</Text>
-					</Paper>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Text size="lg" fw={700} ta="center">
-							Profit
-						</Text>
-						<Text size="md" ta="center" fw={500} mt="sm">
-							Total: <b>£ {transactionsTotal.toFixed(2)}</b>
-						</Text>
-					</Paper>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Text size="lg" fw={700} ta="center">
-							Hair
-						</Text>
-						<Group justify="space-between" mt="sm">
+		<Container size="xl">
+			<Grid grow>
+				<GridCol span={{ base: 12, lg: 3 }}>
+					<Stack>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between" gap="sm">
+								<Title order={4}>Client</Title>
+								<AppointmentTransactionMenu
+									appointmentId={appointmentId}
+									customer={appointment.client}
+								/>
+							</Group>
+							<Text size="sm" mt="xs">
+								<strong>Name:</strong> {appointment.client.name}
+							</Text>
+							<Text size="sm" mt="xs">
+								<strong>Number:</strong> {appointment.client.phoneNumber}
+							</Text>
+						</Paper>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between" gap="sm">
+								<Title order={4}>Appointment Details</Title>
+								<Button
+									onClick={() => {
+										showEditAppointmentDrawer({ isOpen: true, appointment });
+									}}
+								>
+									Edit
+								</Button>
+							</Group>
+							<Text size="sm" mt="xs">
+								<strong>Scheduled At:</strong>{" "}
+								{dayjs(appointment.startsAt).format("DD MMMM YYYY HH:mm")}
+							</Text>
+						</Paper>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Text size="lg" fw={700} ta="center">
+								Transactions Summary
+							</Text>
+							<Center>
+								<DonutChart size={124} thickness={15} data={chartData} />
+							</Center>
 							<Text size="md" ta="center" fw={500} mt="sm">
-								Raw material cost:
+								Total: <b>£ {transactionsTotal.toFixed(2)}</b>
+							</Text>
+						</Paper>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Text size="lg" fw={700} ta="center">
+								Profit
 							</Text>
 							<Text size="md" ta="center" fw={500} mt="sm">
-								<b>£ {hairCost.toFixed(2)}</b>
+								Total: <b>£ {transactionsTotal.toFixed(2)}</b>
 							</Text>
-						</Group>
-						<Group justify="space-between" mt="sm">
-							<Text size="md" ta="center" fw={500} mt="sm">
-								Profit:
+						</Paper>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Text size="lg" fw={700} ta="center">
+								Hair
 							</Text>
-							<Text size="md" ta="center" fw={500} mt="sm">
-								<b>£ {(hairSoldFor - hairCost).toFixed(2)}</b>
-							</Text>
-						</Group>
-						<Group justify="space-between" mt="sm">
-							<Text size="md" ta="center" fw={500} mt="sm">
-								Total:
-							</Text>
-							<Text size="md" ta="center" fw={500} mt="sm">
-								<b>£ {hairSoldFor.toFixed(2)}</b>
-							</Text>
-						</Group>
-					</Paper>
-				</Stack>
-			</GridCol>
-			<GridCol span={{ base: 12, lg: 9 }}>
-				<Stack>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Group justify="space-between" gap="sm">
-							<Title order={4}>Notes</Title>
-							<Button
-								onClick={() => {
-									openNewAppointmentNoteDrawer({
-										appointmentId,
-										onCreated: () => {
-											utils.appointmentNotes.getNotesByAppointmentId.invalidate(
-												{
-													appointmentId,
-												},
-											);
-										},
-									});
-								}}
-							>
-								New
-							</Button>
-						</Group>
-						<AppointmentNotesTable
-							appointmentId={appointmentId}
-							notes={notes}
-						/>
-					</Paper>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Group justify="space-between" gap="sm">
-							<Title order={4}>Personnel Involved</Title>
-							<PersonnelPickerModal
-								appointmentId={appointmentId}
-								personnelOptions={personnelOptions}
-							/>
-						</Group>
-						<PersonnelTable
-							appointmentId={appointmentId}
-							personnel={personnel}
-						/>
-					</Paper>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Group justify="space-between" gap="sm">
-							<Title order={4}>Transactions</Title>
-						</Group>
-						<TransactionsTable
-							transactions={transactions}
-							columns={[
-								"Customer",
-								"Transaction Name",
-								"Type",
-								"Amount",
-								"Completed At",
-								"",
-							]}
-							row={
-								<>
-									<TransactionsTable.RowCustomerName />
-									<TransactionsTable.RowTransactionName />
-									<TransactionsTable.RowType />
-									<TransactionsTable.RowAmount />
-									<TransactionsTable.RowCompletedAt />
-									<TransactionsTable.RowActions>
-										<TransactionsTable.RowActionViewTransaction />
-										<TransactionsTable.RowActionUpdate
-											onAction={(id) => {
-												const transaction = transactions.find(
-													(t) => t.id === id,
-												);
-												if (!transaction) return;
-												openEditTransactionDrawer({
-													transaction,
-													onUpdated: () => {
-														utils.transactions.getByAppointmentId.invalidate({
-															appointmentId,
-															includeCustomer: true,
-														});
-													},
-												});
-											}}
-										/>
-										<TransactionsTable.RowActionDelete
-											onAction={(id) => openDeleteModalForTransaction(id)}
-										/>
-									</TransactionsTable.RowActions>
-								</>
-							}
-						/>
-					</Paper>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Group justify="space-between" gap="sm">
-							<Title order={4}>Hair</Title>
-							<Button
-								onClick={() =>
-									openTypedContextModal("hairOrderPicker", {
-										size: "auto",
-										innerProps: {
+							<Group justify="space-between" mt="sm">
+								<Text size="md" ta="center" fw={500} mt="sm">
+									Raw material cost:
+								</Text>
+								<Text size="md" ta="center" fw={500} mt="sm">
+									<b>£ {hairCost.toFixed(2)}</b>
+								</Text>
+							</Group>
+							<Group justify="space-between" mt="sm">
+								<Text size="md" ta="center" fw={500} mt="sm">
+									Profit:
+								</Text>
+								<Text size="md" ta="center" fw={500} mt="sm">
+									<b>£ {(hairSoldFor - hairCost).toFixed(2)}</b>
+								</Text>
+							</Group>
+							<Group justify="space-between" mt="sm">
+								<Text size="md" ta="center" fw={500} mt="sm">
+									Total:
+								</Text>
+								<Text size="md" ta="center" fw={500} mt="sm">
+									<b>£ {hairSoldFor.toFixed(2)}</b>
+								</Text>
+							</Group>
+						</Paper>
+					</Stack>
+				</GridCol>
+				<GridCol span={{ base: 12, lg: 9 }}>
+					<Stack>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between" gap="sm">
+								<Title order={4}>Notes</Title>
+								<Button
+									onClick={() => {
+										openNewAppointmentNoteDrawer({
 											appointmentId,
-											onConfirm: (data) =>
-												createHairAssignmentMutation.mutate({
-													appointmentId,
-													hairOrderId: data[0],
-												}),
-											multiple: false,
-										},
-									})
-								}
-							>
-								Pick
-							</Button>
-						</Group>
-						<HairUsedTable
-							hair={hairAssignments}
-							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
-							row={
-								<>
-									<HairUsedTable.RowWeight />
-									<HairUsedTable.RowTotal />
-									<HairUsedTable.RowSoldFor />
-									<HairUsedTable.RowProfit />
-									<HairUsedTable.RowActions>
-										<HairUsedTable.RowActionViewHairOrder />
-										<HairUsedTable.RowActionUpdate
-											onAction={(id) => {
-												const hairAssignment = hairAssignments.find(
-													(h) => h.id === id,
+											onCreated: () => {
+												utils.appointmentNotes.getNotesByAppointmentId.invalidate(
+													{
+														appointmentId,
+													},
 												);
+											},
+										});
+									}}
+								>
+									New
+								</Button>
+							</Group>
+							<AppointmentNotesTable
+								appointmentId={appointmentId}
+								notes={notes}
+							/>
+						</Paper>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between" gap="sm">
+								<Title order={4}>Personnel Involved</Title>
+								<PersonnelPickerModal
+									appointmentId={appointmentId}
+									personnelOptions={personnelOptions}
+								/>
+							</Group>
+							<PersonnelTable
+								appointmentId={appointmentId}
+								personnel={personnel}
+							/>
+						</Paper>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between" gap="sm">
+								<Title order={4}>Transactions</Title>
+							</Group>
+							<TransactionsTable
+								transactions={transactions}
+								columns={[
+									"Customer",
+									"Transaction Name",
+									"Type",
+									"Amount",
+									"Completed At",
+									"",
+								]}
+								row={
+									<>
+										<TransactionsTable.RowCustomerName />
+										<TransactionsTable.RowTransactionName />
+										<TransactionsTable.RowType />
+										<TransactionsTable.RowAmount />
+										<TransactionsTable.RowCompletedAt />
+										<TransactionsTable.RowActions>
+											<TransactionsTable.RowActionViewTransaction />
+											<TransactionsTable.RowActionUpdate
+												onAction={(id) => {
+													const transaction = transactions.find(
+														(t) => t.id === id,
+													);
+													if (!transaction) return;
+													openEditTransactionDrawer({
+														transaction,
+														onUpdated: () => {
+															utils.transactions.getByAppointmentId.invalidate({
+																appointmentId,
+																includeCustomer: true,
+															});
+														},
+													});
+												}}
+											/>
+											<TransactionsTable.RowActionDelete
+												onAction={(id) => openDeleteModalForTransaction(id)}
+											/>
+										</TransactionsTable.RowActions>
+									</>
+								}
+							/>
+						</Paper>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between" gap="sm">
+								<Title order={4}>Hair</Title>
+								<Button
+									onClick={() =>
+										openTypedContextModal("hairOrderPicker", {
+											size: "auto",
+											innerProps: {
+												appointmentId,
+												onConfirm: (data) =>
+													createHairAssignmentMutation.mutate({
+														appointmentId,
+														hairOrderId: data[0],
+													}),
+												multiple: false,
+											},
+										})
+									}
+								>
+									Pick
+								</Button>
+							</Group>
+							<HairUsedTable
+								hair={hairAssignments}
+								columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
+								row={
+									<>
+										<HairUsedTable.RowWeight />
+										<HairUsedTable.RowTotal />
+										<HairUsedTable.RowSoldFor />
+										<HairUsedTable.RowProfit />
+										<HairUsedTable.RowActions>
+											<HairUsedTable.RowActionViewHairOrder />
+											<HairUsedTable.RowActionUpdate
+												onAction={(id) => {
+													const hairAssignment = hairAssignments.find(
+														(h) => h.id === id,
+													);
 
-												if (!hairAssignment) return;
+													if (!hairAssignment) return;
 
-												openEditHairAssignmentDrawer({
-													hairAssignment: {
-														...hairAssignment,
-														soldFor: hairAssignment.soldFor / 100,
-													},
-													maxWeight: Math.abs(
-														hairAssignment.hairOrder.weightReceived -
-															hairAssignment.hairOrder.weightUsed +
-															hairAssignment.weightInGrams,
-													),
-													onUpdated: () => {
-														utils.appointments.getHairAssignments.invalidate({
-															appointmentId,
-														});
-													},
-												});
-											}}
-										/>
-										<HairUsedTable.RowActionDelete
-											onAction={(id) => openDeleteModalForHairAssignment(id)}
-										/>
-									</HairUsedTable.RowActions>
-								</>
-							}
-						/>
-					</Paper>
-				</Stack>
-			</GridCol>
-		</Grid>
+													openEditHairAssignmentDrawer({
+														hairAssignment: {
+															...hairAssignment,
+															soldFor: hairAssignment.soldFor / 100,
+														},
+														maxWeight: Math.abs(
+															hairAssignment.hairOrder.weightReceived -
+																hairAssignment.hairOrder.weightUsed +
+																hairAssignment.weightInGrams,
+														),
+														onUpdated: () => {
+															utils.appointments.getHairAssignments.invalidate({
+																appointmentId,
+															});
+														},
+													});
+												}}
+											/>
+											<HairUsedTable.RowActionDelete
+												onAction={(id) => openDeleteModalForHairAssignment(id)}
+											/>
+										</HairUsedTable.RowActions>
+									</>
+								}
+							/>
+						</Paper>
+					</Stack>
+				</GridCol>
+			</Grid>
+		</Container>
 	);
 }

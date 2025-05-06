@@ -6,6 +6,7 @@ import { CustomersTable } from "@/modules/customers/ui/components/customers-tabl
 import { trpc } from "@/trpc/client";
 import {
 	Button,
+	Container,
 	Grid,
 	GridCol,
 	Group,
@@ -45,42 +46,44 @@ function CustomersSuspense() {
 	});
 
 	return (
-		<Grid>
-			<GridCol span={12}>
-				<Paper withBorder p="md" radius="md" shadow="sm">
-					<Group justify="space-between">
-						<Title order={4}>Customers</Title>
-						<Group>
-							<TextInput
-								placeholder="Search..."
-								value={searchTerm}
-								onChange={(event) => setSearchTerm(event.currentTarget.value)}
-							/>
-							<Button
-								onClick={() => {
-									showNewCustomerDrawer({
-										isOpen: true,
-										onCreated: () => {
-											utils.customers.getAll.invalidate();
-										},
-									});
-								}}
-							>
-								New
-							</Button>
+		<Container size="lg">
+			<Grid>
+				<GridCol span={12}>
+					<Paper withBorder p="md" radius="md" shadow="sm">
+						<Group justify="space-between">
+							<Title order={4}>Customers</Title>
+							<Group>
+								<TextInput
+									placeholder="Search..."
+									value={searchTerm}
+									onChange={(event) => setSearchTerm(event.currentTarget.value)}
+								/>
+								<Button
+									onClick={() => {
+										showNewCustomerDrawer({
+											isOpen: true,
+											onCreated: () => {
+												utils.customers.getAll.invalidate();
+											},
+										});
+									}}
+								>
+									New
+								</Button>
+							</Group>
 						</Group>
-					</Group>
-				</Paper>
-			</GridCol>
-			<GridCol span={12}>
-				<Paper withBorder p="md" radius="md" shadow="sm">
-					{filteredCustomers.length > 0 ? (
-						<CustomersTable customers={filteredCustomers} />
-					) : (
-						<Text c="gray">No customers found.</Text>
-					)}
-				</Paper>
-			</GridCol>
-		</Grid>
+					</Paper>
+				</GridCol>
+				<GridCol span={12}>
+					<Paper withBorder p="md" radius="md" shadow="sm">
+						{filteredCustomers.length > 0 ? (
+							<CustomersTable customers={filteredCustomers} />
+						) : (
+							<Text c="gray">No customers found.</Text>
+						)}
+					</Paper>
+				</GridCol>
+			</Grid>
+		</Container>
 	);
 }

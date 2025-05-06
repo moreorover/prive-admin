@@ -3,12 +3,12 @@
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { aggregateTransactions } from "@/modules/transactions/hooks/chartUtils";
 import { FilterDateMenu } from "@/modules/ui/components/filter-date-menu";
-import Surface from "@/modules/ui/components/surface";
 import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
 import useDateRange from "@/modules/ui/hooks/useDateRange";
 import { trpc } from "@/trpc/client";
 import { LineChart } from "@mantine/charts";
 import {
+	Container,
 	Divider,
 	Flex,
 	Grid,
@@ -32,8 +32,8 @@ export const TransactionsView = () => {
 	const { start, end, range, rangeText, createQueryString } = useDateRange();
 
 	return (
-		<Stack>
-			<Surface component={Paper} style={{ backgroundColor: "transparent" }}>
+		<Container size="lg">
+			<Stack>
 				<Flex
 					justify="space-between"
 					direction={{ base: "column", sm: "row" }}
@@ -54,22 +54,22 @@ export const TransactionsView = () => {
 						/>
 					</Flex>
 				</Flex>
-			</Surface>
-			<Divider />
-			<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
-				<Suspense
-					fallback={
-						<GridCol>
-							<LoaderSkeleton />
-						</GridCol>
-					}
-				>
-					<ErrorBoundary fallback={<p>Error</p>}>
-						<TransactionsSuspense startDate={start} endDate={end} />
-					</ErrorBoundary>
-				</Suspense>
-			</Grid>
-		</Stack>
+				<Divider />
+				<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
+					<Suspense
+						fallback={
+							<GridCol>
+								<LoaderSkeleton />
+							</GridCol>
+						}
+					>
+						<ErrorBoundary fallback={<p>Error</p>}>
+							<TransactionsSuspense startDate={start} endDate={end} />
+						</ErrorBoundary>
+					</Suspense>
+				</Grid>
+			</Stack>
+		</Container>
 	);
 };
 

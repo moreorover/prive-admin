@@ -10,13 +10,13 @@ import { useEditTransactionStoreActions } from "@/modules/transactions/ui/compon
 import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
-import Surface from "@/modules/ui/components/surface";
 import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";
 import {
 	Button,
 	Center,
+	Container,
 	Divider,
 	Flex,
 	Grid,
@@ -46,8 +46,8 @@ interface Props {
 
 export const HairOrderView = ({ hairOrderId }: Props) => {
 	return (
-		<Stack gap="sm">
-			<Surface component={Paper} style={{ backgroundColor: "transparent" }}>
+		<Container size="lg">
+			<Stack gap="sm">
 				<Flex
 					justify="space-between"
 					direction={{ base: "column", sm: "row" }}
@@ -63,18 +63,18 @@ export const HairOrderView = ({ hairOrderId }: Props) => {
 						{/*</ActionIcon>*/}
 					</Flex>
 				</Flex>
-			</Surface>
-			<Divider />
-			<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
-				<GridCol span={12}>
-					<Suspense fallback={<LoaderSkeleton />}>
-						<ErrorBoundary fallback={<p>Error</p>}>
-							<HairOrdersSuspense hairOrderId={hairOrderId} />
-						</ErrorBoundary>
-					</Suspense>
-				</GridCol>
-			</Grid>
-		</Stack>
+				<Divider />
+				<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
+					<GridCol span={12}>
+						<Suspense fallback={<LoaderSkeleton />}>
+							<ErrorBoundary fallback={<p>Error</p>}>
+								<HairOrdersSuspense hairOrderId={hairOrderId} />
+							</ErrorBoundary>
+						</Suspense>
+					</GridCol>
+				</Grid>
+			</Stack>
+		</Container>
 	);
 };
 

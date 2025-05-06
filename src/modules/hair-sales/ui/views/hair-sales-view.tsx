@@ -2,15 +2,14 @@
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import HairSaleCard from "@/modules/ui/components/hair-sale-card/hair-sale-card";
-import Surface from "@/modules/ui/components/surface";
 import { trpc } from "@/trpc/client";
 import {
 	Box,
+	Container,
 	Divider,
 	Flex,
 	Grid,
 	GridCol,
-	Paper,
 	SimpleGrid,
 	Stack,
 	Text,
@@ -25,8 +24,8 @@ dayjs.extend(isoWeek);
 
 export const HairSalesView = () => {
 	return (
-		<Stack gap="sm">
-			<Surface component={Paper} style={{ backgroundColor: "transparent" }}>
+		<Container size="lg">
+			<Stack gap="sm">
 				<Flex
 					justify="space-between"
 					direction={{ base: "column", sm: "row" }}
@@ -37,18 +36,18 @@ export const HairSalesView = () => {
 						{/*<Text></Text>*/}
 					</Stack>
 				</Flex>
-			</Surface>
-			<Divider />
-			<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
-				<GridCol span={12}>
-					<Suspense fallback={<LoaderSkeleton />}>
-						<ErrorBoundary fallback={<p>Error</p>}>
-							<HairSalesSuspense />
-						</ErrorBoundary>
-					</Suspense>
-				</GridCol>
-			</Grid>
-		</Stack>
+				<Divider />
+				<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
+					<GridCol span={12}>
+						<Suspense fallback={<LoaderSkeleton />}>
+							<ErrorBoundary fallback={<p>Error</p>}>
+								<HairSalesSuspense />
+							</ErrorBoundary>
+						</Suspense>
+					</GridCol>
+				</Grid>
+			</Stack>
+		</Container>
 	);
 };
 
