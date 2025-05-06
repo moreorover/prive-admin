@@ -2,7 +2,6 @@
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { openTypedContextModal } from "@/lib/modal-helper";
-import { useEditHairAssignmentToSaleStoreActions } from "@/modules/hair-sales/ui/components/editHairAssignementToSaleStore";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
 import { trpc } from "@/trpc/client";
@@ -19,7 +18,6 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
-import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import { CalendarDays, Pencil } from "lucide-react";
@@ -85,48 +83,6 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 					message: "Something went wrong updating Appointment.",
 				});
 			},
-		});
-
-	const { openEditHairAssignmentDrawer } =
-		useEditHairAssignmentToSaleStoreActions();
-
-	const deleteHairAssignment = trpc.hairSales.deleteHairAssignment.useMutation({
-		onSuccess: () => {
-			utils.hairSales.getById.invalidate({ hairSaleId });
-			utils.hairSales.getHairAssignments.invalidate({
-				hairSaleId,
-			});
-			notifications.show({
-				color: "green",
-				title: "Success!",
-				message: "Hair assignment deleted.",
-			});
-		},
-		onError: () => {
-			notifications.show({
-				color: "red",
-				title: "Failed to delete Hair assignment",
-				message: "Please try again.",
-			});
-		},
-	});
-
-	const openDeleteModal = (hairAssignmentId: string) =>
-		modals.openConfirmModal({
-			title: "Delete Hair Assignment?",
-			centered: true,
-			children: (
-				<Text size="sm">
-					Are you sure you want to delete this hair assignment?
-				</Text>
-			),
-			labels: { confirm: "Delete Hair Assignment", cancel: "Cancel" },
-			confirmProps: { color: "red" },
-			onCancel: () => {},
-			onConfirm: () =>
-				deleteHairAssignment.mutate({
-					hairAssignmentId,
-				}),
 		});
 
 	return (
@@ -248,34 +204,22 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 										<HairUsedTable.RowActions>
 											<HairUsedTable.RowActionViewHairOrder />
 											<HairUsedTable.RowActionUpdate
-												onAction={(id) => {
-													const hairAssignment = hairAssignments.find(
-														(h) => h.id === id,
-													);
-													if (!hairAssignment) return;
-													openEditHairAssignmentDrawer({
-														hairAssignment: {
-															...hairAssignment,
-															soldFor: hairAssignment.soldFor / 100,
-														},
-														maxWeight: Math.abs(
-															hairAssignment.hairOrder.weightReceived -
-																hairAssignment.hairOrder.weightUsed +
-																hairAssignment.weightInGrams,
-														),
-														onUpdated: () => {
-															utils.hairSales.getHairAssignments.invalidate({
-																hairSaleId,
-															});
-															utils.hairSales.getById.invalidate({
-																hairSaleId,
-															});
-														},
+												onUpdated={() => {
+													utils.hairSales.getHairAssignments.invalidate({
+														hairSaleId,
+													});
+													utils.hairSales.getById.invalidate({
+														hairSaleId,
 													});
 												}}
 											/>
 											<HairUsedTable.RowActionDelete
-												onAction={(id) => openDeleteModal(id)}
+												onDeleted={() => {
+													utils.hairSales.getById.invalidate({ hairSaleId });
+													utils.hairSales.getHairAssignments.invalidate({
+														hairSaleId,
+													});
+												}}
 											/>
 										</HairUsedTable.RowActions>
 									</>
