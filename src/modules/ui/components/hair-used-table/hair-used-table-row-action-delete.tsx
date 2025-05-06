@@ -1,11 +1,22 @@
+import { useDeleteHairAssignmentToAppointmentStoreActions } from "@/modules/appointments/ui/components/deleteHairAssignementToAppointmentStore";
 import { useHairUsedTableRowContext } from "@/modules/ui/components/hair-used-table/hair-used-table-row-context";
 import { Menu } from "@mantine/core";
 
 interface Props {
-	onAction: (id: string) => void;
+	onDeleted: () => void;
 }
 
-export default function HairUsedTableRowActionDelete({ onAction }: Props) {
+export default function HairUsedTableRowActionDelete({ onDeleted }: Props) {
 	const { hair } = useHairUsedTableRowContext();
-	return <Menu.Item onClick={() => onAction(hair.id)}>Delete</Menu.Item>;
+	const { openDeleteHairAssignmentDrawer } =
+		useDeleteHairAssignmentToAppointmentStoreActions();
+	return (
+		<Menu.Item
+			onClick={() =>
+				openDeleteHairAssignmentDrawer({ hairAssignmentId: hair.id, onDeleted })
+			}
+		>
+			Delete
+		</Menu.Item>
+	);
 }

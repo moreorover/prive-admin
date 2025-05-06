@@ -5,8 +5,6 @@ import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useAppointmentNoteDrawerStoreActions } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
-import { useDeleteHairAssignmentToAppointmentStoreActions } from "@/modules/appointments/ui/components/deleteHairAssignementToAppointmentStore";
-import { useEditHairAssignmentToAppointmentStoreActions } from "@/modules/appointments/ui/components/editHairAssignementToAppointmentStore";
 import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
@@ -141,12 +139,6 @@ function AppointmentSuspense({ appointmentId }: Props) {
 				});
 			},
 		});
-
-	const { openEditHairAssignmentDrawer } =
-		useEditHairAssignmentToAppointmentStoreActions();
-
-	const { openDeleteHairAssignmentDrawer } =
-		useDeleteHairAssignmentToAppointmentStoreActions();
 
 	return (
 		<Container size="xl">
@@ -352,25 +344,16 @@ function AppointmentSuspense({ appointmentId }: Props) {
 										<HairUsedTable.RowActions>
 											<HairUsedTable.RowActionViewHairOrder />
 											<HairUsedTable.RowActionUpdate
-												onAction={(id) => {
-													openEditHairAssignmentDrawer({
-														hairAssignmentId: id,
-														onUpdated: () => {
-															utils.appointments.getHairAssignments.invalidate({
-																appointmentId,
-															});
-														},
-													});
-												}}
+												onUpdated={() =>
+													utils.appointments.getHairAssignments.invalidate({
+														appointmentId,
+													})
+												}
 											/>
 											<HairUsedTable.RowActionDelete
-												onAction={(id) =>
-													openDeleteHairAssignmentDrawer({
-														hairAssignmentId: id,
-														onDeleted: () =>
-															utils.appointments.getHairAssignments.invalidate({
-																appointmentId,
-															}),
+												onDeleted={() =>
+													utils.appointments.getHairAssignments.invalidate({
+														appointmentId,
 													})
 												}
 											/>

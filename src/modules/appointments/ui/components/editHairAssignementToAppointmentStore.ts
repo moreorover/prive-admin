@@ -17,7 +17,7 @@ const initialState: State = {
 	onUpdated: () => {},
 };
 
-export const useEditHairAssignmentToAppointmentStore = create<
+const useEditHairAssignmentToAppointmentStore = create<
 	State & { actions: Actions }
 >((set) => ({
 	...initialState,
