@@ -19,7 +19,7 @@ export const EditTransactionDrawer = () => {
 	const { reset } = useEditTransactionStoreActions();
 	const transactionId = useEditTransactionStoreDrawerTransactionId();
 
-	const { data: t, isLoading } = trpc.transactions.getById.useQuery(
+	const { data: transaction, isLoading } = trpc.transactions.getById.useQuery(
 		{ id: transactionId },
 		{
 			enabled: !!transactionId,
@@ -59,12 +59,12 @@ export const EditTransactionDrawer = () => {
 				position="right"
 				title="Update Transaction"
 			>
-				{isLoading || !t ? (
+				{isLoading || !transaction ? (
 					<LoaderSkeleton />
 				) : (
 					<TransactionForm
 						onSubmitAction={onSubmit}
-						transaction={t}
+						transaction={transaction}
 						disabled={editTransaction.isPending}
 					/>
 				)}
