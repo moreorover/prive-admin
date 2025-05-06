@@ -5,6 +5,7 @@ import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useAppointmentNoteDrawerStoreActions } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
+import { useDeleteHairAssignmentToAppointmentStoreActions } from "@/modules/appointments/ui/components/deleteHairAssignementToAppointmentStore";
 import { useEditHairAssignmentToAppointmentStoreActions } from "@/modules/appointments/ui/components/editHairAssignementToAppointmentStore";
 import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
@@ -146,44 +147,8 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	const { openEditHairAssignmentDrawer } =
 		useEditHairAssignmentToAppointmentStoreActions();
 
-	const deleteHairAssignment =
-		trpc.appointments.deleteHairAssignment.useMutation({
-			onSuccess: () => {
-				notifications.show({
-					color: "green",
-					title: "Success!",
-					message: "Hair assignment deleted.",
-				});
-				utils.appointments.getHairAssignments.invalidate({
-					appointmentId,
-				});
-			},
-			onError: () => {
-				notifications.show({
-					color: "red",
-					title: "Failed to delete Hair assignment",
-					message: "Please try again.",
-				});
-			},
-		});
-
-	const openDeleteModalForHairAssignment = (hairAssignmentId: string) =>
-		modals.openConfirmModal({
-			title: "Delete Hair Assignment?",
-			centered: true,
-			children: (
-				<Text size="sm">
-					Are you sure you want to delete this hair assignment?
-				</Text>
-			),
-			labels: { confirm: "Delete Hair Assignment", cancel: "Cancel" },
-			confirmProps: { color: "red" },
-			onCancel: () => {},
-			onConfirm: () =>
-				deleteHairAssignment.mutate({
-					hairAssignmentId,
-				}),
-		});
+	const { openDeleteHairAssignmentDrawer } =
+		useDeleteHairAssignmentToAppointmentStoreActions();
 
 	const openDeleteModalForTransaction = (transactionId: string) =>
 		modals.openConfirmModal({
@@ -440,7 +405,15 @@ function AppointmentSuspense({ appointmentId }: Props) {
 												}}
 											/>
 											<HairUsedTable.RowActionDelete
-												onAction={(id) => openDeleteModalForHairAssignment(id)}
+												onAction={(id) =>
+													openDeleteHairAssignmentDrawer({
+														hairAssignmentId: id,
+														onDeleted: () =>
+															utils.appointments.getHairAssignments.invalidate({
+																appointmentId,
+															}),
+													})
+												}
 											/>
 										</HairUsedTable.RowActions>
 									</>

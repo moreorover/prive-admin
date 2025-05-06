@@ -57,8 +57,6 @@ export const hairSalesRouter = createTRPCRouter({
 		.mutation(async ({ input }) => {
 			const { hairSale } = input;
 
-			console.log({ hairSale });
-
 			const hairSaleUpdated = await prisma.hairSale.update({
 				where: { id: hairSale.id },
 				data: {

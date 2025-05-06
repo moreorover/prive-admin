@@ -161,7 +161,6 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 								<DatePickerDrawer
 									date={hairSale.placedAt}
 									onSelected={(data) => {
-										console.log(data);
 										updateHairSale.mutate({
 											hairSale: {
 												...hairSale,

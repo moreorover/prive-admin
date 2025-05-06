@@ -2,6 +2,7 @@
 
 import { EditAppointmentNoteDrawer } from "@/modules/appointment_notes/ui/components/edit-appointment-note-drawer";
 import { NewAppointmentNoteDrawer } from "@/modules/appointment_notes/ui/components/new-appointment-note-drawer";
+import { DeleteHairAssignmentToAppointmentDrawer } from "@/modules/appointments/ui/components/delete-hair-assignment-drawer";
 import { EditAppointmentDrawer } from "@/modules/appointments/ui/components/edit-appointment-drawer";
 import { EditHairAssignmentToAppointmentDrawer } from "@/modules/appointments/ui/components/edit-hair-assignment-drawer";
 import { NewAppointmentDrawer } from "@/modules/appointments/ui/components/new-appointment-drawer";
@@ -52,6 +53,7 @@ export default function DrawerProvider() {
 			<EditHairOrderNoteDrawer />
 
 			<EditHairAssignmentToAppointmentDrawer />
+			<DeleteHairAssignmentToAppointmentDrawer />
 			<EditHairAssignmentToSaleDrawer />
 		</>
 	);
