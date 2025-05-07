@@ -2,7 +2,7 @@
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { formatAmount } from "@/lib/helpers";
-import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
+import { useNewHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/newHairOrderNoteDrawerStore";
 import { useEditHairOrderStoreActions } from "@/modules/hair_orders/ui/components/editHairOrderStore";
 import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table";
 import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
@@ -63,7 +63,7 @@ export const HairOrderView = ({ hairOrderId }: Props) => {
 					<GridCol span={12}>
 						<Suspense fallback={<LoaderSkeleton />}>
 							<ErrorBoundary fallback={<p>Error</p>}>
-								<HairOrdersSuspense hairOrderId={hairOrderId} />
+								<HairOrderSuspense hairOrderId={hairOrderId} />
 							</ErrorBoundary>
 						</Suspense>
 					</GridCol>
@@ -73,7 +73,7 @@ export const HairOrderView = ({ hairOrderId }: Props) => {
 	);
 };
 
-function HairOrdersSuspense({ hairOrderId }: Props) {
+function HairOrderSuspense({ hairOrderId }: Props) {
 	const utils = trpc.useUtils();
 	const [hairOrder] = trpc.hairOrders.getById.useSuspenseQuery({
 		id: hairOrderId,
@@ -92,9 +92,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 		hairOrderId,
 	});
 
-	const openNewHairOrderNoteDrawer = useHairOrderNoteDrawerStore(
-		(state) => state.openDrawer,
-	);
+	const { openNewHairOrderNoteDrawer } = useNewHairOrderNoteStoreActions();
 
 	const { openNewTransactionDrawer } = useNewTransactionStoreActions();
 
@@ -350,8 +348,8 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 							<Button
 								onClick={() =>
 									openNewHairOrderNoteDrawer({
-										hairOrderId,
-										onCreated: () => {
+										relations: { hairOrderId },
+										onSuccess: () => {
 											utils.hairOrderNotes.getNotesByHairOrderId.invalidate({
 												hairOrderId,
 											});

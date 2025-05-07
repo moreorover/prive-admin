@@ -5,7 +5,7 @@ import type { Transaction } from "@/lib/schemas";
 import {
 	useEditTransactionStoreActions,
 	useEditTransactionStoreDrawerIsOpen,
-	useEditTransactionStoreDrawerOnUpdated,
+	useEditTransactionStoreDrawerOnSuccess,
 	useEditTransactionStoreDrawerTransactionId,
 } from "@/modules/transactions/ui/components/editTransactionStore";
 import { TransactionForm } from "@/modules/transactions/ui/components/transaction-form";
@@ -16,7 +16,7 @@ import { notifications } from "@mantine/notifications";
 export const EditTransactionDrawer = () => {
 	const utils = trpc.useUtils();
 	const isOpen = useEditTransactionStoreDrawerIsOpen();
-	const onUpdated = useEditTransactionStoreDrawerOnUpdated();
+	const onSuccess = useEditTransactionStoreDrawerOnSuccess();
 	const { reset } = useEditTransactionStoreActions();
 	const transactionId = useEditTransactionStoreDrawerTransactionId();
 
@@ -30,7 +30,7 @@ export const EditTransactionDrawer = () => {
 	const editTransaction = trpc.transactions.update.useMutation({
 		onSuccess: () => {
 			utils.transactions.getById.invalidate({ id: transactionId });
-			onUpdated();
+			onSuccess();
 			reset();
 			notifications.show({
 				color: "green",

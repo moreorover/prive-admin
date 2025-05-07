@@ -36,7 +36,7 @@ export const useEditTransactionStoreDrawerIsOpen = () =>
 export const useEditTransactionStoreDrawerTransactionId = () =>
 	useEditTransactionStore((state) => state.transactionId);
 
-export const useEditTransactionStoreDrawerOnUpdated = () =>
+export const useEditTransactionStoreDrawerOnSuccess = () =>
 	useEditTransactionStore((state) => state.onSuccess);
 
 export const useEditTransactionStoreActions = () =>

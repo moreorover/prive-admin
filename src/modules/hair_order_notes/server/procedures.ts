@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { hairOrderNoteSchema } from "@/lib/schemas";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const hairOrderNotesRouter = createTRPCRouter({
@@ -64,5 +65,26 @@ export const hairOrderNotesRouter = createTRPCRouter({
 			});
 
 			return notes;
+		}),
+	getById: protectedProcedure
+		.input(z.object({ id: z.string().cuid2().nullable() }))
+		.query(async ({ input }) => {
+			const { id } = input;
+
+			if (!id) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Missing id" });
+			}
+
+			const note = await prisma.hairOrderNote.findFirst({
+				where: {
+					id,
+				},
+			});
+
+			if (!note) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			return note;
 		}),
 });

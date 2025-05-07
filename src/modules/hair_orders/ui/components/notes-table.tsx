@@ -1,6 +1,5 @@
 "use client";
-
-import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
+import { useEditHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/editHairOrderNoteDrawerStore";
 import type { HairOrderNotes } from "@/modules/hair_orders/types";
 import { trpc } from "@/trpc/client";
 import { Button, Menu, ScrollArea, Table, Text } from "@mantine/core";
@@ -16,7 +15,7 @@ interface Props {
 export default function HairOrderNotesTable({ hairOrderId, notes }: Props) {
 	const utils = trpc.useUtils();
 
-	const openDrawer = useHairOrderNoteDrawerStore((state) => state.openDrawer);
+	const { openEditHairOrderNoteDrawer } = useEditHairOrderNoteStoreActions();
 
 	const deleteHairOrderNote = trpc.hairOrderNotes.delete.useMutation({
 		onSuccess: () => {
@@ -79,10 +78,9 @@ export default function HairOrderNotesTable({ hairOrderId, notes }: Props) {
 						<Menu.Label>HairOrder Notes</Menu.Label>
 						<Menu.Item
 							onClick={() => {
-								openDrawer({
-									isOpen: true,
-									note: hairOrderNote,
-									onUpdated: () => {
+								openEditHairOrderNoteDrawer({
+									hairOrderNoteId: hairOrderNote.id,
+									onSuccess: () => {
 										utils.hairOrderNotes.getNotesByHairOrderId.invalidate({
 											hairOrderId,
 										});
