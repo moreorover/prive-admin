@@ -88,12 +88,15 @@ function AppointmentsSuspense({ startDate, endDate }: Props) {
 				{appointments.length > 0 ? (
 					<AppointmentsTable
 						appointments={appointments}
-						columns={["Title", "Client", "Starts at"]}
+						columns={["Title", "Client", "Starts at", ""]}
 						row={
 							<>
 								<AppointmentsTable.RowName />
 								<AppointmentsTable.RowClientName />
 								<AppointmentsTable.RowStartsAt />
+								<AppointmentsTable.RowActions>
+									<AppointmentsTable.RowActionViewAppointment />
+								</AppointmentsTable.RowActions>
 							</>
 						}
 					/>
