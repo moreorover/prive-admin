@@ -1,8 +1,8 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { CustomersTable } from "@/modules/customers/ui/components/customers-table";
 import { useNewCustomerStoreActions } from "@/modules/customers/ui/components/newCustomerStore";
+import CustomersTable from "@/modules/ui/components/customers-table";
 import { trpc } from "@/trpc/client";
 import {
 	Button,
@@ -75,7 +75,19 @@ function CustomersSuspense() {
 				<GridCol span={12}>
 					<Paper withBorder p="md" radius="md" shadow="sm">
 						{filteredCustomers.length > 0 ? (
-							<CustomersTable customers={filteredCustomers} />
+							<CustomersTable
+								customers={filteredCustomers}
+								columns={["Name", "Phone Number", ""]}
+								row={
+									<>
+										<CustomersTable.RowName />
+										<CustomersTable.RowPhoneNumber />
+										<CustomersTable.RowActions>
+											<CustomersTable.RowActionViewCustomer />
+										</CustomersTable.RowActions>
+									</>
+								}
+							/>
 						) : (
 							<Text c="gray">No customers found.</Text>
 						)}
