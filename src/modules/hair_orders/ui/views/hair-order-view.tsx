@@ -2,12 +2,11 @@
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { formatAmount } from "@/lib/helpers";
-import { openTypedContextModal } from "@/lib/modal-helper";
 import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
+import { useEditHairOrderStoreActions } from "@/modules/hair_orders/ui/components/editHairOrderStore";
 import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table";
 import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
 import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
-import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
 import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
 import { trpc } from "@/trpc/client";
@@ -101,6 +100,8 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 
 	const { openNewTransactionDrawer } = useNewTransactionStoreActions();
 
+	const { openEditHairOrderDrawer } = useEditHairOrderStoreActions();
+
 	const updateHairOrderMutation = trpc.hairOrders.update.useMutation({
 		onSuccess: () => {
 			utils.hairOrders.getById.invalidate({ id: hairOrderId });
@@ -134,26 +135,6 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 					color: "red",
 					title: "Failed!",
 					message: "Something went wrong recalculating Hair Order.",
-				});
-			},
-		});
-
-	const updateHairOrderTotalWeightMutation =
-		trpc.hairOrders.updateTotalWeight.useMutation({
-			onSuccess: () => {
-				recalculateHairOrderPrice.mutate({ hairOrderId });
-				utils.hairOrders.getById.invalidate({ id: hairOrderId });
-				notifications.show({
-					color: "green",
-					title: "Success!",
-					message: "Hair Order updated.",
-				});
-			},
-			onError: () => {
-				notifications.show({
-					color: "red",
-					title: "Failed!",
-					message: "Something went wrong updating Hair Order.",
 				});
 			},
 		});
@@ -214,17 +195,19 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 										{dayjs(hairOrder.placedAt).format("DD MMM YYYY")}
 									</Text>
 								) : (
-									<DatePickerDrawer
-										date={hairOrder.placedAt}
-										onSelected={(date) =>
-											updateHairOrderMutation.mutate({
-												hairOrder: {
-													...hairOrder,
-													placedAt: date,
-												},
+									<Button
+										onClick={() =>
+											openEditHairOrderDrawer({
+												hairOrderId,
+												onSuccess: () =>
+													utils.hairOrders.getById.invalidate({
+														id: hairOrderId,
+													}),
 											})
 										}
-									/>
+									>
+										Update
+									</Button>
 								)}
 							</Flex>
 							<Flex direction="column">
@@ -236,17 +219,19 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 										{dayjs(hairOrder.arrivedAt).format("DD MMM YYYY")}
 									</Text>
 								) : (
-									<DatePickerDrawer
-										date={hairOrder.arrivedAt}
-										onSelected={(date) =>
-											updateHairOrderMutation.mutate({
-												hairOrder: {
-													...hairOrder,
-													arrivedAt: date,
-												},
+									<Button
+										onClick={() =>
+											openEditHairOrderDrawer({
+												hairOrderId,
+												onSuccess: () =>
+													utils.hairOrders.getById.invalidate({
+														id: hairOrderId,
+													}),
 											})
 										}
-									/>
+									>
+										Update
+									</Button>
 								)}
 							</Flex>
 							<Flex direction="column">
@@ -301,18 +286,15 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 									</Text>
 								</Stack>
 								<Button
+									size={"xs"}
 									onClick={() =>
-										openTypedContextModal("hairOrderTotalWeight", {
-											innerProps: {
-												weight: hairOrder.weightReceived,
-												onConfirm: (weight) => {
-													updateHairOrderTotalWeightMutation.mutate({
-														hairOrder: {
-															id: hairOrder.id,
-															weightReceived: weight,
-														},
-													});
-												},
+										openEditHairOrderDrawer({
+											hairOrderId,
+											onSuccess: () => {
+												recalculateHairOrderPrice.mutate({ hairOrderId });
+												utils.hairOrders.getById.invalidate({
+													id: hairOrderId,
+												});
 											},
 										})
 									}

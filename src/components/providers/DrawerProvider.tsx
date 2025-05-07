@@ -11,6 +11,7 @@ import { NewCustomerDrawer } from "@/modules/customers/ui/components/new-custome
 import { EditHairAssignmentToSaleDrawer } from "@/modules/hair-sales/ui/components/edit-hair-assignment-drawer";
 import { EditHairOrderNoteDrawer } from "@/modules/hair_order_notes/ui/components/edit-appointment-note-drawer";
 import { NewHairOrderNoteDrawer } from "@/modules/hair_order_notes/ui/components/new-hair-order-note-drawer";
+import { EditHairOrderDrawer } from "@/modules/hair_orders/ui/components/edit-hairOrder-drawer";
 import { EditOrderItemDrawer } from "@/modules/order_item/ui/components/edit-order-item-drawer";
 import { NewOrderItemDrawer } from "@/modules/order_item/ui/components/new-order-item-drawer";
 import { EditOrderDrawer } from "@/modules/orders/ui/components/edit-order-drawer";
@@ -53,6 +54,8 @@ export default function DrawerProvider() {
 
 			<NewHairOrderNoteDrawer />
 			<EditHairOrderNoteDrawer />
+
+			<EditHairOrderDrawer />
 
 			<EditHairAssignmentToAppointmentDrawer />
 			<DeleteHairAssignmentToAppointmentDrawer />
