@@ -8,7 +8,7 @@ import { PersonnelPickerModal } from "@/modules/appointments/ui/components/perso
 import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
 import AppointmentNotesTable from "@/modules/ui/components/appointment-notes-table";
 import CustomersTable from "@/modules/ui/components/customers-table";
-import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
+import HairUsedTable from "@/modules/ui/components/hair-used-table";
 import TransactionsTable from "@/modules/ui/components/transactions-table";
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";

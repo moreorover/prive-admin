@@ -3,7 +3,7 @@
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
-import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
+import HairUsedTable from "@/modules/ui/components/hair-used-table";
 import { trpc } from "@/trpc/client";
 import {
 	ActionIcon,
