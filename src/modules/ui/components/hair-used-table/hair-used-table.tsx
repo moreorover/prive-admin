@@ -1,16 +1,10 @@
-import HairUsedTableRowActionViewAppointment from "@/modules/ui/components/hair-used-table/hair-used-table-row-action-navigate-to-appointment";
-import HairUsedTableRowActionViewHairOrder from "@/modules/ui/components/hair-used-table/hair-used-table-row-action-navigate-to-hairOrder";
-import HairUsedTableRowActionViewHairSale from "@/modules/ui/components/hair-used-table/hair-used-table-row-action-navigate-to-hairSale";
-import HairUsedTableRowActionUpdate from "@/modules/ui/components/hair-used-table/hair-used-table-row-action-update";
-import HairUsedTableRowActions from "@/modules/ui/components/hair-used-table/hair-used-table-row-actions";
-import HairUsedTableRowContext from "@/modules/ui/components/hair-used-table/hair-used-table-row-context";
-import HairUsedTableRowProfit from "@/modules/ui/components/hair-used-table/hair-used-table-row-profit";
-import HairUsedTableRowSoldFor from "@/modules/ui/components/hair-used-table/hair-used-table-row-soldFor";
-import HairUsedTableRowWeight from "@/modules/ui/components/hair-used-table/hair-used-table-row-weight";
-import { Table } from "@mantine/core";
-import type { ReactNode } from "react";
-import HairUsedTableRowActionDelete from "./hair-used-table-row-action-delete";
-import HairUsedTableRowTotal from "./hair-used-table-row-total";
+import { formatAmount } from "@/lib/helpers";
+import { useDeleteHairAssignmentToAppointmentStoreActions } from "@/modules/appointments/ui/components/deleteHairAssignementToAppointmentStore";
+import { useEditHairAssignmentToAppointmentStoreActions } from "@/modules/appointments/ui/components/editHairAssignementToAppointmentStore";
+import { ActionIcon, Group, Menu, Table, Text, Tooltip } from "@mantine/core";
+import { GripVertical, TriangleAlertIcon } from "lucide-react";
+import Link from "next/link";
+import { type ReactNode, createContext, useContext } from "react";
 
 export type Hair = {
 	id: string;
@@ -27,6 +21,20 @@ interface Props {
 	hair: Hair[];
 	columns: string[];
 	row: ReactNode;
+}
+
+const HairUsedTableRowContext = createContext<{
+	hair: Hair;
+} | null>(null);
+
+function useHairUsedTableRowContext() {
+	const context = useContext(HairUsedTableRowContext);
+	if (!context) {
+		throw new Error(
+			"HairUsedTableRow.* component must be rendered as child of HairUsedTableRow component",
+		);
+	}
+	return context;
 }
 
 function HairUsedTable({ hair, columns, row }: Props) {
@@ -47,6 +55,170 @@ function HairUsedTable({ hair, columns, row }: Props) {
 				))}
 			</Table.Tbody>
 		</Table>
+	);
+}
+
+function HairUsedTableRowProfit() {
+	const { hair } = useHairUsedTableRowContext();
+	return (
+		<Table.Td>
+			<Text>{formatAmount(hair.profit / 100)}</Text>
+		</Table.Td>
+	);
+}
+
+function HairUsedTableRowSoldFor() {
+	const { hair } = useHairUsedTableRowContext();
+	return (
+		<Table.Td
+			style={{
+				backgroundColor: hair.soldFor === 0 ? "#ffe6e6" : undefined, // light pink
+			}}
+		>
+			<Group>
+				<Text>{formatAmount(hair.soldFor / 100)}</Text>
+				{hair.soldFor === 0 && (
+					<Tooltip label="Sold for price not assigned">
+						<TriangleAlertIcon size={16} color="red" />
+					</Tooltip>
+				)}
+			</Group>
+		</Table.Td>
+	);
+}
+
+function HairUsedTableRowWeight() {
+	const { hair } = useHairUsedTableRowContext();
+	return (
+		<Table.Td
+			style={{
+				backgroundColor: hair.weightInGrams === 0 ? "#ffe6e6" : undefined, // light pink
+			}}
+		>
+			<Group>
+				<Text>{hair.weightInGrams}g</Text>
+				{hair.weightInGrams === 0 && (
+					<Tooltip label="Weight not assigned">
+						<TriangleAlertIcon size={16} color="red" />
+					</Tooltip>
+				)}
+			</Group>
+		</Table.Td>
+	);
+}
+
+function HairUsedTableRowTotal() {
+	const { hair } = useHairUsedTableRowContext();
+	return (
+		<Table.Td>
+			<Text>{formatAmount(hair.total / 100)}</Text>
+		</Table.Td>
+	);
+}
+
+function HairUsedTableRowActions({ children }: { children: ReactNode }) {
+	return (
+		<Table.Td>
+			<Menu shadow="md" width={200}>
+				<Menu.Target>
+					<ActionIcon variant="transparent">
+						<GripVertical size={18} />
+					</ActionIcon>
+				</Menu.Target>
+
+				<Menu.Dropdown>{children}</Menu.Dropdown>
+			</Menu>
+		</Table.Td>
+	);
+}
+
+function HairUsedTableRowActionDelete({
+	onDeleted,
+}: { onDeleted: () => void }) {
+	const { hair } = useHairUsedTableRowContext();
+	const { openDeleteHairAssignmentDrawer } =
+		useDeleteHairAssignmentToAppointmentStoreActions();
+	return (
+		<Menu.Item
+			onClick={() =>
+				openDeleteHairAssignmentDrawer({
+					hairAssignmentId: hair.id,
+					onSuccess: onDeleted,
+				})
+			}
+		>
+			Delete
+		</Menu.Item>
+	);
+}
+
+function HairUsedTableRowActionViewAppointment() {
+	const { hair } = useHairUsedTableRowContext();
+
+	if (!hair.appointmentId) return null;
+
+	return (
+		<Menu.Item
+			component={Link}
+			href={`/dashboard/appointments/${hair.appointmentId}`}
+			disabled={!hair.appointmentId}
+		>
+			View Appointment
+		</Menu.Item>
+	);
+}
+
+function HairUsedTableRowActionViewHairOrder() {
+	const { hair } = useHairUsedTableRowContext();
+
+	if (!hair.hairOrderId) return null;
+
+	return (
+		<Menu.Item
+			component={Link}
+			href={`/dashboard/hair-orders/${hair.hairOrderId}`}
+			disabled={!hair.hairOrderId}
+		>
+			View Hair Order
+		</Menu.Item>
+	);
+}
+
+function HairUsedTableRowActionViewHairSale() {
+	const { hair } = useHairUsedTableRowContext();
+
+	if (!hair.hairSaleId) return null;
+
+	return (
+		<Menu.Item
+			component={Link}
+			href={`/dashboard/hair-sales/${hair.hairSaleId}`}
+			disabled={!hair.hairSaleId}
+		>
+			View Hair Sale
+		</Menu.Item>
+	);
+}
+
+function HairUsedTableRowActionUpdate({
+	onUpdated,
+}: { onUpdated: () => void }) {
+	const { hair } = useHairUsedTableRowContext();
+
+	const { openEditHairAssignmentDrawer } =
+		useEditHairAssignmentToAppointmentStoreActions();
+
+	return (
+		<Menu.Item
+			onClick={() =>
+				openEditHairAssignmentDrawer({
+					hairAssignmentId: hair.id,
+					onSuccess: onUpdated,
+				})
+			}
+		>
+			Update
+		</Menu.Item>
 	);
 }
 
