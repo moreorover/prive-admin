@@ -60,7 +60,7 @@ export const AppointmentTransactionMenu = ({
 									appointmentId,
 									customerId: customer.id ?? "",
 								},
-								onCreated: onSuccess,
+								onSuccess: onSuccess,
 							});
 						}}
 					>

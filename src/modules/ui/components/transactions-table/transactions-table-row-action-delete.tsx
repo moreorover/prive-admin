@@ -16,7 +16,7 @@ export default function TransactionsTableRowActionDelete({ onDeleted }: Props) {
 			onClick={() =>
 				openDeleteTransactionDrawer({
 					transactionId: transaction.id,
-					onDeleted,
+					onSuccess: onDeleted,
 				})
 			}
 		>

@@ -3,7 +3,7 @@ import { create } from "zustand";
 type State = {
 	isOpen: boolean;
 	appointmentId: string | null;
-	onUpdated: () => void;
+	onSuccess: () => void;
 };
 
 type Actions = {
@@ -14,7 +14,7 @@ type Actions = {
 const initialState: State = {
 	isOpen: false,
 	appointmentId: null,
-	onUpdated: () => {},
+	onSuccess: () => {},
 };
 
 const useEditAppointmentStore = create<State & { actions: Actions }>((set) => ({
@@ -35,7 +35,7 @@ export const useEditAppointmentStoreDrawerAppointmentId = () =>
 	useEditAppointmentStore((state) => state.appointmentId);
 
 export const useEditAppointmentStoreDrawerOnUpdated = () =>
-	useEditAppointmentStore((state) => state.onUpdated);
+	useEditAppointmentStore((state) => state.onSuccess);
 
 export const useEditAppointmentStoreActions = () =>
 	useEditAppointmentStore((state) => state.actions);

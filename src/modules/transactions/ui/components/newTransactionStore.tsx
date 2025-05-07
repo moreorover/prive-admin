@@ -8,7 +8,7 @@ type State = {
 		customerId: string;
 		hairOrderId?: string | null | undefined;
 	};
-	onCreated: () => void;
+	onSuccess: () => void;
 };
 
 type Actions = {
@@ -21,7 +21,7 @@ const initialState: State = {
 	relations: {
 		customerId: "",
 	},
-	onCreated: () => {},
+	onSuccess: () => {},
 };
 
 const useNewTransactionStore = create<State & { actions: Actions }>((set) => ({
@@ -42,7 +42,7 @@ export const useNewTransactionStoreDrawerRelations = () =>
 	useNewTransactionStore((state) => state.relations);
 
 export const useNewTransactionStoreDrawerOnCreated = () =>
-	useNewTransactionStore((state) => state.onCreated);
+	useNewTransactionStore((state) => state.onSuccess);
 
 export const useNewTransactionStoreActions = () =>
 	useNewTransactionStore((state) => state.actions);

@@ -3,7 +3,7 @@ import { create } from "zustand";
 type State = {
 	isOpen: boolean;
 	transactionId: string | null;
-	onDeleted: () => void;
+	onSuccess: () => void;
 };
 
 type Actions = {
@@ -14,7 +14,7 @@ type Actions = {
 const initialState: State = {
 	isOpen: false,
 	transactionId: null,
-	onDeleted: () => {},
+	onSuccess: () => {},
 };
 
 const useDeleteTransactionStore = create<State & { actions: Actions }>(
@@ -37,7 +37,7 @@ export const useDeleteTransactionStoreDrawerTransactionId = () =>
 	useDeleteTransactionStore((state) => state.transactionId);
 
 export const useDeleteTransactionStoreDrawerOnDeleted = () =>
-	useDeleteTransactionStore((state) => state.onDeleted);
+	useDeleteTransactionStore((state) => state.onSuccess);
 
 export const useDeleteTransactionStoreActions = () =>
 	useDeleteTransactionStore((state) => state.actions);

@@ -3,7 +3,7 @@ import { create } from "zustand";
 type State = {
 	isOpen: boolean;
 	hairAssignmentId: string | null;
-	onDeleted: () => void;
+	onSuccess: () => void;
 };
 
 type Actions = {
@@ -14,7 +14,7 @@ type Actions = {
 const initialState: State = {
 	isOpen: false,
 	hairAssignmentId: null,
-	onDeleted: () => {},
+	onSuccess: () => {},
 };
 
 const useDeleteHairAssignmentToAppointmentStore = create<
@@ -40,7 +40,7 @@ export const useDeleteHairAssignmentToAppointmentStoreDrawerHairAssignmentId =
 		);
 
 export const useDeleteHairAssignmentToAppointmentStoreDrawerOnDeleted = () =>
-	useDeleteHairAssignmentToAppointmentStore((state) => state.onDeleted);
+	useDeleteHairAssignmentToAppointmentStore((state) => state.onSuccess);
 
 export const useDeleteHairAssignmentToAppointmentStoreActions = () =>
 	useDeleteHairAssignmentToAppointmentStore((state) => state.actions);

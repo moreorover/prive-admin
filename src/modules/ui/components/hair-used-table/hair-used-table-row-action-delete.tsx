@@ -13,7 +13,10 @@ export default function HairUsedTableRowActionDelete({ onDeleted }: Props) {
 	return (
 		<Menu.Item
 			onClick={() =>
-				openDeleteHairAssignmentDrawer({ hairAssignmentId: hair.id, onDeleted })
+				openDeleteHairAssignmentDrawer({
+					hairAssignmentId: hair.id,
+					onSuccess: onDeleted,
+				})
 			}
 		>
 			Delete

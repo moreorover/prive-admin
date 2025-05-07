@@ -12,7 +12,10 @@ export default function TransactionsTableRowActionUpdate({ onUpdated }: Props) {
 	return (
 		<Menu.Item
 			onClick={() =>
-				openEditTransactionDrawer({ transactionId: transaction.id, onUpdated })
+				openEditTransactionDrawer({
+					transactionId: transaction.id,
+					onSuccess: onUpdated,
+				})
 			}
 		>
 			Update

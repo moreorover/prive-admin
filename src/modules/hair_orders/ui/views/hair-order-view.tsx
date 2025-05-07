@@ -411,7 +411,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 											// biome-ignore lint/style/noNonNullAssertion: <explanation>
 											customerId: hairOrder.customer!.id,
 										},
-										onCreated: () => {
+										onSuccess: () => {
 											utils.transactions.getByHairOrderId.invalidate({
 												hairOrderId,
 											});

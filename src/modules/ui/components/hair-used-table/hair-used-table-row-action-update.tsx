@@ -15,7 +15,10 @@ export default function HairUsedTableRowActionUpdate({ onUpdated }: Props) {
 	return (
 		<Menu.Item
 			onClick={() =>
-				openEditHairAssignmentDrawer({ hairAssignmentId: hair.id, onUpdated })
+				openEditHairAssignmentDrawer({
+					hairAssignmentId: hair.id,
+					onSuccess: onUpdated,
+				})
 			}
 		>
 			Update

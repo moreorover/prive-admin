@@ -131,7 +131,7 @@ export const OrderView = ({ orderId }: Props) => {
 											orderId: orderId,
 											customerId: order.customer.id,
 										},
-										onCreated: () => {
+										onSuccess: () => {
 											utils.transactions.getByOrderId.invalidate({
 												orderId,
 												includeCustomer: true,
