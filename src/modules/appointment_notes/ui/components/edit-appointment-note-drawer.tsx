@@ -1,27 +1,37 @@
 "use client";
 
+import { LoaderSkeleton } from "@/components/loader-skeleton";
 import type { AppointmentNote } from "@/lib/schemas";
-import {
-	useAppointmentNoteDrawerStoreActions,
-	useAppointmentNoteDrawerStoreIsOpen,
-	useAppointmentNoteDrawerStoreNote,
-	useAppointmentNoteDrawerStoreOnUpdated,
-} from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { AppointmentNoteForm } from "@/modules/appointment_notes/ui/components/appointment-note-form";
+import {
+	useEditAppointmentNoteStoreActions,
+	useEditAppointmentNoteStoreDrawerAppointmentNoteId,
+	useEditAppointmentNoteStoreDrawerIsOpen,
+	useEditAppointmentNoteStoreDrawerOnSuccess,
+} from "@/modules/appointment_notes/ui/components/editAppointmentNoteDrawerStore";
 import { trpc } from "@/trpc/client";
 import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 
 export const EditAppointmentNoteDrawer = () => {
-	const isOpen = useAppointmentNoteDrawerStoreIsOpen();
-	const appointmentNote = useAppointmentNoteDrawerStoreNote();
-	const { reset } = useAppointmentNoteDrawerStoreActions();
-	const onUpdated = useAppointmentNoteDrawerStoreOnUpdated();
+	const isOpen = useEditAppointmentNoteStoreDrawerIsOpen();
+	const appointmentNoteId =
+		useEditAppointmentNoteStoreDrawerAppointmentNoteId();
+	const { reset } = useEditAppointmentNoteStoreActions();
+	const onSuccess = useEditAppointmentNoteStoreDrawerOnSuccess();
+
+	const { data: appointmentNote, isLoading } =
+		trpc.appointmentNotes.getById.useQuery(
+			{ id: appointmentNoteId },
+			{
+				enabled: !!appointmentNoteId,
+			},
+		);
 
 	const editAppointmentNote = trpc.appointmentNotes.update.useMutation({
 		onSuccess: () => {
 			reset();
-			onUpdated?.();
+			onSuccess?.();
 			notifications.show({
 				color: "green",
 				title: "Success!",
@@ -47,16 +57,20 @@ export const EditAppointmentNoteDrawer = () => {
 
 	return (
 		<Drawer
-			opened={isOpen && onUpdated !== undefined}
+			opened={isOpen}
 			onClose={reset}
 			position="right"
 			title="Update Appointment Note"
 		>
-			<AppointmentNoteForm
-				onSubmitAction={onSubmit}
-				onDelete={onDelete}
-				appointmentNote={appointmentNote}
-			/>
+			{isLoading || !appointmentNote ? (
+				<LoaderSkeleton />
+			) : (
+				<AppointmentNoteForm
+					onSubmitAction={onSubmit}
+					onDelete={onDelete}
+					appointmentNote={appointmentNote}
+				/>
+			)}
 		</Drawer>
 	);
 };

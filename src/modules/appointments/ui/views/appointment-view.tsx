@@ -2,12 +2,12 @@
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { openTypedContextModal } from "@/lib/modal-helper";
-import { useAppointmentNoteDrawerStoreActions } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
+import { useNewAppointmentNoteStoreActions } from "@/modules/appointment_notes/ui/components/newAppointmentNoteDrawerStore";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
 import { useEditAppointmentStoreActions } from "@/modules/appointments/ui/components/editAppointmentStore";
-import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
+import AppointmentNotesTable from "@/modules/ui/components/appointment-notes-table/appointment-notes-table";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
 import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
 import { trpc } from "@/trpc/client";
@@ -116,8 +116,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	];
 
 	const { openEditAppointmentDrawer } = useEditAppointmentStoreActions();
-	const { openDrawer: openNewAppointmentNoteDrawer } =
-		useAppointmentNoteDrawerStoreActions();
+	const { openNewAppointmentNoteDrawer } = useNewAppointmentNoteStoreActions();
 
 	const createHairAssignmentMutation =
 		trpc.appointments.createHairAssignment.useMutation({
@@ -238,8 +237,10 @@ function AppointmentSuspense({ appointmentId }: Props) {
 								<Button
 									onClick={() => {
 										openNewAppointmentNoteDrawer({
-											appointmentId,
-											onCreated: () => {
+											relations: {
+												appointmentId,
+											},
+											onSuccess: () => {
 												utils.appointmentNotes.getNotesByAppointmentId.invalidate(
 													{
 														appointmentId,
@@ -253,8 +254,34 @@ function AppointmentSuspense({ appointmentId }: Props) {
 								</Button>
 							</Group>
 							<AppointmentNotesTable
-								appointmentId={appointmentId}
 								notes={notes}
+								columns={["Created At", "Note", ""]}
+								row={
+									<>
+										<AppointmentNotesTable.RowCreatedAt />
+										<AppointmentNotesTable.RowNote />
+										<AppointmentNotesTable.RowActions>
+											<AppointmentNotesTable.RowActionUpdate
+												onSuccess={() =>
+													utils.appointmentNotes.getNotesByAppointmentId.invalidate(
+														{
+															appointmentId,
+														},
+													)
+												}
+											/>
+											<AppointmentNotesTable.RowActionDelete
+												onSuccess={() =>
+													utils.appointmentNotes.getNotesByAppointmentId.invalidate(
+														{
+															appointmentId,
+														},
+													)
+												}
+											/>
+										</AppointmentNotesTable.RowActions>
+									</>
+								}
 							/>
 						</Paper>
 						<Paper withBorder p="md" radius="md" shadow="sm">
