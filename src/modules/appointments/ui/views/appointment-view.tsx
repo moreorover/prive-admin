@@ -6,7 +6,7 @@ import { useNewAppointmentNoteStoreActions } from "@/modules/appointment_notes/u
 import { useEditAppointmentStoreActions } from "@/modules/appointments/ui/components/editAppointmentStore";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
-import AppointmentNotesTable from "@/modules/ui/components/appointment-notes-table/appointment-notes-table";
+import AppointmentNotesTable from "@/modules/ui/components/appointment-notes-table";
 import CustomersTable from "@/modules/ui/components/customers-table";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
 import TransactionsTable from "@/modules/ui/components/transactions-table";
