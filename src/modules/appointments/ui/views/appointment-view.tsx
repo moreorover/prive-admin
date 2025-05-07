@@ -9,7 +9,7 @@ import { useNewTransactionStoreActions } from "@/modules/transactions/ui/compone
 import AppointmentNotesTable from "@/modules/ui/components/appointment-notes-table/appointment-notes-table";
 import CustomersTable from "@/modules/ui/components/customers-table";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
-import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
+import TransactionsTable from "@/modules/ui/components/transactions-table";
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";
 import {

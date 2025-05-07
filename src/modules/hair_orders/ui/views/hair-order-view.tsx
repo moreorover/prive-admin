@@ -7,7 +7,7 @@ import { useEditHairOrderStoreActions } from "@/modules/hair_orders/ui/component
 import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
 import HairOrderNotesTable from "@/modules/ui/components/hair-order-notes-table/hair-order-notes-table";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
-import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
+import TransactionsTable from "@/modules/ui/components/transactions-table";
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";
 import {
