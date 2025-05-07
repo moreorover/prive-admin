@@ -26,6 +26,11 @@ export const EditHairOrderDrawer = () => {
 		},
 	);
 
+	const { data: customerOptions, isLoading: isLoadingCustomerOptions } =
+		trpc.customers.getAll.useQuery(undefined, {
+			enabled: !!hairOrderId,
+		});
+
 	const editHairOrder = trpc.hairOrders.update.useMutation({
 		onSuccess: () => {
 			utils.hairOrders.getById.invalidate({ id: hairOrderId });
@@ -61,13 +66,20 @@ export const EditHairOrderDrawer = () => {
 			position="right"
 			title="Update HairOrder"
 		>
-			{isLoading || !hairOrder ? (
+			{isLoading ||
+			isLoadingCustomerOptions ||
+			!hairOrder ||
+			!customerOptions ? (
 				<LoaderSkeleton />
 			) : (
 				<HairOrderForm
 					onSubmitAction={onSubmit}
 					onDelete={onDelete}
 					hairOrder={hairOrder}
+					customerOptions={customerOptions.map((c) => ({
+						value: c.id,
+						label: c.name,
+					}))}
 				/>
 			)}
 		</Drawer>

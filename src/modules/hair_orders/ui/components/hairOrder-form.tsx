@@ -1,7 +1,7 @@
 "use client";
 
 import { type HairOrder, hairOrderSchema } from "@/lib/schemas";
-import { Button, NumberInput } from "@mantine/core";
+import { Button, NumberInput, Select } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { Trash2 } from "lucide-react";
@@ -9,12 +9,14 @@ import { zodResolver } from "mantine-form-zod-resolver";
 
 type Props = {
 	hairOrder: HairOrder;
+	customerOptions: { label: string; value: string }[];
 	onSubmitAction: (values: HairOrder) => void;
 	onDelete?: () => void;
 };
 
 export const HairOrderForm = ({
 	hairOrder,
+	customerOptions,
 	onSubmitAction,
 	onDelete,
 }: Props) => {
@@ -59,6 +61,17 @@ export const HairOrderForm = ({
 				required
 				name="weight"
 				suffix="g"
+			/>
+			<Select
+				checkIconPosition="left"
+				data={customerOptions}
+				pb={150}
+				limit={5}
+				label="Customer"
+				placeholder="Pick customer"
+				searchable
+				key={form.key("customerId")}
+				{...form.getInputProps("customerId")}
 			/>
 			<Button fullWidth mt="xl" type="submit">
 				{hairOrder.id ? "Update" : "Create"}
