@@ -2,7 +2,7 @@
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { useNewAppointmentStoreActions } from "@/modules/appointments/ui/components/newAppointmentStore";
-import { AppointmentsTable } from "@/modules/customers/ui/components/appointments-table";
+import AppointmentsTable from "@/modules/ui/components/appointments-table";
 import { trpc } from "@/trpc/client";
 import { Button, Group, Paper, Text, Title } from "@mantine/core";
 import { Suspense } from "react";
@@ -57,9 +57,19 @@ function CustomerAppointmentsSuspense({ customerId }: Props) {
 				</Group>
 			</Group>
 			{appointments.length > 0 ? (
-				<>
-					<AppointmentsTable appointments={appointments} />
-				</>
+				<AppointmentsTable
+					appointments={appointments}
+					columns={["Name", ""]}
+					row={
+						<>
+							<AppointmentsTable.RowName />
+							<AppointmentsTable.RowStartsAt />
+							<AppointmentsTable.RowActions>
+								<AppointmentsTable.RowActionViewAppointment />
+							</AppointmentsTable.RowActions>
+						</>
+					}
+				/>
 			) : (
 				<Text c="gray">No Appointments found.</Text>
 			)}
