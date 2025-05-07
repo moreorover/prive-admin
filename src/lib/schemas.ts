@@ -80,7 +80,7 @@ export const transactionSchema = z.object({
 	}),
 	type: z.enum(["BANK", "CASH", "PAYPAL"]),
 	status: z.enum(["PENDING", "COMPLETED"]),
-	completedDateBy: dateSchema,
+	completedDateBy: z.union([dateSchema, z.date()]),
 	createdAt: z.union([z.string(), z.date(), z.undefined()]),
 });
 
