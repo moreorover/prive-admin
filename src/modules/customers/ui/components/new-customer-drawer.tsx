@@ -1,25 +1,29 @@
 "use client";
-
-import { newCustomerDrawerAtom } from "@/lib/atoms";
 import type { Customer } from "@/lib/schemas";
 import { CustomerForm } from "@/modules/customers/ui/components/customer-form";
+import {
+	useNewCustomerStoreActions,
+	useNewCustomerStoreDrawerIsOpen,
+	useNewCustomerStoreDrawerOnSuccess,
+} from "@/modules/customers/ui/components/newCustomerStore";
 import { trpc } from "@/trpc/client";
 import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { useAtom } from "jotai";
 
 export const NewCustomerDrawer = () => {
-	const [value, setOpen] = useAtom(newCustomerDrawerAtom);
+	const isOpen = useNewCustomerStoreDrawerIsOpen();
+	const { reset } = useNewCustomerStoreActions();
+	const onSuccess = useNewCustomerStoreDrawerOnSuccess();
 
 	const newCustomer = trpc.customers.create.useMutation({
 		onSuccess: () => {
+			onSuccess();
+			reset();
 			notifications.show({
 				color: "green",
 				title: "Success!",
 				message: "Customer created.",
 			});
-			setOpen({ isOpen: false, onCreated: () => {} });
-			value.onCreated();
 		},
 		onError: () => {
 			notifications.show({
@@ -40,8 +44,8 @@ export const NewCustomerDrawer = () => {
 
 	return (
 		<Drawer
-			opened={value.isOpen}
-			onClose={() => setOpen({ isOpen: false, onCreated: () => {} })}
+			opened={isOpen}
+			onClose={reset}
 			position="right"
 			title="Create Customer"
 		>

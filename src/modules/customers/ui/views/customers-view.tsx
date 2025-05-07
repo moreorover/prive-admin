@@ -1,8 +1,8 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { newCustomerDrawerAtom } from "@/lib/atoms";
 import { CustomersTable } from "@/modules/customers/ui/components/customers-table";
+import { useNewCustomerStoreActions } from "@/modules/customers/ui/components/newCustomerStore";
 import { trpc } from "@/trpc/client";
 import {
 	Button,
@@ -15,7 +15,6 @@ import {
 	TextInput,
 	Title,
 } from "@mantine/core";
-import { useSetAtom } from "jotai";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -31,7 +30,7 @@ export const CustomersView = () => {
 
 function CustomersSuspense() {
 	const utils = trpc.useUtils();
-	const showNewCustomerDrawer = useSetAtom(newCustomerDrawerAtom);
+	const { openNewCustomerDrawer } = useNewCustomerStoreActions();
 	const [customers] = trpc.customers.getAll.useSuspenseQuery();
 
 	const [searchTerm, setSearchTerm] = useState("");
@@ -60,9 +59,8 @@ function CustomersSuspense() {
 								/>
 								<Button
 									onClick={() => {
-										showNewCustomerDrawer({
-											isOpen: true,
-											onCreated: () => {
+										openNewCustomerDrawer({
+											onSuccess: () => {
 												utils.customers.getAll.invalidate();
 											},
 										});
