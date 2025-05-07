@@ -13,10 +13,14 @@ import { z } from "zod";
 dayjs.extend(isoWeek);
 
 export const appointmentsRouter = createTRPCRouter({
-	getOne: protectedProcedure
-		.input(z.object({ id: z.string().cuid2() }))
+	getById: protectedProcedure
+		.input(z.object({ id: z.string().cuid2().nullable() }))
 		.query(async ({ input }) => {
 			const { id } = input;
+
+			if (!id) {
+				throw new TRPCError({ code: "BAD_REQUEST", message: "Missing id" });
+			}
 
 			const appointment = await prisma.appointment.findUnique({
 				where: { id },

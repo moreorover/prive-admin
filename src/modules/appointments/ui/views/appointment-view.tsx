@@ -1,10 +1,10 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useAppointmentNoteDrawerStoreActions } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
 import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
+import { useEditAppointmentStoreActions } from "@/modules/appointments/ui/components/editAppointmentStore";
 import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
@@ -26,7 +26,6 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
-import { useSetAtom } from "jotai";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -45,7 +44,7 @@ export const AppointmentView = ({ appointmentId }: Props) => {
 
 function AppointmentSuspense({ appointmentId }: Props) {
 	const utils = trpc.useUtils();
-	const [appointment] = trpc.appointments.getOne.useSuspenseQuery({
+	const [appointment] = trpc.appointments.getById.useSuspenseQuery({
 		id: appointmentId,
 	});
 
@@ -116,7 +115,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 		}, // Red
 	];
 
-	const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
+	const { openEditAppointmentDrawer } = useEditAppointmentStoreActions();
 	const { openDrawer: openNewAppointmentNoteDrawer } =
 		useAppointmentNoteDrawerStoreActions();
 
@@ -165,12 +164,17 @@ function AppointmentSuspense({ appointmentId }: Props) {
 								<Title order={4}>Appointment Details</Title>
 								<Button
 									onClick={() => {
-										showEditAppointmentDrawer({ isOpen: true, appointment });
+										openEditAppointmentDrawer({
+											appointmentId: appointment.id,
+										});
 									}}
 								>
 									Edit
 								</Button>
 							</Group>
+							<Text size="sm" mt="xs">
+								<strong>Title:</strong> {appointment.name}
+							</Text>
 							<Text size="sm" mt="xs">
 								<strong>Scheduled At:</strong>{" "}
 								{dayjs(appointment.startsAt).format("DD MMMM YYYY HH:mm")}

@@ -1,5 +1,4 @@
 import type {
-	Appointment,
 	Customer,
 	Order,
 	OrderItem,
@@ -102,14 +101,6 @@ export const newAppointmentDrawerAtom = atom<{
 	clientId: string;
 	onCreated: () => void;
 }>({ isOpen: false, clientId: "", onCreated: () => {} });
-
-export const editAppointmentDrawerAtom = atom<{
-	isOpen: boolean;
-	appointment: Appointment;
-}>({
-	isOpen: false,
-	appointment: { name: "", startsAt: dayjs().toDate() },
-});
 
 export const personnelPickerModalAtom = atom<{
 	isOpen: boolean;
