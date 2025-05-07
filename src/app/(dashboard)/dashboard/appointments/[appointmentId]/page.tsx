@@ -11,7 +11,7 @@ type Props = {
 export default async function Page({ params }: Props) {
 	const { appointmentId } = await params;
 
-	void trpc.appointments.getOne.prefetch({ id: appointmentId });
+	void trpc.appointments.getById.prefetch({ id: appointmentId });
 	void trpc.customers.getClientByAppointmentId.prefetch({ appointmentId });
 	void trpc.customers.getPersonnelByAppointmentId.prefetch({ appointmentId });
 	void trpc.customers.getAvailablePersonnelByAppointmentId.prefetch({
