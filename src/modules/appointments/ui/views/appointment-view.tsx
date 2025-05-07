@@ -3,10 +3,9 @@
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useNewAppointmentNoteStoreActions } from "@/modules/appointment_notes/ui/components/newAppointmentNoteDrawerStore";
-import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
 import { useEditAppointmentStoreActions } from "@/modules/appointments/ui/components/editAppointmentStore";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
-import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
+import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
 import AppointmentNotesTable from "@/modules/ui/components/appointment-notes-table/appointment-notes-table";
 import CustomersTable from "@/modules/ui/components/customers-table";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
@@ -14,12 +13,14 @@ import TransactionsTable from "@/modules/ui/components/transactions-table/transa
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";
 import {
+	ActionIcon,
 	Button,
 	Center,
 	Container,
 	Grid,
 	GridCol,
 	Group,
+	Menu,
 	Paper,
 	Stack,
 	Text,
@@ -27,6 +28,8 @@ import {
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
+import { GripVertical } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -118,6 +121,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 
 	const { openEditAppointmentDrawer } = useEditAppointmentStoreActions();
 	const { openNewAppointmentNoteDrawer } = useNewAppointmentNoteStoreActions();
+	const { openNewTransactionDrawer } = useNewTransactionStoreActions();
 
 	const createHairAssignmentMutation =
 		trpc.appointments.createHairAssignment.useMutation({
@@ -147,10 +151,39 @@ function AppointmentSuspense({ appointmentId }: Props) {
 						<Paper withBorder p="md" radius="md" shadow="sm">
 							<Group justify="space-between" gap="sm">
 								<Title order={4}>Client</Title>
-								<AppointmentTransactionMenu
-									appointmentId={appointmentId}
-									customer={appointment.client}
-								/>
+								<Menu shadow="md" width={200}>
+									<Menu.Target>
+										<ActionIcon variant="transparent">
+											<GripVertical size={18} />
+										</ActionIcon>
+									</Menu.Target>
+
+									<Menu.Dropdown>
+										<Menu.Item
+											component={Link}
+											href={`/dashboard/customers/${appointment.client.id}`}
+										>
+											View
+										</Menu.Item>
+										<Menu.Item
+											onClick={() =>
+												openNewTransactionDrawer({
+													relations: {
+														customerId: appointment.client.id,
+														appointmentId,
+													},
+													onSuccess: () =>
+														utils.transactions.getByAppointmentId.invalidate({
+															appointmentId,
+															includeCustomer: true,
+														}),
+												})
+											}
+										>
+											New Transaction
+										</Menu.Item>
+									</Menu.Dropdown>
+								</Menu>
 							</Group>
 							<Text size="sm" mt="xs">
 								<strong>Name:</strong> {appointment.client.name}
@@ -293,10 +326,6 @@ function AppointmentSuspense({ appointmentId }: Props) {
 									personnelOptions={personnelOptions}
 								/>
 							</Group>
-							<PersonnelTable
-								appointmentId={appointmentId}
-								personnel={personnel}
-							/>
 							<CustomersTable
 								customers={personnel}
 								columns={["Name", "Phone Number", ""]}
