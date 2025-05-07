@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
+// TODO: review this
 function useDateRange(): {
 	start: string;
 	end: string;

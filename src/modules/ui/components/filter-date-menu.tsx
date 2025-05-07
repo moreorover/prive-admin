@@ -32,6 +32,7 @@ interface Props {
 	onSelected: (dateRange: [string, string]) => void;
 }
 
+// TODO: review this
 export const FilterDateMenu = ({ range, rangeInText, onSelected }: Props) => {
 	const [open, setOpen] = useState(false);
 
