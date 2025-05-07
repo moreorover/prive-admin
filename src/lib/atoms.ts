@@ -8,17 +8,6 @@ import type {
 import dayjs from "dayjs";
 import { atom } from "jotai";
 
-export const newCustomerDrawerAtom = atom<{
-	isOpen: boolean;
-	onCreated: () => void;
-}>({ isOpen: false, onCreated: () => {} });
-
-export const editCustomerDrawerAtom = atom<{
-	isOpen: boolean;
-	customer: Customer;
-	onUpdated: () => void;
-}>({ isOpen: false, customer: { name: "" }, onUpdated: () => {} });
-
 export const newProductDrawerAtom = atom<{
 	isOpen: boolean;
 	onCreated: () => void;

@@ -32,10 +32,14 @@ export const customersRouter = createTRPCRouter({
 
 			return c;
 		}),
-	getOne: protectedProcedure
-		.input(z.object({ id: z.string().cuid2() }))
+	getById: protectedProcedure
+		.input(z.object({ id: z.string().cuid2().nullable() }))
 		.query(async ({ input }) => {
 			const { id } = input;
+
+			if (!id) {
+				throw new TRPCError({ code: "BAD_REQUEST", message: "Missing id" });
+			}
 
 			const customer = await prisma.customer.findUnique({
 				where: { id },

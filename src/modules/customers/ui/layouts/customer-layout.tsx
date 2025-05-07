@@ -1,7 +1,7 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { editCustomerDrawerAtom } from "@/lib/atoms";
+import { useEditCustomerStoreActions } from "@/modules/customers/ui/components/editCustomerStore";
 import { trpc } from "@/trpc/client";
 import {
 	Button,
@@ -13,7 +13,6 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
-import { useSetAtom } from "jotai";
 import Link from "next/link";
 import { type ReactNode, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -46,9 +45,11 @@ interface Props {
 
 function CustomerSuspense({ customerId }: Props) {
 	const utils = trpc.useUtils();
-	const [customer] = trpc.customers.getOne.useSuspenseQuery({ id: customerId });
+	const [customer] = trpc.customers.getById.useSuspenseQuery({
+		id: customerId,
+	});
 
-	const showUpdateCustomerDrawer = useSetAtom(editCustomerDrawerAtom);
+	const { openEditCustomerDrawer } = useEditCustomerStoreActions();
 
 	return (
 		<Stack>
@@ -60,11 +61,10 @@ function CustomerSuspense({ customerId }: Props) {
 					</Text>
 					<Button
 						onClick={() => {
-							showUpdateCustomerDrawer({
-								isOpen: true,
-								customer,
-								onUpdated: () => {
-									utils.customers.getOne.invalidate({ id: customerId });
+							openEditCustomerDrawer({
+								customerId: customer.id,
+								onSuccess: () => {
+									utils.customers.getById.invalidate({ id: customerId });
 								},
 							});
 						}}

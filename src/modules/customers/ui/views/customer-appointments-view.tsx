@@ -24,7 +24,9 @@ export const CustomerAppointmentsView = ({ customerId }: Props) => {
 
 function CustomerAppointmentsSuspense({ customerId }: Props) {
 	const utils = trpc.useUtils();
-	const [customer] = trpc.customers.getOne.useSuspenseQuery({ id: customerId });
+	const [customer] = trpc.customers.getById.useSuspenseQuery({
+		id: customerId,
+	});
 	const [appointments] =
 		trpc.appointments.getAppointmentsByCustomerId.useSuspenseQuery({
 			customerId,
