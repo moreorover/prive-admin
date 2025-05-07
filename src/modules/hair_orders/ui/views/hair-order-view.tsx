@@ -4,8 +4,8 @@ import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { formatAmount } from "@/lib/helpers";
 import { useNewHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/newHairOrderNoteDrawerStore";
 import { useEditHairOrderStoreActions } from "@/modules/hair_orders/ui/components/editHairOrderStore";
-import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table";
 import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
+import HairOrderNotesTable from "@/modules/ui/components/hair-order-notes-table/hair-order-notes-table";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
 import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
 import { trpc } from "@/trpc/client";
@@ -360,7 +360,33 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 								New
 							</Button>
 						</Group>
-						<HairOrderNotesTable hairOrderId={hairOrderId} notes={notes} />
+						<HairOrderNotesTable
+							notes={notes}
+							columns={["Created At", "Note", "Creator", ""]}
+							row={
+								<>
+									<HairOrderNotesTable.RowCreatedAt />
+									<HairOrderNotesTable.RowNote />
+									<HairOrderNotesTable.RowCreatedBy />
+									<HairOrderNotesTable.RowActions>
+										<HairOrderNotesTable.RowActionUpdate
+											onSuccess={() =>
+												utils.hairOrderNotes.getNotesByHairOrderId.invalidate({
+													hairOrderId,
+												})
+											}
+										/>
+										<HairOrderNotesTable.RowActionDelete
+											onSuccess={() =>
+												utils.hairOrderNotes.getNotesByHairOrderId.invalidate({
+													hairOrderId,
+												})
+											}
+										/>
+									</HairOrderNotesTable.RowActions>
+								</>
+							}
+						/>
 					</Paper>
 					<Paper withBorder p="md" radius="md" shadow="sm">
 						<Group justify="space-between" gap="sm">
