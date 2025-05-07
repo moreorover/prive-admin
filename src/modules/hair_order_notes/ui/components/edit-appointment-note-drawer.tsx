@@ -2,13 +2,13 @@
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import type { HairOrderNote } from "@/lib/schemas";
-import { HairOrderNoteForm } from "@/modules/hair_order_notes/ui/components/hair-order-note-form";
 import {
 	useEditHairOrderNoteStoreActions,
 	useEditHairOrderNoteStoreDrawerHairOrderNoteId,
 	useEditHairOrderNoteStoreDrawerIsOpen,
 	useEditHairOrderNoteStoreDrawerOnSuccess,
-} from "@/modules/hair_order_notes/ui/editHairOrderNoteDrawerStore";
+} from "@/modules/hair_order_notes/ui/components/editHairOrderNoteDrawerStore";
+import { HairOrderNoteForm } from "@/modules/hair_order_notes/ui/components/hair-order-note-form";
 import { trpc } from "@/trpc/client";
 import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";

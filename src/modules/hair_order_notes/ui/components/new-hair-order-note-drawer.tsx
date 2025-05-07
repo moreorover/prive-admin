@@ -7,7 +7,7 @@ import {
 	useNewHairOrderNoteStoreDrawerIsOpen,
 	useNewHairOrderNoteStoreDrawerOnSuccess,
 	useNewHairOrderNoteStoreDrawerRelations,
-} from "@/modules/hair_order_notes/ui/newHairOrderNoteDrawerStore";
+} from "@/modules/hair_order_notes/ui/components/newHairOrderNoteDrawerStore";
 import { trpc } from "@/trpc/client";
 import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
