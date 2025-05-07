@@ -46,7 +46,7 @@ export const AppointmentTransactionMenu = ({
 								isOpen: true,
 								customer,
 								onUpdated: () => {
-									utils.appointments.getOne.invalidate({
+									utils.appointments.getById.invalidate({
 										id: appointmentId,
 									});
 								},
