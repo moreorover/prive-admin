@@ -96,12 +96,6 @@ export const editOrderItemDrawerAtom = atom<{
 	onUpdated: () => {},
 });
 
-export const newAppointmentDrawerAtom = atom<{
-	isOpen: boolean;
-	clientId: string;
-	onCreated: () => void;
-}>({ isOpen: false, clientId: "", onCreated: () => {} });
-
 export const personnelPickerModalAtom = atom<{
 	isOpen: boolean;
 	personnel: Customer[];
