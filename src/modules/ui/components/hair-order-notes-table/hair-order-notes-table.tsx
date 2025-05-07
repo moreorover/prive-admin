@@ -1,5 +1,5 @@
 import { useDeleteHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/components/deleteHairOrderNoteStore";
-import { useEditHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/editHairOrderNoteDrawerStore";
+import { useEditHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/components/editHairOrderNoteDrawerStore";
 import { ActionIcon, Menu, Table, Text } from "@mantine/core";
 import dayjs from "dayjs";
 import { GripVertical } from "lucide-react";

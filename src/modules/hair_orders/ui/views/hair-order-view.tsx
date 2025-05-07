@@ -2,7 +2,7 @@
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { formatAmount } from "@/lib/helpers";
-import { useNewHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/newHairOrderNoteDrawerStore";
+import { useNewHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/components/newHairOrderNoteDrawerStore";
 import { useEditHairOrderStoreActions } from "@/modules/hair_orders/ui/components/editHairOrderStore";
 import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
 import HairOrderNotesTable from "@/modules/ui/components/hair-order-notes-table/hair-order-notes-table";
