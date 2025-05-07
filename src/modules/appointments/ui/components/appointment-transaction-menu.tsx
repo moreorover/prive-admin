@@ -1,7 +1,8 @@
 "use client";
 
-import { editCustomerDrawerAtom, newTransactionDrawerAtom } from "@/lib/atoms";
+import { editCustomerDrawerAtom } from "@/lib/atoms";
 import type { Customer } from "@/lib/schemas";
+import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
 import { trpc } from "@/trpc/client";
 import { Button, Menu } from "@mantine/core";
 import { useSetAtom } from "jotai/index";
@@ -18,7 +19,7 @@ export const AppointmentTransactionMenu = ({
 }: Props) => {
 	const utils = trpc.useUtils();
 
-	const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
+	const { openNewTransactionDrawer } = useNewTransactionStoreActions();
 	const showEditCustomerDrawer = useSetAtom(editCustomerDrawerAtom);
 
 	const onSuccess = () => {
@@ -57,11 +58,11 @@ export const AppointmentTransactionMenu = ({
 					<Menu.Label>Transactions</Menu.Label>
 					<Menu.Item
 						onClick={() => {
-							showNewTransactionDrawer({
-								isOpen: true,
-								orderId: null,
-								appointmentId,
-								customerId: customer.id ?? "",
+							openNewTransactionDrawer({
+								relations: {
+									appointmentId,
+									customerId: customer.id ?? "",
+								},
 								onCreated: onSuccess,
 							});
 						}}

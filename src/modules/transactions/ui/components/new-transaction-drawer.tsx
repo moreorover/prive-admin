@@ -1,16 +1,23 @@
 "use client";
 
-import { newTransactionDrawerAtom } from "@/lib/atoms";
 import type { Transaction } from "@/lib/schemas";
+import {
+	useNewTransactionStoreActions,
+	useNewTransactionStoreDrawerIsOpen,
+	useNewTransactionStoreDrawerOnCreated,
+	useNewTransactionStoreDrawerRelations,
+} from "@/modules/transactions/ui/components/newTransactionStore";
 import { TransactionForm } from "@/modules/transactions/ui/components/transaction-form";
 import { trpc } from "@/trpc/client";
 import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
-import { useAtom } from "jotai/index";
 
 export const NewTransactionDrawer = () => {
-	const [value, setOpen] = useAtom(newTransactionDrawerAtom);
+	const isOpen = useNewTransactionStoreDrawerIsOpen();
+	const relations = useNewTransactionStoreDrawerRelations();
+	const { reset } = useNewTransactionStoreActions();
+	const onCreated = useNewTransactionStoreDrawerOnCreated();
 
 	const newTransaction = trpc.transactions.createTransaction.useMutation({
 		onSuccess: () => {
@@ -19,14 +26,8 @@ export const NewTransactionDrawer = () => {
 				title: "Success!",
 				message: "Transaction created.",
 			});
-			value.onCreated();
-			setOpen({
-				isOpen: false,
-				orderId: null,
-				appointmentId: null,
-				customerId: "",
-				onCreated: () => {},
-			});
+			onCreated();
+			reset();
 		},
 		onError: () => {
 			notifications.show({
@@ -40,26 +41,15 @@ export const NewTransactionDrawer = () => {
 	async function onSubmit(data: Transaction) {
 		newTransaction.mutate({
 			transaction: data,
-			appointmentId: value.appointmentId,
-			orderId: value.orderId,
-			customerId: value.customerId,
-			hairOrderId: value.hairOrderId,
+			...relations,
 		});
 	}
 
 	return (
 		<>
 			<Drawer
-				opened={value.isOpen}
-				onClose={() =>
-					setOpen({
-						isOpen: false,
-						orderId: null,
-						appointmentId: null,
-						customerId: "",
-						onCreated: () => {},
-					})
-				}
+				opened={isOpen}
+				onClose={reset}
 				position="right"
 				title="Create Transaction"
 			>

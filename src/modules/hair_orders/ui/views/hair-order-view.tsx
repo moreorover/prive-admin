@@ -1,11 +1,11 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { newTransactionDrawerAtom } from "@/lib/atoms";
 import { formatAmount } from "@/lib/helpers";
 import { openTypedContextModal } from "@/lib/modal-helper";
 import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
 import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table";
+import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
 import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
 import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
@@ -31,7 +31,6 @@ import {
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
-import { useSetAtom } from "jotai/index";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -100,7 +99,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 		(state) => state.openDrawer,
 	);
 
-	const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
+	const { openNewTransactionDrawer } = useNewTransactionStoreActions();
 
 	const updateHairOrderMutation = trpc.hairOrders.update.useMutation({
 		onSuccess: () => {
@@ -406,11 +405,12 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 							<Button
 								disabled={!hairOrder.customer}
 								onClick={() => {
-									showNewTransactionDrawer({
-										isOpen: true,
-										hairOrderId,
-										// biome-ignore lint/style/noNonNullAssertion: <explanation>
-										customerId: hairOrder.customer!.id,
+									openNewTransactionDrawer({
+										relations: {
+											hairOrderId,
+											// biome-ignore lint/style/noNonNullAssertion: <explanation>
+											customerId: hairOrder.customer!.id,
+										},
 										onCreated: () => {
 											utils.transactions.getByHairOrderId.invalidate({
 												hairOrderId,
