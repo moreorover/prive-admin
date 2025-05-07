@@ -1,3 +1,4 @@
+import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
 import { ActionIcon, Menu, Table, Text } from "@mantine/core";
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
@@ -97,9 +98,30 @@ function CustomersTableRowActionViewCustomer() {
 	);
 }
 
+function CustomersTableRowActionNewTransaction({
+	appointmentId,
+	onSuccess,
+}: { appointmentId?: string; onSuccess: () => void }) {
+	const { customer } = useCustomersTableRowContext();
+	const { openNewTransactionDrawer } = useNewTransactionStoreActions();
+	return (
+		<Menu.Item
+			onClick={() =>
+				openNewTransactionDrawer({
+					relations: { customerId: customer.id, appointmentId: appointmentId },
+					onSuccess,
+				})
+			}
+		>
+			New Transaction
+		</Menu.Item>
+	);
+}
+
 CustomersTable.RowName = Name;
 CustomersTable.RowPhoneNumber = PhoneNumber;
 CustomersTable.RowActions = CustomersTableRowActions;
 CustomersTable.RowActionViewCustomer = CustomersTableRowActionViewCustomer;
+CustomersTable.RowActionNewTransaction = CustomersTableRowActionNewTransaction;
 
 export default CustomersTable;

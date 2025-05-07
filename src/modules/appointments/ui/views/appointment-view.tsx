@@ -8,6 +8,7 @@ import { useEditAppointmentStoreActions } from "@/modules/appointments/ui/compon
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
 import AppointmentNotesTable from "@/modules/ui/components/appointment-notes-table/appointment-notes-table";
+import CustomersTable from "@/modules/ui/components/customers-table";
 import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
 import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
 import { trpc } from "@/trpc/client";
@@ -295,6 +296,28 @@ function AppointmentSuspense({ appointmentId }: Props) {
 							<PersonnelTable
 								appointmentId={appointmentId}
 								personnel={personnel}
+							/>
+							<CustomersTable
+								customers={personnel}
+								columns={["Name", "Phone Number", ""]}
+								row={
+									<>
+										<CustomersTable.RowName />
+										<CustomersTable.RowPhoneNumber />
+										<CustomersTable.RowActions>
+											<CustomersTable.RowActionViewCustomer />
+											<CustomersTable.RowActionNewTransaction
+												appointmentId={appointmentId}
+												onSuccess={() =>
+													utils.transactions.getByAppointmentId.invalidate({
+														appointmentId,
+														includeCustomer: true,
+													})
+												}
+											/>
+										</CustomersTable.RowActions>
+									</>
+								}
 							/>
 						</Paper>
 						<Paper withBorder p="md" radius="md" shadow="sm">
