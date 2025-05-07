@@ -2,27 +2,31 @@
 
 import type { HairOrderNote } from "@/lib/schemas";
 import { HairOrderNoteForm } from "@/modules/hair_order_notes/ui/components/hair-order-note-form";
-import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
+import {
+	useNewHairOrderNoteStoreActions,
+	useNewHairOrderNoteStoreDrawerIsOpen,
+	useNewHairOrderNoteStoreDrawerOnSuccess,
+	useNewHairOrderNoteStoreDrawerRelations,
+} from "@/modules/hair_order_notes/ui/components/newHairOrderNoteDrawerStore";
 import { trpc } from "@/trpc/client";
 import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 
 export const NewHairOrderNoteDrawer = () => {
-	const isOpen = useHairOrderNoteDrawerStore((state) => state.isOpen);
-	const hairOrderId = useHairOrderNoteDrawerStore((state) => state.hairOrderId);
-	const hairOrderNote = useHairOrderNoteDrawerStore((state) => state.note);
-	const reset = useHairOrderNoteDrawerStore((state) => state.reset);
-	const onCreated = useHairOrderNoteDrawerStore((state) => state.onCreated);
+	const isOpen = useNewHairOrderNoteStoreDrawerIsOpen();
+	const relations = useNewHairOrderNoteStoreDrawerRelations();
+	const { reset } = useNewHairOrderNoteStoreActions();
+	const onSuccess = useNewHairOrderNoteStoreDrawerOnSuccess();
 
 	const newHairOrderNote = trpc.hairOrderNotes.create.useMutation({
 		onSuccess: () => {
+			onSuccess?.();
+			reset();
 			notifications.show({
 				color: "green",
 				title: "Success!",
 				message: "Hair Order Note created.",
 			});
-			reset();
-			onCreated?.();
 		},
 		onError: () => {
 			notifications.show({
@@ -34,7 +38,7 @@ export const NewHairOrderNoteDrawer = () => {
 	});
 
 	async function onSubmit(data: HairOrderNote) {
-		newHairOrderNote.mutate({ hairOrderId, note: data });
+		newHairOrderNote.mutate({ note: data, ...relations });
 	}
 
 	function onDelete() {
@@ -43,7 +47,7 @@ export const NewHairOrderNoteDrawer = () => {
 
 	return (
 		<Drawer
-			opened={isOpen && onCreated !== undefined}
+			opened={isOpen}
 			onClose={() => reset()}
 			position="right"
 			title="Create Hair Order Note"
@@ -51,7 +55,7 @@ export const NewHairOrderNoteDrawer = () => {
 			<HairOrderNoteForm
 				onSubmitAction={onSubmit}
 				onDelete={onDelete}
-				hairOrderNote={hairOrderNote}
+				hairOrderNote={{ note: "" }}
 			/>
 		</Drawer>
 	);

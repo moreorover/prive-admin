@@ -10,21 +10,29 @@ import { zodResolver } from "mantine-form-zod-resolver";
 import { useState } from "react";
 import { z } from "zod";
 
-const dateSchema = z.date({
-	required_error: "Date is required",
-	invalid_type_error: "Expected a valid Date",
-});
+const isoDateRegex =
+	/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2}))?$/;
+
+const dateSchema = z
+	.string({
+		required_error: "Date is required",
+		invalid_type_error: "Expected a valid date string",
+	})
+	.refine((value) => isoDateRegex.test(value), {
+		message: "Invalid ISO date format",
+	});
 
 const schema = z.object({
 	dateRange: z.tuple([dateSchema, dateSchema]),
 });
 
 interface Props {
-	range: [Date, Date];
+	range: [string, string];
 	rangeInText: string;
-	onSelected: (dateRange: [Date, Date]) => void;
+	onSelected: (dateRange: [string, string]) => void;
 }
 
+// TODO: review this
 export const FilterDateMenu = ({ range, rangeInText, onSelected }: Props) => {
 	const [open, setOpen] = useState(false);
 
@@ -62,8 +70,8 @@ export const FilterDateMenu = ({ range, rangeInText, onSelected }: Props) => {
 					<Menu.Item
 						onClick={() => {
 							onSelected([
-								dayjs().startOf("day").toDate(),
-								dayjs().endOf("day").toDate(),
+								dayjs().startOf("day").toString(),
+								dayjs().endOf("day").toString(),
 							]);
 						}}
 					>
@@ -72,8 +80,8 @@ export const FilterDateMenu = ({ range, rangeInText, onSelected }: Props) => {
 					<Menu.Item
 						onClick={() => {
 							onSelected([
-								dayjs().add(1, "day").startOf("day").toDate(),
-								dayjs().add(1, "day").endOf("day").toDate(),
+								dayjs().add(1, "day").startOf("day").toString(),
+								dayjs().add(1, "day").endOf("day").toString(),
 							]);
 						}}
 					>
@@ -82,8 +90,8 @@ export const FilterDateMenu = ({ range, rangeInText, onSelected }: Props) => {
 					<Menu.Item
 						onClick={() => {
 							onSelected([
-								dayjs().subtract(1, "day").startOf("day").toDate(),
-								dayjs().subtract(1, "day").endOf("day").toDate(),
+								dayjs().subtract(1, "day").startOf("day").toString(),
+								dayjs().subtract(1, "day").endOf("day").toString(),
 							]);
 						}}
 					>

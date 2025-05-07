@@ -25,8 +25,7 @@ export const EditProductVariantDrawer = () => {
 				message: "Product Variant updated.",
 			});
 		},
-		onError: (e) => {
-			console.log({ e });
+		onError: () => {
 			notifications.show({
 				color: "red",
 				title: "Failed to update Product Variant",

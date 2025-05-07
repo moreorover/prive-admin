@@ -2,7 +2,14 @@ import dayjs from "dayjs";
 import { useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
-function useDateRange() {
+// TODO: review this
+function useDateRange(): {
+	start: string;
+	end: string;
+	range: [string, string];
+	rangeText: string;
+	createQueryString: (range: [string, string]) => string;
+} {
 	const searchParams = useSearchParams();
 	const startParam = searchParams.get("start");
 	const endParam = searchParams.get("end");
@@ -11,7 +18,7 @@ function useDateRange() {
 	const end = startParam && endParam ? dayjs(endParam) : dayjs().endOf("week");
 
 	const createQueryString = useCallback(
-		(range: [Date, Date]) => {
+		(range: [string, string]) => {
 			const [start, end] = range;
 			const params = new URLSearchParams(searchParams.toString());
 			params.set("start", dayjs(start).format("YYYY-MM-DD"));
@@ -25,7 +32,10 @@ function useDateRange() {
 	return {
 		start: start.format("YYYY-MM-DD"),
 		end: end.format("YYYY-MM-DD"),
-		range: [start.toDate(), end.toDate()] as [Date, Date],
+		range: [
+			start.format("YYYY-MM-DD").toString(),
+			end.format("YYYY-MM-DD").toString(),
+		],
 		rangeText: start.isSame(end, "year")
 			? `${start.format("MMM D")} — ${end.format("MMM D, YYYY")}` // Same year, keep the end date's year
 			: `${start.format("MMM D, YYYY")} — ${end.format("MMM D, YYYY")}`, // Different years, show both

@@ -1,10 +1,12 @@
 "use client";
+
+import { LoaderSkeleton } from "@/components/loader-skeleton";
 import type { Transaction } from "@/lib/schemas";
 import {
 	useEditTransactionStoreActions,
 	useEditTransactionStoreDrawerIsOpen,
-	useEditTransactionStoreDrawerOnUpdated,
-	useEditTransactionStoreDrawerTransaction,
+	useEditTransactionStoreDrawerOnSuccess,
+	useEditTransactionStoreDrawerTransactionId,
 } from "@/modules/transactions/ui/components/editTransactionStore";
 import { TransactionForm } from "@/modules/transactions/ui/components/transaction-form";
 import { trpc } from "@/trpc/client";
@@ -12,20 +14,29 @@ import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 
 export const EditTransactionDrawer = () => {
+	const utils = trpc.useUtils();
 	const isOpen = useEditTransactionStoreDrawerIsOpen();
-	const onUpdated = useEditTransactionStoreDrawerOnUpdated();
+	const onSuccess = useEditTransactionStoreDrawerOnSuccess();
 	const { reset } = useEditTransactionStoreActions();
-	const transaction = useEditTransactionStoreDrawerTransaction();
+	const transactionId = useEditTransactionStoreDrawerTransactionId();
+
+	const { data: transaction, isLoading } = trpc.transactions.getById.useQuery(
+		{ id: transactionId },
+		{
+			enabled: !!transactionId,
+		},
+	);
 
 	const editTransaction = trpc.transactions.update.useMutation({
 		onSuccess: () => {
+			utils.transactions.getById.invalidate({ id: transactionId });
+			onSuccess();
+			reset();
 			notifications.show({
 				color: "green",
 				title: "Success!",
 				message: "Transaction updated.",
 			});
-			onUpdated();
-			reset();
 		},
 		onError: () => {
 			notifications.show({
@@ -46,15 +57,19 @@ export const EditTransactionDrawer = () => {
 		<>
 			<Drawer
 				opened={isOpen}
-				onClose={() => reset()}
+				onClose={reset}
 				position="right"
 				title="Update Transaction"
 			>
-				<TransactionForm
-					onSubmitAction={onSubmit}
-					transaction={transaction}
-					disabled={editTransaction.isPending}
-				/>
+				{isLoading || !transaction ? (
+					<LoaderSkeleton />
+				) : (
+					<TransactionForm
+						onSubmitAction={onSubmit}
+						transaction={transaction}
+						disabled={editTransaction.isPending}
+					/>
+				)}
 			</Drawer>
 		</>
 	);

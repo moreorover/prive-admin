@@ -3,7 +3,7 @@
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { aggregateTransactions } from "@/modules/transactions/hooks/chartUtils";
 import { FilterDateMenu } from "@/modules/ui/components/filter-date-menu";
-import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
+import TransactionsTable from "@/modules/ui/components/transactions-table";
 import useDateRange from "@/modules/ui/hooks/useDateRange";
 import { trpc } from "@/trpc/client";
 import { LineChart } from "@mantine/charts";

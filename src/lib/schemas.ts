@@ -1,4 +1,15 @@
+import dayjs from "dayjs";
 import { z } from "zod";
+
+const dateSchema = z
+	.string({
+		required_error: "Date is required",
+		invalid_type_error: "Expected a valid date string",
+	})
+	.refine((value) => !Number.isNaN(Date.parse(value)), {
+		message: "Invalid date format",
+	})
+	.transform((value) => dayjs(value).toISOString());
 
 export const customerSchema = z.object({
 	id: z.string().cuid2().optional(),
@@ -44,7 +55,7 @@ export const orderSchema = z.object({
 	customerId: z.string().cuid2(),
 	status: z.enum(["PENDING", "COMPLETED", "CANCELLED"]),
 	type: z.enum(["PURCHASE", "SALE"]),
-	placedAt: z.date(),
+	placedAt: z.union([dateSchema, z.date()]),
 });
 
 export type Order = z.infer<typeof orderSchema>;
@@ -69,7 +80,7 @@ export const transactionSchema = z.object({
 	}),
 	type: z.enum(["BANK", "CASH", "PAYPAL"]),
 	status: z.enum(["PENDING", "COMPLETED"]),
-	completedDateBy: z.union([z.string(), z.date()]),
+	completedDateBy: z.union([dateSchema, z.date()]),
 	createdAt: z.union([z.string(), z.date(), z.undefined()]),
 });
 
@@ -78,7 +89,7 @@ export type Transaction = z.infer<typeof transactionSchema>;
 export const appointmentSchema = z.object({
 	id: z.string().cuid2().optional(),
 	name: z.string(),
-	startsAt: z.date(),
+	startsAt: z.union([dateSchema, z.date()]),
 });
 
 export type Appointment = z.infer<typeof appointmentSchema>;
@@ -92,8 +103,8 @@ export type AppointmentNote = z.infer<typeof appointmentNoteSchema>;
 
 export const hairOrderSchema = z.object({
 	id: z.string().cuid2().optional(),
-	placedAt: z.union([z.string(), z.date(), z.null()]),
-	arrivedAt: z.union([z.string(), z.date(), z.null()]),
+	placedAt: z.union([dateSchema, z.null(), z.date()]),
+	arrivedAt: z.union([dateSchema, z.null(), z.date()]),
 	customerId: z.string().cuid2().nullish(),
 	weightReceived: z.number(),
 	weightUsed: z.number(),

@@ -1,5 +1,4 @@
 import type {
-	Appointment,
 	Customer,
 	Order,
 	OrderItem,
@@ -8,17 +7,6 @@ import type {
 } from "@/lib/schemas";
 import dayjs from "dayjs";
 import { atom } from "jotai";
-
-export const newCustomerDrawerAtom = atom<{
-	isOpen: boolean;
-	onCreated: () => void;
-}>({ isOpen: false, onCreated: () => {} });
-
-export const editCustomerDrawerAtom = atom<{
-	isOpen: boolean;
-	customer: Customer;
-	onUpdated: () => void;
-}>({ isOpen: false, customer: { name: "" }, onUpdated: () => {} });
 
 export const newProductDrawerAtom = atom<{
 	isOpen: boolean;
@@ -95,36 +83,6 @@ export const editOrderItemDrawerAtom = atom<{
 	},
 	productOptions: [],
 	onUpdated: () => {},
-});
-
-export const newTransactionDrawerAtom = atom<{
-	isOpen: boolean;
-	orderId?: string | null;
-	appointmentId?: string | null;
-	hairOrderId?: string | null;
-	customerId: string;
-	onCreated: () => void;
-}>({
-	isOpen: false,
-	appointmentId: undefined,
-	orderId: undefined,
-	hairOrderId: undefined,
-	customerId: "",
-	onCreated: () => {},
-});
-
-export const newAppointmentDrawerAtom = atom<{
-	isOpen: boolean;
-	clientId: string;
-	onCreated: () => void;
-}>({ isOpen: false, clientId: "", onCreated: () => {} });
-
-export const editAppointmentDrawerAtom = atom<{
-	isOpen: boolean;
-	appointment: Appointment;
-}>({
-	isOpen: false,
-	appointment: { name: "", startsAt: dayjs().toDate() },
 });
 
 export const personnelPickerModalAtom = atom<{

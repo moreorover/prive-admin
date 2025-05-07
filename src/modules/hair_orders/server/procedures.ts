@@ -28,9 +28,14 @@ export const hairOrderRouter = createTRPCRouter({
 			});
 		}),
 	getById: protectedProcedure
-		.input(z.object({ id: z.string().cuid2() }))
+		.input(z.object({ id: z.string().cuid2().nullable() }))
 		.query(async ({ input }) => {
 			const { id } = input;
+
+			if (!id) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Missing id" });
+			}
+
 			const hairOrder = await prisma.hairOrder.findFirst({
 				where: { id },
 				include: { createdBy: true, customer: true },

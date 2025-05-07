@@ -1,11 +1,9 @@
-import type { Transaction } from "@/lib/schemas";
-import dayjs from "dayjs";
 import { create } from "zustand";
 
 type State = {
 	isOpen: boolean;
-	transaction: Transaction;
-	onUpdated: () => void;
+	transactionId: string | null;
+	onSuccess: () => void;
 };
 
 type Actions = {
@@ -15,15 +13,8 @@ type Actions = {
 
 const initialState: State = {
 	isOpen: false,
-	transaction: {
-		name: "",
-		notes: "",
-		amount: 0,
-		type: "CASH",
-		status: "PENDING",
-		completedDateBy: dayjs().toDate(),
-	},
-	onUpdated: () => {},
+	transactionId: null,
+	onSuccess: () => {},
 };
 
 export const useEditTransactionStore = create<State & { actions: Actions }>(
@@ -42,11 +33,11 @@ export const useEditTransactionStore = create<State & { actions: Actions }>(
 export const useEditTransactionStoreDrawerIsOpen = () =>
 	useEditTransactionStore((state) => state.isOpen);
 
-export const useEditTransactionStoreDrawerTransaction = () =>
-	useEditTransactionStore((state) => state.transaction);
+export const useEditTransactionStoreDrawerTransactionId = () =>
+	useEditTransactionStore((state) => state.transactionId);
 
-export const useEditTransactionStoreDrawerOnUpdated = () =>
-	useEditTransactionStore((state) => state.onUpdated);
+export const useEditTransactionStoreDrawerOnSuccess = () =>
+	useEditTransactionStore((state) => state.onSuccess);
 
 export const useEditTransactionStoreActions = () =>
 	useEditTransactionStore((state) => state.actions);

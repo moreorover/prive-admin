@@ -13,10 +13,14 @@ import { z } from "zod";
 dayjs.extend(isoWeek);
 
 export const appointmentsRouter = createTRPCRouter({
-	getOne: protectedProcedure
-		.input(z.object({ id: z.string().cuid2() }))
+	getById: protectedProcedure
+		.input(z.object({ id: z.string().cuid2().nullable() }))
 		.query(async ({ input }) => {
 			const { id } = input;
+
+			if (!id) {
+				throw new TRPCError({ code: "BAD_REQUEST", message: "Missing id" });
+			}
 
 			const appointment = await prisma.appointment.findUnique({
 				where: { id },
@@ -254,6 +258,26 @@ export const appointmentsRouter = createTRPCRouter({
 			});
 
 			return hairAssignments;
+		}),
+	getHairAssignmentById: protectedProcedure
+		.input(z.object({ hairAssignmentId: z.string().cuid2().nullable() }))
+		.query(async ({ input }) => {
+			const { hairAssignmentId } = input;
+
+			if (!hairAssignmentId) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			const hairAssignment = await prisma.hairAssignedToAppointment.findFirst({
+				where: { id: hairAssignmentId },
+				include: { hairOrder: true },
+			});
+
+			if (!hairAssignment) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			return hairAssignment;
 		}),
 	deleteHairAssignment: protectedProcedure
 		.input(z.object({ hairAssignmentId: z.string().cuid2() }))

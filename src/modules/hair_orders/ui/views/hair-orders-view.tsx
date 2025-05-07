@@ -1,8 +1,8 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import HairOrdersTable from "@/modules/hair_orders/ui/components/hair-orders-table";
 import { FilterDateMenu } from "@/modules/ui/components/filter-date-menu";
+import HairOrdersTable from "@/modules/ui/components/hair-orders-table";
 import useDateRange from "@/modules/ui/hooks/useDateRange";
 import { trpc } from "@/trpc/client";
 import {
@@ -116,7 +116,28 @@ function HairOrdersSuspense({ startDate, endDate }: Props) {
 			<Stack gap="lg">
 				<Paper withBorder p="md" radius="md" shadow="sm">
 					{hairOrders.length > 0 ? (
-						<HairOrdersTable hairOrders={hairOrders} />
+						<HairOrdersTable
+							hairOrders={hairOrders}
+							columns={[
+								"Unique ID",
+								"Placed At",
+								"Arrived At",
+								"Status",
+								"Created By",
+							]}
+							row={
+								<>
+									<HairOrdersTable.RowUID />
+									<HairOrdersTable.RowPlacedAt />
+									<HairOrdersTable.RowArrivedAt />
+									<HairOrdersTable.RowStatus />
+									<HairOrdersTable.RowCreatedBy />
+									<HairOrdersTable.RowActions>
+										<HairOrdersTable.RowActionViewHairOrder />
+									</HairOrdersTable.RowActions>
+								</>
+							}
+						/>
 					) : (
 						<Text c="gray">
 							No hair orders found for following dates: {startDate} {endDate}.

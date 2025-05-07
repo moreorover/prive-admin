@@ -1,7 +1,7 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { AppointmentsTable } from "@/modules/appointments/ui/components/appointments-table";
+import AppointmentsTable from "@/modules/ui/components/appointments-table";
 import { FilterDateMenu } from "@/modules/ui/components/filter-date-menu";
 import useDateRange from "@/modules/ui/hooks/useDateRange";
 import { trpc } from "@/trpc/client";
@@ -83,16 +83,27 @@ function AppointmentsSuspense({ startDate, endDate }: Props) {
 		});
 
 	return (
-		<>
-			<Stack gap="lg">
-				<Paper withBorder p="md" radius="md" shadow="sm">
-					{appointments.length > 0 ? (
-						<AppointmentsTable appointments={appointments} />
-					) : (
-						<Text c="gray">No appointments found for this week.</Text>
-					)}
-				</Paper>
-			</Stack>
-		</>
+		<Stack gap="lg">
+			<Paper withBorder p="md" radius="md" shadow="sm">
+				{appointments.length > 0 ? (
+					<AppointmentsTable
+						appointments={appointments}
+						columns={["Title", "Client", "Starts at", ""]}
+						row={
+							<>
+								<AppointmentsTable.RowName />
+								<AppointmentsTable.RowClientName />
+								<AppointmentsTable.RowStartsAt />
+								<AppointmentsTable.RowActions>
+									<AppointmentsTable.RowActionViewAppointment />
+								</AppointmentsTable.RowActions>
+							</>
+						}
+					/>
+				) : (
+					<Text c="gray">No appointments found for this week.</Text>
+				)}
+			</Paper>
+		</Stack>
 	);
 }

@@ -1,35 +1,35 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { editAppointmentDrawerAtom } from "@/lib/atoms";
 import { openTypedContextModal } from "@/lib/modal-helper";
-import { useAppointmentNoteDrawerStoreActions } from "@/modules/appointment_notes/ui/appointment-note-drawer-store";
-import { AppointmentTransactionMenu } from "@/modules/appointments/ui/components/appointment-transaction-menu";
-import { useEditHairAssignmentToAppointmentStoreActions } from "@/modules/appointments/ui/components/editHairAssignementToAppointmentStore";
-import AppointmentNotesTable from "@/modules/appointments/ui/components/notes-table";
+import { useNewAppointmentNoteStoreActions } from "@/modules/appointment_notes/ui/components/newAppointmentNoteDrawerStore";
+import { useEditAppointmentStoreActions } from "@/modules/appointments/ui/components/editAppointmentStore";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
-import PersonnelTable from "@/modules/appointments/ui/components/personnel-table";
-import { useEditTransactionStoreActions } from "@/modules/transactions/ui/components/editTransactionStore";
-import HairUsedTable from "@/modules/ui/components/hair-used-table/hair-used-table";
-import TransactionsTable from "@/modules/ui/components/transactions-table/transactions-table";
+import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
+import AppointmentNotesTable from "@/modules/ui/components/appointment-notes-table";
+import CustomersTable from "@/modules/ui/components/customers-table";
+import HairUsedTable from "@/modules/ui/components/hair-used-table";
+import TransactionsTable from "@/modules/ui/components/transactions-table";
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";
 import {
+	ActionIcon,
 	Button,
 	Center,
 	Container,
 	Grid,
 	GridCol,
 	Group,
+	Menu,
 	Paper,
 	Stack,
 	Text,
 	Title,
 } from "@mantine/core";
-import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
-import { useSetAtom } from "jotai";
+import { GripVertical } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -48,7 +48,7 @@ export const AppointmentView = ({ appointmentId }: Props) => {
 
 function AppointmentSuspense({ appointmentId }: Props) {
 	const utils = trpc.useUtils();
-	const [appointment] = trpc.appointments.getOne.useSuspenseQuery({
+	const [appointment] = trpc.appointments.getById.useSuspenseQuery({
 		id: appointmentId,
 	});
 
@@ -119,9 +119,9 @@ function AppointmentSuspense({ appointmentId }: Props) {
 		}, // Red
 	];
 
-	const showEditAppointmentDrawer = useSetAtom(editAppointmentDrawerAtom);
-	const { openDrawer: openNewAppointmentNoteDrawer } =
-		useAppointmentNoteDrawerStoreActions();
+	const { openEditAppointmentDrawer } = useEditAppointmentStoreActions();
+	const { openNewAppointmentNoteDrawer } = useNewAppointmentNoteStoreActions();
+	const { openNewTransactionDrawer } = useNewTransactionStoreActions();
 
 	const createHairAssignmentMutation =
 		trpc.appointments.createHairAssignment.useMutation({
@@ -143,87 +143,6 @@ function AppointmentSuspense({ appointmentId }: Props) {
 			},
 		});
 
-	const { openEditHairAssignmentDrawer } =
-		useEditHairAssignmentToAppointmentStoreActions();
-
-	const deleteHairAssignment =
-		trpc.appointments.deleteHairAssignment.useMutation({
-			onSuccess: () => {
-				notifications.show({
-					color: "green",
-					title: "Success!",
-					message: "Hair assignment deleted.",
-				});
-				utils.appointments.getHairAssignments.invalidate({
-					appointmentId,
-				});
-			},
-			onError: () => {
-				notifications.show({
-					color: "red",
-					title: "Failed to delete Hair assignment",
-					message: "Please try again.",
-				});
-			},
-		});
-
-	const openDeleteModalForHairAssignment = (hairAssignmentId: string) =>
-		modals.openConfirmModal({
-			title: "Delete Hair Assignment?",
-			centered: true,
-			children: (
-				<Text size="sm">
-					Are you sure you want to delete this hair assignment?
-				</Text>
-			),
-			labels: { confirm: "Delete Hair Assignment", cancel: "Cancel" },
-			confirmProps: { color: "red" },
-			onCancel: () => {},
-			onConfirm: () =>
-				deleteHairAssignment.mutate({
-					hairAssignmentId,
-				}),
-		});
-
-	const openDeleteModalForTransaction = (transactionId: string) =>
-		modals.openConfirmModal({
-			title: "Delete Transaction?",
-			centered: true,
-			children: (
-				<Text size="sm">Are you sure you want to delete this transaction?</Text>
-			),
-			labels: { confirm: "Delete Transaction", cancel: "Cancel" },
-			confirmProps: { color: "red" },
-			onCancel: () => {},
-			onConfirm: () =>
-				deleteTransaction.mutate({
-					id: transactionId,
-				}),
-		});
-
-	const deleteTransaction = trpc.transactions.delete.useMutation({
-		onSuccess: () => {
-			notifications.show({
-				color: "green",
-				title: "Success!",
-				message: "Transaction deleted.",
-			});
-			utils.transactions.getByAppointmentId.invalidate({
-				appointmentId,
-				includeCustomer: true,
-			});
-		},
-		onError: () => {
-			notifications.show({
-				color: "red",
-				title: "Failed to delete transaction",
-				message: "Please try again.",
-			});
-		},
-	});
-
-	const { openEditTransactionDrawer } = useEditTransactionStoreActions();
-
 	return (
 		<Container size="xl">
 			<Grid grow>
@@ -232,10 +151,39 @@ function AppointmentSuspense({ appointmentId }: Props) {
 						<Paper withBorder p="md" radius="md" shadow="sm">
 							<Group justify="space-between" gap="sm">
 								<Title order={4}>Client</Title>
-								<AppointmentTransactionMenu
-									appointmentId={appointmentId}
-									customer={appointment.client}
-								/>
+								<Menu shadow="md" width={200}>
+									<Menu.Target>
+										<ActionIcon variant="transparent">
+											<GripVertical size={18} />
+										</ActionIcon>
+									</Menu.Target>
+
+									<Menu.Dropdown>
+										<Menu.Item
+											component={Link}
+											href={`/dashboard/customers/${appointment.client.id}`}
+										>
+											View
+										</Menu.Item>
+										<Menu.Item
+											onClick={() =>
+												openNewTransactionDrawer({
+													relations: {
+														customerId: appointment.client.id,
+														appointmentId,
+													},
+													onSuccess: () =>
+														utils.transactions.getByAppointmentId.invalidate({
+															appointmentId,
+															includeCustomer: true,
+														}),
+												})
+											}
+										>
+											New Transaction
+										</Menu.Item>
+									</Menu.Dropdown>
+								</Menu>
 							</Group>
 							<Text size="sm" mt="xs">
 								<strong>Name:</strong> {appointment.client.name}
@@ -249,12 +197,17 @@ function AppointmentSuspense({ appointmentId }: Props) {
 								<Title order={4}>Appointment Details</Title>
 								<Button
 									onClick={() => {
-										showEditAppointmentDrawer({ isOpen: true, appointment });
+										openEditAppointmentDrawer({
+											appointmentId: appointment.id,
+										});
 									}}
 								>
 									Edit
 								</Button>
 							</Group>
+							<Text size="sm" mt="xs">
+								<strong>Title:</strong> {appointment.name}
+							</Text>
 							<Text size="sm" mt="xs">
 								<strong>Scheduled At:</strong>{" "}
 								{dayjs(appointment.startsAt).format("DD MMMM YYYY HH:mm")}
@@ -318,8 +271,10 @@ function AppointmentSuspense({ appointmentId }: Props) {
 								<Button
 									onClick={() => {
 										openNewAppointmentNoteDrawer({
-											appointmentId,
-											onCreated: () => {
+											relations: {
+												appointmentId,
+											},
+											onSuccess: () => {
 												utils.appointmentNotes.getNotesByAppointmentId.invalidate(
 													{
 														appointmentId,
@@ -333,8 +288,34 @@ function AppointmentSuspense({ appointmentId }: Props) {
 								</Button>
 							</Group>
 							<AppointmentNotesTable
-								appointmentId={appointmentId}
 								notes={notes}
+								columns={["Created At", "Note", ""]}
+								row={
+									<>
+										<AppointmentNotesTable.RowCreatedAt />
+										<AppointmentNotesTable.RowNote />
+										<AppointmentNotesTable.RowActions>
+											<AppointmentNotesTable.RowActionUpdate
+												onSuccess={() =>
+													utils.appointmentNotes.getNotesByAppointmentId.invalidate(
+														{
+															appointmentId,
+														},
+													)
+												}
+											/>
+											<AppointmentNotesTable.RowActionDelete
+												onSuccess={() =>
+													utils.appointmentNotes.getNotesByAppointmentId.invalidate(
+														{
+															appointmentId,
+														},
+													)
+												}
+											/>
+										</AppointmentNotesTable.RowActions>
+									</>
+								}
 							/>
 						</Paper>
 						<Paper withBorder p="md" radius="md" shadow="sm">
@@ -345,9 +326,27 @@ function AppointmentSuspense({ appointmentId }: Props) {
 									personnelOptions={personnelOptions}
 								/>
 							</Group>
-							<PersonnelTable
-								appointmentId={appointmentId}
-								personnel={personnel}
+							<CustomersTable
+								customers={personnel}
+								columns={["Name", "Phone Number", ""]}
+								row={
+									<>
+										<CustomersTable.RowName />
+										<CustomersTable.RowPhoneNumber />
+										<CustomersTable.RowActions>
+											<CustomersTable.RowActionViewCustomer />
+											<CustomersTable.RowActionNewTransaction
+												appointmentId={appointmentId}
+												onSuccess={() =>
+													utils.transactions.getByAppointmentId.invalidate({
+														appointmentId,
+														includeCustomer: true,
+													})
+												}
+											/>
+										</CustomersTable.RowActions>
+									</>
+								}
 							/>
 						</Paper>
 						<Paper withBorder p="md" radius="md" shadow="sm">
@@ -374,24 +373,20 @@ function AppointmentSuspense({ appointmentId }: Props) {
 										<TransactionsTable.RowActions>
 											<TransactionsTable.RowActionViewTransaction />
 											<TransactionsTable.RowActionUpdate
-												onAction={(id) => {
-													const transaction = transactions.find(
-														(t) => t.id === id,
-													);
-													if (!transaction) return;
-													openEditTransactionDrawer({
-														transaction,
-														onUpdated: () => {
-															utils.transactions.getByAppointmentId.invalidate({
-																appointmentId,
-																includeCustomer: true,
-															});
-														},
-													});
-												}}
+												onUpdated={() =>
+													utils.transactions.getByAppointmentId.invalidate({
+														appointmentId,
+														includeCustomer: true,
+													})
+												}
 											/>
 											<TransactionsTable.RowActionDelete
-												onAction={(id) => openDeleteModalForTransaction(id)}
+												onDeleted={() =>
+													utils.transactions.getByAppointmentId.invalidate({
+														appointmentId,
+														includeCustomer: true,
+													})
+												}
 											/>
 										</TransactionsTable.RowActions>
 									</>
@@ -432,33 +427,18 @@ function AppointmentSuspense({ appointmentId }: Props) {
 										<HairUsedTable.RowActions>
 											<HairUsedTable.RowActionViewHairOrder />
 											<HairUsedTable.RowActionUpdate
-												onAction={(id) => {
-													const hairAssignment = hairAssignments.find(
-														(h) => h.id === id,
-													);
-
-													if (!hairAssignment) return;
-
-													openEditHairAssignmentDrawer({
-														hairAssignment: {
-															...hairAssignment,
-															soldFor: hairAssignment.soldFor / 100,
-														},
-														maxWeight: Math.abs(
-															hairAssignment.hairOrder.weightReceived -
-																hairAssignment.hairOrder.weightUsed +
-																hairAssignment.weightInGrams,
-														),
-														onUpdated: () => {
-															utils.appointments.getHairAssignments.invalidate({
-																appointmentId,
-															});
-														},
-													});
-												}}
+												onUpdated={() =>
+													utils.appointments.getHairAssignments.invalidate({
+														appointmentId,
+													})
+												}
 											/>
 											<HairUsedTable.RowActionDelete
-												onAction={(id) => openDeleteModalForHairAssignment(id)}
+												onDeleted={() =>
+													utils.appointments.getHairAssignments.invalidate({
+														appointmentId,
+													})
+												}
 											/>
 										</HairUsedTable.RowActions>
 									</>

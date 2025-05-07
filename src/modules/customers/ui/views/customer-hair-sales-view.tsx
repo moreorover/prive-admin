@@ -1,7 +1,7 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { HairSalesTable } from "@/modules/customers/ui/components/hair-sales-table";
+import HairSalesTable from "@/modules/ui/components/hair-sales-table";
 import { trpc } from "@/trpc/client";
 import { Box, Button, Group, Paper, Text, Title } from "@mantine/core";
 import { modals } from "@mantine/modals";
@@ -67,7 +67,29 @@ function CustomerHairSalesSuspense({ customerId }: Props) {
 					<Button onClick={openCreateHairSalesOrderModal}>New</Button>
 				</Group>
 			</Group>
-			<HairSalesTable hairSales={hairSales} />
+			<HairSalesTable
+				hairSales={hairSales}
+				columns={[
+					"Placed At",
+					"Weight",
+					"Price per Gram",
+					"Total",
+					"Created by",
+					"",
+				]}
+				row={
+					<>
+						<HairSalesTable.RowPlacedAt />
+						<HairSalesTable.RowWeightInGrams />
+						<HairSalesTable.RowPricePerGram />
+						<HairSalesTable.RowTotal />
+						<HairSalesTable.RowCreatedBy />
+						<HairSalesTable.RowActions>
+							<HairSalesTable.RowActionViewHairSale />
+						</HairSalesTable.RowActions>
+					</>
+				}
+			/>
 
 			{/* Show message when no results are found */}
 			{hairSales.length === 0 && (

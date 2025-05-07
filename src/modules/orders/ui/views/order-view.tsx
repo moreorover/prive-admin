@@ -1,11 +1,8 @@
 "use client";
 
-import {
-	editOrderDrawerAtom,
-	newOrderItemDrawerAtom,
-	newTransactionDrawerAtom,
-} from "@/lib/atoms";
+import { editOrderDrawerAtom, newOrderItemDrawerAtom } from "@/lib/atoms";
 import { OrderItemsTable } from "@/modules/order_item/ui/components/order-items-table";
+import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
 import { trpc } from "@/trpc/client";
 import {
 	Badge,
@@ -28,7 +25,7 @@ interface Props {
 export const OrderView = ({ orderId }: Props) => {
 	const showEditOrderDrawer = useSetAtom(editOrderDrawerAtom);
 	const showNewOrderItemDrawer = useSetAtom(newOrderItemDrawerAtom);
-	const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
+	const { openNewTransactionDrawer } = useNewTransactionStoreActions();
 	const utils = trpc.useUtils();
 	const [order] = trpc.orders.getOne.useSuspenseQuery({ id: orderId });
 	const [orderItems] = trpc.orderItems.getByOrderId.useSuspenseQuery({
@@ -129,11 +126,12 @@ export const OrderView = ({ orderId }: Props) => {
 						<Group gap="sm">
 							<Button
 								onClick={() => {
-									showNewTransactionDrawer({
-										isOpen: true,
-										orderId: orderId,
-										customerId: order.customer.id,
-										onCreated: () => {
+									openNewTransactionDrawer({
+										relations: {
+											orderId: orderId,
+											customerId: order.customer.id,
+										},
+										onSuccess: () => {
 											utils.transactions.getByOrderId.invalidate({
 												orderId,
 												includeCustomer: true,

@@ -1,11 +1,10 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { newAppointmentDrawerAtom } from "@/lib/atoms";
-import { AppointmentsTable } from "@/modules/customers/ui/components/appointments-table";
+import { useNewAppointmentStoreActions } from "@/modules/appointments/ui/components/newAppointmentStore";
+import AppointmentsTable from "@/modules/ui/components/appointments-table";
 import { trpc } from "@/trpc/client";
 import { Button, Group, Paper, Text, Title } from "@mantine/core";
-import { useSetAtom } from "jotai";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -25,12 +24,14 @@ export const CustomerAppointmentsView = ({ customerId }: Props) => {
 
 function CustomerAppointmentsSuspense({ customerId }: Props) {
 	const utils = trpc.useUtils();
-	const [customer] = trpc.customers.getOne.useSuspenseQuery({ id: customerId });
+	const [customer] = trpc.customers.getById.useSuspenseQuery({
+		id: customerId,
+	});
 	const [appointments] =
 		trpc.appointments.getAppointmentsByCustomerId.useSuspenseQuery({
 			customerId,
 		});
-	const showCreateAppointmentDrawer = useSetAtom(newAppointmentDrawerAtom);
+	const { openNewAppointmentDrawer } = useNewAppointmentStoreActions();
 
 	return (
 		<Paper withBorder p="md" radius="md" shadow="sm">
@@ -39,10 +40,11 @@ function CustomerAppointmentsSuspense({ customerId }: Props) {
 				<Group>
 					<Button
 						onClick={() => {
-							showCreateAppointmentDrawer({
-								isOpen: true,
-								clientId: customer.id,
-								onCreated: () => {
+							openNewAppointmentDrawer({
+								relations: {
+									clientId: customer.id,
+								},
+								onSuccess: () => {
 									utils.appointments.getAppointmentsByCustomerId.invalidate({
 										customerId,
 									});
@@ -55,9 +57,19 @@ function CustomerAppointmentsSuspense({ customerId }: Props) {
 				</Group>
 			</Group>
 			{appointments.length > 0 ? (
-				<>
-					<AppointmentsTable appointments={appointments} />
-				</>
+				<AppointmentsTable
+					appointments={appointments}
+					columns={["Name", ""]}
+					row={
+						<>
+							<AppointmentsTable.RowName />
+							<AppointmentsTable.RowStartsAt />
+							<AppointmentsTable.RowActions>
+								<AppointmentsTable.RowActionViewAppointment />
+							</AppointmentsTable.RowActions>
+						</>
+					}
+				/>
 			) : (
 				<Text c="gray">No Appointments found.</Text>
 			)}
