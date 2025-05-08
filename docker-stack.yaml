@@ -11,13 +11,6 @@ services:
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--entrypoints.web.proxyProtocol.insecure=true"
-      - "--entrypoints.websecure.proxyProtocol.insecure=true"
-      - "--entrypoints.web.forwardedHeaders.trustedIPs=0.0.0.0/0,::/0"
-      - "--entrypoints.websecure.forwardedHeaders.trustedIPs=0.0.0.0/0,::/0"
-      # Explicitly enable X-Forwarded headers
-      - "--accesslog=true"
-      - "--accesslog.fields.headers.names.X-Forwarded-For=keep"
     ports:
       - "80:80"
       - "8080:8080" # Traefik panel
@@ -25,7 +18,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to Docker events
       - letsencrypt:/letsencrypt
-    network_mode: "host" # Use host networking to preserve client IPs
 
   db:
     image: postgres:17.2
@@ -51,9 +43,6 @@ services:
       - "traefik.http.routers.prive.rule=Host(`${DOMAIN_NAME}`)"
       - "traefik.http.routers.prive.entrypoints=websecure"
       - "traefik.http.routers.prive.tls.certresolver=myresolver"
-      # Add this middleware to properly pass client IPs
-      - "traefik.http.middlewares.ipwhitelist.ipwhitelist.sourceRange=0.0.0.0/0"
-      - "traefik.http.routers.prive.middlewares=ipwhitelist@docker"
     environment:
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DATABASE}
