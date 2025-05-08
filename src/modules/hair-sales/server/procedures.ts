@@ -83,6 +83,45 @@ export const hairSalesRouter = createTRPCRouter({
 
 			return hairAssignments;
 		}),
+	getHairAssignmentById: protectedProcedure
+		.input(z.object({ id: z.string().cuid2().nullable() }))
+		.query(async ({ input }) => {
+			const { id } = input;
+
+			if (!id) {
+				throw new TRPCError({ code: "BAD_REQUEST", message: "Missing id" });
+			}
+
+			const hairAssignment = await prisma.hairAssignedToSale.findFirst({
+				where: { id },
+				include: { hairOrder: true },
+			});
+
+			if (!hairAssignment) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			return hairAssignment;
+		}),
+	deleteHairAssignmentById: protectedProcedure
+		.input(z.object({ id: z.string().cuid2().nullable() }))
+		.mutation(async ({ input }) => {
+			const { id } = input;
+
+			if (!id) {
+				throw new TRPCError({ code: "BAD_REQUEST", message: "Missing id" });
+			}
+
+			const hairAssignment = await prisma.hairAssignedToSale.delete({
+				where: { id },
+			});
+
+			if (!hairAssignment) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			return hairAssignment;
+		}),
 	getHairSaleOptions: protectedProcedure
 		.input(z.object({ hairSaleId: z.string().cuid2() }))
 		.query(async ({ input }) => {

@@ -1,12 +1,12 @@
 "use client";
 
+import { LoaderSkeleton } from "@/components/loader-skeleton";
 import type { HairAssignedToSale } from "@/lib/schemas";
 import {
 	useEditHairAssignmentToSaleStoreActions,
-	useEditHairAssignmentToSaleStoreDrawerHairAssignment,
+	useEditHairAssignmentToSaleStoreDrawerHairAssignmentId,
 	useEditHairAssignmentToSaleStoreDrawerIsOpen,
-	useEditHairAssignmentToSaleStoreDrawerMaxWeight,
-	useEditHairAssignmentToSaleStoreDrawerOnUpdated,
+	useEditHairAssignmentToSaleStoreDrawerOnSuccess,
 } from "@/modules/hair-sales/ui/components/editHairAssignementToSaleStore";
 import { HairAssignmentToSaleForm } from "@/modules/hair-sales/ui/components/hair-assignment-to-sale-form";
 import { trpc } from "@/trpc/client";
@@ -16,19 +16,27 @@ import { notifications } from "@mantine/notifications";
 export const EditHairAssignmentToSaleDrawer = () => {
 	const isOpen = useEditHairAssignmentToSaleStoreDrawerIsOpen();
 	const { reset } = useEditHairAssignmentToSaleStoreActions();
-	const onUpdated = useEditHairAssignmentToSaleStoreDrawerOnUpdated();
-	const hairAssignment = useEditHairAssignmentToSaleStoreDrawerHairAssignment();
-	const maxWeight = useEditHairAssignmentToSaleStoreDrawerMaxWeight();
+	const onSuccess = useEditHairAssignmentToSaleStoreDrawerOnSuccess();
+	const hairAssignmentId =
+		useEditHairAssignmentToSaleStoreDrawerHairAssignmentId();
+
+	const { data: hairAssignment, isLoading } =
+		trpc.hairSales.getHairAssignmentById.useQuery(
+			{ id: hairAssignmentId },
+			{
+				enabled: !!hairAssignmentId,
+			},
+		);
 
 	const editHairAssignment = trpc.hairSales.updateHairAssignment.useMutation({
 		onSuccess: () => {
+			onSuccess();
+			reset();
 			notifications.show({
 				color: "green",
 				title: "Success!",
 				message: "Hair assignment updated.",
 			});
-			onUpdated();
-			reset();
 		},
 		onError: (e) => {
 			console.error(e);
@@ -54,12 +62,20 @@ export const EditHairAssignmentToSaleDrawer = () => {
 				position="right"
 				title="Update Hair Assignment"
 			>
-				<HairAssignmentToSaleForm
-					onSubmitAction={onSubmit}
-					hairAssignment={hairAssignment}
-					maxWeight={maxWeight}
-					disabled={editHairAssignment.isPending}
-				/>
+				{isLoading || !hairAssignment ? (
+					<LoaderSkeleton />
+				) : (
+					<HairAssignmentToSaleForm
+						onSubmitAction={onSubmit}
+						hairAssignment={hairAssignment}
+						maxWeight={
+							hairAssignment.hairOrder.weightReceived -
+							hairAssignment.hairOrder.weightUsed +
+							hairAssignment.weightInGrams
+						}
+						disabled={editHairAssignment.isPending}
+					/>
+				)}
 			</Drawer>
 		</>
 	);
