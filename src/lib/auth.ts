@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
 import { cache } from "react";
 
@@ -12,6 +13,7 @@ export const auth = betterAuth({
 		enabled: true,
 		autoSignIn: false,
 	},
+	plugins: [nextCookies()],
 });
 
 export const getSession = cache(async () => {
