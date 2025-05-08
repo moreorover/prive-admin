@@ -1,11 +1,9 @@
-import type { HairAssignedToSale } from "@/lib/schemas";
 import { create } from "zustand";
 
 type State = {
 	isOpen: boolean;
-	hairAssignment: HairAssignedToSale;
-	maxWeight: number;
-	onUpdated: () => void;
+	hairAssignmentId: string | null;
+	onSuccess: () => void;
 };
 
 type Actions = {
@@ -15,15 +13,8 @@ type Actions = {
 
 const initialState: State = {
 	isOpen: false,
-	hairAssignment: {
-		id: "",
-		hairOrderId: "",
-		hairSaleId: "",
-		weightInGrams: 0,
-		soldFor: 0,
-	},
-	maxWeight: 0,
-	onUpdated: () => {},
+	hairAssignmentId: null,
+	onSuccess: () => {},
 };
 
 export const useEditHairAssignmentToSaleStore = create<
@@ -42,14 +33,11 @@ export const useEditHairAssignmentToSaleStore = create<
 export const useEditHairAssignmentToSaleStoreDrawerIsOpen = () =>
 	useEditHairAssignmentToSaleStore((state) => state.isOpen);
 
-export const useEditHairAssignmentToSaleStoreDrawerMaxWeight = () =>
-	useEditHairAssignmentToSaleStore((state) => state.maxWeight);
+export const useEditHairAssignmentToSaleStoreDrawerHairAssignmentId = () =>
+	useEditHairAssignmentToSaleStore((state) => state.hairAssignmentId);
 
-export const useEditHairAssignmentToSaleStoreDrawerHairAssignment = () =>
-	useEditHairAssignmentToSaleStore((state) => state.hairAssignment);
-
-export const useEditHairAssignmentToSaleStoreDrawerOnUpdated = () =>
-	useEditHairAssignmentToSaleStore((state) => state.onUpdated);
+export const useEditHairAssignmentToSaleStoreDrawerOnSuccess = () =>
+	useEditHairAssignmentToSaleStore((state) => state.onSuccess);
 
 export const useEditHairAssignmentToSaleStoreActions = () =>
 	useEditHairAssignmentToSaleStore((state) => state.actions);

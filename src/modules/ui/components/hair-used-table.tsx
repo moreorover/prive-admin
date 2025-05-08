@@ -1,6 +1,8 @@
 import { formatAmount } from "@/lib/helpers";
 import { useDeleteHairAssignmentToAppointmentStoreActions } from "@/modules/appointments/ui/components/deleteHairAssignementToAppointmentStore";
 import { useEditHairAssignmentToAppointmentStoreActions } from "@/modules/appointments/ui/components/editHairAssignementToAppointmentStore";
+import { useDeleteHairAssignmentToSaleStoreActions } from "@/modules/hair-sales/ui/components/deleteHairAssignementToSaleStore";
+import { useEditHairAssignmentToSaleStoreActions } from "@/modules/hair-sales/ui/components/editHairAssignementToSaleStore";
 import { ActionIcon, Group, Menu, Table, Text, Tooltip } from "@mantine/core";
 import { GripVertical, TriangleAlertIcon } from "lucide-react";
 import Link from "next/link";
@@ -222,6 +224,48 @@ function HairUsedTableRowActionUpdate({
 	);
 }
 
+function HairUsedSaleTableRowActionUpdate({
+	onSuccess,
+}: { onSuccess: () => void }) {
+	const { hair } = useHairUsedTableRowContext();
+
+	const { openEditHairAssignmentDrawer } =
+		useEditHairAssignmentToSaleStoreActions();
+
+	return (
+		<Menu.Item
+			onClick={() =>
+				openEditHairAssignmentDrawer({
+					hairAssignmentId: hair.id,
+					onSuccess,
+				})
+			}
+		>
+			Update
+		</Menu.Item>
+	);
+}
+
+function HairUsedSaleTableRowActionDelete({
+	onDeleted,
+}: { onDeleted: () => void }) {
+	const { hair } = useHairUsedTableRowContext();
+	const { openDeleteHairAssignmentDrawer } =
+		useDeleteHairAssignmentToSaleStoreActions();
+	return (
+		<Menu.Item
+			onClick={() =>
+				openDeleteHairAssignmentDrawer({
+					hairAssignmentId: hair.id,
+					onSuccess: onDeleted,
+				})
+			}
+		>
+			Delete
+		</Menu.Item>
+	);
+}
+
 HairUsedTable.RowWeight = HairUsedTableRowWeight;
 HairUsedTable.RowTotal = HairUsedTableRowTotal;
 HairUsedTable.RowSoldFor = HairUsedTableRowSoldFor;
@@ -232,5 +276,7 @@ HairUsedTable.RowActionViewHairOrder = HairUsedTableRowActionViewHairOrder;
 HairUsedTable.RowActionViewHairSale = HairUsedTableRowActionViewHairSale;
 HairUsedTable.RowActionUpdate = HairUsedTableRowActionUpdate;
 HairUsedTable.RowActionDelete = HairUsedTableRowActionDelete;
+HairUsedTable.RowActionUpdateSale = HairUsedSaleTableRowActionUpdate;
+HairUsedTable.RowActionDeleteSale = HairUsedSaleTableRowActionDelete;
 
 export default HairUsedTable;

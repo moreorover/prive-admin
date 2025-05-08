@@ -203,8 +203,8 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 										<HairUsedTable.RowProfit />
 										<HairUsedTable.RowActions>
 											<HairUsedTable.RowActionViewHairOrder />
-											<HairUsedTable.RowActionUpdate
-												onUpdated={() => {
+											<HairUsedTable.RowActionUpdateSale
+												onSuccess={() => {
 													utils.hairSales.getHairAssignments.invalidate({
 														hairSaleId,
 													});
@@ -213,7 +213,7 @@ function HairSaleSuspense({ hairSaleId }: Props) {
 													});
 												}}
 											/>
-											<HairUsedTable.RowActionDelete
+											<HairUsedTable.RowActionDeleteSale
 												onDeleted={() => {
 													utils.hairSales.getById.invalidate({ hairSaleId });
 													utils.hairSales.getHairAssignments.invalidate({
