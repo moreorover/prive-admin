@@ -57,6 +57,5 @@ services:
 
 volumes:
   letsencrypt:
-  rabbitmq_data:
   postgres_data:
     driver: local
