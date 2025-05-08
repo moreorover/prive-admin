@@ -149,6 +149,7 @@ export default function UserCard(props: Props) {
 										<Icon icon="lucide:laptop" width={16} height={16} />
 									)}
 									<Text size="sm">
+										{s.ipAddress && `${s.ipAddress}, `}
 										{osName}, {browserName}
 									</Text>
 									<Button
