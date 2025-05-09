@@ -51,7 +51,6 @@ export const transactionsRouter = createTRPCRouter({
 						gte: startOfWeek.toDate(),
 						lte: endOfWeek.toDate(),
 					},
-					hairOrderId: null,
 					orderId: null,
 				},
 				orderBy: {
@@ -121,38 +120,17 @@ export const transactionsRouter = createTRPCRouter({
 				},
 			});
 		}),
-	getByHairOrderId: protectedProcedure
-		.input(
-			z.object({
-				hairOrderId: z.string().cuid2().nullable(),
-				includeCustomer: z.boolean(),
-			}),
-		)
-		.query(async ({ input }) => {
-			const { hairOrderId, includeCustomer } = input;
-
-			return prisma.transaction.findMany({
-				where: {
-					hairOrderId,
-				},
-				include: {
-					customer: includeCustomer,
-				},
-			});
-		}),
 	createTransaction: protectedProcedure
 		.input(
 			z.object({
 				transaction: transactionSchema,
 				appointmentId: z.string().cuid2().nullish(),
 				orderId: z.string().cuid2().nullish(),
-				hairOrderId: z.string().cuid2().nullish(),
 				customerId: z.string().cuid2(),
 			}),
 		)
 		.mutation(async ({ input }) => {
-			const { transaction, appointmentId, orderId, hairOrderId, customerId } =
-				input;
+			const { transaction, appointmentId, orderId, customerId } = input;
 
 			const c = await prisma.transaction.create({
 				data: {
@@ -164,7 +142,6 @@ export const transactionsRouter = createTRPCRouter({
 					completedDateBy: transaction.completedDateBy,
 					appointmentId,
 					orderId,
-					hairOrderId,
 					customerId,
 				},
 			});

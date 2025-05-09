@@ -99,13 +99,6 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 				utils.hairOrders.getHairSales.invalidate({
 					hairOrderId,
 				});
-				utils.transactions.getByHairOrderId.invalidate({
-					hairOrderId,
-				});
-				utils.transactions.getByHairOrderId.invalidate({
-					hairOrderId,
-					includeCustomer: true,
-				});
 				notifications.show({
 					color: "green",
 					title: "Success!",
