@@ -118,13 +118,8 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 			},
 		});
 
-	const hairTotalSoldFor = hairAssignments.reduce(
+	const hairTotalSoldFor = hairAssigned.reduce(
 		(sum, hairAssignment) => sum + hairAssignment.soldFor,
-		0,
-	);
-
-	const hairTotalSoldForSale = hairSales.reduce(
-		(sum, hairSale) => sum + hairSale.soldFor,
 		0,
 	);
 
@@ -288,7 +283,7 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 						<Center>
 							<RecoveryCard
 								spent={hairOrder.total}
-								recovered={hairTotalSoldFor + hairTotalSoldForSale}
+								recovered={hairTotalSoldFor}
 							/>
 						</Center>
 					</Paper>
