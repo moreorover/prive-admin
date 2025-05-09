@@ -1,7 +1,6 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { openTypedContextModal } from "@/lib/modal-helper";
 import { useNewAppointmentNoteStoreActions } from "@/modules/appointment_notes/ui/components/newAppointmentNoteDrawerStore";
 import { useEditAppointmentStoreActions } from "@/modules/appointments/ui/components/editAppointmentStore";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
@@ -10,7 +9,6 @@ import { useNewTransactionStoreActions } from "@/modules/transactions/ui/compone
 import AppointmentNotesTable from "@/modules/ui/components/appointment-notes-table";
 import CustomersTable from "@/modules/ui/components/customers-table";
 import HairAssignedTable from "@/modules/ui/components/hair-assigned-table";
-import HairUsedTable from "@/modules/ui/components/hair-used-table";
 import TransactionsTable from "@/modules/ui/components/transactions-table";
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";
@@ -28,7 +26,6 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import { GripVertical } from "lucide-react";
 import Link from "next/link";
@@ -127,26 +124,6 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	const { openNewAppointmentNoteDrawer } = useNewAppointmentNoteStoreActions();
 	const { openNewTransactionDrawer } = useNewTransactionStoreActions();
 	const { openNewHairAssignedDrawer } = useNewHairAssignedStoreActions();
-
-	const createHairAssignmentMutation =
-		trpc.appointments.createHairAssignment.useMutation({
-			onSuccess: () => {
-				utils.appointments.getHairAssignments.invalidate({ appointmentId });
-				utils.hairOrders.getHairOrderOptions.invalidate({ appointmentId });
-				notifications.show({
-					color: "green",
-					title: "Success!",
-					message: "Appointment updated.",
-				});
-			},
-			onError: () => {
-				notifications.show({
-					color: "red",
-					title: "Failed!",
-					message: "Something went wrong updating Appointment.",
-				});
-			},
-		});
 
 	return (
 		<Container size="xl">
@@ -454,58 +431,6 @@ function AppointmentSuspense({ appointmentId }: Props) {
 												}
 											/>
 										</HairAssignedTable.RowActions>
-									</>
-								}
-							/>
-						</Paper>
-						<Paper withBorder p="md" radius="md" shadow="sm">
-							<Group justify="space-between" gap="sm">
-								<Title order={4}>Hair</Title>
-								<Button
-									onClick={() =>
-										openTypedContextModal("hairOrderPicker", {
-											size: "auto",
-											innerProps: {
-												appointmentId,
-												onConfirm: (data) =>
-													createHairAssignmentMutation.mutate({
-														appointmentId,
-														hairOrderId: data[0],
-													}),
-												multiple: false,
-											},
-										})
-									}
-								>
-									Pick
-								</Button>
-							</Group>
-							<HairUsedTable
-								hair={hairAssignments}
-								columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
-								row={
-									<>
-										<HairUsedTable.RowWeight />
-										<HairUsedTable.RowTotal />
-										<HairUsedTable.RowSoldFor />
-										<HairUsedTable.RowProfit />
-										<HairUsedTable.RowActions>
-											<HairUsedTable.RowActionViewHairOrder />
-											<HairUsedTable.RowActionUpdate
-												onUpdated={() =>
-													utils.appointments.getHairAssignments.invalidate({
-														appointmentId,
-													})
-												}
-											/>
-											<HairUsedTable.RowActionDelete
-												onDeleted={() =>
-													utils.appointments.getHairAssignments.invalidate({
-														appointmentId,
-													})
-												}
-											/>
-										</HairUsedTable.RowActions>
 									</>
 								}
 							/>

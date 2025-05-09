@@ -6,7 +6,6 @@ import { useNewHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/c
 import { useEditHairOrderStoreActions } from "@/modules/hair_orders/ui/components/editHairOrderStore";
 import HairAssignedTable from "@/modules/ui/components/hair-assigned-table";
 import HairOrderNotesTable from "@/modules/ui/components/hair-order-notes-table";
-import HairUsedTable from "@/modules/ui/components/hair-used-table";
 import { trpc } from "@/trpc/client";
 import {
 	Button,
@@ -77,12 +76,6 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 		id: hairOrderId,
 	});
 	const [notes] = trpc.hairOrderNotes.getNotesByHairOrderId.useSuspenseQuery({
-		hairOrderId,
-	});
-	const [hairAssignments] = trpc.hairOrders.getHairAssignments.useSuspenseQuery(
-		{ hairOrderId },
-	);
-	const [hairSales] = trpc.hairOrders.getHairSales.useSuspenseQuery({
 		hairOrderId,
 	});
 	const [hairAssigned] = trpc.hairAssigned.getByHairOrderId.useSuspenseQuery({
@@ -369,49 +362,6 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 										<HairAssignedTable.RowActionViewAppointment />
 										<HairAssignedTable.RowActionViewClient />
 									</HairAssignedTable.RowActions>
-								</>
-							}
-						/>
-					</Paper>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Group justify="space-between" gap="sm">
-							<Title order={4}>Hair used in Appointments</Title>
-						</Group>
-						<HairUsedTable
-							hair={hairAssignments}
-							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
-							row={
-								<>
-									<HairUsedTable.RowWeight />
-									<HairUsedTable.RowTotal />
-									<HairUsedTable.RowSoldFor />
-									<HairUsedTable.RowProfit />
-									<HairUsedTable.RowActions>
-										<HairUsedTable.RowActionViewAppointment />
-									</HairUsedTable.RowActions>
-								</>
-							}
-						/>
-					</Paper>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Group justify="space-between" gap="sm">
-							<Title order={4}>Hair Sales</Title>
-						</Group>
-						<HairUsedTable
-							hair={hairSales.map((hairAssignment) => ({
-								...hairAssignment,
-								total: hairAssignment.soldFor - hairAssignment.profit,
-							}))}
-							columns={["Weight in Grams", "Total", "Sold For", "Profit", ""]}
-							row={
-								<>
-									<HairUsedTable.RowWeight />
-									<HairUsedTable.RowTotal />
-									<HairUsedTable.RowSoldFor />
-									<HairUsedTable.RowProfit />
-									<HairUsedTable.RowActions>
-										<HairUsedTable.RowActionViewHairSale />
-									</HairUsedTable.RowActions>
 								</>
 							}
 						/>

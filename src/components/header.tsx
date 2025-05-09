@@ -24,7 +24,6 @@ const links = [
 	{ link: "/dashboard/customers", label: "Customers" },
 	{ link: "/dashboard/appointments", label: "Appointments" },
 	{ link: "/dashboard/hair-orders", label: "Hair Orders" },
-	{ link: "/dashboard/hair-sales", label: "Hair Sales" },
 	{ link: "/dashboard/transactions", label: "Transactions" },
 	// { link: "/", label: "" },
 ];
