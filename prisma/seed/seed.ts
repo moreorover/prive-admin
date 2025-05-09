@@ -7,7 +7,6 @@ import {
 	createCustomer,
 	createHairOrder,
 	createHairOrderNote,
-	createHairOrderTransaction,
 	createHairSale,
 	createProduct,
 	createProductVariant,
@@ -124,14 +123,6 @@ const seedHairOrders = async (): Promise<void> => {
 		const createdHairOrder = await prisma.hairOrder.create({
 			data: { ...hairOrder, customerId, createdById: user.id },
 		});
-
-		for (const transaction of generateObjects(2, () =>
-			createHairOrderTransaction(faker),
-		)) {
-			await prisma.transaction.create({
-				data: { ...transaction, customerId, hairOrderId: createdHairOrder.id },
-			});
-		}
 
 		for (const note of generateObjects(2, () => createHairOrderNote(faker))) {
 			await prisma.hairOrderNote.create({

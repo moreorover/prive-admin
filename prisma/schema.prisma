@@ -186,8 +186,6 @@ model Transaction {
   order         Order?       @relation(fields: [orderId], references: [id], onDelete: SetNull)
   appointmentId String?
   appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
-  hairOrderId   String?
-  hairOrder     HairOrder?   @relation(fields: [hairOrderId], references: [id], onDelete: SetNull)
 
   @@map("transactions")
 }
@@ -254,7 +252,6 @@ model HairOrder {
   customerId String?
   customer   Customer? @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: SetNull)
 
-  transactions              Transaction[]
   notes                     HairOrderNote[]
   hairAssignedToAppointment HairAssignedToAppointment[]
   hairAssignedToSale        HairAssignedToSale[]
