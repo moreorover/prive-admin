@@ -146,6 +146,25 @@ export const hairComponentSchema = z.object({
 
 export type HairComponent = z.infer<typeof hairComponentSchema>;
 
+export const hairAssignedSchema = z.object({
+	id: z.string().cuid2(),
+	hairOrderId: z.string().cuid2(),
+	appointmentId: z.string().cuid2().nullish(),
+	weightInGrams: z.number().positive(),
+	soldFor: z.number().positive(),
+});
+
+export type HairAssigned = z.infer<typeof hairAssignedSchema>;
+
+export const hairAssignedFormSchema = (maxWeight: number) =>
+	z.object({
+		id: z.string().cuid2(),
+		hairOrderId: z.string().cuid2(),
+		appointmentId: z.string().cuid2().nullish(),
+		weightInGrams: z.number().positive().max(maxWeight),
+		soldFor: z.number().positive(),
+	});
+
 export const hairAssignedToAppointmentSchema = z.object({
 	id: z.string().cuid2(),
 	hairOrderId: z.string().cuid2(),
