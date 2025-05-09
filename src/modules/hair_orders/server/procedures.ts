@@ -29,6 +29,36 @@ export const hairOrderRouter = createTRPCRouter({
 				orderBy: { uid: "asc" },
 			});
 		}),
+	getHairOrderOptionsByClientId: protectedProcedure
+		.input(z.object({ clientId: z.string().cuid2().nullable() }))
+		.query(async ({ input }) => {
+			const { clientId } = input;
+
+			if (!clientId) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Missing clientId" });
+			}
+
+			const hairAssigned = await prisma.hairAssigned.findMany({
+				where: { AND: [{ clientId }, { weightInGrams: 0 }] },
+				select: { hairOrderId: true },
+			});
+
+			const hairOrdersToFilter = hairAssigned.map(
+				(hairAssigned) => hairAssigned.hairOrderId,
+			);
+
+			const hairOrders = await prisma.hairOrder.findMany({
+				include: { customer: true },
+			});
+
+			return hairOrders
+				.filter((ho) => !hairOrdersToFilter.includes(ho.id))
+				.map((hairOrder) => ({
+					...hairOrder,
+					pricePerGram: hairOrder.pricePerGram / 100,
+					total: hairOrder.total / 100,
+				}));
+		}),
 	getById: protectedProcedure
 		.input(z.object({ id: z.string().cuid2().nullable() }))
 		.query(async ({ input }) => {

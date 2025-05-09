@@ -1,4 +1,5 @@
 "use client";
+import { formatAmount } from "@/lib/helpers";
 import {
 	useNewHairAssignedStoreActions,
 	useNewHairAssignedStoreDrawerIsOpen,
@@ -6,8 +7,19 @@ import {
 	useNewHairAssignedStoreDrawerRelations,
 } from "@/modules/hair-assigned/ui/components/newHairAssignedStore";
 import { trpc } from "@/trpc/client";
-import { Button, Drawer, Group, Stack, Text, Title } from "@mantine/core";
+import {
+	Button,
+	Checkbox,
+	Container,
+	Drawer,
+	Group,
+	Stack,
+	Table,
+	Text,
+} from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import dayjs from "dayjs";
+import { useState } from "react";
 
 export const NewHairAssignedDrawer = () => {
 	const isOpen = useNewHairAssignedStoreDrawerIsOpen();
@@ -15,8 +27,84 @@ export const NewHairAssignedDrawer = () => {
 	const onSuccess = useNewHairAssignedStoreDrawerOnSuccess();
 	const relations = useNewHairAssignedStoreDrawerRelations();
 
+	const [selectedRow, setSelectedRow] = useState<string>();
+
+	const hairOrderOptions =
+		trpc.hairOrders.getHairOrderOptionsByClientId.useQuery(
+			{
+				clientId: relations.clientId,
+			},
+			{ enabled: !!relations.clientId },
+		);
+
+	const toggleRowSelection = (id: string) => {
+		if (selectedRow === id) {
+			setSelectedRow(undefined);
+			return;
+		}
+		setSelectedRow(id);
+	};
+
+	const rows = hairOrderOptions.data
+		?.filter((hairOrder) => hairOrder.weightReceived - hairOrder.weightUsed > 0)
+		.map((hairOrder) => (
+			<Table.Tr
+				key={hairOrder.id}
+				style={{
+					backgroundColor:
+						selectedRow === hairOrder.id
+							? "var(--mantine-color-blue-light)"
+							: undefined,
+					cursor: "pointer",
+				}}
+				onClick={() => toggleRowSelection(hairOrder.id as string)}
+			>
+				<Table.Td style={{ width: 40 }}>
+					<Checkbox
+						aria-label="Select Hair Order"
+						checked={selectedRow === hairOrder.id}
+						onClick={(e) => e.stopPropagation()}
+						onChange={() => toggleRowSelection(hairOrder.id as string)}
+					/>
+				</Table.Td>
+				<Table.Td>
+					<Text>{hairOrder.uid}</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>{hairOrder.customer?.name}</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>
+						{hairOrder.placedAt
+							? dayjs(hairOrder.placedAt).format("ddd MMM YYYY")
+							: ""}
+					</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>
+						{hairOrder.arrivedAt
+							? dayjs(hairOrder.arrivedAt).format("ddd MMM YYYY")
+							: ""}
+					</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>{formatAmount(hairOrder.pricePerGram)}</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>{hairOrder.weightReceived}g</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>{hairOrder.weightUsed}g</Text>
+				</Table.Td>
+				<Table.Td>
+					<Text>{hairOrder.weightReceived - hairOrder.weightUsed}g</Text>
+				</Table.Td>
+			</Table.Tr>
+		));
+
 	const newHairAssigned = trpc.hairAssigned.create.useMutation({
 		onSuccess: () => {
+			setSelectedRow("");
 			onSuccess();
 			reset();
 			notifications.show({
@@ -34,12 +122,14 @@ export const NewHairAssignedDrawer = () => {
 		},
 	});
 
-	const handleConfirmDelete = () => {
-		newHairAssigned.mutate({
-			hairOrderId: relations.hairOrderId,
-			appointmentId: relations.appointmentId,
-			clientId: relations.clientId,
-		});
+	const handleConfirm = () => {
+		if (selectedRow && relations.clientId) {
+			newHairAssigned.mutate({
+				hairOrderId: selectedRow,
+				appointmentId: relations.appointmentId,
+				clientId: relations.clientId,
+			});
+		}
 	};
 
 	return (
@@ -49,31 +139,42 @@ export const NewHairAssignedDrawer = () => {
 				onClose={reset}
 				position="right"
 				title="Create Hair Assigned"
+				size="auto"
 			>
-				<Stack>
-					<Title order={4}>Are you sure?</Title>
-					<Text>
-						This will create Hair Assignment for:{" "}
-						<strong>Client: {relations.clientId}</strong>
-						<strong>Hair Order {relations.hairOrderId}</strong>
-						{relations.appointmentId && (
-							<strong>Appointment {relations.appointmentId}</strong>
-						)}
-					</Text>
-
-					<Group mt="md">
-						<Button variant="outline" onClick={reset}>
+				<Container>
+					<Stack gap="sm">
+						<Text size="xs">Select Hair Order</Text>
+						<Table striped highlightOnHover>
+							<Table.Thead>
+								<Table.Tr>
+									<Table.Th style={{ width: 40 }} />
+									<Table.Th>Hair Order UID</Table.Th>
+									<Table.Th>Customer Name</Table.Th>
+									<Table.Th>Placed At</Table.Th>
+									<Table.Th>Arrived At</Table.Th>
+									<Table.Th>Price per Gram</Table.Th>
+									<Table.Th>Weight received</Table.Th>
+									<Table.Th>Weight Used</Table.Th>
+									<Table.Th>Weight Available</Table.Th>
+								</Table.Tr>
+							</Table.Thead>
+							<Table.Tbody>{rows}</Table.Tbody>
+						</Table>
+						<Group justify="flex-end" mt="md">
+							<Button
+								onClick={() => {
+									handleConfirm();
+								}}
+								disabled={!selectedRow}
+							>
+								Confirm
+							</Button>
+						</Group>
+						<Button fullWidth mt="md" onClick={reset}>
 							Cancel
 						</Button>
-						<Button
-							color="red"
-							onClick={handleConfirmDelete}
-							loading={newHairAssigned.isPending}
-						>
-							Confirm Delete
-						</Button>
-					</Group>
-				</Stack>
+					</Stack>
+				</Container>
 			</Drawer>
 		</>
 	);

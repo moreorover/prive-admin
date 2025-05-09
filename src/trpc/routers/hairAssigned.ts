@@ -66,6 +66,44 @@ export const hairAssignedRouter = createTRPCRouter({
 				pricePerGram: h.pricePerGram / 100,
 			}));
 		}),
+	getByClientId: protectedProcedure
+		.input(z.object({ clientId: z.string().cuid2() }))
+		.query(async ({ input }) => {
+			const { clientId } = input;
+
+			const hairAssigned = await prisma.hairAssigned.findMany({
+				where: { clientId },
+			});
+
+			return hairAssigned.map((h) => ({
+				...h,
+				soldFor: h.soldFor / 100,
+				profit: h.profit / 100,
+				pricePerGram: h.pricePerGram / 100,
+			}));
+		}),
+	getByClientIdAndHairOrderId: protectedProcedure
+		.input(
+			z.object({
+				clientId: z.string().cuid2(),
+				appointmentId: z.string().cuid2().nullish(),
+			}),
+		)
+		.query(async ({ input }) => {
+			const { clientId, appointmentId } = input;
+
+			const hairAssigned = await prisma.hairAssigned.findMany({
+				where: { clientId, appointmentId },
+				include: { hairOrder: true },
+			});
+
+			return hairAssigned.map((h) => ({
+				...h,
+				soldFor: h.soldFor / 100,
+				profit: h.profit / 100,
+				pricePerGram: h.pricePerGram / 100,
+			}));
+		}),
 	create: protectedProcedure
 		.input(
 			z.object({
@@ -156,5 +194,46 @@ export const hairAssignedRouter = createTRPCRouter({
 			});
 
 			return hairAssignedSaved;
+		}),
+	delete: protectedProcedure
+		.input(
+			z.object({
+				id: z.string().cuid2().nullable(),
+			}),
+		)
+		.mutation(async ({ input }) => {
+			const { id } = input;
+
+			if (!id) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Missing id",
+				});
+			}
+
+			const hairAssigned = await prisma.hairAssigned.delete({
+				where: { id },
+			});
+
+			if (!hairAssigned) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Missing id",
+				});
+			}
+
+			const totalWeightUsed = await prisma.hairAssigned.aggregate({
+				where: { hairOrderId: hairAssigned.hairOrderId },
+				_sum: {
+					weightInGrams: true,
+				},
+			});
+
+			await prisma.hairOrder.update({
+				where: { id: hairAssigned.hairOrderId },
+				data: { weightUsed: totalWeightUsed._sum.weightInGrams ?? 0 },
+			});
+
+			return hairAssigned;
 		}),
 });

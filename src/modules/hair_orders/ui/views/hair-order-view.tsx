@@ -274,6 +274,13 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 									)}
 								</Text>
 							</Flex>
+							<Button
+								onClick={() =>
+									recalculateHairOrderPrice.mutate({ hairOrderId })
+								}
+							>
+								Recalculate
+							</Button>
 						</Stack>
 					</Paper>
 					<Paper withBorder p="md" radius="md" shadow="sm">

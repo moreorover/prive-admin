@@ -4,8 +4,7 @@ type State = {
 	isOpen: boolean;
 	relations: {
 		appointmentId?: string | null | undefined;
-		hairOrderId: string;
-		clientId: string;
+		clientId: string | null;
 	};
 	onSuccess: () => void;
 };
@@ -18,8 +17,7 @@ type Actions = {
 const initialState: State = {
 	isOpen: false,
 	relations: {
-		hairOrderId: "",
-		clientId: "",
+		clientId: null,
 	},
 	onSuccess: async () => {},
 };
