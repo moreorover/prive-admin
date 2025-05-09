@@ -5,6 +5,7 @@ import { openTypedContextModal } from "@/lib/modal-helper";
 import { useNewAppointmentNoteStoreActions } from "@/modules/appointment_notes/ui/components/newAppointmentNoteDrawerStore";
 import { useEditAppointmentStoreActions } from "@/modules/appointments/ui/components/editAppointmentStore";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
+import { useNewHairAssignedStoreActions } from "@/modules/hair-assigned/ui/components/newHairAssignedStore";
 import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
 import AppointmentNotesTable from "@/modules/ui/components/appointment-notes-table";
 import CustomersTable from "@/modules/ui/components/customers-table";
@@ -125,25 +126,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	const { openEditAppointmentDrawer } = useEditAppointmentStoreActions();
 	const { openNewAppointmentNoteDrawer } = useNewAppointmentNoteStoreActions();
 	const { openNewTransactionDrawer } = useNewTransactionStoreActions();
-
-	const createHairAssignedMutation = trpc.hairAssigned.create.useMutation({
-		onSuccess: () => {
-			utils.hairAssigned.getByAppointmentId.invalidate({ appointmentId });
-			utils.hairOrders.getHairOrderOptions.invalidate({ appointmentId });
-			notifications.show({
-				color: "green",
-				title: "Success!",
-				message: "Appointment updated.",
-			});
-		},
-		onError: () => {
-			notifications.show({
-				color: "red",
-				title: "Failed!",
-				message: "Something went wrong updating Appointment.",
-			});
-		},
-	});
+	const { openNewHairAssignedDrawer } = useNewHairAssignedStoreActions();
 
 	const createHairAssignmentMutation =
 		trpc.appointments.createHairAssignment.useMutation({
@@ -419,21 +402,22 @@ function AppointmentSuspense({ appointmentId }: Props) {
 							<Group justify="space-between" gap="sm">
 								<Title order={4}>Hair Assigned</Title>
 								<Button
-									onClick={() =>
-										openTypedContextModal("hairOrderPicker", {
-											size: "auto",
-											innerProps: {
+									onClick={() => {
+										openNewHairAssignedDrawer({
+											relations: {
+												clientId: appointment.clientId,
 												appointmentId,
-												onConfirm: (data) =>
-													createHairAssignedMutation.mutate({
-														appointmentId,
-														hairOrderId: data[0],
-														clientId: appointment.clientId,
-													}),
-												multiple: false,
 											},
-										})
-									}
+											onSuccess: () => {
+												utils.hairAssigned.getByAppointmentId.invalidate({
+													appointmentId,
+												});
+												utils.hairOrders.getHairOrderOptions.invalidate({
+													appointmentId,
+												});
+											},
+										});
+									}}
 								>
 									Pick
 								</Button>
