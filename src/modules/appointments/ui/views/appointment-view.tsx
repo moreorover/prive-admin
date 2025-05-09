@@ -8,6 +8,7 @@ import { PersonnelPickerModal } from "@/modules/appointments/ui/components/perso
 import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
 import AppointmentNotesTable from "@/modules/ui/components/appointment-notes-table";
 import CustomersTable from "@/modules/ui/components/customers-table";
+import HairAssignedTable from "@/modules/ui/components/hair-assigned-table";
 import HairUsedTable from "@/modules/ui/components/hair-used-table";
 import TransactionsTable from "@/modules/ui/components/transactions-table";
 import { trpc } from "@/trpc/client";
@@ -70,6 +71,10 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	const [hairAssignments] =
 		trpc.appointments.getHairAssignments.useSuspenseQuery({ appointmentId });
 
+	const [hairAssigned] = trpc.hairAssigned.getByAppointmentId.useSuspenseQuery({
+		appointmentId,
+	});
+
 	const hairCost = hairAssignments.reduce(
 		(sum, hairAssignment) => sum + hairAssignment.total,
 		0,
@@ -120,6 +125,25 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	const { openEditAppointmentDrawer } = useEditAppointmentStoreActions();
 	const { openNewAppointmentNoteDrawer } = useNewAppointmentNoteStoreActions();
 	const { openNewTransactionDrawer } = useNewTransactionStoreActions();
+
+	const createHairAssignedMutation = trpc.hairAssigned.create.useMutation({
+		onSuccess: () => {
+			utils.hairAssigned.getByAppointmentId.invalidate({ appointmentId });
+			utils.hairOrders.getHairOrderOptions.invalidate({ appointmentId });
+			notifications.show({
+				color: "green",
+				title: "Success!",
+				message: "Appointment updated.",
+			});
+		},
+		onError: () => {
+			notifications.show({
+				color: "red",
+				title: "Failed!",
+				message: "Something went wrong updating Appointment.",
+			});
+		},
+	});
 
 	const createHairAssignmentMutation =
 		trpc.appointments.createHairAssignment.useMutation({
@@ -387,6 +411,65 @@ function AppointmentSuspense({ appointmentId }: Props) {
 												}
 											/>
 										</TransactionsTable.RowActions>
+									</>
+								}
+							/>
+						</Paper>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between" gap="sm">
+								<Title order={4}>Hair Assigned</Title>
+								<Button
+									onClick={() =>
+										openTypedContextModal("hairOrderPicker", {
+											size: "auto",
+											innerProps: {
+												appointmentId,
+												onConfirm: (data) =>
+													createHairAssignedMutation.mutate({
+														appointmentId,
+														hairOrderId: data[0],
+														clientId: appointment.clientId,
+													}),
+												multiple: false,
+											},
+										})
+									}
+								>
+									Pick
+								</Button>
+							</Group>
+							<HairAssignedTable
+								hair={hairAssigned}
+								columns={[
+									"Weight in Grams",
+									"Sold For",
+									"Profit",
+									"Price per Gram",
+									"",
+								]}
+								row={
+									<>
+										<HairAssignedTable.RowWeight />
+										<HairAssignedTable.RowSoldFor />
+										<HairAssignedTable.RowProfit />
+										<HairAssignedTable.RowPricePerGram />
+										<HairAssignedTable.RowActions>
+											<HairAssignedTable.RowActionViewHairOrder />
+											<HairAssignedTable.RowActionUpdate
+												onSuccess={() =>
+													utils.hairAssigned.getByAppointmentId.invalidate({
+														appointmentId,
+													})
+												}
+											/>
+											<HairAssignedTable.RowActionDelete
+												onSuccess={() =>
+													utils.hairAssigned.getByAppointmentId.invalidate({
+														appointmentId,
+													})
+												}
+											/>
+										</HairAssignedTable.RowActions>
 									</>
 								}
 							/>

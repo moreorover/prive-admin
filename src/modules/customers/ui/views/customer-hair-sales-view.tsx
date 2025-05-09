@@ -1,11 +1,10 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import HairSalesTable from "@/modules/ui/components/hair-sales-table";
+import { useNewHairAssignedStoreActions } from "@/modules/hair-assigned/ui/components/newHairAssignedStore";
+import HairAssignedTable from "@/modules/ui/components/hair-assigned-table";
 import { trpc } from "@/trpc/client";
 import { Box, Button, Group, Paper, Text, Title } from "@mantine/core";
-import { modals } from "@mantine/modals";
-import { notifications } from "@mantine/notifications";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -25,74 +24,75 @@ export const CustomerHairSalesView = ({ customerId }: Props) => {
 
 function CustomerHairSalesSuspense({ customerId }: Props) {
 	const utils = trpc.useUtils();
-	const [hairSales] = trpc.hairSales.getByCustomerId.useSuspenseQuery({
-		customerId,
-	});
-	const createHairSalesOrder = trpc.hairSales.create.useMutation({
-		onSuccess: () => {
-			utils.hairSales.getByCustomerId.invalidate({ customerId });
-			notifications.show({
-				color: "green",
-				title: "Success!",
-				message: "Hair Sale created.",
-			});
-		},
-		onError: () => {
-			notifications.show({
-				color: "red",
-				title: "Error",
-				message: "Please try again.",
-			});
-		},
-	});
-
-	const openCreateHairSalesOrderModal = () =>
-		modals.openConfirmModal({
-			title: "Please confirm creating Hair Sales Order",
-			children: (
-				<Text size="sm">
-					This action is so important that you are required to confirm it with a
-					modal. Please click one of these buttons to proceed.
-				</Text>
-			),
-			labels: { confirm: "Confirm", cancel: "Cancel" },
-			onConfirm: () => createHairSalesOrder.mutate({ customerId }),
+	const [hairAssigned] =
+		trpc.hairAssigned.getByClientIdAndHairOrderId.useSuspenseQuery({
+			clientId: customerId,
+			appointmentId: null,
 		});
+
+	const { openNewHairAssignedDrawer } = useNewHairAssignedStoreActions();
 
 	return (
 		<Paper withBorder p="md" radius="md" shadow="sm">
 			<Group justify="space-between">
 				<Title order={4}>Hair Sales</Title>
 				<Group>
-					<Button onClick={openCreateHairSalesOrderModal}>New</Button>
+					<Button
+						onClick={() =>
+							openNewHairAssignedDrawer({
+								relations: { clientId: customerId },
+								onSuccess: () =>
+									utils.hairAssigned.getByClientIdAndHairOrderId.invalidate({
+										clientId: customerId,
+										appointmentId: null,
+									}),
+							})
+						}
+					>
+						New
+					</Button>
 				</Group>
 			</Group>
-			<HairSalesTable
-				hairSales={hairSales}
+			<HairAssignedTable
+				hair={hairAssigned}
 				columns={[
-					"Placed At",
-					"Weight",
+					"Hair Order UID",
+					"Weight in Grams",
+					"Sold For",
+					"Profit",
 					"Price per Gram",
-					"Total",
-					"Created by",
 					"",
 				]}
 				row={
 					<>
-						<HairSalesTable.RowPlacedAt />
-						<HairSalesTable.RowWeightInGrams />
-						<HairSalesTable.RowPricePerGram />
-						<HairSalesTable.RowTotal />
-						<HairSalesTable.RowCreatedBy />
-						<HairSalesTable.RowActions>
-							<HairSalesTable.RowActionViewHairSale />
-						</HairSalesTable.RowActions>
+						<HairAssignedTable.RowHairOrderUID />
+						<HairAssignedTable.RowWeight />
+						<HairAssignedTable.RowSoldFor />
+						<HairAssignedTable.RowProfit />
+						<HairAssignedTable.RowPricePerGram />
+						<HairAssignedTable.RowActions>
+							<HairAssignedTable.RowActionViewHairOrder />
+							<HairAssignedTable.RowActionUpdate
+								onSuccess={() =>
+									utils.hairAssigned.getByClientIdAndHairOrderId.invalidate({
+										clientId: customerId,
+									})
+								}
+							/>
+							<HairAssignedTable.RowActionDelete
+								onSuccess={() =>
+									utils.hairAssigned.getByClientIdAndHairOrderId.invalidate({
+										clientId: customerId,
+									})
+								}
+							/>
+						</HairAssignedTable.RowActions>
 					</>
 				}
 			/>
 
 			{/* Show message when no results are found */}
-			{hairSales.length === 0 && (
+			{hairAssigned.length === 0 && (
 				<Box ta="center" mt="xl">
 					<Text size="lg">No hair sales records found.</Text>
 				</Box>

@@ -4,6 +4,7 @@ import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { formatAmount } from "@/lib/helpers";
 import { useNewHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/components/newHairOrderNoteDrawerStore";
 import { useEditHairOrderStoreActions } from "@/modules/hair_orders/ui/components/editHairOrderStore";
+import HairAssignedTable from "@/modules/ui/components/hair-assigned-table";
 import HairOrderNotesTable from "@/modules/ui/components/hair-order-notes-table";
 import HairUsedTable from "@/modules/ui/components/hair-used-table";
 import { trpc } from "@/trpc/client";
@@ -84,6 +85,9 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 	const [hairSales] = trpc.hairOrders.getHairSales.useSuspenseQuery({
 		hairOrderId,
 	});
+	const [hairAssigned] = trpc.hairAssigned.getByHairOrderId.useSuspenseQuery({
+		hairOrderId,
+	});
 
 	const { openNewHairOrderNoteDrawer } = useNewHairOrderNoteStoreActions();
 
@@ -114,13 +118,8 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 			},
 		});
 
-	const hairTotalSoldFor = hairAssignments.reduce(
+	const hairTotalSoldFor = hairAssigned.reduce(
 		(sum, hairAssignment) => sum + hairAssignment.soldFor,
-		0,
-	);
-
-	const hairTotalSoldForSale = hairSales.reduce(
-		(sum, hairSale) => sum + hairSale.soldFor,
 		0,
 	);
 
@@ -275,6 +274,13 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 									)}
 								</Text>
 							</Flex>
+							<Button
+								onClick={() =>
+									recalculateHairOrderPrice.mutate({ hairOrderId })
+								}
+							>
+								Recalculate
+							</Button>
 						</Stack>
 					</Paper>
 					<Paper withBorder p="md" radius="md" shadow="sm">
@@ -284,7 +290,7 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 						<Center>
 							<RecoveryCard
 								spent={hairOrder.total}
-								recovered={hairTotalSoldFor + hairTotalSoldForSale}
+								recovered={hairTotalSoldFor}
 							/>
 						</Center>
 					</Paper>
@@ -334,6 +340,35 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 											}
 										/>
 									</HairOrderNotesTable.RowActions>
+								</>
+							}
+						/>
+					</Paper>
+					<Paper withBorder p="md" radius="md" shadow="sm">
+						<Group justify="space-between" gap="sm">
+							<Title order={4}>Hair Assigned</Title>
+						</Group>
+						<HairAssignedTable
+							hair={hairAssigned}
+							columns={[
+								"Weight in Grams",
+								"Sold For",
+								"Profit",
+								"Price per Gram",
+								"Client",
+								"",
+							]}
+							row={
+								<>
+									<HairAssignedTable.RowWeight />
+									<HairAssignedTable.RowSoldFor />
+									<HairAssignedTable.RowProfit />
+									<HairAssignedTable.RowPricePerGram />
+									<HairAssignedTable.RowClient />
+									<HairAssignedTable.RowActions>
+										<HairAssignedTable.RowActionViewAppointment />
+										<HairAssignedTable.RowActionViewClient />
+									</HairAssignedTable.RowActions>
 								</>
 							}
 						/>
