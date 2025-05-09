@@ -14,6 +14,7 @@ import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 
 export const EditHairAssignmentToSaleDrawer = () => {
+	const utils = trpc.useUtils();
 	const isOpen = useEditHairAssignmentToSaleStoreDrawerIsOpen();
 	const { reset } = useEditHairAssignmentToSaleStoreActions();
 	const onSuccess = useEditHairAssignmentToSaleStoreDrawerOnSuccess();
@@ -30,6 +31,9 @@ export const EditHairAssignmentToSaleDrawer = () => {
 
 	const editHairAssignment = trpc.hairSales.updateHairAssignment.useMutation({
 		onSuccess: () => {
+			utils.hairSales.getHairAssignmentById.invalidate({
+				id: hairAssignmentId,
+			});
 			onSuccess();
 			reset();
 			notifications.show({

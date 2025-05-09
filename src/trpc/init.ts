@@ -1,4 +1,4 @@
-import { getSession } from "@/lib/helpers";
+import { getSession } from "@/lib/auth-helper";
 import { TRPCError, initTRPC } from "@trpc/server";
 import { cache } from "react";
 import superjson from "superjson";
