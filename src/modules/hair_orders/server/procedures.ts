@@ -147,7 +147,12 @@ export const hairOrderRouter = createTRPCRouter({
 				where: { hairOrderId },
 			});
 
-			return hairAssignments;
+			return hairAssignments.map((hairAssignment) => ({
+				...hairAssignment,
+				total: hairAssignment.total / 100,
+				soldFor: hairAssignment.soldFor / 100,
+				profit: hairAssignment.profit / 100,
+			}));
 		}),
 	getHairSales: protectedProcedure
 		.input(z.object({ hairOrderId: z.string().cuid2() }))
@@ -157,6 +162,10 @@ export const hairOrderRouter = createTRPCRouter({
 				where: { hairOrderId },
 			});
 
-			return hairAssignments;
+			return hairAssignments.map((hairAssignment) => ({
+				...hairAssignment,
+				soldFor: hairAssignment.soldFor / 100,
+				profit: hairAssignment.profit / 100,
+			}));
 		}),
 });

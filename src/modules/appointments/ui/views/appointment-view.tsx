@@ -70,17 +70,15 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	const [hairAssignments] =
 		trpc.appointments.getHairAssignments.useSuspenseQuery({ appointmentId });
 
-	const hairCost =
-		hairAssignments.reduce(
-			(sum, hairAssignment) => sum + hairAssignment.total,
-			0,
-		) / 100;
+	const hairCost = hairAssignments.reduce(
+		(sum, hairAssignment) => sum + hairAssignment.total,
+		0,
+	);
 
-	const hairSoldFor =
-		hairAssignments.reduce(
-			(sum, hairAssignment) => sum + hairAssignment.soldFor,
-			0,
-		) / 100;
+	const hairSoldFor = hairAssignments.reduce(
+		(sum, hairAssignment) => sum + hairAssignment.soldFor,
+		0,
+	);
 
 	const [notes] =
 		trpc.appointmentNotes.getNotesByAppointmentId.useSuspenseQuery({
