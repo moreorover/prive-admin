@@ -57,6 +57,9 @@ function CustomerSuspense({ customerId }: Props) {
 				<Stack gap="xs">
 					<Title order={4}>Customer Details</Title>
 					<Text size="sm" mt="xs">
+						<strong>Name:</strong> {customer.name}
+					</Text>
+					<Text size="sm" mt="xs">
 						<strong>Phone Number:</strong> {customer.phoneNumber || "N/A"}
 					</Text>
 					<Button
