@@ -64,7 +64,7 @@ function HairUsedTableRowProfit() {
 	const { hair } = useHairUsedTableRowContext();
 	return (
 		<Table.Td>
-			<Text>{formatAmount(hair.profit / 100)}</Text>
+			<Text>{formatAmount(hair.profit)}</Text>
 		</Table.Td>
 	);
 }
@@ -78,7 +78,7 @@ function HairUsedTableRowSoldFor() {
 			}}
 		>
 			<Group>
-				<Text>{formatAmount(hair.soldFor / 100)}</Text>
+				<Text>{formatAmount(hair.soldFor)}</Text>
 				{hair.soldFor === 0 && (
 					<Tooltip label="Sold for price not assigned">
 						<TriangleAlertIcon size={16} color="red" />
@@ -113,7 +113,7 @@ function HairUsedTableRowTotal() {
 	const { hair } = useHairUsedTableRowContext();
 	return (
 		<Table.Td>
-			<Text>{formatAmount(hair.total / 100)}</Text>
+			<Text>{formatAmount(hair.total)}</Text>
 		</Table.Td>
 	);
 }
