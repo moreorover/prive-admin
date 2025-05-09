@@ -1,15 +1,17 @@
 import prisma from "@/lib/prisma";
-import { hairOrderSchema, hairOrderTotalWeightSchema } from "@/lib/schemas";
+import { hairOrderSchema } from "@/lib/schemas";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const hairOrderRouter = createTRPCRouter({
-	getAll: protectedProcedure.query(() => {
-		return prisma.hairOrder.findMany({
+	getAll: protectedProcedure.query(async () => {
+		const hairOrders = await prisma.hairOrder.findMany({
 			include: { createdBy: true, customer: true },
 			orderBy: { uid: "asc" },
 		});
+
+		return hairOrders;
 	}),
 	getHairOrderOptions: protectedProcedure
 		.input(z.object({ appointmentId: z.string().cuid2() }))
@@ -45,7 +47,11 @@ export const hairOrderRouter = createTRPCRouter({
 				throw new TRPCError({ code: "NOT_FOUND" });
 			}
 
-			return { ...hairOrder, pricePerGram: hairOrder.pricePerGram / 100 };
+			return {
+				...hairOrder,
+				pricePerGram: hairOrder.pricePerGram / 100,
+				total: hairOrder.total / 100,
+			};
 		}),
 	create: protectedProcedure.mutation(async ({ ctx }) => {
 		const { user } = ctx;
@@ -61,17 +67,10 @@ export const hairOrderRouter = createTRPCRouter({
 		.mutation(async ({ input }) => {
 			const { hairOrder } = input;
 			const c = await prisma.hairOrder.update({
-				data: hairOrder,
-				where: { id: hairOrder.id },
-			});
-			return c;
-		}),
-	updateTotalWeight: protectedProcedure
-		.input(z.object({ hairOrder: hairOrderTotalWeightSchema }))
-		.mutation(async ({ input }) => {
-			const { hairOrder } = input;
-			const c = await prisma.hairOrder.update({
-				data: hairOrder,
+				data: {
+					...hairOrder,
+					total: hairOrder.total * 100,
+				},
 				where: { id: hairOrder.id },
 			});
 			return c;
@@ -83,7 +82,6 @@ export const hairOrderRouter = createTRPCRouter({
 			const hairOrder = await prisma.hairOrder.findUnique({
 				where: { id: hairOrderId },
 				include: {
-					transactions: true,
 					hairAssignedToAppointment: true,
 					hairAssignedToSale: true,
 				},
@@ -93,44 +91,49 @@ export const hairOrderRouter = createTRPCRouter({
 				throw new TRPCError({ code: "NOT_FOUND" });
 			}
 
-			const transactionsTotal = hairOrder.transactions.reduce(
-				(sum, transaction) => sum + transaction.amount,
-				0,
-			);
+			// Calculate price per gram, setting it to 0 if total or weightReceived is 0
+			const pricePerGram =
+				hairOrder.total === 0 || hairOrder.weightReceived === 0
+					? 0
+					: Math.abs(Math.round(hairOrder.total / hairOrder.weightReceived));
 
-			const pricePerGram = Math.abs(
-				Math.round((transactionsTotal / hairOrder.weightReceived) * 100),
-			);
-
+			// Update the hairOrder record with the calculated price per gram
 			await prisma.hairOrder.update({
 				where: { id: hairOrderId },
 				data: { pricePerGram },
 			});
 
+			// Iterate through hair assigned to appointments and calculate total and profit
 			for (const hairAssignedToAppointment of hairOrder.hairAssignedToAppointment) {
-				const total = Math.round(
-					pricePerGram * hairAssignedToAppointment.weightInGrams,
-				);
+				// If pricePerGram is 0, total is set to 0, otherwise calculate normally
+				const total =
+					pricePerGram === 0
+						? 0
+						: Math.round(
+								pricePerGram * hairAssignedToAppointment.weightInGrams,
+							);
 				const profit = hairAssignedToAppointment.soldFor - total;
+
+				// Update the hairAssignedToAppointment record with calculated total and profit
 				await prisma.hairAssignedToAppointment.update({
 					where: { id: hairAssignedToAppointment.id },
-					data: {
-						total,
-						profit,
-					},
+					data: { total, profit },
 				});
 			}
 
+			// Iterate through hair assigned to sales and calculate profit
 			for (const hairAssignedToSale of hairOrder.hairAssignedToSale) {
-				const total = Math.round(
-					pricePerGram * hairAssignedToSale.weightInGrams,
-				);
+				// If pricePerGram is 0, total is set to 0, otherwise calculate normally
+				const total =
+					pricePerGram === 0
+						? 0
+						: Math.round(pricePerGram * hairAssignedToSale.weightInGrams);
 				const profit = hairAssignedToSale.soldFor - total;
+
+				// Update the hairAssignedToSale record with calculated profit
 				await prisma.hairAssignedToSale.update({
 					where: { id: hairAssignedToSale.id },
-					data: {
-						profit,
-					},
+					data: { profit },
 				});
 			}
 

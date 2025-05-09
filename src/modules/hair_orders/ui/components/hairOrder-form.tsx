@@ -62,6 +62,13 @@ export const HairOrderForm = ({
 				name="weight"
 				suffix="g"
 			/>
+			<NumberInput
+				label="Total Price for Order"
+				placeholder="0.99"
+				prefix="£"
+				key={form.key("total")}
+				{...form.getInputProps("total")}
+			/>
 			<Select
 				checkIconPosition="left"
 				data={customerOptions}
