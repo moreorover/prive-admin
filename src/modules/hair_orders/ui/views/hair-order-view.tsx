@@ -4,12 +4,9 @@ import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { formatAmount } from "@/lib/helpers";
 import { useNewHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/components/newHairOrderNoteDrawerStore";
 import { useEditHairOrderStoreActions } from "@/modules/hair_orders/ui/components/editHairOrderStore";
-import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
 import HairOrderNotesTable from "@/modules/ui/components/hair-order-notes-table";
 import HairUsedTable from "@/modules/ui/components/hair-used-table";
-import TransactionsTable from "@/modules/ui/components/transactions-table";
 import { trpc } from "@/trpc/client";
-import { DonutChart } from "@mantine/charts";
 import {
 	Button,
 	Center,
@@ -81,10 +78,6 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 	const [notes] = trpc.hairOrderNotes.getNotesByHairOrderId.useSuspenseQuery({
 		hairOrderId,
 	});
-	const [transactions] = trpc.transactions.getByHairOrderId.useSuspenseQuery({
-		hairOrderId,
-		includeCustomer: true,
-	});
 	const [hairAssignments] = trpc.hairOrders.getHairAssignments.useSuspenseQuery(
 		{ hairOrderId },
 	);
@@ -94,14 +87,18 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 
 	const { openNewHairOrderNoteDrawer } = useNewHairOrderNoteStoreActions();
 
-	const { openNewTransactionDrawer } = useNewTransactionStoreActions();
-
 	const { openEditHairOrderDrawer } = useEditHairOrderStoreActions();
 
 	const recalculateHairOrderPrice =
 		trpc.hairOrders.recalculatePrices.useMutation({
 			onSuccess: () => {
 				utils.hairOrders.getById.invalidate({ id: hairOrderId });
+				utils.hairOrders.getHairAssignments.invalidate({
+					hairOrderId,
+				});
+				utils.hairOrders.getHairSales.invalidate({
+					hairOrderId,
+				});
 				notifications.show({
 					color: "green",
 					title: "Success!",
@@ -117,46 +114,15 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 			},
 		});
 
-	const transactionsTotal = transactions.reduce(
-		(sum, transaction) => sum + transaction.amount,
+	const hairTotalSoldFor = hairAssignments.reduce(
+		(sum, hairAssignment) => sum + hairAssignment.soldFor,
 		0,
 	);
 
-	const hairTotalSoldFor =
-		hairAssignments.reduce(
-			(sum, hairAssignment) => sum + hairAssignment.soldFor,
-			0,
-		) / 100;
-
-	const hairTotalSoldForSale =
-		hairSales.reduce((sum, hairSale) => sum + hairSale.soldFor, 0) / 100;
-
-	const transactionsCompletedTotal = transactions
-		.filter((transaction) => transaction.status === "COMPLETED")
-		.reduce((sum, transaction) => sum + transaction.amount, 0);
-
-	const transactionsPendingTotal = transactions
-		.filter((transaction) => transaction.status === "PENDING")
-		.reduce((sum, transaction) => sum + transaction.amount, 0);
-
-	const chartData = [
-		{
-			name: "Completed",
-			value:
-				transactionsCompletedTotal < 0
-					? transactionsCompletedTotal * -1
-					: transactionsCompletedTotal,
-			color: "green.4",
-		}, // Green
-		{
-			name: "Outstanding",
-			value:
-				transactionsPendingTotal < 0
-					? transactionsPendingTotal * -1
-					: transactionsPendingTotal,
-			color: "pink.6",
-		}, // Red
-	];
+	const hairTotalSoldForSale = hairSales.reduce(
+		(sum, hairSale) => sum + hairSale.soldFor,
+		0,
+	);
 
 	return (
 		<Grid>
@@ -241,7 +207,7 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 									Total:
 								</Text>
 								<Text size="sm" w={500}>
-									£{transactionsTotal.toFixed(2)}
+									{formatAmount(hairOrder.total)}
 								</Text>
 							</Flex>
 							<Flex direction="column">
@@ -249,9 +215,7 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 									Price per gram:
 								</Text>
 								<Text size="sm" w={500}>
-									{hairOrder.pricePerGram
-										? formatAmount(hairOrder.pricePerGram)
-										: 0}
+									{formatAmount(hairOrder.pricePerGram)}
 								</Text>
 							</Flex>
 							<SimpleGrid cols={{ base: 1, sm: 2 }}>
@@ -270,9 +234,6 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 											hairOrderId,
 											onSuccess: () => {
 												recalculateHairOrderPrice.mutate({ hairOrderId });
-												utils.hairOrders.getById.invalidate({
-													id: hairOrderId,
-												});
 											},
 										})
 									}
@@ -322,21 +283,10 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 						</Text>
 						<Center>
 							<RecoveryCard
-								spent={transactionsTotal}
+								spent={hairOrder.total}
 								recovered={hairTotalSoldFor + hairTotalSoldForSale}
 							/>
 						</Center>
-					</Paper>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Text size="lg" fw={700} ta="center">
-							Transactions Summary
-						</Text>
-						<Center>
-							<DonutChart size={124} thickness={15} data={chartData} />
-						</Center>
-						<Text size="md" ta="center" fw={500} mt="sm">
-							Total: <b>£ {transactionsTotal.toFixed(2)}</b>
-						</Text>
 					</Paper>
 				</Stack>
 			</GridCol>
@@ -384,71 +334,6 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 											}
 										/>
 									</HairOrderNotesTable.RowActions>
-								</>
-							}
-						/>
-					</Paper>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Group justify="space-between" gap="sm">
-							<Title order={4}>Transactions</Title>
-							<Button
-								disabled={!hairOrder.customer}
-								onClick={() => {
-									openNewTransactionDrawer({
-										relations: {
-											hairOrderId,
-											// biome-ignore lint/style/noNonNullAssertion: <explanation>
-											customerId: hairOrder.customer!.id,
-										},
-										onSuccess: () => {
-											utils.transactions.getByHairOrderId.invalidate({
-												hairOrderId,
-											});
-											recalculateHairOrderPrice.mutate({ hairOrderId });
-										},
-									});
-								}}
-							>
-								New
-							</Button>
-						</Group>
-						<TransactionsTable
-							transactions={transactions}
-							columns={[
-								"Customer",
-								"Transaction Name",
-								"Type",
-								"Amount",
-								"Completed At",
-								"",
-							]}
-							row={
-								<>
-									<TransactionsTable.RowCustomerName />
-									<TransactionsTable.RowTransactionName />
-									<TransactionsTable.RowType />
-									<TransactionsTable.RowAmount />
-									<TransactionsTable.RowCompletedAt />
-									<TransactionsTable.RowActions>
-										<TransactionsTable.RowActionViewTransaction />
-										<TransactionsTable.RowActionUpdate
-											onUpdated={() => {
-												recalculateHairOrderPrice.mutate({ hairOrderId });
-												utils.transactions.getByHairOrderId.invalidate({
-													hairOrderId,
-													includeCustomer: true,
-												});
-											}}
-										/>
-										<TransactionsTable.RowActionDelete
-											onDeleted={() => {
-												recalculateHairOrderPrice.mutate({ hairOrderId });
-												utils.transactions.getByHairOrderId.invalidate({
-													hairOrderId,
-												});
-											}}
-										/>
-									</TransactionsTable.RowActions>
 								</>
 							}
 						/>
@@ -508,7 +393,7 @@ interface RecoveryCardProps {
 }
 
 export function RecoveryCard({ spent, recovered }: RecoveryCardProps) {
-	const net = recovered + spent; // since spent is negative
+	const net = recovered - spent; // since spent is negative
 	const isProfit = net > 0;
 
 	return (
