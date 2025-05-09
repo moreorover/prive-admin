@@ -49,6 +49,23 @@ export const hairAssignedRouter = createTRPCRouter({
 				pricePerGram: h.pricePerGram / 100,
 			}));
 		}),
+	getByHairOrderId: protectedProcedure
+		.input(z.object({ hairOrderId: z.string().cuid2() }))
+		.query(async ({ input }) => {
+			const { hairOrderId } = input;
+
+			const hairAssigned = await prisma.hairAssigned.findMany({
+				where: { hairOrderId },
+				include: { client: true },
+			});
+
+			return hairAssigned.map((h) => ({
+				...h,
+				soldFor: h.soldFor / 100,
+				profit: h.profit / 100,
+				pricePerGram: h.pricePerGram / 100,
+			}));
+		}),
 	create: protectedProcedure
 		.input(
 			z.object({

@@ -14,7 +14,7 @@ export type Hair = {
 	pricePerGram: number;
 	hairOrderId: string;
 	appointmentId: string | null;
-	hairSaleId?: string;
+	client: { id: string; name: string };
 };
 
 interface Props {
@@ -55,6 +55,15 @@ function HairAssignedTable({ hair, columns, row }: Props) {
 				))}
 			</Table.Tbody>
 		</Table>
+	);
+}
+
+function HairAssignedTableRowClient() {
+	const { hair } = useHairAssignedTableRowContext();
+	return (
+		<Table.Td>
+			<Text>{hair.client.name}</Text>
+		</Table.Td>
 	);
 }
 
@@ -164,6 +173,16 @@ function HairAssignedTableRowActionViewHairOrder() {
 	);
 }
 
+function HairAssignedTableRowActionViewClient() {
+	const { hair } = useHairAssignedTableRowContext();
+
+	return (
+		<Menu.Item component={Link} href={`/dashboard/customers/${hair.client.id}`}>
+			View Client
+		</Menu.Item>
+	);
+}
+
 function HairAssignedTableRowActionUpdate({
 	onSuccess,
 }: { onSuccess: () => void }) {
@@ -204,11 +223,13 @@ function HairAssignedTableRowActionDelete({
 	);
 }
 
+HairAssignedTable.RowClient = HairAssignedTableRowClient;
 HairAssignedTable.RowWeight = HairAssignedTableRowWeight;
 HairAssignedTable.RowSoldFor = HairAssignedTableRowSoldFor;
 HairAssignedTable.RowProfit = HairAssignedTableRowProfit;
 HairAssignedTable.RowPricePerGram = HairAssignedTableRowPricePerGram;
 HairAssignedTable.RowActions = HairAssignedTableRowActions;
+HairAssignedTable.RowActionViewClient = HairAssignedTableRowActionViewClient;
 HairAssignedTable.RowActionViewAppointment =
 	HairAssignedTableRowActionViewAppointment;
 HairAssignedTable.RowActionViewHairOrder =

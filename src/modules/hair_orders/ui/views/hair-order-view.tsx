@@ -4,6 +4,7 @@ import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { formatAmount } from "@/lib/helpers";
 import { useNewHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/components/newHairOrderNoteDrawerStore";
 import { useEditHairOrderStoreActions } from "@/modules/hair_orders/ui/components/editHairOrderStore";
+import HairAssignedTable from "@/modules/ui/components/hair-assigned-table";
 import HairOrderNotesTable from "@/modules/ui/components/hair-order-notes-table";
 import HairUsedTable from "@/modules/ui/components/hair-used-table";
 import { trpc } from "@/trpc/client";
@@ -82,6 +83,9 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 		{ hairOrderId },
 	);
 	const [hairSales] = trpc.hairOrders.getHairSales.useSuspenseQuery({
+		hairOrderId,
+	});
+	const [hairAssigned] = trpc.hairAssigned.getByHairOrderId.useSuspenseQuery({
 		hairOrderId,
 	});
 
@@ -334,6 +338,35 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 											}
 										/>
 									</HairOrderNotesTable.RowActions>
+								</>
+							}
+						/>
+					</Paper>
+					<Paper withBorder p="md" radius="md" shadow="sm">
+						<Group justify="space-between" gap="sm">
+							<Title order={4}>Hair Assigned</Title>
+						</Group>
+						<HairAssignedTable
+							hair={hairAssigned}
+							columns={[
+								"Weight in Grams",
+								"Sold For",
+								"Profit",
+								"Price per Gram",
+								"Client",
+								"",
+							]}
+							row={
+								<>
+									<HairAssignedTable.RowWeight />
+									<HairAssignedTable.RowSoldFor />
+									<HairAssignedTable.RowProfit />
+									<HairAssignedTable.RowPricePerGram />
+									<HairAssignedTable.RowClient />
+									<HairAssignedTable.RowActions>
+										<HairAssignedTable.RowActionViewAppointment />
+										<HairAssignedTable.RowActionViewClient />
+									</HairAssignedTable.RowActions>
 								</>
 							}
 						/>
