@@ -249,6 +249,7 @@ model HairOrder {
   weightReceived Int             @default(0) @db.Integer
   weightUsed     Int             @default(0) @db.Integer
   pricePerGram   Int             @default(0) @db.Integer
+  total          Int             @default(0) @db.Integer
 
   customerId String?
   customer   Customer? @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: SetNull)

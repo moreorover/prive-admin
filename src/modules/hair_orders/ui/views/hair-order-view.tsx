@@ -102,6 +102,19 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 		trpc.hairOrders.recalculatePrices.useMutation({
 			onSuccess: () => {
 				utils.hairOrders.getById.invalidate({ id: hairOrderId });
+				utils.hairOrders.getHairAssignments.invalidate({
+					hairOrderId,
+				});
+				utils.hairOrders.getHairSales.invalidate({
+					hairOrderId,
+				});
+				utils.transactions.getByHairOrderId.invalidate({
+					hairOrderId,
+				});
+				utils.transactions.getByHairOrderId.invalidate({
+					hairOrderId,
+					includeCustomer: true,
+				});
 				notifications.show({
 					color: "green",
 					title: "Success!",
@@ -241,7 +254,7 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 									Total:
 								</Text>
 								<Text size="sm" w={500}>
-									£{transactionsTotal.toFixed(2)}
+									{formatAmount(hairOrder.total)}
 								</Text>
 							</Flex>
 							<Flex direction="column">
@@ -249,9 +262,7 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 									Price per gram:
 								</Text>
 								<Text size="sm" w={500}>
-									{hairOrder.pricePerGram
-										? formatAmount(hairOrder.pricePerGram)
-										: 0}
+									{formatAmount(hairOrder.pricePerGram)}
 								</Text>
 							</Flex>
 							<SimpleGrid cols={{ base: 1, sm: 2 }}>
@@ -270,9 +281,6 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 											hairOrderId,
 											onSuccess: () => {
 												recalculateHairOrderPrice.mutate({ hairOrderId });
-												utils.hairOrders.getById.invalidate({
-													id: hairOrderId,
-												});
 											},
 										})
 									}
@@ -401,9 +409,6 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 											customerId: hairOrder.customer!.id,
 										},
 										onSuccess: () => {
-											utils.transactions.getByHairOrderId.invalidate({
-												hairOrderId,
-											});
 											recalculateHairOrderPrice.mutate({ hairOrderId });
 										},
 									});
@@ -434,18 +439,11 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 										<TransactionsTable.RowActionUpdate
 											onUpdated={() => {
 												recalculateHairOrderPrice.mutate({ hairOrderId });
-												utils.transactions.getByHairOrderId.invalidate({
-													hairOrderId,
-													includeCustomer: true,
-												});
 											}}
 										/>
 										<TransactionsTable.RowActionDelete
 											onDeleted={() => {
 												recalculateHairOrderPrice.mutate({ hairOrderId });
-												utils.transactions.getByHairOrderId.invalidate({
-													hairOrderId,
-												});
 											}}
 										/>
 									</TransactionsTable.RowActions>

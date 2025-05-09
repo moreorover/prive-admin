@@ -84,6 +84,7 @@ export const createHairOrder = (faker: Faker) => {
 			faker.date.soon({ days: 10 }),
 		]),
 		status: faker.helpers.arrayElement(["PENDING", "COMPLETED"]),
+		total: faker.number.int({ min: 100, max: 1000 }),
 	};
 };
 

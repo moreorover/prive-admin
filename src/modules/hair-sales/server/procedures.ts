@@ -81,7 +81,11 @@ export const hairSalesRouter = createTRPCRouter({
 				include: { hairOrder: true },
 			});
 
-			return hairAssignments;
+			return hairAssignments.map((a) => ({
+				...a,
+				soldFor: a.soldFor / 100,
+				profit: a.profit / 100,
+			}));
 		}),
 	getHairAssignmentById: protectedProcedure
 		.input(z.object({ id: z.string().cuid2().nullable() }))
@@ -101,7 +105,11 @@ export const hairSalesRouter = createTRPCRouter({
 				throw new TRPCError({ code: "NOT_FOUND" });
 			}
 
-			return hairAssignment;
+			return {
+				...hairAssignment,
+				soldFor: hairAssignment.soldFor / 100,
+				profit: hairAssignment.profit / 100,
+			};
 		}),
 	deleteHairAssignmentById: protectedProcedure
 		.input(z.object({ id: z.string().cuid2().nullable() }))
