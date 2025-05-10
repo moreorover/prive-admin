@@ -21,9 +21,6 @@ export default async function Page({ params }: Props) {
 		appointmentId,
 		includeCustomer: true,
 	});
-	void trpc.appointmentNotes.getNotesByAppointmentId.prefetch({
-		appointmentId,
-	});
 
 	const session = await auth.api.getSession({
 		headers: await headers(),
