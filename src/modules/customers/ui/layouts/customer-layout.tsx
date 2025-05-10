@@ -80,6 +80,12 @@ function CustomerSuspense({ customerId }: Props) {
 				<Stack gap="xs">
 					<Button
 						component={Link}
+						href={`/dashboard/customers/${customerId}/notes`}
+					>
+						Notes
+					</Button>
+					<Button
+						component={Link}
 						href={`/dashboard/customers/${customerId}/appointments`}
 					>
 						Appointments

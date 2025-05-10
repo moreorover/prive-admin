@@ -1,6 +1,7 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
+import { useNewHairOrderStoreActions } from "@/modules/hair_orders/ui/components/newHairOrderStore";
 import { FilterDateMenu } from "@/modules/ui/components/filter-date-menu";
 import HairOrdersTable from "@/modules/ui/components/hair-orders-table";
 import useDateRange from "@/modules/ui/hooks/useDateRange";
@@ -17,8 +18,6 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
-import { modals } from "@mantine/modals";
-import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { useRouter } from "next/navigation";
@@ -37,36 +36,7 @@ export const HairOrdersView = () => {
 	const router = useRouter();
 	const { start, end, range, rangeText, createQueryString } = useDateRange();
 
-	const createHairOrderMutation = trpc.hairOrders.create.useMutation({
-		onSuccess: () => {
-			utils.hairOrders.getAll.invalidate();
-			notifications.show({
-				color: "green",
-				title: "Success!",
-				message: "Hair Order created.",
-			});
-		},
-		onError: (err) => {
-			notifications.show({
-				color: "red",
-				title: "Failed to create Hair Order.",
-				message: `${err}`,
-			});
-		},
-	});
-
-	const openCreateHairOrderModal = () =>
-		modals.openConfirmModal({
-			title: "Create Hair Order?",
-			centered: true,
-			children: (
-				<Text size="sm">Are you sure you want to create new Hair Order?</Text>
-			),
-			labels: { confirm: "Create Hair Order", cancel: "Cancel" },
-			confirmProps: { color: "red" },
-			onCancel: () => {},
-			onConfirm: () => createHairOrderMutation.mutate(),
-		});
+	const { openNewHairOrderDrawer } = useNewHairOrderStoreActions();
 
 	return (
 		<Container size="lg">
@@ -91,7 +61,15 @@ export const HairOrdersView = () => {
 								router.push(`/dashboard/hair-orders${createQueryString(range)}`)
 							}
 						/>
-						<Button onClick={openCreateHairOrderModal}>New</Button>
+						<Button
+							onClick={() =>
+								openNewHairOrderDrawer({
+									onSuccess: () => utils.hairOrders.getAll.invalidate(),
+								})
+							}
+						>
+							New
+						</Button>
 					</Flex>
 				</Flex>
 				<Divider />

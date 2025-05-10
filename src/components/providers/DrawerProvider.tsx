@@ -14,6 +14,10 @@ import { DeleteHairOrderNoteDrawer } from "@/modules/hair_order_notes/ui/compone
 import { EditHairOrderNoteDrawer } from "@/modules/hair_order_notes/ui/components/edit-appointment-note-drawer";
 import { NewHairOrderNoteDrawer } from "@/modules/hair_order_notes/ui/components/new-hair-order-note-drawer";
 import { EditHairOrderDrawer } from "@/modules/hair_orders/ui/components/edit-hairOrder-drawer";
+import { NewHairOrderDrawer } from "@/modules/hair_orders/ui/components/new-hairOrder-drawer";
+import { DeleteNoteDrawer } from "@/modules/notes/ui/components/delete-note-drawer";
+import { EditNoteDrawer } from "@/modules/notes/ui/components/edit-note-drawer";
+import { NewNoteDrawer } from "@/modules/notes/ui/components/new-note-drawer";
 import { DeleteTransactionDrawer } from "@/modules/transactions/ui/components/delete-transaction-drawer";
 import { EditTransactionDrawer } from "@/modules/transactions/ui/components/edit-transaction-drawer";
 import { NewTransactionDrawer } from "@/modules/transactions/ui/components/new-transaction-drawer";
@@ -39,11 +43,16 @@ export default function DrawerProvider() {
 			<EditHairOrderNoteDrawer />
 			<DeleteHairOrderNoteDrawer />
 
+			<NewHairOrderDrawer />
 			<EditHairOrderDrawer />
 
 			<NewHairAssignedDrawer />
 			<EditHairAssignedDrawer />
 			<DeleteHairAssignedDrawer />
+
+			<NewNoteDrawer />
+			<EditNoteDrawer />
+			<DeleteNoteDrawer />
 		</>
 	);
 }

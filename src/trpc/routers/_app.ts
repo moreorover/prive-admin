@@ -6,6 +6,7 @@ import { hairOrderRouter } from "@/modules/hair_orders/server/procedures";
 import { transactionsRouter } from "@/modules/transactions/server/procedures";
 import { createTRPCRouter } from "@/trpc/init";
 import { hairAssignedRouter } from "@/trpc/routers/hairAssigned";
+import { notesRouter } from "@/trpc/routers/notes";
 
 export const appRouter = createTRPCRouter({
 	appointments: appointmentsRouter,
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
 	hairOrders: hairOrderRouter,
 	hairAssigned: hairAssignedRouter,
 	hairOrderNotes: hairOrderNotesRouter,
+	notes: notesRouter,
 	transactions: transactionsRouter,
 });
 // export type definition of API

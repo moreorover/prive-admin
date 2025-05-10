@@ -1,14 +1,14 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { useNewAppointmentNoteStoreActions } from "@/modules/appointment_notes/ui/components/newAppointmentNoteDrawerStore";
 import { useEditAppointmentStoreActions } from "@/modules/appointments/ui/components/editAppointmentStore";
 import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
 import { useNewHairAssignedStoreActions } from "@/modules/hair-assigned/ui/components/newHairAssignedStore";
+import { useNewNoteStoreActions } from "@/modules/notes/ui/components/newNoteStore";
 import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
-import AppointmentNotesTable from "@/modules/ui/components/appointment-notes-table";
 import CustomersTable from "@/modules/ui/components/customers-table";
 import HairAssignedTable from "@/modules/ui/components/hair-assigned-table";
+import NotesTable from "@/modules/ui/components/notes-table";
 import TransactionsTable from "@/modules/ui/components/transactions-table";
 import { trpc } from "@/trpc/client";
 import { DonutChart } from "@mantine/charts";
@@ -81,10 +81,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 		0,
 	);
 
-	const [notes] =
-		trpc.appointmentNotes.getNotesByAppointmentId.useSuspenseQuery({
-			appointmentId,
-		});
+	const [notes] = trpc.notes.getBy.useSuspenseQuery({ appointmentId });
 
 	const transactionsTotal = transactions.reduce(
 		(sum, transaction) => sum + transaction.amount,
@@ -119,7 +116,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 	];
 
 	const { openEditAppointmentDrawer } = useEditAppointmentStoreActions();
-	const { openNewAppointmentNoteDrawer } = useNewAppointmentNoteStoreActions();
+	const { openNewNoteDrawer } = useNewNoteStoreActions();
 	const { openNewTransactionDrawer } = useNewTransactionStoreActions();
 	const { openNewHairAssignedDrawer } = useNewHairAssignedStoreActions();
 
@@ -250,16 +247,15 @@ function AppointmentSuspense({ appointmentId }: Props) {
 								<Title order={4}>Notes</Title>
 								<Button
 									onClick={() => {
-										openNewAppointmentNoteDrawer({
+										openNewNoteDrawer({
 											relations: {
 												appointmentId,
+												customerId: appointment.clientId,
 											},
 											onSuccess: () => {
-												utils.appointmentNotes.getNotesByAppointmentId.invalidate(
-													{
-														appointmentId,
-													},
-												);
+												utils.notes.getBy.invalidate({
+													appointmentId,
+												});
 											},
 										});
 									}}
@@ -267,33 +263,29 @@ function AppointmentSuspense({ appointmentId }: Props) {
 									New
 								</Button>
 							</Group>
-							<AppointmentNotesTable
+							<NotesTable
 								notes={notes}
 								columns={["Created At", "Note", ""]}
 								row={
 									<>
-										<AppointmentNotesTable.RowCreatedAt />
-										<AppointmentNotesTable.RowNote />
-										<AppointmentNotesTable.RowActions>
-											<AppointmentNotesTable.RowActionUpdate
+										<NotesTable.RowCreatedAt />
+										<NotesTable.RowNote />
+										<NotesTable.RowActions>
+											<NotesTable.RowActionUpdate
 												onSuccess={() =>
-													utils.appointmentNotes.getNotesByAppointmentId.invalidate(
-														{
-															appointmentId,
-														},
-													)
+													utils.notes.getBy.invalidate({
+														appointmentId,
+													})
 												}
 											/>
-											<AppointmentNotesTable.RowActionDelete
+											<NotesTable.RowActionDelete
 												onSuccess={() =>
-													utils.appointmentNotes.getNotesByAppointmentId.invalidate(
-														{
-															appointmentId,
-														},
-													)
+													utils.notes.getBy.invalidate({
+														appointmentId,
+													})
 												}
 											/>
-										</AppointmentNotesTable.RowActions>
+										</NotesTable.RowActions>
 									</>
 								}
 							/>

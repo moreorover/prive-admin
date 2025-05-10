@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { CustomerNotesView } from "@/modules/customers/ui/views/customer-notes-view";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -8,6 +9,7 @@ type Props = {
 
 export default async function Page({ params }: Props) {
 	const { customerId } = await params;
+
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
@@ -16,7 +18,5 @@ export default async function Page({ params }: Props) {
 		return redirect("/");
 	}
 
-	return redirect(`/dashboard/customers/${customerId}/notes`);
-
-	// return <CustomerAppointmentsView customerId={customerId} />;
+	return <CustomerNotesView customerId={customerId} />;
 }

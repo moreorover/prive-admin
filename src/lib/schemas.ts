@@ -64,7 +64,7 @@ export const hairOrderSchema = z.object({
 	id: z.string().cuid2().optional(),
 	placedAt: z.union([dateSchema, z.null(), z.date()]),
 	arrivedAt: z.union([dateSchema, z.null(), z.date()]),
-	customerId: z.string().cuid2().nullish(),
+	customerId: z.string().cuid2(),
 	weightReceived: z.number(),
 	weightUsed: z.number(),
 	total: z.number(),
@@ -82,6 +82,19 @@ export const hairOrderFormSchema = (minWeight: number) =>
 		weightUsed: z.number(),
 		total: z.number(),
 	});
+
+export const noteSchema = z.object({
+	id: z.string().cuid2().optional(),
+	note: z.string(),
+});
+
+export type Note = z.infer<typeof noteSchema>;
+
+export const noteSchemaApi = noteSchema.extend({
+	appointmentId: z.string().cuid2().nullish(),
+	hairOrderId: z.string().cuid2().nullish(),
+	customerId: z.string().cuid2(),
+});
 
 export const hairOrderNoteSchema = z.object({
 	id: z.string().cuid2().optional(),
