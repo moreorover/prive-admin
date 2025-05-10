@@ -17,18 +17,16 @@ const initialState: State = {
 	onSuccess: () => {},
 };
 
-export const useEditCustomerStore = create<State & { actions: Actions }>(
-	(set) => ({
-		...initialState,
-		actions: {
-			openEditCustomerDrawer: (data: Partial<State>) =>
-				set(() => ({ ...data, isOpen: true })),
-			reset: () => {
-				set(initialState);
-			},
+const useEditCustomerStore = create<State & { actions: Actions }>((set) => ({
+	...initialState,
+	actions: {
+		openEditCustomerDrawer: (data: Partial<State>) =>
+			set(() => ({ ...data, isOpen: true })),
+		reset: () => {
+			set(initialState);
 		},
-	}),
-);
+	},
+}));
 
 export const useEditCustomerStoreDrawerIsOpen = () =>
 	useEditCustomerStore((state) => state.isOpen);

@@ -6,6 +6,7 @@ import { useNewHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/c
 import { useEditHairOrderStoreActions } from "@/modules/hair_orders/ui/components/editHairOrderStore";
 import HairAssignedTable from "@/modules/ui/components/hair-assigned-table";
 import HairOrderNotesTable from "@/modules/ui/components/hair-order-notes-table";
+import { RecoveryCard } from "@/modules/ui/components/recovery-card";
 import { trpc } from "@/trpc/client";
 import {
 	Button,
@@ -20,13 +21,12 @@ import {
 	SimpleGrid,
 	Stack,
 	Text,
-	ThemeIcon,
 	Title,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import {} from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -364,56 +364,5 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 				</Stack>
 			</GridCol>
 		</Grid>
-	);
-}
-
-interface RecoveryCardProps {
-	spent: number; // Example: -1000
-	recovered: number; // Example: 500
-}
-
-export function RecoveryCard({ spent, recovered }: RecoveryCardProps) {
-	const net = recovered - spent; // since spent is negative
-	const isProfit = net > 0;
-
-	return (
-		// <Card shadow="md" padding="lg" radius="md" withBorder>
-		<Stack gap="xs">
-			{/*<Text size="lg" fw={700}>*/}
-			{/*	Financial Recovery*/}
-			{/*</Text>*/}
-
-			<Group justify="space-between">
-				<Text>Spent</Text>
-				<Text c="red">{spent} £</Text>
-			</Group>
-
-			<Group justify="space-between">
-				<Text>Recovered</Text>
-				<Text c="blue">{recovered} £</Text>
-			</Group>
-
-			<Group justify="space-between">
-				<Group gap={4}>
-					<ThemeIcon
-						color={isProfit ? "green" : "red"}
-						variant="light"
-						size="sm"
-					>
-						{isProfit ? (
-							<ArrowUpRight size="1rem" />
-						) : (
-							<ArrowDownRight size="1rem" />
-						)}
-					</ThemeIcon>
-					<Text fw={500}>{isProfit ? "Profit" : "Still in debt"}</Text>
-				</Group>
-
-				<Text fw={700} c={isProfit ? "green" : "red"}>
-					{net} €
-				</Text>
-			</Group>
-		</Stack>
-		// </Card>
 	);
 }
