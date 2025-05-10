@@ -61,7 +61,7 @@ export const createAppointment = (faker: Faker) => {
 	};
 };
 
-export const createAppointmentNote = (faker: Faker) => {
+export const createNote = (faker: Faker) => {
 	return {
 		note: faker.lorem.sentence(),
 		createdAt: faker.helpers.arrayElement([
@@ -85,15 +85,5 @@ export const createHairOrder = (faker: Faker) => {
 		]),
 		status: faker.helpers.arrayElement(["PENDING", "COMPLETED"]),
 		total: faker.number.int({ min: 100, max: 1000 }),
-	};
-};
-
-export const createHairOrderNote = (faker: Faker) => {
-	return {
-		note: faker.lorem.sentence(),
-		createdAt: faker.helpers.arrayElement([
-			faker.date.recent({ days: 10 }),
-			faker.date.soon({ days: 10 }),
-		]),
 	};
 };

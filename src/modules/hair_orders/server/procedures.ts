@@ -67,15 +67,19 @@ export const hairOrderRouter = createTRPCRouter({
 				total: hairOrder.total / 100,
 			};
 		}),
-	create: protectedProcedure.mutation(async ({ ctx }) => {
-		const { user } = ctx;
-		const c = await prisma.hairOrder.create({
-			data: {
-				createdById: user.id,
-			},
-		});
-		return c;
-	}),
+	create: protectedProcedure
+		.input(z.object({ hairOrder: hairOrderSchema }))
+		.mutation(async ({ ctx, input }) => {
+			const { hairOrder } = input;
+			const { user } = ctx;
+			const c = await prisma.hairOrder.create({
+				data: {
+					...hairOrder,
+					createdById: user.id,
+				},
+			});
+			return c;
+		}),
 	update: protectedProcedure
 		.input(z.object({ hairOrder: hairOrderSchema }))
 		.mutation(async ({ input }) => {

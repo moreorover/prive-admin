@@ -2,10 +2,10 @@
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { formatAmount } from "@/lib/helpers";
-import { useNewHairOrderNoteStoreActions } from "@/modules/hair_order_notes/ui/components/newHairOrderNoteDrawerStore";
 import { useEditHairOrderStoreActions } from "@/modules/hair_orders/ui/components/editHairOrderStore";
+import { useNewNoteStoreActions } from "@/modules/notes/ui/components/newNoteStore";
 import HairAssignedTable from "@/modules/ui/components/hair-assigned-table";
-import HairOrderNotesTable from "@/modules/ui/components/hair-order-notes-table";
+import NotesTable from "@/modules/ui/components/notes-table";
 import { RecoveryCard } from "@/modules/ui/components/recovery-card";
 import { trpc } from "@/trpc/client";
 import {
@@ -75,14 +75,14 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 	const [hairOrder] = trpc.hairOrders.getById.useSuspenseQuery({
 		id: hairOrderId,
 	});
-	const [notes] = trpc.hairOrderNotes.getNotesByHairOrderId.useSuspenseQuery({
+	const [notes] = trpc.notes.getBy.useSuspenseQuery({
 		hairOrderId,
 	});
 	const [hairAssigned] = trpc.hairAssigned.getByHairOrderId.useSuspenseQuery({
 		hairOrderId,
 	});
 
-	const { openNewHairOrderNoteDrawer } = useNewHairOrderNoteStoreActions();
+	const { openNewNoteDrawer } = useNewNoteStoreActions();
 
 	const { openEditHairOrderDrawer } = useEditHairOrderStoreActions();
 
@@ -290,44 +290,46 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 						<Group justify="space-between" gap="sm">
 							<Title order={4}>Notes</Title>
 							<Button
-								onClick={() =>
-									openNewHairOrderNoteDrawer({
-										relations: { hairOrderId },
+								onClick={() => {
+									openNewNoteDrawer({
+										relations: {
+											hairOrderId,
+											customerId: hairOrder.customerId,
+										},
 										onSuccess: () => {
-											utils.hairOrderNotes.getNotesByHairOrderId.invalidate({
+											utils.notes.getBy.invalidate({
 												hairOrderId,
 											});
 										},
-									})
-								}
+									});
+								}}
 							>
 								New
 							</Button>
 						</Group>
-						<HairOrderNotesTable
+						<NotesTable
 							notes={notes}
-							columns={["Created At", "Note", "Creator", ""]}
+							columns={["Created At", "Note", ""]}
 							row={
 								<>
-									<HairOrderNotesTable.RowCreatedAt />
-									<HairOrderNotesTable.RowNote />
-									<HairOrderNotesTable.RowCreatedBy />
-									<HairOrderNotesTable.RowActions>
-										<HairOrderNotesTable.RowActionUpdate
+									<NotesTable.RowCreatedAt />
+									<NotesTable.RowNote />
+									<NotesTable.RowActions>
+										<NotesTable.RowActionUpdate
 											onSuccess={() =>
-												utils.hairOrderNotes.getNotesByHairOrderId.invalidate({
+												utils.notes.getBy.invalidate({
 													hairOrderId,
 												})
 											}
 										/>
-										<HairOrderNotesTable.RowActionDelete
+										<NotesTable.RowActionDelete
 											onSuccess={() =>
-												utils.hairOrderNotes.getNotesByHairOrderId.invalidate({
+												utils.notes.getBy.invalidate({
 													hairOrderId,
 												})
 											}
 										/>
-									</HairOrderNotesTable.RowActions>
+									</NotesTable.RowActions>
 								</>
 							}
 						/>

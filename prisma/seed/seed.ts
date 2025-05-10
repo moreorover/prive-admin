@@ -3,10 +3,9 @@ import prisma from "@/lib/prisma";
 import { faker } from "@faker-js/faker";
 import {
 	createAppointment,
-	createAppointmentNote,
 	createCustomer,
 	createHairOrder,
-	createHairOrderNote,
+	createNote,
 	createProduct,
 	createProductVariant,
 	createTransaction,
@@ -36,12 +35,28 @@ async function seedUsers() {
 }
 
 async function seedCustomers() {
+	const user = await prisma.user.findFirst({ select: { id: true } });
+
+	if (!user) {
+		throw Error("User does not exist");
+	}
+
 	for (const customer of generateObjects(10, () => createCustomer(faker))) {
 		const createdCustomer = await prisma.customer.create({
 			data: customer,
 		});
 
 		customerIds.push(createdCustomer.id);
+
+		for (const note of generateObjects(10, () => createNote(faker))) {
+			await prisma.note.create({
+				data: {
+					...note,
+					customerId: createdCustomer.id,
+					createdById: user.id,
+				},
+			});
+		}
 	}
 }
 
@@ -76,6 +91,12 @@ const seedTransactions = async (): Promise<void> => {
 };
 
 const seedAppointments = async (): Promise<void> => {
+	const user = await prisma.user.findFirst({ select: { id: true } });
+
+	if (!user) {
+		throw Error("User does not exist");
+	}
+
 	for (const customerId of customerIds) {
 		for (const appointment of generateObjects(10, () =>
 			createAppointment(faker),
@@ -96,13 +117,13 @@ const seedAppointments = async (): Promise<void> => {
 				});
 			}
 
-			for (const note of generateObjects(10, () =>
-				createAppointmentNote(faker),
-			)) {
-				await prisma.appointmentNote.create({
+			for (const note of generateObjects(10, () => createNote(faker))) {
+				await prisma.note.create({
 					data: {
 						...note,
 						appointmentId: createdAppointment.id,
+						customerId,
+						createdById: user.id,
 					},
 				});
 			}
@@ -123,11 +144,12 @@ const seedHairOrders = async (): Promise<void> => {
 			data: { ...hairOrder, customerId, createdById: user.id },
 		});
 
-		for (const note of generateObjects(2, () => createHairOrderNote(faker))) {
-			await prisma.hairOrderNote.create({
+		for (const note of generateObjects(2, () => createNote(faker))) {
+			await prisma.note.create({
 				data: {
 					...note,
 					hairOrderId: createdHairOrder.id,
+					customerId,
 					createdById: user.id,
 				},
 			});

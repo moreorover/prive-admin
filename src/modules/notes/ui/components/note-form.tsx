@@ -1,26 +1,23 @@
 "use client";
 
-import { type AppointmentNote, appointmentNoteSchema } from "@/lib/schemas";
-import { Button, Textarea } from "@mantine/core";
+import { noteSchema } from "@/lib/schemas";
+import type { Note } from "@/lib/schemas";
+import { Button, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { Trash2 } from "lucide-react";
 import { zodResolver } from "mantine-form-zod-resolver";
 
 type Props = {
-	appointmentNote: AppointmentNote;
-	onSubmitAction: (values: AppointmentNote) => void;
+	note: Note;
+	onSubmitAction: (values: Note) => void;
 	onDelete?: () => void;
 };
 
-export const AppointmentNoteForm = ({
-	appointmentNote,
-	onSubmitAction,
-	onDelete,
-}: Props) => {
+export const NoteForm = ({ note, onSubmitAction, onDelete }: Props) => {
 	const form = useForm({
 		mode: "uncontrolled",
-		initialValues: appointmentNote,
-		validate: zodResolver(appointmentNoteSchema),
+		initialValues: note,
+		validate: zodResolver(noteSchema),
 	});
 
 	async function handleSubmit(values: typeof form.values) {
@@ -33,19 +30,18 @@ export const AppointmentNoteForm = ({
 
 	return (
 		<form onSubmit={form.onSubmit(handleSubmit)}>
-			<Textarea
+			<TextInput
 				label="Note"
-				placeholder="Your appointment note"
+				placeholder="Something to note..."
 				required
 				key={form.key("note")}
 				{...form.getInputProps("note")}
 			/>
 			<Button fullWidth mt="xl" type="submit">
-				{appointmentNote.id ? "Update" : "Create"}
+				{note.id ? "Update" : "Create"}
 			</Button>
-			{appointmentNote.id && (
+			{note.id && (
 				<Button
-					disabled
 					leftSection={<Trash2 />}
 					fullWidth
 					mt="xl"
