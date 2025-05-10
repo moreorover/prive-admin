@@ -66,19 +66,17 @@ function AppointmentSuspense({ appointmentId }: Props) {
 			appointmentId,
 		});
 
-	const [hairAssignments] =
-		trpc.appointments.getHairAssignments.useSuspenseQuery({ appointmentId });
-
 	const [hairAssigned] = trpc.hairAssigned.getByAppointmentId.useSuspenseQuery({
 		appointmentId,
 	});
 
-	const hairCost = hairAssignments.reduce(
-		(sum, hairAssignment) => sum + hairAssignment.total,
+	const hairCost = hairAssigned.reduce(
+		(sum, hairAssignment) =>
+			sum + (hairAssignment.soldFor - hairAssignment.profit),
 		0,
 	);
 
-	const hairSoldFor = hairAssignments.reduce(
+	const hairSoldFor = hairAssigned.reduce(
 		(sum, hairAssignment) => sum + hairAssignment.soldFor,
 		0,
 	);
@@ -387,9 +385,6 @@ function AppointmentSuspense({ appointmentId }: Props) {
 											},
 											onSuccess: () => {
 												utils.hairAssigned.getByAppointmentId.invalidate({
-													appointmentId,
-												});
-												utils.hairOrders.getHairOrderOptions.invalidate({
 													appointmentId,
 												});
 											},

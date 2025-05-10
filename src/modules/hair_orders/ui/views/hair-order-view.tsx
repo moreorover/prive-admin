@@ -90,12 +90,6 @@ function HairOrderSuspense({ hairOrderId }: Props) {
 		trpc.hairOrders.recalculatePrices.useMutation({
 			onSuccess: () => {
 				utils.hairOrders.getById.invalidate({ id: hairOrderId });
-				utils.hairOrders.getHairAssignments.invalidate({
-					hairOrderId,
-				});
-				utils.hairOrders.getHairSales.invalidate({
-					hairOrderId,
-				});
 				notifications.show({
 					color: "green",
 					title: "Success!",
