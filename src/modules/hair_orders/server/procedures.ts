@@ -13,22 +13,6 @@ export const hairOrderRouter = createTRPCRouter({
 
 		return hairOrders;
 	}),
-	getHairOrderOptions: protectedProcedure
-		.input(z.object({ appointmentId: z.string().cuid2() }))
-		.query(async ({ input }) => {
-			const { appointmentId } = input;
-			return prisma.hairOrder.findMany({
-				where: {
-					hairAssignedToAppointment: {
-						none: {
-							appointmentId,
-						},
-					},
-				},
-				include: { createdBy: true, customer: true },
-				orderBy: { uid: "asc" },
-			});
-		}),
 	getHairOrderOptionsByClientId: protectedProcedure
 		.input(z.object({ clientId: z.string().cuid2().nullable() }))
 		.query(async ({ input }) => {
@@ -112,8 +96,7 @@ export const hairOrderRouter = createTRPCRouter({
 			const hairOrder = await prisma.hairOrder.findUnique({
 				where: { id: hairOrderId },
 				include: {
-					hairAssignedToAppointment: true,
-					hairAssignedToSale: true,
+					hairAssigned: true,
 				},
 			});
 
@@ -127,75 +110,30 @@ export const hairOrderRouter = createTRPCRouter({
 					? 0
 					: Math.abs(Math.round(hairOrder.total / hairOrder.weightReceived));
 
-			// Update the hairOrder record with the calculated price per gram
-			await prisma.hairOrder.update({
-				where: { id: hairOrderId },
-				data: { pricePerGram },
-			});
-
-			// Iterate through hair assigned to appointments and calculate total and profit
-			for (const hairAssignedToAppointment of hairOrder.hairAssignedToAppointment) {
-				// If pricePerGram is 0, total is set to 0, otherwise calculate normally
-				const total =
-					pricePerGram === 0
-						? 0
-						: Math.round(
-								pricePerGram * hairAssignedToAppointment.weightInGrams,
-							);
-				const profit = hairAssignedToAppointment.soldFor - total;
-
-				// Update the hairAssignedToAppointment record with calculated total and profit
-				await prisma.hairAssignedToAppointment.update({
-					where: { id: hairAssignedToAppointment.id },
-					data: { total, profit },
+			if (hairOrder.pricePerGram !== pricePerGram) {
+				// Update the hairOrder record with the calculated price per gram
+				await prisma.hairOrder.update({
+					where: { id: hairOrderId },
+					data: { pricePerGram },
 				});
 			}
 
-			// Iterate through hair assigned to sales and calculate profit
-			for (const hairAssignedToSale of hairOrder.hairAssignedToSale) {
+			// Iterate through hair assigned and calculate total and profit
+			for (const hairAssigned of hairOrder.hairAssigned) {
 				// If pricePerGram is 0, total is set to 0, otherwise calculate normally
 				const total =
 					pricePerGram === 0
 						? 0
-						: Math.round(pricePerGram * hairAssignedToSale.weightInGrams);
-				const profit = hairAssignedToSale.soldFor - total;
+						: Math.round(pricePerGram * hairAssigned.weightInGrams);
+				const profit = hairAssigned.soldFor - total;
 
-				// Update the hairAssignedToSale record with calculated profit
-				await prisma.hairAssignedToSale.update({
-					where: { id: hairAssignedToSale.id },
+				// Update the hairAssigned record with calculated total and profit
+				await prisma.hairAssigned.update({
+					where: { id: hairAssigned.id },
 					data: { profit },
 				});
 			}
 
 			return hairOrder;
-		}),
-	getHairAssignments: protectedProcedure
-		.input(z.object({ hairOrderId: z.string().cuid2() }))
-		.query(async ({ input }) => {
-			const { hairOrderId } = input;
-			const hairAssignments = await prisma.hairAssignedToAppointment.findMany({
-				where: { hairOrderId },
-			});
-
-			return hairAssignments.map((hairAssignment) => ({
-				...hairAssignment,
-				total: hairAssignment.total / 100,
-				soldFor: hairAssignment.soldFor / 100,
-				profit: hairAssignment.profit / 100,
-			}));
-		}),
-	getHairSales: protectedProcedure
-		.input(z.object({ hairOrderId: z.string().cuid2() }))
-		.query(async ({ input }) => {
-			const { hairOrderId } = input;
-			const hairAssignments = await prisma.hairAssignedToSale.findMany({
-				where: { hairOrderId },
-			});
-
-			return hairAssignments.map((hairAssignment) => ({
-				...hairAssignment,
-				soldFor: hairAssignment.soldFor / 100,
-				profit: hairAssignment.profit / 100,
-			}));
 		}),
 });

@@ -7,7 +7,7 @@ import { type ReactNode, createContext, useContext } from "react";
 
 dayjs.extend(isSameOrAfter);
 
-export type HairOrder = {
+type HairOrder = {
 	id: string;
 	uid: number;
 	placedAt: Date | null;

@@ -6,7 +6,7 @@ import { GripVertical, TriangleAlertIcon } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, createContext, useContext } from "react";
 
-export type Hair = {
+type Hair = {
 	id: string;
 	weightInGrams: number;
 	profit: number;

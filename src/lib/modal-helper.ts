@@ -1,33 +1,15 @@
 import { ChangePassword } from "@/components/profile/change-password";
 import { EditUser } from "@/components/profile/edit-user";
-import { HairOrderPickerModal } from "@/modules/ui/components/hair-order-picker-modal";
-import { HairSalePickerModal } from "@/modules/ui/components/hair-sale-picker-modal";
 import { type ContextModalProps, modals } from "@mantine/modals";
 
-export type ModalNames =
-	| "hairOrderPicker"
-	| "hairSalePicker"
-	| "changePassword"
-	| "editUser";
+type ModalNames = "changePassword" | "editUser";
 
-export const modalTitles: Record<ModalNames, string> = {
-	hairOrderPicker: "Please select hair order:",
-	hairSalePicker: "Please select hair order:",
+const modalTitles: Record<ModalNames, string> = {
 	changePassword: "Change Password",
 	editUser: "Edit User",
 };
 
-export interface ModalPropsMap {
-	hairOrderPicker: {
-		appointmentId: string;
-		onConfirm: (id: string[]) => void;
-		multiple: boolean;
-	};
-	hairSalePicker: {
-		hairSaleId: string;
-		onConfirm: (id: string[]) => void;
-		multiple: boolean;
-	};
+interface ModalPropsMap {
 	changePassword: object;
 	editUser: { fullName: string };
 }
@@ -55,8 +37,6 @@ export function openTypedContextModal<N extends ModalNames>(
 }
 
 export const providerModals = {
-	hairOrderPicker: HairOrderPickerModal,
-	hairSalePicker: HairSalePickerModal,
 	changePassword: ChangePassword,
 	editUser: EditUser,
 };

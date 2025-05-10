@@ -8,7 +8,7 @@ import { type ReactNode, createContext, useContext } from "react";
 
 dayjs.extend(isSameOrAfter);
 
-export type Customer = {
+type Customer = {
 	id: string;
 	name: string;
 	phoneNumber: string | null;

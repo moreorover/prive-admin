@@ -6,14 +6,14 @@ import { notifications } from "@mantine/notifications";
 import {
 	useDeleteTransactionStoreActions,
 	useDeleteTransactionStoreDrawerIsOpen,
-	useDeleteTransactionStoreDrawerOnDeleted,
+	useDeleteTransactionStoreDrawerOnSuccess,
 	useDeleteTransactionStoreDrawerTransactionId,
 } from "./deleteTransactionStore";
 
 export const DeleteTransactionDrawer = () => {
 	const isOpen = useDeleteTransactionStoreDrawerIsOpen();
 	const { reset } = useDeleteTransactionStoreActions();
-	const onDeleted = useDeleteTransactionStoreDrawerOnDeleted();
+	const onSuccess = useDeleteTransactionStoreDrawerOnSuccess();
 	const transactionId = useDeleteTransactionStoreDrawerTransactionId();
 
 	const { data: transaction, isLoading } = trpc.transactions.getById.useQuery(
@@ -25,7 +25,7 @@ export const DeleteTransactionDrawer = () => {
 
 	const deleteTransaction = trpc.transactions.delete.useMutation({
 		onSuccess: () => {
-			onDeleted();
+			onSuccess();
 			reset();
 			notifications.show({
 				color: "green",

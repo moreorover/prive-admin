@@ -6,7 +6,7 @@ import {
 	useEditAppointmentStoreActions,
 	useEditAppointmentStoreDrawerAppointmentId,
 	useEditAppointmentStoreDrawerIsOpen,
-	useEditAppointmentStoreDrawerOnUpdated,
+	useEditAppointmentStoreDrawerOnSuccess,
 } from "@/modules/appointments/ui/components/editAppointmentStore";
 import { trpc } from "@/trpc/client";
 import { Drawer } from "@mantine/core";
@@ -15,7 +15,7 @@ import { notifications } from "@mantine/notifications";
 export const EditAppointmentDrawer = () => {
 	const utils = trpc.useUtils();
 	const isOpen = useEditAppointmentStoreDrawerIsOpen();
-	const onUpdated = useEditAppointmentStoreDrawerOnUpdated();
+	const onSuccess = useEditAppointmentStoreDrawerOnSuccess();
 	const { reset } = useEditAppointmentStoreActions();
 	const appointmentId = useEditAppointmentStoreDrawerAppointmentId();
 
@@ -28,7 +28,7 @@ export const EditAppointmentDrawer = () => {
 
 	const editAppointment = trpc.appointments.update.useMutation({
 		onSuccess: () => {
-			onUpdated();
+			onSuccess();
 			utils.appointments.getById.invalidate({
 				id: appointmentId,
 			});

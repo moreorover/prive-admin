@@ -25,7 +25,6 @@ model User {
   Account       Account[]
   hairOrder     HairOrder[]
   hairOrderNote HairOrderNote[]
-  hairSale      HairSale[]
   hairAssigned  HairAssigned[]
 
   @@map("users")
@@ -87,7 +86,6 @@ model Customer {
   appointmentsAsCustomer  Appointment[]
   appointmentsAsPersonnel PersonnelOnAppointments[]
   hairOrders              HairOrder[]               @relation("CustomerOrders")
-  hairSales               HairSale[]                @relation("CustomerHairSales")
   hairAssigned            HairAssigned[]
 
   @@map("customers")
@@ -199,9 +197,8 @@ model Appointment {
   clientId String
   client   Customer @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
-  personnel       PersonnelOnAppointments[]
-  notes           AppointmentNote[]
-  hairAssignments HairAssignedToAppointment[]
+  personnel PersonnelOnAppointments[]
+  notes     AppointmentNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -256,10 +253,8 @@ model HairOrder {
   customerId String?
   customer   Customer? @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: SetNull)
 
-  notes                     HairOrderNote[]
-  hairAssignedToAppointment HairAssignedToAppointment[]
-  hairAssignedToSale        HairAssignedToSale[]
-  hairAssigned              HairAssigned[]
+  notes        HairOrderNote[]
+  hairAssigned HairAssigned[]
 
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
@@ -310,64 +305,4 @@ model HairAssigned {
   updatedAt DateTime @updatedAt
 
   @@map("hair_assigned")
-}
-
-model HairAssignedToAppointment {
-  id            String      @id @default(cuid(2))
-  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-  appointmentId String
-
-  hairOrder   HairOrder @relation(fields: [hairOrderId], references: [id], onDelete: Cascade)
-  hairOrderId String
-
-  weightInGrams Int @default(0)
-  total         Int @default(0)
-  soldFor       Int @default(0)
-  profit        Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([appointmentId, hairOrderId])
-  @@map("hair_appointment_assignments")
-}
-
-model HairSale {
-  id       String    @id @default(cuid(2))
-  placedAt DateTime? @db.Date
-
-  weightInGrams Int @default(0)
-  pricePerGram  Int @default(0)
-
-  customerId String
-  customer   Customer @relation("CustomerHairSales", fields: [customerId], references: [id], onDelete: Cascade)
-
-  createdById String
-  createdBy   User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
-
-  hairAssignedToSale HairAssignedToSale[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("hair_sales")
-}
-
-model HairAssignedToSale {
-  id         String   @id @default(cuid(2))
-  hairSale   HairSale @relation(fields: [hairSaleId], references: [id], onDelete: Cascade)
-  hairSaleId String
-
-  hairOrder   HairOrder @relation(fields: [hairOrderId], references: [id], onDelete: Cascade)
-  hairOrderId String
-
-  weightInGrams Int @default(0)
-  soldFor       Int @default(0)
-  profit        Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([hairSaleId, hairOrderId])
-  @@map("hair_sale_assignments")
 }

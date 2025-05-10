@@ -17,18 +17,16 @@ const initialState: State = {
 	onSuccess: () => {},
 };
 
-export const useEditTransactionStore = create<State & { actions: Actions }>(
-	(set) => ({
-		...initialState,
-		actions: {
-			openEditTransactionDrawer: (data: Partial<State>) =>
-				set(() => ({ ...data, isOpen: true })),
-			reset: () => {
-				set(initialState);
-			},
+const useEditTransactionStore = create<State & { actions: Actions }>((set) => ({
+	...initialState,
+	actions: {
+		openEditTransactionDrawer: (data: Partial<State>) =>
+			set(() => ({ ...data, isOpen: true })),
+		reset: () => {
+			set(initialState);
 		},
-	}),
-);
+	},
+}));
 
 export const useEditTransactionStoreDrawerIsOpen = () =>
 	useEditTransactionStore((state) => state.isOpen);

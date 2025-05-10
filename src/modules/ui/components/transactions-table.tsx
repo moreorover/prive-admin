@@ -15,7 +15,7 @@ import { AlertTriangle, Check, Clock, GripVertical } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, createContext, useContext } from "react";
 
-export type Transaction = {
+type Transaction = {
 	id: string;
 	amount: number;
 	name: string | null;
@@ -24,6 +24,8 @@ export type Transaction = {
 	status: string;
 	completedDateBy: Date;
 	createdAt: Date;
+	customerId: string;
+	appointmentId: string | null;
 };
 
 interface Props {
@@ -172,6 +174,31 @@ function TransactionsTableRowType() {
 	);
 }
 
+function TransactionsTableRowActionViewCustomer() {
+	const { transaction } = useTransactionsTableRowContext();
+	return (
+		<Menu.Item
+			component={Link}
+			href={`/dashboard/customers/${transaction.customerId}`}
+		>
+			View Customer
+		</Menu.Item>
+	);
+}
+
+function TransactionsTableRowActionViewAppointment() {
+	const { transaction } = useTransactionsTableRowContext();
+	if (!transaction.appointmentId) return null;
+	return (
+		<Menu.Item
+			component={Link}
+			href={`/dashboard/appointments/${transaction.appointmentId}`}
+		>
+			View Appointment
+		</Menu.Item>
+	);
+}
+
 function TransactionsTableRowActions({ children }: { children: ReactNode }) {
 	return (
 		<Table.Td>
@@ -189,8 +216,8 @@ function TransactionsTableRowActions({ children }: { children: ReactNode }) {
 }
 
 function TransactionsTableRowActionDelete({
-	onDeleted,
-}: { onDeleted: () => void }) {
+	onSuccess,
+}: { onSuccess: () => void }) {
 	const { transaction } = useTransactionsTableRowContext();
 
 	const { openDeleteTransactionDrawer } = useDeleteTransactionStoreActions();
@@ -200,7 +227,7 @@ function TransactionsTableRowActionDelete({
 			onClick={() =>
 				openDeleteTransactionDrawer({
 					transactionId: transaction.id,
-					onSuccess: onDeleted,
+					onSuccess,
 				})
 			}
 		>
@@ -226,8 +253,8 @@ function TransactionTableRowActionViewTransaction() {
 }
 
 function TransactionsTableRowActionUpdate({
-	onUpdated,
-}: { onUpdated: () => void }) {
+	onSuccess,
+}: { onSuccess: () => void }) {
 	const { transaction } = useTransactionsTableRowContext();
 	const { openEditTransactionDrawer } = useEditTransactionStoreActions();
 	return (
@@ -235,7 +262,7 @@ function TransactionsTableRowActionUpdate({
 			onClick={() =>
 				openEditTransactionDrawer({
 					transactionId: transaction.id,
-					onSuccess: onUpdated,
+					onSuccess,
 				})
 			}
 		>
@@ -253,6 +280,10 @@ TransactionsTable.RowCreatedAt = TransactionsTableRowCreatedAt;
 TransactionsTable.RowActions = TransactionsTableRowActions;
 TransactionsTable.RowActionViewTransaction =
 	TransactionTableRowActionViewTransaction;
+TransactionsTable.RowActionViewCustomer =
+	TransactionsTableRowActionViewCustomer;
+TransactionsTable.RowActionViewAppointment =
+	TransactionsTableRowActionViewAppointment;
 TransactionsTable.RowActionUpdate = TransactionsTableRowActionUpdate;
 TransactionsTable.RowActionDelete = TransactionsTableRowActionDelete;
 

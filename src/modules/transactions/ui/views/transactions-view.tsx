@@ -110,7 +110,15 @@ function TransactionsSuspense({ startDate, endDate }: Props) {
 					{transactions.length > 0 ? (
 						<TransactionsTable
 							transactions={transactions}
-							columns={["Created At"]}
+							columns={[
+								"Created At",
+								"Completed At",
+								"Title",
+								"Type",
+								"Amount",
+								"Customer",
+								"",
+							]}
 							row={
 								<>
 									<TransactionsTable.RowCreatedAt />
@@ -120,7 +128,9 @@ function TransactionsSuspense({ startDate, endDate }: Props) {
 									<TransactionsTable.RowAmount />
 									<TransactionsTable.RowCustomerName />
 									<TransactionsTable.RowActions>
-										<TransactionsTable.RowActionViewTransaction />
+										{/*	<TransactionsTable.RowActionViewTransaction />*/}
+										<TransactionsTable.RowActionViewCustomer />
+										<TransactionsTable.RowActionViewAppointment />
 									</TransactionsTable.RowActions>
 								</>
 							}
