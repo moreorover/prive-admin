@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { appointmentNoteSchema, appointmentSchema } from "@/lib/schemas";
+import { appointmentSchema } from "@/lib/schemas";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import dayjs from "dayjs";
@@ -133,33 +133,5 @@ export const appointmentsRouter = createTRPCRouter({
 			});
 
 			return appointments;
-		}),
-	createNote: protectedProcedure
-		.input(z.object({ appointmentId: z.string().cuid2(), note: z.string() }))
-		.mutation(async ({ input }) => {
-			const { appointmentId, note } = input;
-
-			const c = await prisma.appointmentNote.create({
-				data: {
-					note: note,
-					appointmentId,
-				},
-			});
-			return c;
-		}),
-	updateNote: protectedProcedure
-		.input(z.object({ note: appointmentNoteSchema }))
-		.mutation(async ({ input }) => {
-			const { note } = input;
-
-			const c = await prisma.appointmentNote.update({
-				data: {
-					note: note.note,
-				},
-				where: {
-					id: note.id,
-				},
-			});
-			return c;
 		}),
 });
