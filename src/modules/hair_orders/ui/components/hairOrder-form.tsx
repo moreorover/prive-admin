@@ -1,6 +1,6 @@
 "use client";
 
-import { type HairOrder, hairOrderSchema } from "@/lib/schemas";
+import { type HairOrder, hairOrderFormSchema } from "@/lib/schemas";
 import { Button, NumberInput, Select } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
@@ -23,7 +23,7 @@ export const HairOrderForm = ({
 	const form = useForm({
 		mode: "uncontrolled",
 		initialValues: hairOrder,
-		validate: zodResolver(hairOrderSchema),
+		validate: zodResolver(hairOrderFormSchema(hairOrder.weightUsed)),
 	});
 
 	async function handleSubmit(values: typeof form.values) {

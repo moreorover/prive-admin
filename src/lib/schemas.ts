@@ -111,12 +111,18 @@ export const hairOrderSchema = z.object({
 	total: z.number(),
 });
 
-export const hairOrderTotalWeightSchema = z.object({
-	id: z.string().cuid2(),
-	weightReceived: z.number().positive(),
-});
-
 export type HairOrder = z.infer<typeof hairOrderSchema>;
+
+export const hairOrderFormSchema = (minWeight: number) =>
+	z.object({
+		id: z.string().cuid2().optional(),
+		placedAt: z.union([dateSchema, z.null(), z.date()]),
+		arrivedAt: z.union([dateSchema, z.null(), z.date()]),
+		customerId: z.string().cuid2().nullish(),
+		weightReceived: z.number().min(minWeight),
+		weightUsed: z.number(),
+		total: z.number(),
+	});
 
 export const hairOrderNoteSchema = z.object({
 	id: z.string().cuid2().optional(),
@@ -124,27 +130,6 @@ export const hairOrderNoteSchema = z.object({
 });
 
 export type HairOrderNote = z.infer<typeof hairOrderNoteSchema>;
-
-export const hairSchema = z.object({
-	id: z.string().cuid2().optional(),
-	color: z.string(),
-	description: z.string(),
-	upc: z.string(),
-	length: z.number().positive().max(150),
-	weight: z.number().positive().max(10000),
-	price: z.number().default(0),
-});
-
-export type Hair = z.infer<typeof hairSchema>;
-
-export const hairComponentSchema = z.object({
-	id: z.string().cuid2(),
-	hairId: z.string().cuid2(),
-	parentId: z.string().cuid2(),
-	weight: z.number().positive(),
-});
-
-export type HairComponent = z.infer<typeof hairComponentSchema>;
 
 export const hairAssignedSchema = z.object({
 	id: z.string().cuid2(),
@@ -164,52 +149,3 @@ export const hairAssignedFormSchema = (maxWeight: number) =>
 		weightInGrams: z.number().positive().max(maxWeight),
 		soldFor: z.number().positive(),
 	});
-
-export const hairAssignedToAppointmentSchema = z.object({
-	id: z.string().cuid2(),
-	hairOrderId: z.string().cuid2(),
-	appointmentId: z.string().cuid2(),
-	weightInGrams: z.number().positive(),
-	soldFor: z.number().positive(),
-});
-
-export const hairAssignedToAppointmentFormSchema = (maxWeight: number) =>
-	z.object({
-		id: z.string().cuid2(),
-		hairOrderId: z.string().cuid2(),
-		appointmentId: z.string().cuid2(),
-		weightInGrams: z.number().positive().max(maxWeight),
-		soldFor: z.number().positive(),
-	});
-
-export type HairAssignedToAppointment = z.infer<
-	typeof hairAssignedToAppointmentSchema
->;
-
-export const hairSaleSchema = z.object({
-	id: z.string().cuid2().optional(),
-	placedAt: z.union([z.string(), z.date(), z.null()]),
-	weightInGrams: z.number(),
-	pricePerGram: z.number(),
-});
-
-export type HairSale = z.infer<typeof hairSaleSchema>;
-
-export const hairAssignedToSaleSchema = z.object({
-	id: z.string().cuid2(),
-	hairOrderId: z.string().cuid2(),
-	hairSaleId: z.string().cuid2(),
-	weightInGrams: z.number().positive(),
-	soldFor: z.number().positive(),
-});
-
-export const hairAssignedToSaleFormSchema = (maxWeight: number) =>
-	z.object({
-		id: z.string().cuid2(),
-		hairOrderId: z.string().cuid2(),
-		hairSaleId: z.string().cuid2(),
-		weightInGrams: z.number().positive().max(maxWeight),
-		soldFor: z.number().positive(),
-	});
-
-export type HairAssignedToSale = z.infer<typeof hairAssignedToSaleSchema>;
