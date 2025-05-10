@@ -40,7 +40,6 @@
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "geist": "^1.4.1",
-    "jotai": "^2.12.3",
     "lucide-react": "^0.475.0",
     "mantine-form-zod-resolver": "^1.1.0",
     "next": "^15.3.1",

@@ -30,47 +30,6 @@ export const customerSchema = z.object({
 
 export type Customer = z.infer<typeof customerSchema>;
 
-export const productSchema = z.object({
-	id: z.string().cuid2().optional(),
-	name: z
-		.string()
-		.min(5, { message: "Name must be at least 5 characters long" })
-		.max(50, { message: "Name cannot exceed 50 characters" }),
-	description: z.string().nullish(),
-});
-
-export type Product = z.infer<typeof productSchema>;
-
-export const productVariantSchema = z.object({
-	id: z.string().cuid2().optional(),
-	size: z.string(),
-	price: z.number(),
-	stock: z.number(),
-});
-
-export type ProductVariant = z.infer<typeof productVariantSchema>;
-
-export const orderSchema = z.object({
-	id: z.string().cuid2().optional(),
-	customerId: z.string().cuid2(),
-	status: z.enum(["PENDING", "COMPLETED", "CANCELLED"]),
-	type: z.enum(["PURCHASE", "SALE"]),
-	placedAt: z.union([dateSchema, z.date()]),
-});
-
-export type Order = z.infer<typeof orderSchema>;
-
-export const orderItemSchema = z.object({
-	id: z.string().cuid2().optional(),
-	orderId: z.string().cuid2(),
-	productVariantId: z.string().cuid2(),
-	quantity: z.number(),
-	unitPrice: z.number(),
-	totalPrice: z.number(),
-});
-
-export type OrderItem = z.infer<typeof orderItemSchema>;
-
 export const transactionSchema = z.object({
 	id: z.string().cuid2().optional(),
 	name: z.string().nullable(),

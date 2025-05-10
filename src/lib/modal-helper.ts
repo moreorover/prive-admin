@@ -4,7 +4,7 @@ import { type ContextModalProps, modals } from "@mantine/modals";
 
 type ModalNames = "changePassword" | "editUser";
 
-export const modalTitles: Record<ModalNames, string> = {
+const modalTitles: Record<ModalNames, string> = {
 	changePassword: "Change Password",
 	editUser: "Edit User",
 };
