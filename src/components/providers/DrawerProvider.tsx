@@ -14,14 +14,6 @@ import { DeleteHairOrderNoteDrawer } from "@/modules/hair_order_notes/ui/compone
 import { EditHairOrderNoteDrawer } from "@/modules/hair_order_notes/ui/components/edit-appointment-note-drawer";
 import { NewHairOrderNoteDrawer } from "@/modules/hair_order_notes/ui/components/new-hair-order-note-drawer";
 import { EditHairOrderDrawer } from "@/modules/hair_orders/ui/components/edit-hairOrder-drawer";
-import { EditOrderItemDrawer } from "@/modules/order_item/ui/components/edit-order-item-drawer";
-import { NewOrderItemDrawer } from "@/modules/order_item/ui/components/new-order-item-drawer";
-import { EditOrderDrawer } from "@/modules/orders/ui/components/edit-order-drawer";
-import { NewOrderDrawer } from "@/modules/orders/ui/components/new-order-drawer";
-import { EditProductVariantDrawer } from "@/modules/product_variants/ui/components/edit-product-variant-drawer";
-import { NewProductVariantDrawer } from "@/modules/product_variants/ui/components/new-product-variant-drawer";
-import { EditProductDrawer } from "@/modules/products/ui/components/edit-product-drawer";
-import { NewProductDrawer } from "@/modules/products/ui/components/new-product-drawer";
 import { DeleteTransactionDrawer } from "@/modules/transactions/ui/components/delete-transaction-drawer";
 import { EditTransactionDrawer } from "@/modules/transactions/ui/components/edit-transaction-drawer";
 import { NewTransactionDrawer } from "@/modules/transactions/ui/components/new-transaction-drawer";
@@ -31,18 +23,6 @@ export default function DrawerProvider() {
 		<>
 			<NewCustomerDrawer />
 			<EditCustomerDrawer />
-
-			<NewProductDrawer />
-			<EditProductDrawer />
-
-			<NewProductVariantDrawer />
-			<EditProductVariantDrawer />
-
-			<NewOrderDrawer />
-			<EditOrderDrawer />
-
-			<NewOrderItemDrawer />
-			<EditOrderItemDrawer />
 
 			<NewTransactionDrawer />
 			<EditTransactionDrawer />
