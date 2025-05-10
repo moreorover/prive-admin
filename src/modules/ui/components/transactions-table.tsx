@@ -24,6 +24,8 @@ export type Transaction = {
 	status: string;
 	completedDateBy: Date;
 	createdAt: Date;
+	customerId: string;
+	appointmentId: string | null;
 };
 
 interface Props {
@@ -172,6 +174,31 @@ function TransactionsTableRowType() {
 	);
 }
 
+function TransactionsTableRowActionViewCustomer() {
+	const { transaction } = useTransactionsTableRowContext();
+	return (
+		<Menu.Item
+			component={Link}
+			href={`/dashboard/customers/${transaction.customerId}`}
+		>
+			View Customer
+		</Menu.Item>
+	);
+}
+
+function TransactionsTableRowActionViewAppointment() {
+	const { transaction } = useTransactionsTableRowContext();
+	if (!transaction.appointmentId) return null;
+	return (
+		<Menu.Item
+			component={Link}
+			href={`/dashboard/appointments/${transaction.appointmentId}`}
+		>
+			View Appointment
+		</Menu.Item>
+	);
+}
+
 function TransactionsTableRowActions({ children }: { children: ReactNode }) {
 	return (
 		<Table.Td>
@@ -253,6 +280,10 @@ TransactionsTable.RowCreatedAt = TransactionsTableRowCreatedAt;
 TransactionsTable.RowActions = TransactionsTableRowActions;
 TransactionsTable.RowActionViewTransaction =
 	TransactionTableRowActionViewTransaction;
+TransactionsTable.RowActionViewCustomer =
+	TransactionsTableRowActionViewCustomer;
+TransactionsTable.RowActionViewAppointment =
+	TransactionsTableRowActionViewAppointment;
 TransactionsTable.RowActionUpdate = TransactionsTableRowActionUpdate;
 TransactionsTable.RowActionDelete = TransactionsTableRowActionDelete;
 
