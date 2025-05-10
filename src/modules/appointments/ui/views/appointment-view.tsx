@@ -353,7 +353,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 										<TransactionsTable.RowActions>
 											<TransactionsTable.RowActionViewTransaction />
 											<TransactionsTable.RowActionUpdate
-												onUpdated={() =>
+												onSuccess={() =>
 													utils.transactions.getByAppointmentId.invalidate({
 														appointmentId,
 														includeCustomer: true,
@@ -361,7 +361,7 @@ function AppointmentSuspense({ appointmentId }: Props) {
 												}
 											/>
 											<TransactionsTable.RowActionDelete
-												onDeleted={() =>
+												onSuccess={() =>
 													utils.transactions.getByAppointmentId.invalidate({
 														appointmentId,
 														includeCustomer: true,

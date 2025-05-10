@@ -34,7 +34,7 @@ export const useEditAppointmentStoreDrawerIsOpen = () =>
 export const useEditAppointmentStoreDrawerAppointmentId = () =>
 	useEditAppointmentStore((state) => state.appointmentId);
 
-export const useEditAppointmentStoreDrawerOnUpdated = () =>
+export const useEditAppointmentStoreDrawerOnSuccess = () =>
 	useEditAppointmentStore((state) => state.onSuccess);
 
 export const useEditAppointmentStoreActions = () =>

@@ -36,7 +36,7 @@ export const useDeleteTransactionStoreDrawerIsOpen = () =>
 export const useDeleteTransactionStoreDrawerTransactionId = () =>
 	useDeleteTransactionStore((state) => state.transactionId);
 
-export const useDeleteTransactionStoreDrawerOnDeleted = () =>
+export const useDeleteTransactionStoreDrawerOnSuccess = () =>
 	useDeleteTransactionStore((state) => state.onSuccess);
 
 export const useDeleteTransactionStoreActions = () =>

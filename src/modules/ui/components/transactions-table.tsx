@@ -216,8 +216,8 @@ function TransactionsTableRowActions({ children }: { children: ReactNode }) {
 }
 
 function TransactionsTableRowActionDelete({
-	onDeleted,
-}: { onDeleted: () => void }) {
+	onSuccess,
+}: { onSuccess: () => void }) {
 	const { transaction } = useTransactionsTableRowContext();
 
 	const { openDeleteTransactionDrawer } = useDeleteTransactionStoreActions();
@@ -227,7 +227,7 @@ function TransactionsTableRowActionDelete({
 			onClick={() =>
 				openDeleteTransactionDrawer({
 					transactionId: transaction.id,
-					onSuccess: onDeleted,
+					onSuccess,
 				})
 			}
 		>
@@ -253,8 +253,8 @@ function TransactionTableRowActionViewTransaction() {
 }
 
 function TransactionsTableRowActionUpdate({
-	onUpdated,
-}: { onUpdated: () => void }) {
+	onSuccess,
+}: { onSuccess: () => void }) {
 	const { transaction } = useTransactionsTableRowContext();
 	const { openEditTransactionDrawer } = useEditTransactionStoreActions();
 	return (
@@ -262,7 +262,7 @@ function TransactionsTableRowActionUpdate({
 			onClick={() =>
 				openEditTransactionDrawer({
 					transactionId: transaction.id,
-					onSuccess: onUpdated,
+					onSuccess,
 				})
 			}
 		>
