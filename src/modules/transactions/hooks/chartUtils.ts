@@ -1,7 +1,7 @@
 import type { GetAllTransactions } from "@/modules/transactions/types";
 import dayjs, { type Dayjs } from "dayjs";
 
-export type AggregatedResult = {
+type AggregatedResult = {
 	date: string;
 	completed: number;
 	pending: number; // This will actually show completed + pending

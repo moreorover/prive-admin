@@ -15,7 +15,7 @@ import { AlertTriangle, Check, Clock, GripVertical } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, createContext, useContext } from "react";
 
-export type Transaction = {
+type Transaction = {
 	id: string;
 	amount: number;
 	name: string | null;

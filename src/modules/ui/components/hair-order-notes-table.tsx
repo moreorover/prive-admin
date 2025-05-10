@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import { GripVertical } from "lucide-react";
 import { type ReactNode, createContext, useContext } from "react";
 
-export type Note = {
+type Note = {
 	id: string;
 	createdAt: Date;
 	note: string;

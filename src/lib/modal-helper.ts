@@ -2,14 +2,14 @@ import { ChangePassword } from "@/components/profile/change-password";
 import { EditUser } from "@/components/profile/edit-user";
 import { type ContextModalProps, modals } from "@mantine/modals";
 
-export type ModalNames = "changePassword" | "editUser";
+type ModalNames = "changePassword" | "editUser";
 
 export const modalTitles: Record<ModalNames, string> = {
 	changePassword: "Change Password",
 	editUser: "Edit User",
 };
 
-export interface ModalPropsMap {
+interface ModalPropsMap {
 	changePassword: object;
 	editUser: { fullName: string };
 }

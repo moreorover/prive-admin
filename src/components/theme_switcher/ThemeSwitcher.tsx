@@ -1,9 +1,9 @@
 "use client";
 
+import { Icon } from "@iconify/react";
 import {
-	Group,
+	ActionIcon,
 	type MantineColorScheme,
-	Radio,
 	useMantineColorScheme,
 } from "@mantine/core";
 
@@ -11,18 +11,23 @@ export const ThemeSwitcher = () => {
 	const { colorScheme, setColorScheme } = useMantineColorScheme();
 
 	return (
-		<Radio.Group
-			value={colorScheme}
-			onChange={(value) => {
-				setColorScheme(value as MantineColorScheme);
-			}}
-			name="theme"
-			label="Theme Mode"
+		<ActionIcon
+			variant="default"
+			size="sm"
+			onClick={() =>
+				setColorScheme(
+					colorScheme === ("light" as MantineColorScheme)
+						? ("dark" as MantineColorScheme)
+						: ("light" as MantineColorScheme),
+				)
+			}
+			title="Toggle color scheme"
 		>
-			<Group mt="sm">
-				<Radio value="light" label="Light" />
-				<Radio value="dark" label="Dark" />
-			</Group>
-		</Radio.Group>
+			{colorScheme === "light" ? (
+				<Icon icon={"lucide:sun"} width={14} height={14} />
+			) : (
+				<Icon icon={"lucide:moon"} width={14} height={14} />
+			)}
+		</ActionIcon>
 	);
 };
