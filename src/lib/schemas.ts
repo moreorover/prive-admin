@@ -53,13 +53,6 @@ export const appointmentSchema = z.object({
 
 export type Appointment = z.infer<typeof appointmentSchema>;
 
-export const appointmentNoteSchema = z.object({
-	id: z.string().cuid2().optional(),
-	note: z.string(),
-});
-
-export type AppointmentNote = z.infer<typeof appointmentNoteSchema>;
-
 export const hairOrderSchema = z.object({
 	id: z.string().cuid2().optional(),
 	placedAt: z.union([dateSchema, z.null(), z.date()]),
@@ -95,13 +88,6 @@ export const noteSchemaApi = noteSchema.extend({
 	hairOrderId: z.string().cuid2().nullish(),
 	customerId: z.string().cuid2(),
 });
-
-export const hairOrderNoteSchema = z.object({
-	id: z.string().cuid2().optional(),
-	note: z.string(),
-});
-
-export type HairOrderNote = z.infer<typeof hairOrderNoteSchema>;
 
 export const hairAssignedSchema = z.object({
 	id: z.string().cuid2(),
