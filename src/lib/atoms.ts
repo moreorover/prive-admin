@@ -1,10 +1,4 @@
-import type {
-	Customer,
-	Order,
-	OrderItem,
-	Product,
-	ProductVariant,
-} from "@/lib/schemas";
+import type { Order, OrderItem, Product, ProductVariant } from "@/lib/schemas";
 import dayjs from "dayjs";
 import { atom } from "jotai";
 
@@ -84,9 +78,3 @@ export const editOrderItemDrawerAtom = atom<{
 	productOptions: [],
 	onUpdated: () => {},
 });
-
-export const personnelPickerModalAtom = atom<{
-	isOpen: boolean;
-	personnel: Customer[];
-	onConfirmAction: (selectedTransactions: string[]) => void;
-}>({ isOpen: false, personnel: [], onConfirmAction: () => {} });
