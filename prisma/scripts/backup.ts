@@ -33,12 +33,9 @@ async function createBackup() {
 		const customers = await prisma.customer.findMany();
 		const hairOrders = await prisma.hairOrder.findMany();
 		const appointments = await prisma.appointment.findMany();
-		const appointmentNotes = await prisma.appointmentNote.findMany();
 		const appointmentPersonnel =
 			await prisma.personnelOnAppointments.findMany();
 		const transactions = await prisma.transaction.findMany();
-		const hairOrderNotes = await prisma.hairOrderNote.findMany();
-		// const hair = await prisma.hair.findMany();
 
 		const filePath = saveBackupToFile({
 			tables: {
@@ -47,10 +44,8 @@ async function createBackup() {
 				customers,
 				transactions,
 				appointments,
-				appointmentNotes,
 				appointmentPersonnel,
 				hairOrders,
-				hairOrderNotes,
 				// hair
 			},
 		});
