@@ -4,6 +4,7 @@ import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { StatCard } from "@/modules/ui/components/stat-card";
 import { trpc } from "@/trpc/client";
 import { Group, Paper, SimpleGrid, Stack, Title } from "@mantine/core";
+import dayjs from "dayjs";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -58,8 +59,8 @@ function CustomerSuspense({ customerId }: Props) {
 			icon: "mdi:note-multiple-outline",
 		},
 		{
-			title: "Created At",
-			value: new Date(summary.customerCreatedAt).toLocaleDateString(),
+			title: "Joined At",
+			value: dayjs(summary.customerCreatedAt).format("DD MMMM YYYY"),
 			icon: "mdi:calendar",
 		},
 	];
