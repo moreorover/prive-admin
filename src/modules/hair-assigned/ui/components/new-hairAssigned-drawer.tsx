@@ -22,6 +22,7 @@ import dayjs from "dayjs";
 import { useState } from "react";
 
 export const NewHairAssignedDrawer = () => {
+	const utils = trpc.useUtils();
 	const isOpen = useNewHairAssignedStoreDrawerIsOpen();
 	const { reset } = useNewHairAssignedStoreActions();
 	const onSuccess = useNewHairAssignedStoreDrawerOnSuccess();
@@ -29,13 +30,13 @@ export const NewHairAssignedDrawer = () => {
 
 	const [selectedRow, setSelectedRow] = useState<string>();
 
-	const hairOrderOptions =
-		trpc.hairOrders.getHairOrderOptionsByClientId.useQuery(
-			{
-				clientId: relations.clientId,
-			},
-			{ enabled: !!relations.clientId },
-		);
+	const hairOrderOptions = trpc.hairOrders.getHairOrderOptions.useQuery(
+		{
+			clientId: relations.clientId,
+			appointmentId: relations.appointmentId,
+		},
+		{ enabled: isOpen },
+	);
 
 	const toggleRowSelection = (id: string) => {
 		if (selectedRow === id) {
@@ -104,6 +105,7 @@ export const NewHairAssignedDrawer = () => {
 
 	const newHairAssigned = trpc.hairAssigned.create.useMutation({
 		onSuccess: () => {
+			utils.hairOrders.getHairOrderOptions.invalidate();
 			setSelectedRow("");
 			onSuccess();
 			reset();
@@ -133,49 +135,47 @@ export const NewHairAssignedDrawer = () => {
 	};
 
 	return (
-		<>
-			<Drawer
-				opened={isOpen}
-				onClose={reset}
-				position="right"
-				title="Create Hair Assigned"
-				size="auto"
-			>
-				<Container>
-					<Stack gap="sm">
-						<Text size="xs">Select Hair Order</Text>
-						<Table striped highlightOnHover>
-							<Table.Thead>
-								<Table.Tr>
-									<Table.Th style={{ width: 40 }} />
-									<Table.Th>Hair Order UID</Table.Th>
-									<Table.Th>Customer Name</Table.Th>
-									<Table.Th>Placed At</Table.Th>
-									<Table.Th>Arrived At</Table.Th>
-									<Table.Th>Price per Gram</Table.Th>
-									<Table.Th>Weight received</Table.Th>
-									<Table.Th>Weight Used</Table.Th>
-									<Table.Th>Weight Available</Table.Th>
-								</Table.Tr>
-							</Table.Thead>
-							<Table.Tbody>{rows}</Table.Tbody>
-						</Table>
-						<Group justify="flex-end" mt="md">
-							<Button
-								onClick={() => {
-									handleConfirm();
-								}}
-								disabled={!selectedRow}
-							>
-								Confirm
-							</Button>
-						</Group>
-						<Button fullWidth mt="md" onClick={reset}>
-							Cancel
+		<Drawer
+			opened={isOpen}
+			onClose={reset}
+			position="right"
+			title="Create Hair Assigned"
+			size="auto"
+		>
+			<Container>
+				<Stack gap="sm">
+					<Text size="xs">Select Hair Order</Text>
+					<Table striped highlightOnHover>
+						<Table.Thead>
+							<Table.Tr>
+								<Table.Th style={{ width: 40 }} />
+								<Table.Th>Hair Order UID</Table.Th>
+								<Table.Th>Customer Name</Table.Th>
+								<Table.Th>Placed At</Table.Th>
+								<Table.Th>Arrived At</Table.Th>
+								<Table.Th>Price per Gram</Table.Th>
+								<Table.Th>Weight received</Table.Th>
+								<Table.Th>Weight Used</Table.Th>
+								<Table.Th>Weight Available</Table.Th>
+							</Table.Tr>
+						</Table.Thead>
+						<Table.Tbody>{rows}</Table.Tbody>
+					</Table>
+					<Group justify="flex-end" mt="md">
+						<Button
+							onClick={() => {
+								handleConfirm();
+							}}
+							disabled={!selectedRow}
+						>
+							Confirm
 						</Button>
-					</Stack>
-				</Container>
-			</Drawer>
-		</>
+					</Group>
+					<Button fullWidth mt="md" onClick={reset}>
+						Cancel
+					</Button>
+				</Stack>
+			</Container>
+		</Drawer>
 	);
 };

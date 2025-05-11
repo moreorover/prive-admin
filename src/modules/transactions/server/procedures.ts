@@ -12,32 +12,11 @@ export const transactionsRouter = createTRPCRouter({
 			include: { customer: true },
 		});
 
-		return transactions;
+		return transactions.map((transaction) => ({
+			...transaction,
+			amount: transaction.amount / 100,
+		}));
 	}),
-	getTransactionsBetweenDates: protectedProcedure
-		.input(z.object({ startDate: z.string(), endDate: z.string() }))
-		.query(async ({ input }) => {
-			const { startDate, endDate } = input;
-			const startOfWeek = dayjs(startDate).startOf("day");
-			const endOfWeek = dayjs(endDate).endOf("day");
-
-			const transactions = await prisma.transaction.findMany({
-				where: {
-					completedDateBy: {
-						gte: startOfWeek.toDate(),
-						lte: endOfWeek.toDate(),
-					},
-				},
-				orderBy: {
-					completedDateBy: "asc",
-				},
-				include: {
-					customer: true,
-				}, // Include related allocations
-			});
-
-			return transactions;
-		}),
 	getTransactionsPageBetweenDates: protectedProcedure
 		.input(z.object({ startDate: z.string(), endDate: z.string() }))
 		.query(async ({ input }) => {
@@ -61,7 +40,10 @@ export const transactionsRouter = createTRPCRouter({
 				}, // Include related allocations
 			});
 
-			return transactions;
+			return transactions.map((transaction) => ({
+				...transaction,
+				amount: transaction.amount / 100,
+			}));
 		}),
 	getById: protectedProcedure
 		.input(z.object({ id: z.string().cuid2().nullable() }))
@@ -80,26 +62,7 @@ export const transactionsRouter = createTRPCRouter({
 				throw new TRPCError({ code: "NOT_FOUND" });
 			}
 
-			return transaction;
-		}),
-	getByOrderId: protectedProcedure
-		.input(
-			z.object({
-				orderId: z.string().cuid2().nullable(),
-				includeCustomer: z.boolean(),
-			}),
-		)
-		.query(async ({ input }) => {
-			const { orderId, includeCustomer } = input;
-
-			return prisma.transaction.findMany({
-				where: {
-					orderId,
-				},
-				include: {
-					customer: includeCustomer,
-				},
-			});
+			return { ...transaction, amount: transaction.amount / 100 };
 		}),
 	getByAppointmentId: protectedProcedure
 		.input(
@@ -111,7 +74,7 @@ export const transactionsRouter = createTRPCRouter({
 		.query(async ({ input }) => {
 			const { appointmentId, includeCustomer } = input;
 
-			return prisma.transaction.findMany({
+			const transactions = await prisma.transaction.findMany({
 				where: {
 					appointmentId,
 				},
@@ -119,6 +82,11 @@ export const transactionsRouter = createTRPCRouter({
 					customer: includeCustomer,
 				},
 			});
+
+			return transactions.map((transaction) => ({
+				...transaction,
+				amount: transaction.amount / 100,
+			}));
 		}),
 	createTransaction: protectedProcedure
 		.input(
@@ -136,7 +104,7 @@ export const transactionsRouter = createTRPCRouter({
 				data: {
 					name: transaction.name,
 					notes: transaction.notes,
-					amount: transaction.amount,
+					amount: transaction.amount * 100,
 					type: transaction.type,
 					status: transaction.status,
 					completedDateBy: transaction.completedDateBy,
@@ -157,7 +125,7 @@ export const transactionsRouter = createTRPCRouter({
 				data: {
 					name: transaction.name,
 					notes: transaction.notes,
-					amount: transaction.amount,
+					amount: transaction.amount * 100,
 					type: transaction.type,
 					status: transaction.status,
 					completedDateBy: transaction.completedDateBy,

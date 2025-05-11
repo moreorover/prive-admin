@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { CustomerView } from "@/modules/customers/ui/views/customer-view";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -16,7 +17,5 @@ export default async function Page({ params }: Props) {
 		return redirect("/");
 	}
 
-	return redirect(`/dashboard/customers/${customerId}/notes`);
-
-	// return <CustomerAppointmentsView customerId={customerId} />;
+	return <CustomerView customerId={customerId} />;
 }

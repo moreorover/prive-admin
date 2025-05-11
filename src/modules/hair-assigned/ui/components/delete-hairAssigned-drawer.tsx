@@ -11,6 +11,7 @@ import { Button, Drawer, Group, Stack, Text, Title } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 
 export const DeleteHairAssignedDrawer = () => {
+	const utils = trpc.useUtils();
 	const isOpen = useDeleteHairAssignedStoreDrawerIsOpen();
 	const { reset } = useDeleteHairAssignedStoreActions();
 	const onSuccess = useDeleteHairAssignedStoreDrawerOnSuccess();
@@ -25,6 +26,7 @@ export const DeleteHairAssignedDrawer = () => {
 
 	const deleteHairAssignedMutation = trpc.hairAssigned.delete.useMutation({
 		onSuccess: () => {
+			utils.hairOrders.getHairOrderOptions.invalidate();
 			onSuccess();
 			reset();
 			notifications.show({

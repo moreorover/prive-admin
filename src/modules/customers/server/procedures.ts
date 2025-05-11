@@ -121,4 +121,73 @@ export const customersRouter = createTRPCRouter({
 				},
 			});
 		}),
+	getViewById: protectedProcedure
+		.input(z.object({ id: z.string().cuid2() }))
+		.query(async ({ input }) => {
+			const { id } = input;
+
+			const customer = await prisma.customer.findUnique({
+				where: { id },
+				select: {
+					createdAt: true,
+					appointmentsAsCustomer: {
+						select: {
+							id: true,
+							transactions: {
+								select: {
+									amount: true,
+								},
+							},
+						},
+					},
+					transactions: {
+						select: {
+							amount: true,
+						},
+					},
+					hairAssigned: {
+						select: {
+							profit: true,
+							soldFor: true,
+							weightInGrams: true,
+						},
+					},
+					notes: true,
+				},
+			});
+
+			if (!customer) {
+				throw new TRPCError({ code: "NOT_FOUND" });
+			}
+
+			const appointmentCount = customer.appointmentsAsCustomer.length;
+			const transactionSum = customer.transactions.reduce(
+				(acc, txn) => acc + txn.amount,
+				0,
+			);
+			const hairAssignedProfitSum = customer.hairAssigned.reduce(
+				(acc, ha) => acc + ha.profit,
+				0,
+			);
+			const hairAssignedSoldForSum = customer.hairAssigned.reduce(
+				(acc, ha) => acc + ha.soldFor,
+				0,
+			);
+			const hairAssignedWeightInGramsSum = customer.hairAssigned.reduce(
+				(acc, ha) => acc + ha.weightInGrams,
+				0,
+			);
+			const noteCount = customer.notes.length;
+			const customerCreatedAt = customer.createdAt;
+
+			return {
+				appointmentCount,
+				transactionSum: transactionSum / 100,
+				hairAssignedProfitSum: hairAssignedProfitSum / 100,
+				hairAssignedSoldForSum: hairAssignedSoldForSum / 100,
+				hairAssignedWeightInGramsSum,
+				noteCount,
+				customerCreatedAt,
+			};
+		}),
 });
