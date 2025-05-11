@@ -48,6 +48,11 @@ function CustomerSuspense({ customerId }: Props) {
 			icon: "mdi:cash-100",
 		},
 		{
+			title: "Hair Weight Total",
+			value: `${summary.hairAssignedWeightInGramsSum}g`,
+			icon: "mdi:hair-dryer-outline",
+		},
+		{
 			title: "Notes Count",
 			value: summary.noteCount.toString(),
 			icon: "mdi:note-multiple-outline",

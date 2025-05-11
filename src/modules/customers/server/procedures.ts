@@ -149,6 +149,7 @@ export const customersRouter = createTRPCRouter({
 						select: {
 							profit: true,
 							soldFor: true,
+							weightInGrams: true,
 						},
 					},
 					notes: true,
@@ -172,14 +173,19 @@ export const customersRouter = createTRPCRouter({
 				(acc, ha) => acc + ha.soldFor,
 				0,
 			);
+			const hairAssignedWeightInGramsSum = customer.hairAssigned.reduce(
+				(acc, ha) => acc + ha.weightInGrams,
+				0,
+			);
 			const noteCount = customer.notes.length;
 			const customerCreatedAt = customer.createdAt;
 
 			return {
 				appointmentCount,
 				transactionSum: transactionSum / 100,
-				hairAssignedProfitSum,
-				hairAssignedSoldForSum,
+				hairAssignedProfitSum: hairAssignedProfitSum / 100,
+				hairAssignedSoldForSum: hairAssignedSoldForSum / 100,
+				hairAssignedWeightInGramsSum,
 				noteCount,
 				customerCreatedAt,
 			};

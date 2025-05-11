@@ -78,6 +78,9 @@ function CustomerSuspense({ customerId }: Props) {
 			</Paper>
 			<Paper withBorder p="md" radius="md" shadow="sm">
 				<Stack gap="xs">
+					<Button component={Link} href={`/dashboard/customers/${customerId}`}>
+						Summary
+					</Button>
 					<Button
 						component={Link}
 						href={`/dashboard/customers/${customerId}/notes`}
