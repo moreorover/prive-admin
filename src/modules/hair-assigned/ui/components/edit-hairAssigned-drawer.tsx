@@ -29,6 +29,7 @@ export const EditHairAssignedDrawer = () => {
 
 	const editHairAssigned = trpc.hairAssigned.update.useMutation({
 		onSuccess: () => {
+			utils.hairOrders.getHairOrderOptions.invalidate();
 			utils.hairAssigned.getById.invalidate({ id: hairAssignedId });
 			onSuccess();
 			reset();

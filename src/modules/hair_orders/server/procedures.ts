@@ -13,10 +13,15 @@ export const hairOrderRouter = createTRPCRouter({
 
 		return hairOrders;
 	}),
-	getHairOrderOptionsByClientId: protectedProcedure
-		.input(z.object({ clientId: z.string().cuid2().nullable() }))
+	getHairOrderOptions: protectedProcedure
+		.input(
+			z.object({
+				clientId: z.string().cuid2().nullable(),
+				appointmentId: z.string().cuid2().nullish(),
+			}),
+		)
 		.query(async ({ input }) => {
-			const { clientId } = input;
+			const { clientId, appointmentId } = input;
 
 			if (!clientId) {
 				throw new TRPCError({ code: "NOT_FOUND", message: "Missing clientId" });
@@ -24,16 +29,34 @@ export const hairOrderRouter = createTRPCRouter({
 
 			const hairAssigned = await prisma.hairAssigned.findMany({
 				where: { AND: [{ clientId }, { weightInGrams: 0 }] },
-				select: { hairOrderId: true },
+				select: { hairOrderId: true, appointmentId: true },
 			});
 
-			const hairOrdersToFilter = hairAssigned.map(
-				(hairAssigned) => hairAssigned.hairOrderId,
-			);
+			const hairOrdersToFilter = hairAssigned
+				.filter((hairAssigned) => !hairAssigned.appointmentId)
+				.map((hairAssigned) => hairAssigned.hairOrderId);
+
+			const hairOrdersToFilterForAppointment = hairAssigned
+				.filter(
+					(hairAssigned) =>
+						hairAssigned.appointmentId &&
+						hairAssigned.appointmentId === appointmentId,
+				)
+				.map((hairAssigned) => hairAssigned.hairOrderId);
 
 			const hairOrders = await prisma.hairOrder.findMany({
 				include: { customer: true },
 			});
+
+			if (appointmentId) {
+				return hairOrders
+					.filter((ho) => !hairOrdersToFilterForAppointment.includes(ho.id))
+					.map((hairOrder) => ({
+						...hairOrder,
+						pricePerGram: hairOrder.pricePerGram / 100,
+						total: hairOrder.total / 100,
+					}));
+			}
 
 			return hairOrders
 				.filter((ho) => !hairOrdersToFilter.includes(ho.id))
