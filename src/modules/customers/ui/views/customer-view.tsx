@@ -65,7 +65,6 @@ function CustomerSuspense({ customerId }: Props) {
 		},
 	];
 
-	console.log({ summary });
 	return (
 		<Stack>
 			<Paper withBorder p="md" radius="md" shadow="sm">
