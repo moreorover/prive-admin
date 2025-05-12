@@ -3,12 +3,14 @@ import { customersRouter } from "@/modules/customers/server/procedures";
 import { hairOrderRouter } from "@/modules/hair_orders/server/procedures";
 import { transactionsRouter } from "@/modules/transactions/server/procedures";
 import { createTRPCRouter } from "@/trpc/init";
+import { dashboardRouter } from "@/trpc/routers/dashboard/dashboardRouter";
 import { hairAssignedRouter } from "@/trpc/routers/hairAssigned";
 import { notesRouter } from "@/trpc/routers/notes";
 
 export const appRouter = createTRPCRouter({
 	appointments: appointmentsRouter,
 	customers: customersRouter,
+	dashboard: dashboardRouter,
 	hairOrders: hairOrderRouter,
 	hairAssigned: hairAssignedRouter,
 	notes: notesRouter,

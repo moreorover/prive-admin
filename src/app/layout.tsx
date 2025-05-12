@@ -15,6 +15,7 @@ import { TRPCProvider } from "@/trpc/client";
 import { ModalsProvider } from "@mantine/modals";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type React from "react";
 
 export const metadata: Metadata = {
@@ -40,7 +41,7 @@ export default function RootLayout({
 				<TRPCProvider>
 					<MantineProvider defaultColorScheme="light" theme={theme}>
 						<ModalsProvider modals={providerModals}>
-							{children}
+							<NuqsAdapter>{children}</NuqsAdapter>
 							<Notifications />
 						</ModalsProvider>
 					</MantineProvider>
