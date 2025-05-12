@@ -18,6 +18,7 @@ import { ThemeSwitcher } from "@/components/theme_switcher/ThemeSwitcher";
 import { LogoGradient } from "./logo-gradient";
 
 const links = [
+	{ link: "/dashboard", label: "Dashboard" },
 	{ link: "/dashboard/customers", label: "Customers" },
 	{ link: "/dashboard/appointments", label: "Appointments" },
 	{ link: "/dashboard/hair-orders", label: "Hair Orders" },
@@ -31,16 +32,24 @@ export function Header() {
 
 	const logo = <LogoGradient href="/" />;
 
-	const items = links.map((link) => (
-		<Link
-			key={link.label}
-			href={link.link}
-			className={classes.link}
-			data-active={pathname.startsWith(link.link) || undefined}
-		>
-			{link.label}
-		</Link>
-	));
+	const items = links.map((link) => {
+		const isExactMatch = pathname === link.link;
+		const isNestedMatch = pathname.startsWith(`${link.link}/`);
+
+		const isActive =
+			isExactMatch || (isNestedMatch && link.link !== "/dashboard");
+
+		return (
+			<Link
+				key={link.label}
+				href={link.link}
+				className={classes.link}
+				data-active={isActive || undefined}
+			>
+				{link.label}
+			</Link>
+		);
+	});
 
 	return (
 		<header className={classes.header}>
