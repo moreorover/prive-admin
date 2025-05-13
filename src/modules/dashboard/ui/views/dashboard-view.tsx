@@ -29,19 +29,14 @@ export const DashboardView = () => {
 };
 
 function DashboardSuspense() {
-	const [start, setStart] = useQueryState(
-		"start",
-		parseAsIsoDate.withDefault(dayjs().startOf("month").toDate()),
-	);
-	const [end, setEnd] = useQueryState(
-		"end",
-		parseAsIsoDate.withDefault(dayjs().endOf("month").toDate()),
+	const [date, setDate] = useQueryState(
+		"date",
+		parseAsIsoDate.withDefault(dayjs().startOf("date").toDate()),
 	);
 
 	const [transactionStats] =
-		trpc.dashboard.getTransactionStats.useSuspenseQuery({
-			start: start,
-			end: end,
+		trpc.dashboard.getTransactionStatsForDate.useSuspenseQuery({
+			date,
 		});
 
 	const stats = [
@@ -77,17 +72,15 @@ function DashboardSuspense() {
 						<Group>
 							<Button
 								onClick={() => {
-									setStart(dayjs(start).subtract(1, "month").toDate());
-									setEnd(dayjs(end).subtract(1, "month").toDate());
+									setDate(dayjs(date).subtract(1, "month").toDate());
 								}}
 							>
 								Previous
 							</Button>
-							<Text>{`${dayjs(start).format("MMMM YYYY")}`}</Text>
+							<Text>{`${dayjs(date).format("MMMM YYYY")}`}</Text>
 							<Button
 								onClick={() => {
-									setStart(dayjs(start).add(1, "month").toDate());
-									setEnd(dayjs(end).add(1, "month").toDate());
+									setDate(dayjs(date).add(1, "month").toDate());
 								}}
 							>
 								Next

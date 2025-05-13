@@ -1,17 +1,25 @@
-import { calculateTransactionMetrics } from "@/server/dashboard";
+import {
+	calculateMonthlyTimeRange,
+	calculateTransactionMetrics,
+} from "@/server/dashboard";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import dayjs from "dayjs";
 import { z } from "zod";
 
 export const dashboardRouter = createTRPCRouter({
-	getTransactionStats: protectedProcedure
-		.input(z.object({ start: z.date(), end: z.date() }))
+	getTransactionStatsForDate: protectedProcedure
+		.input(z.object({ date: z.date() }))
 		.query(async ({ input }) => {
-			const { start, end } = input;
+			const { date } = input;
 
-			if (!start || !end) {
-				throw new Error("Missing start or end");
+			if (!date) {
+				throw new Error("Missing date");
 			}
 
-			return await calculateTransactionMetrics(start, end);
+			const { currentRange, previousRange } = calculateMonthlyTimeRange(
+				dayjs(date),
+			);
+
+			return await calculateTransactionMetrics(currentRange, previousRange);
 		}),
 });

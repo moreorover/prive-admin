@@ -1,19 +1,15 @@
 import "server-only";
-
 import prisma from "@/lib/prisma";
+import dayjs, { type Dayjs } from "dayjs";
 
-type Transaction = { amount: number };
+export type Transaction = { amount: number };
 
-export function add(a: number, b: number) {
-	return a + b;
-}
-
-const fetchTransactions = async (start: Date, end: Date) => {
+const fetchTransactions = async (start: Dayjs, end: Dayjs) => {
 	return prisma.transaction.findMany({
 		where: {
 			completedDateBy: {
-				gte: start,
-				lte: end,
+				gte: start.toDate(),
+				lt: end.toDate(),
 			},
 			status: "COMPLETED",
 			appointmentId: { not: null },
@@ -22,15 +18,23 @@ const fetchTransactions = async (start: Date, end: Date) => {
 	});
 };
 
-const calculateTimeRange = (start: Date, end: Date) => {
-	const rangeDuration = end.getTime() - start.getTime();
+export const calculateMonthlyTimeRange = (date: Dayjs) => {
+	const start = date.startOf("month");
+	const end = dayjs(start).endOf("month").add(1, "day");
+
+	const previousStart = dayjs(start).subtract(1, "month").startOf("month");
+	const previousEnd = dayjs(start)
+		.subtract(1, "month")
+		.endOf("month")
+		.add(1, "day");
+
 	return {
-		previousStart: new Date(start.getTime() - rangeDuration),
-		previousEnd: start,
+		currentRange: { start, end },
+		previousRange: { start: previousStart, end: previousEnd },
 	};
 };
 
-const calculateMetrics = (transactions: Transaction[]) => {
+export const calculateMetrics = (transactions: Transaction[]) => {
 	const count = transactions.length;
 	const sum = transactions.reduce((acc, txn) => acc + txn.amount, 0);
 	const average = count > 0 ? sum / count : 0;
@@ -38,7 +42,7 @@ const calculateMetrics = (transactions: Transaction[]) => {
 	return { count, sum, average };
 };
 
-const calculateDifferences = (current: number, previous: number) => {
+export const calculateDifferences = (current: number, previous: number) => {
 	const diff = current - previous;
 	const percentageDiff =
 		previous !== 0 ? (diff / previous) * 100 : current > 0 ? 100 : 0;
@@ -46,12 +50,13 @@ const calculateDifferences = (current: number, previous: number) => {
 	return { previous, diff, percentageDiff };
 };
 
-export const calculateTransactionMetrics = async (start: Date, end: Date) => {
-	const { previousStart, previousEnd } = calculateTimeRange(start, end);
-
+export const calculateTransactionMetrics = async (
+	currentRange: { start: Dayjs; end: Dayjs },
+	previousRange: { start: Dayjs; end: Dayjs },
+) => {
 	const [transactions, previousTransactions] = await Promise.all([
-		fetchTransactions(start, end),
-		fetchTransactions(previousStart, previousEnd),
+		fetchTransactions(currentRange.start, currentRange.end),
+		fetchTransactions(previousRange.start, previousRange.end),
 	]);
 
 	const currentMetrics = calculateMetrics(transactions);
