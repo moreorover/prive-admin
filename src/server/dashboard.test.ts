@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { expect, test, vi } from "vitest";
 import {
 	type Transaction,
@@ -7,6 +8,9 @@ import {
 	calculateMonthlyTimeRange,
 	calculateTransactionMetrics,
 } from "./dashboard";
+
+// Ensure UTC plugin is applied
+dayjs.extend(utc);
 
 // Disables a package that checks that code is only executed on the server side.
 // Also, this mock can be defined in the Vitest setup file.
