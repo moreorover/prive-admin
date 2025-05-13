@@ -1,6 +1,12 @@
+import "server-only";
+
 import prisma from "@/lib/prisma";
 
 type Transaction = { amount: number };
+
+export function add(a: number, b: number) {
+	return a + b;
+}
 
 const fetchTransactions = async (start: Date, end: Date) => {
 	return prisma.transaction.findMany({

@@ -3,7 +3,7 @@ import { customersRouter } from "@/modules/customers/server/procedures";
 import { hairOrderRouter } from "@/modules/hair_orders/server/procedures";
 import { transactionsRouter } from "@/modules/transactions/server/procedures";
 import { createTRPCRouter } from "@/trpc/init";
-import { dashboardRouter } from "@/trpc/routers/dashboard/dashboardRouter";
+import { dashboardRouter } from "@/trpc/routers/dashboard";
 import { hairAssignedRouter } from "@/trpc/routers/hairAssigned";
 import { notesRouter } from "@/trpc/routers/notes";
 

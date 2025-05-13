@@ -1,5 +1,5 @@
+import { calculateTransactionMetrics } from "@/server/dashboard";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import { calculateTransactionMetrics } from "@/trpc/routers/dashboard/dashboard";
 import { z } from "zod";
 
 export const dashboardRouter = createTRPCRouter({
