@@ -34,7 +34,7 @@ vi.mock("@/lib/prisma", async () => {
 });
 
 test("Test function to calculate date range", () => {
-	const date = dayjs("2025-03-15");
+	const date = dayjs.utc("2025-03-15");
 
 	const range = calculateMonthlyTimeRange(date);
 
@@ -42,7 +42,7 @@ test("Test function to calculate date range", () => {
 		"2025-03-01T00:00:00.000Z",
 	);
 
-	expect(range.currentRange.end.toISOString()).toBe("2025-04-01T22:59:59.999Z");
+	expect(range.currentRange.end.toISOString()).toBe("2025-04-01T23:59:59.999Z");
 
 	expect(range.previousRange.start.toISOString()).toBe(
 		"2025-02-01T00:00:00.000Z",
