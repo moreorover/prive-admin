@@ -13,6 +13,8 @@
     "jsx": "preserve",
     "incremental": true,
     "noImplicitAny": false,
+    "sourceMap": true,
+    "inlineSources": true,
     "plugins": [
       {
         "name": "next"

@@ -11,10 +11,11 @@ export default defineConfig({
 		setupFiles: "./vitest.setup.tsx",
 		coverage: {
 			// you can include other reporters, but 'json-summary' is required, json is recommended
-			reporter: ["text", "json-summary", "json"],
+			reporter: ["text", "json-summary", "json", "html"],
 			// If you want a coverage reports even if your tests are failing, include the reportOnFailure option
 			reportOnFailure: true,
-			exclude: ["src/trpc/routers/_app.ts", "**/__tests__/**"],
+			// exclude: ["src/trpc/routers/_app.ts", "**/__tests__/**"],
+			reportsDirectory: "coverage",
 		},
 		exclude: [
 			"src/trpc/routers/_app.ts", // Ignore specific file
