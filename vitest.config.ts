@@ -19,7 +19,7 @@ export default defineConfig({
 		},
 		exclude: [
 			"src/trpc/routers/_app.ts", // Ignore specific file
-			"**/__tests__/helpers/**", // Ignore a folder
+			"**/__tests__/**", // Ignore a folder
 			"**/node_modules/**",
 			"**/dist/**",
 			"**/.{idea,git,cache,output,temp}/**",
