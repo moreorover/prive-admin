@@ -21,7 +21,11 @@ vi.mock("server-only", () => {
 const mockFetchTransactions = vi.fn();
 
 vi.mock("@/lib/prisma", async () => {
+	const originalModule = await vi.importActual<
+		typeof import("@/lib/__mocks__/prisma")
+	>("@/lib/__mocks__/prisma");
 	return {
+		...originalModule,
 		default: {
 			transaction: {
 				findMany: (...args: unknown[]) => mockFetchTransactions(...args),
