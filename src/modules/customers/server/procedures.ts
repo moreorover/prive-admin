@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { customerSchema } from "@/lib/schemas";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/server/trpc";
 
 export const customersRouter = createTRPCRouter({
 	getAll: protectedProcedure.query(async () => {

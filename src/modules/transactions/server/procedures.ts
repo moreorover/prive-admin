@@ -3,7 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { transactionSchema } from "@/lib/schemas";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/server/trpc";
 import dayjs from "dayjs";
 
 export const transactionsRouter = createTRPCRouter({

@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { noteSchema, noteSchemaApi } from "@/lib/schemas";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -59,7 +59,7 @@ export const notesRouter = createTRPCRouter({
 			const createdNote = await prisma.note.create({
 				data: {
 					...note,
-					createdById: ctx.user.id,
+					createdById: ctx.session.user.id,
 				},
 			});
 			return createdNote;

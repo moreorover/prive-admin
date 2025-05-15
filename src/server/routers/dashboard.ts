@@ -2,7 +2,7 @@ import {
 	calculateMonthlyTimeRange,
 	calculateTransactionMetrics,
 } from "@/server/dashboard";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/server/trpc";
 import dayjs from "dayjs";
 import { z } from "zod";
 
