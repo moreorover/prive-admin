@@ -1,5 +1,4 @@
 "use client";
-
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { formatAmount } from "@/lib/helpers";
 import { StatCardDiff } from "@/modules/ui/components/stat-card-diff";
@@ -20,49 +19,10 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 export const DashboardView = () => {
-	return (
-		<Suspense fallback={<LoaderSkeleton />}>
-			<ErrorBoundary fallback={<p>Error</p>}>
-				<DashboardSuspense />
-			</ErrorBoundary>
-		</Suspense>
-	);
-};
-
-function DashboardSuspense() {
 	const [date, setDate] = useQueryState(
 		"date",
 		parseAsIsoDate.withDefault(dayjs().startOf("date").toDate()),
 	);
-
-	const [transactionStats] =
-		trpc.dashboard.getTransactionStatsForDate.useSuspenseQuery({
-			date,
-		});
-
-	const stats = [
-		{
-			title: "Transactions Sum",
-			value: formatAmount(transactionStats.total.current),
-			percentage: transactionStats.total.percentage,
-			previous: formatAmount(transactionStats.total.previous),
-			icon: "mdi:currency-gbp",
-		},
-		{
-			title: "Transactions Average",
-			value: formatAmount(transactionStats.average.current),
-			percentage: transactionStats.average.percentage,
-			previous: formatAmount(transactionStats.average.previous),
-			icon: "mdi:chart-line",
-		},
-		{
-			title: "Transactions Count",
-			value: transactionStats.count.current,
-			percentage: transactionStats.count.percentage,
-			previous: transactionStats.count.previous,
-			icon: "mdi:counter",
-		},
-	];
 
 	return (
 		<Container size="lg">
@@ -93,18 +53,59 @@ function DashboardSuspense() {
 					cols={{ base: 1, sm: 2, md: 3 }}
 					spacing={{ base: 10, "300px": "xl" }}
 				>
-					{stats.map((stat) => (
-						<StatCardDiff
-							key={stat.title}
-							title={stat.title}
-							value={stat.value}
-							percentage={stat.percentage}
-							previous={stat.previous}
-							icon={stat.icon}
-						/>
-					))}
+					<Suspense fallback={<LoaderSkeleton />}>
+						<ErrorBoundary fallback={<p>Error</p>}>
+							<DashboardSuspense date={date} />
+						</ErrorBoundary>
+					</Suspense>
 				</SimpleGrid>
 			</Stack>
 		</Container>
+	);
+};
+
+function DashboardSuspense({ date }: { date: Date }) {
+	const [transactionStats] =
+		trpc.dashboard.getTransactionStatsForDate.useSuspenseQuery({
+			date,
+		});
+
+	const stats = [
+		{
+			title: "Transactions Sum",
+			value: formatAmount(transactionStats.total.current),
+			percentage: transactionStats.total.percentage,
+			previous: formatAmount(transactionStats.total.previous),
+			icon: "mdi:currency-gbp",
+		},
+		{
+			title: "Transactions Average",
+			value: formatAmount(transactionStats.average.current),
+			percentage: transactionStats.average.percentage,
+			previous: formatAmount(transactionStats.average.previous),
+			icon: "mdi:chart-line",
+		},
+		{
+			title: "Transactions Count",
+			value: transactionStats.count.current,
+			percentage: transactionStats.count.percentage,
+			previous: transactionStats.count.previous,
+			icon: "mdi:counter",
+		},
+	];
+
+	return (
+		<>
+			{stats.map((stat) => (
+				<StatCardDiff
+					key={stat.title}
+					title={stat.title}
+					value={stat.value}
+					percentage={stat.percentage}
+					previous={stat.previous}
+					icon={stat.icon}
+				/>
+			))}
+		</>
 	);
 }
