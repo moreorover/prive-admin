@@ -43,23 +43,23 @@ function DashboardSuspense() {
 	const stats = [
 		{
 			title: "Transactions Sum",
-			value: formatAmount(transactionStats.totalSum),
-			diff: transactionStats.totalSumDiff.percentage,
-			previous: formatAmount(transactionStats.totalSumDiff.previous),
+			value: formatAmount(transactionStats.total),
+			percentage: transactionStats.totalChange.percentage,
+			previous: formatAmount(transactionStats.totalChange.previous),
 			icon: "mdi:currency-gbp",
 		},
 		{
 			title: "Transactions Average",
-			value: formatAmount(transactionStats.averageAmount),
-			diff: transactionStats.averageAmountDiff.percentage,
-			previous: formatAmount(transactionStats.averageAmountDiff.previous),
+			value: formatAmount(transactionStats.average),
+			percentage: transactionStats.averageChange.percentage,
+			previous: formatAmount(transactionStats.averageChange.previous),
 			icon: "mdi:chart-line",
 		},
 		{
 			title: "Transactions Count",
-			value: transactionStats.transactionCount,
-			diff: transactionStats.transactionCountDiff.percentage,
-			previous: transactionStats.transactionCountDiff.previous,
+			value: transactionStats.count,
+			percentage: transactionStats.countChange.percentage,
+			previous: transactionStats.countChange.previous,
 			icon: "mdi:counter",
 		},
 	];
@@ -98,7 +98,7 @@ function DashboardSuspense() {
 							key={stat.title}
 							title={stat.title}
 							value={stat.value}
-							diff={stat.diff}
+							percentage={stat.percentage}
 							previous={stat.previous}
 							icon={stat.icon}
 						/>

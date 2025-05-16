@@ -2,8 +2,8 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { expect, test, vi } from "vitest";
 import {
-	calculateDifferences,
-	calculateMetrics,
+	calculateArrayStatistics,
+	calculateChange,
 	calculateMonthlyTimeRange,
 	calculateTransactionMetrics,
 } from "./dashboard";
@@ -56,7 +56,7 @@ test("Test function to calculate date range", () => {
 test("Test function to calculate transaction metrics", () => {
 	const transactions: number[] = [500, 1000, 1500];
 
-	const { count, sum, average } = calculateMetrics(transactions);
+	const { count, sum, average } = calculateArrayStatistics(transactions);
 
 	expect(count).toBe(3);
 	expect(sum).toBe(3000);
@@ -64,7 +64,7 @@ test("Test function to calculate transaction metrics", () => {
 });
 
 test("Test function to calculate difference", () => {
-	const { previous, percentageDiff, diff } = calculateDifferences(1000, 2000);
+	const { previous, percentageDiff, diff } = calculateChange(1000, 2000);
 
 	expect(previous).toBe(2000);
 	expect(percentageDiff).toBe(-50);
@@ -72,7 +72,7 @@ test("Test function to calculate difference", () => {
 });
 
 test("Test function to calculate negative difference", () => {
-	const { previous, percentageDiff, diff } = calculateDifferences(5, -5);
+	const { previous, percentageDiff, diff } = calculateChange(5, -5);
 
 	expect(previous).toBe(-5);
 	expect(percentageDiff).toBe(200);
@@ -80,7 +80,7 @@ test("Test function to calculate negative difference", () => {
 });
 
 test("Test function to calculate negative difference", () => {
-	const { previous, percentageDiff, diff } = calculateDifferences(-5, 5);
+	const { previous, percentageDiff, diff } = calculateChange(-5, 5);
 
 	expect(previous).toBe(5);
 	expect(percentageDiff).toBe(-200);
@@ -88,7 +88,7 @@ test("Test function to calculate negative difference", () => {
 });
 
 test("Test function to calculate negative difference", () => {
-	const { previous, percentageDiff, diff } = calculateDifferences(-5, 0);
+	const { previous, percentageDiff, diff } = calculateChange(-5, 0);
 
 	expect(previous).toBe(0);
 	expect(percentageDiff).toBe(0);
@@ -96,7 +96,7 @@ test("Test function to calculate negative difference", () => {
 });
 
 test("Test function to calculate negative difference", () => {
-	const { previous, percentageDiff, diff } = calculateDifferences(0, -5);
+	const { previous, percentageDiff, diff } = calculateChange(0, -5);
 
 	expect(previous).toBe(-5);
 	expect(percentageDiff).toBe(100);
@@ -104,7 +104,7 @@ test("Test function to calculate negative difference", () => {
 });
 
 test("Test function to calculate negative difference", () => {
-	const { previous, percentageDiff, diff } = calculateDifferences(-10, -5);
+	const { previous, percentageDiff, diff } = calculateChange(-10, -5);
 
 	expect(previous).toBe(-5);
 	expect(percentageDiff).toBe(-100);
@@ -112,7 +112,7 @@ test("Test function to calculate negative difference", () => {
 });
 
 test("Test function to calculate negative difference", () => {
-	const { previous, percentageDiff, diff } = calculateDifferences(-5, -10);
+	const { previous, percentageDiff, diff } = calculateChange(-5, -10);
 
 	expect(previous).toBe(-10);
 	expect(percentageDiff).toBe(50);
@@ -138,21 +138,21 @@ test("calculateTransactionMetrics - calculates metrics correctly", async () => {
 		previousRange,
 	);
 
-	expect(metrics.totalSum).toBe(30);
-	expect(metrics.averageAmount).toBe(10);
-	expect(metrics.transactionCount).toBe(3);
+	expect(metrics.total).toBe(30);
+	expect(metrics.average).toBe(10);
+	expect(metrics.count).toBe(3);
 
-	expect(metrics.totalSumDiff.previous).toBe(11);
-	expect(metrics.totalSumDiff.diff).toBe(19);
-	expect(metrics.totalSumDiff.percentage).toBeCloseTo(172.73);
+	expect(metrics.totalChange.previous).toBe(11);
+	expect(metrics.totalChange.difference).toBe(19);
+	expect(metrics.totalChange.percentage).toBe(172.73);
 
-	expect(metrics.averageAmountDiff.previous).toBe(5.5);
-	expect(metrics.averageAmountDiff.diff).toBe(4.5);
-	expect(metrics.averageAmountDiff.percentage).toBeCloseTo(81.82);
+	expect(metrics.averageChange.previous).toBe(5.5);
+	expect(metrics.averageChange.difference).toBe(4.5);
+	expect(metrics.averageChange.percentage).toBe(81.82);
 
-	expect(metrics.transactionCountDiff.previous).toBe(2);
-	expect(metrics.transactionCountDiff.diff).toBe(1);
-	expect(metrics.transactionCountDiff.percentage).toBeCloseTo(50);
+	expect(metrics.countChange.previous).toBe(2);
+	expect(metrics.countChange.difference).toBe(1);
+	expect(metrics.countChange.percentage).toBe(50);
 });
 
 test("fetchTransactions - fetches transactions within the given current date range", async () => {
@@ -223,19 +223,19 @@ test("calculateTransactionMetrics - calculates negative metrics correctly", asyn
 		previousRange,
 	);
 
-	expect(metrics.totalSum).toBe(-1000);
-	expect(metrics.averageAmount).toBe(-1000);
-	expect(metrics.transactionCount).toBe(1);
+	expect(metrics.total).toBe(-1000);
+	expect(metrics.average).toBe(-1000);
+	expect(metrics.count).toBe(1);
 
-	expect(metrics.totalSumDiff.previous).toBe(-500);
-	expect(metrics.totalSumDiff.diff).toBe(-500);
-	expect(metrics.totalSumDiff.percentage).toBe(-100);
+	expect(metrics.totalChange.previous).toBe(-500);
+	expect(metrics.totalChange.difference).toBe(-500);
+	expect(metrics.totalChange.percentage).toBe(-100);
 
-	expect(metrics.averageAmountDiff.previous).toBe(-500);
-	expect(metrics.averageAmountDiff.diff).toBe(-500);
-	expect(metrics.averageAmountDiff.percentage).toBe(-100);
+	expect(metrics.averageChange.previous).toBe(-500);
+	expect(metrics.averageChange.difference).toBe(-500);
+	expect(metrics.averageChange.percentage).toBe(-100);
 
-	expect(metrics.transactionCountDiff.previous).toBe(1);
-	expect(metrics.transactionCountDiff.diff).toBe(0);
-	expect(metrics.transactionCountDiff.percentage).toBe(0);
+	expect(metrics.countChange.previous).toBe(1);
+	expect(metrics.countChange.difference).toBe(0);
+	expect(metrics.countChange.percentage).toBe(0);
 });

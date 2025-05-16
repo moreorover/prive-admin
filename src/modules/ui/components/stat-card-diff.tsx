@@ -6,13 +6,18 @@ interface StatCardProps {
 	title: string;
 	value: number | string;
 	previous: number | string;
-	diff: number;
+	percentage: number;
 	icon: string;
 }
 
-export function StatCardDiff({ title, value, diff, icon }: StatCardProps) {
+export function StatCardDiff({
+	title,
+	value,
+	percentage,
+	icon,
+}: StatCardProps) {
 	const iconDiff =
-		diff > 0 ? "mdi:arrow-up-right-thick" : "mdi:arrow-down-right-thick";
+		percentage > 0 ? "mdi:arrow-up-right-thick" : "mdi:arrow-down-right-thick";
 
 	return (
 		<Paper withBorder p="md" radius="md" key={title}>
@@ -26,12 +31,12 @@ export function StatCardDiff({ title, value, diff, icon }: StatCardProps) {
 			<Group align="flex-end" gap="xs" mt={25}>
 				<Text className={classes.value}>{value}</Text>
 				<Text
-					c={diff > 0 ? "teal" : "red"}
+					c={percentage > 0 ? "teal" : "red"}
 					fz="sm"
 					fw={500}
-					className={classes.diff}
+					className={classes.percentage}
 				>
-					<span>{diff}%</span>
+					<span>{percentage}%</span>
 					<Icon width={22} height={22} icon={iconDiff} />
 				</Text>
 			</Group>

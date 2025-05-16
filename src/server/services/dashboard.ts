@@ -34,7 +34,7 @@ export const calculateMonthlyTimeRange = (date: Dayjs) => {
 	};
 };
 
-export const calculateMetrics = (arr: number[]) => {
+export const calculateArrayStatistics = (arr: number[]) => {
 	const count = arr.length;
 	const sum = arr.reduce((acc, a) => acc + a, 0);
 	const average = count > 0 ? sum / count : 0;
@@ -42,12 +42,51 @@ export const calculateMetrics = (arr: number[]) => {
 	return { count, sum, average };
 };
 
-export const calculateDifferences = (current: number, previous: number) => {
+export const calculateChange = (current: number, previous: number) => {
 	const diff = current - previous;
 	const percentageDiff =
 		previous !== 0 ? (diff / Math.abs(previous)) * 100 : current > 0 ? 100 : 0;
 
 	return { previous, diff, percentageDiff };
+};
+
+export const calculateAll = (current: number[], previous: number[]) => {
+	const currentStatistics = calculateArrayStatistics(current);
+	const previousStatistics = calculateArrayStatistics(previous);
+
+	const transactionCountDiff = calculateChange(
+		currentStatistics.count,
+		previousStatistics.count,
+	);
+	const totalSumDiff = calculateChange(
+		currentStatistics.sum,
+		previousStatistics.sum,
+	);
+	const averageAmountDiff = calculateChange(
+		currentStatistics.average,
+		previousStatistics.average,
+	);
+
+	return {
+		total: currentStatistics.sum / 100,
+		average: +(currentStatistics.average / 100).toFixed(2),
+		count: currentStatistics.count,
+		totalChange: {
+			previous: totalSumDiff.previous / 100,
+			difference: totalSumDiff.diff / 100,
+			percentage: +totalSumDiff.percentageDiff.toFixed(2),
+		},
+		averageChange: {
+			previous: averageAmountDiff.previous / 100,
+			difference: averageAmountDiff.diff / 100,
+			percentage: +averageAmountDiff.percentageDiff.toFixed(2),
+		},
+		countChange: {
+			previous: transactionCountDiff.previous,
+			difference: transactionCountDiff.diff,
+			percentage: +transactionCountDiff.percentageDiff.toFixed(2),
+		},
+	};
 };
 
 export const calculateTransactionMetrics = async (
@@ -59,42 +98,8 @@ export const calculateTransactionMetrics = async (
 		fetchTransactions(previousRange.start, previousRange.end),
 	]);
 
-	const currentMetrics = calculateMetrics(transactions.map((t) => t.amount));
-	const previousMetrics = calculateMetrics(
+	return calculateAll(
+		transactions.map((t) => t.amount),
 		previousTransactions.map((t) => t.amount),
 	);
-
-	const transactionCountDiff = calculateDifferences(
-		currentMetrics.count,
-		previousMetrics.count,
-	);
-	const totalSumDiff = calculateDifferences(
-		currentMetrics.sum,
-		previousMetrics.sum,
-	);
-	const averageAmountDiff = calculateDifferences(
-		currentMetrics.average,
-		previousMetrics.average,
-	);
-
-	return {
-		totalSum: currentMetrics.sum / 100,
-		averageAmount: +(currentMetrics.average / 100).toFixed(2),
-		transactionCount: currentMetrics.count,
-		totalSumDiff: {
-			previous: totalSumDiff.previous / 100,
-			diff: totalSumDiff.diff / 100,
-			percentage: +totalSumDiff.percentageDiff.toFixed(2),
-		},
-		averageAmountDiff: {
-			previous: averageAmountDiff.previous / 100,
-			diff: averageAmountDiff.diff / 100,
-			percentage: +averageAmountDiff.percentageDiff.toFixed(2),
-		},
-		transactionCountDiff: {
-			previous: transactionCountDiff.previous,
-			diff: transactionCountDiff.diff,
-			percentage: +transactionCountDiff.percentageDiff.toFixed(2),
-		},
-	};
 };
