@@ -2,7 +2,6 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { expect, test, vi } from "vitest";
 import {
-	type Transaction,
 	calculateDifferences,
 	calculateMetrics,
 	calculateMonthlyTimeRange,
@@ -55,11 +54,7 @@ test("Test function to calculate date range", () => {
 });
 
 test("Test function to calculate transaction metrics", () => {
-	const transactions: Transaction[] = [
-		{ amount: 500 },
-		{ amount: 1000 },
-		{ amount: 1500 },
-	];
+	const transactions: number[] = [500, 1000, 1500];
 
 	const { count, sum, average } = calculateMetrics(transactions);
 
@@ -155,7 +150,7 @@ test("calculateTransactionMetrics - calculates metrics correctly", async () => {
 	expect(metrics.averageAmountDiff.diff).toBe(4.5);
 	expect(metrics.averageAmountDiff.percentage).toBeCloseTo(81.82);
 
-	expect(metrics.transactionCountDiff.previous).toBe(0.02);
+	expect(metrics.transactionCountDiff.previous).toBe(2);
 	expect(metrics.transactionCountDiff.diff).toBe(1);
 	expect(metrics.transactionCountDiff.percentage).toBeCloseTo(50);
 });
@@ -233,14 +228,14 @@ test("calculateTransactionMetrics - calculates negative metrics correctly", asyn
 	expect(metrics.transactionCount).toBe(1);
 
 	expect(metrics.totalSumDiff.previous).toBe(-500);
-	expect(metrics.totalSumDiff.diff).toBe(500);
-	expect(metrics.totalSumDiff.percentage).toBeCloseTo(100);
+	expect(metrics.totalSumDiff.diff).toBe(-500);
+	expect(metrics.totalSumDiff.percentage).toBe(-100);
 
-	expect(metrics.averageAmountDiff.previous).toBe(5.5);
-	expect(metrics.averageAmountDiff.diff).toBe(4.5);
-	expect(metrics.averageAmountDiff.percentage).toBeCloseTo(81.82);
+	expect(metrics.averageAmountDiff.previous).toBe(-500);
+	expect(metrics.averageAmountDiff.diff).toBe(-500);
+	expect(metrics.averageAmountDiff.percentage).toBe(-100);
 
-	expect(metrics.transactionCountDiff.previous).toBe(0.02);
-	expect(metrics.transactionCountDiff.diff).toBe(1);
-	expect(metrics.transactionCountDiff.percentage).toBeCloseTo(50);
+	expect(metrics.transactionCountDiff.previous).toBe(1);
+	expect(metrics.transactionCountDiff.diff).toBe(0);
+	expect(metrics.transactionCountDiff.percentage).toBe(0);
 });

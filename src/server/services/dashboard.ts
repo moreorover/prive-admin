@@ -34,9 +34,9 @@ export const calculateMonthlyTimeRange = (date: Dayjs) => {
 	};
 };
 
-export const calculateMetrics = (transactions: Transaction[]) => {
-	const count = transactions.length;
-	const sum = transactions.reduce((acc, txn) => acc + txn.amount, 0);
+export const calculateMetrics = (arr: number[]) => {
+	const count = arr.length;
+	const sum = arr.reduce((acc, a) => acc + a, 0);
 	const average = count > 0 ? sum / count : 0;
 
 	return { count, sum, average };
@@ -59,8 +59,10 @@ export const calculateTransactionMetrics = async (
 		fetchTransactions(previousRange.start, previousRange.end),
 	]);
 
-	const currentMetrics = calculateMetrics(transactions);
-	const previousMetrics = calculateMetrics(previousTransactions);
+	const currentMetrics = calculateMetrics(transactions.map((t) => t.amount));
+	const previousMetrics = calculateMetrics(
+		previousTransactions.map((t) => t.amount),
+	);
 
 	const transactionCountDiff = calculateDifferences(
 		currentMetrics.count,
