@@ -55,53 +55,44 @@ export const calculateArrayStatistics = (arr: number[]) => {
 	const sum = arr.reduce((acc, a) => acc + a, 0);
 	const average = count > 0 ? sum / count : 0;
 
-	return { count, sum, average };
+	return { count, sum, average: +average.toFixed(2) };
 };
 
 export const calculateChange = (current: number, previous: number) => {
-	const diff = current - previous;
-	const percentageDiff =
-		previous !== 0 ? (diff / Math.abs(previous)) * 100 : current > 0 ? 100 : 0;
+	const difference = current - previous;
+	const percentage =
+		previous !== 0
+			? (difference / Math.abs(previous)) * 100
+			: current > 0
+				? 100
+				: 0;
 
-	return { current, previous, diff, percentageDiff };
+	return {
+		current,
+		previous,
+		difference,
+		percentage: +percentage.toFixed(2),
+	};
 };
 
 export const calculateAll = (current: number[], previous: number[]) => {
 	const currentStatistics = calculateArrayStatistics(current);
 	const previousStatistics = calculateArrayStatistics(previous);
 
-	const transactionCountDiff = calculateChange(
+	const count = calculateChange(
 		currentStatistics.count,
 		previousStatistics.count,
 	);
-	const totalSumDiff = calculateChange(
-		currentStatistics.sum,
-		previousStatistics.sum,
-	);
-	const averageAmountDiff = calculateChange(
+	const total = calculateChange(currentStatistics.sum, previousStatistics.sum);
+	const average = calculateChange(
 		currentStatistics.average,
 		previousStatistics.average,
 	);
 
 	return {
-		total: {
-			current: totalSumDiff.current,
-			previous: totalSumDiff.previous,
-			difference: totalSumDiff.diff,
-			percentage: totalSumDiff.percentageDiff,
-		},
-		average: {
-			current: averageAmountDiff.current,
-			previous: averageAmountDiff.previous,
-			difference: averageAmountDiff.diff,
-			percentage: averageAmountDiff.percentageDiff,
-		},
-		count: {
-			current: transactionCountDiff.current,
-			previous: transactionCountDiff.previous,
-			difference: transactionCountDiff.diff,
-			percentage: +transactionCountDiff.percentageDiff.toFixed(2),
-		},
+		total,
+		average,
+		count,
 	};
 };
 
@@ -123,19 +114,19 @@ export const calculateTransactionMetrics = async (
 			current: rawMetrics.total.current / 100,
 			previous: rawMetrics.total.previous / 100,
 			difference: rawMetrics.total.difference / 100,
-			percentage: +rawMetrics.total.percentage.toFixed(2),
+			percentage: rawMetrics.total.percentage,
 		},
 		average: {
 			current: +(rawMetrics.average.current / 100).toFixed(2),
 			previous: +(rawMetrics.average.previous / 100).toFixed(2),
 			difference: rawMetrics.average.difference / 100,
-			percentage: +rawMetrics.average.percentage.toFixed(2),
+			percentage: rawMetrics.average.percentage,
 		},
 		count: {
 			current: rawMetrics.count.current,
 			previous: rawMetrics.count.previous,
 			difference: rawMetrics.count.difference,
-			percentage: +rawMetrics.count.percentage.toFixed(2),
+			percentage: rawMetrics.count.percentage,
 		},
 	};
 };
@@ -179,7 +170,7 @@ export const calculateHairAssignedMetrics = async (
 			},
 			average: {
 				current: +weightInGrams.average.current.toFixed(2),
-				previous: weightInGrams.average.previous,
+				previous: +weightInGrams.average.previous.toFixed(2),
 				difference: weightInGrams.average.difference,
 				percentage: weightInGrams.average.percentage,
 			},
@@ -190,8 +181,65 @@ export const calculateHairAssignedMetrics = async (
 				percentage: weightInGrams.count.percentage,
 			},
 		},
-		soldFor,
-		profit,
-		pricePerGram,
+		soldFor: {
+			total: {
+				current: soldFor.total.current / 100,
+				previous: soldFor.total.previous / 100,
+				difference: soldFor.total.difference / 100,
+				percentage: soldFor.total.percentage,
+			},
+			average: {
+				current: soldFor.average.current / 100,
+				previous: soldFor.average.previous / 100,
+				difference: soldFor.average.difference / 100,
+				percentage: soldFor.average.percentage,
+			},
+			count: {
+				current: soldFor.count.current,
+				previous: soldFor.count.previous,
+				difference: soldFor.count.difference,
+				percentage: soldFor.count.percentage,
+			},
+		},
+		profit: {
+			total: {
+				current: profit.total.current / 100,
+				previous: profit.total.previous / 100,
+				difference: profit.total.difference / 100,
+				percentage: profit.total.percentage,
+			},
+			average: {
+				current: +profit.average.current.toFixed(2),
+				previous: +profit.average.previous.toFixed(2),
+				difference: profit.average.difference,
+				percentage: profit.average.percentage,
+			},
+			count: {
+				current: profit.count.current,
+				previous: profit.count.previous,
+				difference: profit.count.difference,
+				percentage: profit.count.percentage,
+			},
+		},
+		pricePerGram: {
+			total: {
+				current: pricePerGram.total.current / 100,
+				previous: pricePerGram.total.previous / 100,
+				difference: pricePerGram.total.difference / 100,
+				percentage: pricePerGram.total.percentage,
+			},
+			average: {
+				current: +pricePerGram.average.current.toFixed(2),
+				previous: +pricePerGram.average.previous.toFixed(2),
+				difference: pricePerGram.average.difference,
+				percentage: pricePerGram.average.percentage,
+			},
+			count: {
+				current: pricePerGram.count.current,
+				previous: pricePerGram.count.previous,
+				difference: pricePerGram.count.difference,
+				percentage: pricePerGram.count.percentage,
+			},
+		},
 	};
 };

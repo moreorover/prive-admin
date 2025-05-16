@@ -63,60 +63,78 @@ test("Test function to calculate transaction metrics", () => {
 	expect(average).toBe(1000);
 });
 
+test("Test function to calculate transaction metrics", () => {
+	const transactions: number[] = [333, 1001, 1538];
+
+	const { count, sum, average } = calculateArrayStatistics(transactions);
+
+	expect(count).toBe(3);
+	expect(sum).toBe(2872);
+	expect(average).toBe(957.33);
+});
+
 test("Test function to calculate difference", () => {
-	const { previous, percentageDiff, diff } = calculateChange(1000, 2000);
+	const { previous, percentage, difference } = calculateChange(1000, 2000);
 
 	expect(previous).toBe(2000);
-	expect(percentageDiff).toBe(-50);
-	expect(diff).toBe(-1000);
+	expect(percentage).toBe(-50);
+	expect(difference).toBe(-1000);
 });
 
 test("Test function to calculate negative difference", () => {
-	const { previous, percentageDiff, diff } = calculateChange(5, -5);
+	const { previous, percentage, difference } = calculateChange(5, -5);
 
 	expect(previous).toBe(-5);
-	expect(percentageDiff).toBe(200);
-	expect(diff).toBe(10);
+	expect(percentage).toBe(200);
+	expect(difference).toBe(10);
 });
 
 test("Test function to calculate negative difference", () => {
-	const { previous, percentageDiff, diff } = calculateChange(-5, 5);
+	const { previous, percentage, difference } = calculateChange(13, 7);
+
+	expect(previous).toBe(7);
+	expect(percentage).toBe(85.71);
+	expect(difference).toBe(6);
+});
+
+test("Test function to calculate negative difference", () => {
+	const { previous, percentage, difference } = calculateChange(-5, 5);
 
 	expect(previous).toBe(5);
-	expect(percentageDiff).toBe(-200);
-	expect(diff).toBe(-10);
+	expect(percentage).toBe(-200);
+	expect(difference).toBe(-10);
 });
 
 test("Test function to calculate negative difference", () => {
-	const { previous, percentageDiff, diff } = calculateChange(-5, 0);
+	const { previous, percentage, difference } = calculateChange(-5, 0);
 
 	expect(previous).toBe(0);
-	expect(percentageDiff).toBe(0);
-	expect(diff).toBe(-5);
+	expect(percentage).toBe(0);
+	expect(difference).toBe(-5);
 });
 
 test("Test function to calculate negative difference", () => {
-	const { previous, percentageDiff, diff } = calculateChange(0, -5);
+	const { previous, percentage, difference } = calculateChange(0, -5);
 
 	expect(previous).toBe(-5);
-	expect(percentageDiff).toBe(100);
-	expect(diff).toBe(5);
+	expect(percentage).toBe(100);
+	expect(difference).toBe(5);
 });
 
 test("Test function to calculate negative difference", () => {
-	const { previous, percentageDiff, diff } = calculateChange(-10, -5);
+	const { previous, percentage, difference } = calculateChange(-10, -5);
 
 	expect(previous).toBe(-5);
-	expect(percentageDiff).toBe(-100);
-	expect(diff).toBe(-5);
+	expect(percentage).toBe(-100);
+	expect(difference).toBe(-5);
 });
 
 test("Test function to calculate negative difference", () => {
-	const { previous, percentageDiff, diff } = calculateChange(-5, -10);
+	const { previous, percentage, difference } = calculateChange(-5, -10);
 
 	expect(previous).toBe(-10);
-	expect(percentageDiff).toBe(50);
-	expect(diff).toBe(5);
+	expect(percentage).toBe(50);
+	expect(difference).toBe(5);
 });
 
 test("calculateTransactionMetrics - calculates metrics correctly", async () => {
