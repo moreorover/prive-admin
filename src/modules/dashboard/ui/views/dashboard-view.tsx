@@ -123,21 +123,21 @@ function HairAssignedStatisticsSuspense({ date }: { date: Date }) {
 
 	const stats = [
 		{
-			title: "Weight in Grams Sum",
+			title: "Hair Sold during Appointments",
 			value: `${hairAssignedStats.weightInGrams.total.current}g`,
 			percentage: hairAssignedStats.weightInGrams.total.percentage,
 			previous: `${hairAssignedStats.weightInGrams.total.previous}g`,
 			icon: "mdi:currency-gbp",
 		},
 		{
-			title: "Transactions Average",
-			value: formatAmount(hairAssignedStats.weightInGrams.average.current),
+			title: "Average Hair Sold during Appointments",
+			value: `${hairAssignedStats.weightInGrams.average.current}g`,
 			percentage: hairAssignedStats.weightInGrams.average.percentage,
-			previous: formatAmount(hairAssignedStats.weightInGrams.average.previous),
+			previous: `${hairAssignedStats.weightInGrams.average.previous}g`,
 			icon: "mdi:chart-line",
 		},
 		{
-			title: "Transactions Count",
+			title: "Times Hair Sold during Appointments",
 			value: hairAssignedStats.weightInGrams.count.current,
 			percentage: hairAssignedStats.weightInGrams.count.percentage,
 			previous: hairAssignedStats.weightInGrams.count.previous,

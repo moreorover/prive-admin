@@ -85,16 +85,16 @@ export const calculateAll = (current: number[], previous: number[]) => {
 
 	return {
 		total: {
-			current: totalSumDiff.current / 100,
-			previous: totalSumDiff.previous / 100,
-			difference: totalSumDiff.diff / 100,
-			percentage: +totalSumDiff.percentageDiff.toFixed(2),
+			current: totalSumDiff.current,
+			previous: totalSumDiff.previous,
+			difference: totalSumDiff.diff,
+			percentage: totalSumDiff.percentageDiff,
 		},
 		average: {
-			current: +(averageAmountDiff.current / 100).toFixed(2),
-			previous: averageAmountDiff.previous / 100,
-			difference: averageAmountDiff.diff / 100,
-			percentage: +averageAmountDiff.percentageDiff.toFixed(2),
+			current: averageAmountDiff.current,
+			previous: averageAmountDiff.previous,
+			difference: averageAmountDiff.diff,
+			percentage: averageAmountDiff.percentageDiff,
 		},
 		count: {
 			current: transactionCountDiff.current,
@@ -113,10 +113,31 @@ export const calculateTransactionMetrics = async (
 		fetchTransactions(currentRange.start, currentRange.end),
 		fetchTransactions(previousRange.start, previousRange.end),
 	]);
-	return calculateAll(
+	const rawMetrics = calculateAll(
 		transactions.map((t) => t.amount),
 		previousTransactions.map((t) => t.amount),
 	);
+
+	return {
+		total: {
+			current: rawMetrics.total.current / 100,
+			previous: rawMetrics.total.previous / 100,
+			difference: rawMetrics.total.difference / 100,
+			percentage: +rawMetrics.total.percentage.toFixed(2),
+		},
+		average: {
+			current: +(rawMetrics.average.current / 100).toFixed(2),
+			previous: +(rawMetrics.average.previous / 100).toFixed(2),
+			difference: rawMetrics.average.difference / 100,
+			percentage: +rawMetrics.average.percentage.toFixed(2),
+		},
+		count: {
+			current: rawMetrics.count.current,
+			previous: rawMetrics.count.previous,
+			difference: rawMetrics.count.difference,
+			percentage: +rawMetrics.count.percentage.toFixed(2),
+		},
+	};
 };
 
 export const calculateHairAssignedMetrics = async (
@@ -148,5 +169,29 @@ export const calculateHairAssignedMetrics = async (
 		previousHairAssigned.map((h) => h.pricePerGram),
 	);
 
-	return { weightInGrams, soldFor, profit, pricePerGram };
+	return {
+		weightInGrams: {
+			total: {
+				current: weightInGrams.total.current,
+				previous: weightInGrams.total.previous,
+				difference: weightInGrams.total.difference,
+				percentage: weightInGrams.total.percentage,
+			},
+			average: {
+				current: +weightInGrams.average.current.toFixed(2),
+				previous: weightInGrams.average.previous,
+				difference: weightInGrams.average.difference,
+				percentage: weightInGrams.average.percentage,
+			},
+			count: {
+				current: weightInGrams.count.current,
+				previous: weightInGrams.count.previous,
+				difference: weightInGrams.count.difference,
+				percentage: weightInGrams.count.percentage,
+			},
+		},
+		soldFor,
+		profit,
+		pricePerGram,
+	};
 };
