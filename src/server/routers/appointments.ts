@@ -98,17 +98,17 @@ export const appointmentsRouter = createTRPCRouter({
 			return appointments;
 		}),
 	getAppointmentsBetweenDates: protectedProcedure
-		.input(z.object({ startDate: z.string(), endDate: z.string() }))
+		.input(z.object({ date: z.date() }))
 		.query(async ({ input }) => {
-			const { startDate, endDate } = input;
-			const startOfWeek = dayjs(startDate).startOf("day");
-			const endOfWeek = dayjs(endDate).endOf("day");
+			const { date } = input;
+			const start = dayjs(date).startOf("month");
+			const end = dayjs(start).endOf("month").add(1, "day");
 
 			const appointments = await prisma.appointment.findMany({
 				where: {
 					startsAt: {
-						gte: startOfWeek.toDate(),
-						lte: endOfWeek.toDate(),
+						gte: start.toDate(),
+						lte: end.toDate(),
 					},
 				},
 				orderBy: {

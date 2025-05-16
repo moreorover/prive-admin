@@ -1,7 +1,7 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import type { GetAppointmentsBetweenDates } from "@/modules/appointments/types";
+import type { GetAppointments } from "@/modules/appointments/types";
 import { trpc } from "@/trpc/client";
 import {
 	Badge,
@@ -19,7 +19,8 @@ import {
 import { useViewportSize } from "@mantine/hooks";
 import dayjs, { type Dayjs } from "dayjs";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Suspense, useState } from "react";
+import { parseAsIsoDate, useQueryState } from "nuqs";
+import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 // Helper functions
@@ -82,7 +83,7 @@ const WeekdayHeader = ({ weekdays }: { weekdays: string[] }) => {
 const CalendarEventBadge = ({
 	event,
 }: {
-	event: GetAppointmentsBetweenDates[0];
+	event: GetAppointments[0];
 }) => {
 	return (
 		<Tooltip
@@ -118,7 +119,7 @@ const DayCell = ({
 	isTablet,
 }: {
 	date: Dayjs;
-	events: GetAppointmentsBetweenDates;
+	events: GetAppointments;
 	isTablet: boolean;
 }) => {
 	const isToday = dayjs().isSame(date, "day");
@@ -167,7 +168,7 @@ const CalendarGrid = ({
 	isTablet,
 }: {
 	currentDate: Dayjs;
-	events: GetAppointmentsBetweenDates;
+	events: GetAppointments;
 	isTablet: boolean;
 }) => {
 	const firstDayOfMonth = getFirstDayOfMonth(currentDate);
@@ -202,9 +203,7 @@ const CalendarGrid = ({
 	return <Flex wrap="wrap">{days}</Flex>;
 };
 
-const MobileEventItem = ({
-	event,
-}: { event: GetAppointmentsBetweenDates[0] }) => {
+const MobileEventItem = ({ event }: { event: GetAppointments[0] }) => {
 	return (
 		<Group key={event.id} gap="xs">
 			<EventDot />
@@ -226,7 +225,7 @@ const MobileDayCard = ({
 	events,
 }: {
 	date: Dayjs;
-	events: GetAppointmentsBetweenDates;
+	events: GetAppointments;
 }) => {
 	const isToday = dayjs().isSame(date, "day");
 
@@ -262,7 +261,7 @@ const MobileCalendarView = ({
 	events,
 }: {
 	currentDate: Dayjs;
-	events: GetAppointmentsBetweenDates;
+	events: GetAppointments;
 }) => {
 	const daysInMonth = getDaysInMonth(currentDate);
 
@@ -287,17 +286,15 @@ const MobileCalendarView = ({
 };
 
 interface MonthlyCalendarProps {
-	appointments: GetAppointmentsBetweenDates;
-	startDate: Dayjs;
-	endDate: Dayjs;
+	appointments: GetAppointments;
+	date: Dayjs;
 	onPrevMonth?: () => void;
 	onNextMonth?: () => void;
 }
 
 export function MonthlyCalendar({
 	appointments,
-	startDate,
-	endDate,
+	date,
 	onPrevMonth,
 	onNextMonth,
 }: MonthlyCalendarProps) {
@@ -322,19 +319,19 @@ export function MonthlyCalendar({
 		<Box p={isMobile ? rem(8) : rem(16)}>
 			<Paper p={isMobile ? rem(8) : rem(16)} withBorder radius="md">
 				<CalendarHeader
-					currentDate={startDate}
+					currentDate={date}
 					onPrevMonth={prevMonth}
 					onNextMonth={nextMonth}
 					isMobile={isMobile}
 				/>
 
 				{isMobile ? (
-					<MobileCalendarView currentDate={startDate} events={appointments} />
+					<MobileCalendarView currentDate={date} events={appointments} />
 				) : (
 					<>
 						<WeekdayHeader weekdays={weekdays} />
 						<CalendarGrid
-							currentDate={startDate}
+							currentDate={date}
 							events={appointments}
 							isTablet={isTablet}
 						/>
@@ -356,33 +353,27 @@ export default function CalendarView() {
 }
 
 function CalendarSuspense() {
-	const [startDate, setStartDate] = useState(
-		dayjs().startOf("month").format("YYYY-MM-DD"),
-	);
-	const [endDate, setEndDate] = useState(
-		dayjs().endOf("month").format("YYYY-MM-DD"),
+	const [date, setDate] = useQueryState(
+		"date",
+		parseAsIsoDate.withDefault(dayjs().startOf("date").toDate()),
 	);
 	const [appointments] =
 		trpc.appointments.getAppointmentsBetweenDates.useSuspenseQuery({
-			startDate,
-			endDate,
+			date,
 		});
 
 	const onPrevMonth = () => {
-		setStartDate(dayjs(startDate).subtract(1, "month").format("YYYY-MM-DD"));
-		setEndDate(dayjs(endDate).subtract(1, "month").format("YYYY-MM-DD"));
+		setDate(dayjs(date).subtract(1, "month").toDate());
 	};
 
 	const onNextMonth = () => {
-		setStartDate(dayjs(startDate).add(1, "month").format("YYYY-MM-DD"));
-		setEndDate(dayjs(endDate).add(1, "month").format("YYYY-MM-DD"));
+		setDate(dayjs(date).add(1, "month").toDate());
 	};
 
 	return (
 		<MonthlyCalendar
 			appointments={appointments}
-			startDate={dayjs(startDate)}
-			endDate={dayjs(endDate)}
+			date={dayjs(date)}
 			onNextMonth={onNextMonth}
 			onPrevMonth={onPrevMonth}
 		/>
