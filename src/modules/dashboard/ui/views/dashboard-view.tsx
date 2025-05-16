@@ -1,6 +1,7 @@
 "use client";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { formatAmount } from "@/lib/helpers";
+import { EnhancedStatCard } from "@/modules/ui/components/enhanced-stat-card";
 import { StatCardDiff } from "@/modules/ui/components/stat-card-diff";
 import { trpc } from "@/trpc/client";
 import {
@@ -58,6 +59,11 @@ export const DashboardView = () => {
 							<TransactionsStatisticsSuspense date={date} />
 						</ErrorBoundary>
 					</Suspense>
+				</SimpleGrid>
+				<SimpleGrid
+					cols={{ base: 1, sm: 2, md: 4 }}
+					spacing={{ base: 10, "300px": "xl" }}
+				>
 					<Suspense fallback={<LoaderSkeleton />}>
 						<ErrorBoundary fallback={<p>Error</p>}>
 							<HairAssignedStatisticsSuspense date={date} />
@@ -121,42 +127,28 @@ function HairAssignedStatisticsSuspense({ date }: { date: Date }) {
 			date,
 		});
 
-	const stats = [
-		{
-			title: "Hair Sold during Appointments",
-			value: `${hairAssignedStats.weightInGrams.total.current}g`,
-			percentage: hairAssignedStats.weightInGrams.total.percentage,
-			previous: `${hairAssignedStats.weightInGrams.total.previous}g`,
-			icon: "mdi:currency-gbp",
-		},
-		{
-			title: "Average Hair Sold during Appointments",
-			value: `${hairAssignedStats.weightInGrams.average.current}g`,
-			percentage: hairAssignedStats.weightInGrams.average.percentage,
-			previous: `${hairAssignedStats.weightInGrams.average.previous}g`,
-			icon: "mdi:chart-line",
-		},
-		{
-			title: "Times Hair Sold during Appointments",
-			value: hairAssignedStats.weightInGrams.count.current,
-			percentage: hairAssignedStats.weightInGrams.count.percentage,
-			previous: hairAssignedStats.weightInGrams.count.previous,
-			icon: "mdi:counter",
-		},
-	];
-
 	return (
 		<>
-			{stats.map((stat) => (
-				<StatCardDiff
-					key={stat.title}
-					title={stat.title}
-					value={stat.value}
-					percentage={stat.percentage}
-					previous={stat.previous}
-					icon={stat.icon}
-				/>
-			))}
+			<EnhancedStatCard
+				title={"Wight in Grams"}
+				data={hairAssignedStats.weightInGrams}
+				icon={"mdi:currency-gbp"}
+			/>
+			<EnhancedStatCard
+				title={"Sold For"}
+				data={hairAssignedStats.soldFor}
+				icon={"mdi:currency-gbp"}
+			/>
+			<EnhancedStatCard
+				title={"Profit"}
+				data={hairAssignedStats.profit}
+				icon={"mdi:currency-gbp"}
+			/>
+			<EnhancedStatCard
+				title={"Price per Gram"}
+				data={hairAssignedStats.pricePerGram}
+				icon={"mdi:currency-gbp"}
+			/>
 		</>
 	);
 }
