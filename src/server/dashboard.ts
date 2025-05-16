@@ -45,11 +45,7 @@ export const calculateMetrics = (transactions: Transaction[]) => {
 export const calculateDifferences = (current: number, previous: number) => {
 	const diff = current - previous;
 	const percentageDiff =
-		previous !== 0
-			? (Math.abs(diff) / Math.abs(previous)) * 100
-			: current > 0
-				? 100
-				: 0;
+		previous !== 0 ? (diff / Math.abs(previous)) * 100 : current > 0 ? 100 : 0;
 
 	return { previous, diff, percentageDiff };
 };
@@ -94,7 +90,7 @@ export const calculateTransactionMetrics = async (
 			percentage: +averageAmountDiff.percentageDiff.toFixed(2),
 		},
 		transactionCountDiff: {
-			previous: transactionCountDiff.previous / 100,
+			previous: transactionCountDiff.previous,
 			diff: transactionCountDiff.diff,
 			percentage: +transactionCountDiff.percentageDiff.toFixed(2),
 		},

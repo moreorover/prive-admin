@@ -76,6 +76,54 @@ test("Test function to calculate difference", () => {
 	expect(diff).toBe(-1000);
 });
 
+test("Test function to calculate negative difference", () => {
+	const { previous, percentageDiff, diff } = calculateDifferences(5, -5);
+
+	expect(previous).toBe(-5);
+	expect(percentageDiff).toBe(200);
+	expect(diff).toBe(10);
+});
+
+test("Test function to calculate negative difference", () => {
+	const { previous, percentageDiff, diff } = calculateDifferences(-5, 5);
+
+	expect(previous).toBe(5);
+	expect(percentageDiff).toBe(-200);
+	expect(diff).toBe(-10);
+});
+
+test("Test function to calculate negative difference", () => {
+	const { previous, percentageDiff, diff } = calculateDifferences(-5, 0);
+
+	expect(previous).toBe(0);
+	expect(percentageDiff).toBe(0);
+	expect(diff).toBe(-5);
+});
+
+test("Test function to calculate negative difference", () => {
+	const { previous, percentageDiff, diff } = calculateDifferences(0, -5);
+
+	expect(previous).toBe(-5);
+	expect(percentageDiff).toBe(100);
+	expect(diff).toBe(5);
+});
+
+test("Test function to calculate negative difference", () => {
+	const { previous, percentageDiff, diff } = calculateDifferences(-10, -5);
+
+	expect(previous).toBe(-5);
+	expect(percentageDiff).toBe(-100);
+	expect(diff).toBe(-5);
+});
+
+test("Test function to calculate negative difference", () => {
+	const { previous, percentageDiff, diff } = calculateDifferences(-5, -10);
+
+	expect(previous).toBe(-10);
+	expect(percentageDiff).toBe(50);
+	expect(diff).toBe(5);
+});
+
 test("calculateTransactionMetrics - calculates metrics correctly", async () => {
 	const date = dayjs("2025-03-15");
 	const { currentRange, previousRange } = calculateMonthlyTimeRange(date);
@@ -166,4 +214,33 @@ test("fetchTransactions - fetches transactions within the given previous date ra
 		},
 		select: { amount: true },
 	});
+});
+
+test("calculateTransactionMetrics - calculates negative metrics correctly", async () => {
+	const date = dayjs("2025-03-15");
+	const { currentRange, previousRange } = calculateMonthlyTimeRange(date);
+
+	mockFetchTransactions.mockResolvedValueOnce([{ amount: -100000 }]);
+	mockFetchTransactions.mockResolvedValueOnce([{ amount: -50000 }]);
+
+	const metrics = await calculateTransactionMetrics(
+		currentRange,
+		previousRange,
+	);
+
+	expect(metrics.totalSum).toBe(-1000);
+	expect(metrics.averageAmount).toBe(-1000);
+	expect(metrics.transactionCount).toBe(1);
+
+	expect(metrics.totalSumDiff.previous).toBe(-500);
+	expect(metrics.totalSumDiff.diff).toBe(500);
+	expect(metrics.totalSumDiff.percentage).toBeCloseTo(100);
+
+	expect(metrics.averageAmountDiff.previous).toBe(5.5);
+	expect(metrics.averageAmountDiff.diff).toBe(4.5);
+	expect(metrics.averageAmountDiff.percentage).toBeCloseTo(81.82);
+
+	expect(metrics.transactionCountDiff.previous).toBe(0.02);
+	expect(metrics.transactionCountDiff.diff).toBe(1);
+	expect(metrics.transactionCountDiff.percentage).toBeCloseTo(50);
 });

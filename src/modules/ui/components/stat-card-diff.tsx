@@ -4,7 +4,7 @@ import { Group, Paper, Text } from "@mantine/core";
 
 interface StatCardProps {
 	title: string;
-	value: string;
+	value: number | string;
 	previous: number;
 	diff: number;
 	icon: string;
@@ -34,9 +34,6 @@ export function StatCardDiff({
 					<Text className={classes.value}>{value}</Text>
 					<Text fz="xs" c="dimmed" mt={3}>
 						Previous: {previous}
-					</Text>
-					<Text fz="xs" c="dimmed" mt={3}>
-						Difference: {diff}
 					</Text>
 				</div>
 				<Text

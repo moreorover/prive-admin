@@ -1,6 +1,7 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
+import { formatAmount } from "@/lib/helpers";
 import { StatCardDiff } from "@/modules/ui/components/stat-card-diff";
 import { trpc } from "@/trpc/client";
 import {
@@ -42,21 +43,21 @@ function DashboardSuspense() {
 	const stats = [
 		{
 			title: "Transactions Sum",
-			value: `£${transactionStats.totalSum}`,
+			value: formatAmount(transactionStats.totalSum),
 			diff: transactionStats.totalSumDiff.percentage,
 			previous: transactionStats.totalSumDiff.previous,
 			icon: "mdi:currency-gbp",
 		},
 		{
 			title: "Transactions Average",
-			value: `£${transactionStats.averageAmount}`,
+			value: formatAmount(transactionStats.averageAmount),
 			diff: transactionStats.averageAmountDiff.percentage,
 			previous: transactionStats.averageAmountDiff.previous,
 			icon: "mdi:chart-line",
 		},
 		{
 			title: "Transactions Count",
-			value: `${transactionStats.transactionCount}`,
+			value: transactionStats.transactionCount,
 			diff: transactionStats.transactionCountDiff.percentage,
 			previous: transactionStats.transactionCountDiff.previous,
 			icon: "mdi:counter",
