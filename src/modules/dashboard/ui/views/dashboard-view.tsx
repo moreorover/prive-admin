@@ -127,6 +127,7 @@ function HairAssignedStatisticsSuspense({ date }: { date: Date }) {
 				title={"Price per Gram"}
 				data={hairAssignedStats.pricePerGram}
 				icon={"mdi:currency-gbp"}
+				defaultTab="average"
 			/>
 		</>
 	);
@@ -159,6 +160,7 @@ function HairAssignedThroughSaleStatisticsSuspense({ date }: { date: Date }) {
 				title={"Price per Gram"}
 				data={hairAssignedStats.pricePerGram}
 				icon={"mdi:currency-gbp"}
+				defaultTab="average"
 			/>
 		</>
 	);
