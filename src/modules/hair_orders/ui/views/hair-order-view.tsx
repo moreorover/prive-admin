@@ -1,20 +1,17 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { newTransactionDrawerAtom } from "@/lib/atoms";
-import { openTypedContextModal } from "@/lib/modal-helper";
-import { useHairOrderNoteDrawerStore } from "@/modules/hair_order_notes/ui/hair-order-note-drawer-store";
-import HairAssignmentToAppointmentTable from "@/modules/hair_orders/ui/components/hair-assignments-table";
-import HairOrderNotesTable from "@/modules/hair_orders/ui/components/notes-table";
-import TransactionsTable from "@/modules/hair_orders/ui/components/transactions-table";
-import { CustomerPickerModal } from "@/modules/ui/components/customer-picker-modal";
-import { DatePickerDrawer } from "@/modules/ui/components/date-picker-drawer";
-import Surface from "@/modules/ui/components/surface";
+import { formatAmount } from "@/lib/helpers";
+import { useEditHairOrderStoreActions } from "@/modules/hair_orders/ui/components/editHairOrderStore";
+import { useNewNoteStoreActions } from "@/modules/notes/ui/components/newNoteStore";
+import HairAssignedTable from "@/modules/ui/components/hair-assigned-table";
+import NotesTable from "@/modules/ui/components/notes-table";
+import { RecoveryCard } from "@/modules/ui/components/recovery-card";
 import { trpc } from "@/trpc/client";
-import { DonutChart } from "@mantine/charts";
 import {
 	Button,
 	Center,
+	Container,
 	Divider,
 	Flex,
 	Grid,
@@ -29,7 +26,7 @@ import {
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
-import { useSetAtom } from "jotai/index";
+import {} from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -41,8 +38,8 @@ interface Props {
 
 export const HairOrderView = ({ hairOrderId }: Props) => {
 	return (
-		<Stack gap="sm">
-			<Surface component={Paper} style={{ backgroundColor: "transparent" }}>
+		<Container size="lg">
+			<Stack gap="sm">
 				<Flex
 					justify="space-between"
 					direction={{ base: "column", sm: "row" }}
@@ -58,66 +55,42 @@ export const HairOrderView = ({ hairOrderId }: Props) => {
 						{/*</ActionIcon>*/}
 					</Flex>
 				</Flex>
-			</Surface>
-			<Divider />
-			<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
-				<GridCol span={12}>
-					<Suspense fallback={<LoaderSkeleton />}>
-						<ErrorBoundary fallback={<p>Error</p>}>
-							<HairOrdersSuspense hairOrderId={hairOrderId} />
-						</ErrorBoundary>
-					</Suspense>
-				</GridCol>
-			</Grid>
-		</Stack>
+				<Divider />
+				<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
+					<GridCol span={12}>
+						<Suspense fallback={<LoaderSkeleton />}>
+							<ErrorBoundary fallback={<p>Error</p>}>
+								<HairOrderSuspense hairOrderId={hairOrderId} />
+							</ErrorBoundary>
+						</Suspense>
+					</GridCol>
+				</Grid>
+			</Stack>
+		</Container>
 	);
 };
 
-function HairOrdersSuspense({ hairOrderId }: Props) {
+function HairOrderSuspense({ hairOrderId }: Props) {
 	const utils = trpc.useUtils();
 	const [hairOrder] = trpc.hairOrders.getById.useSuspenseQuery({
 		id: hairOrderId,
 	});
-	const [notes] = trpc.hairOrderNotes.getNotesByHairOrderId.useSuspenseQuery({
+	const [notes] = trpc.notes.getBy.useSuspenseQuery({
 		hairOrderId,
 	});
-	const [transactions] = trpc.transactions.getByHairOrderId.useSuspenseQuery({
+	const [hairAssigned] = trpc.hairAssigned.getByHairOrderId.useSuspenseQuery({
 		hairOrderId,
-		includeCustomer: true,
 	});
-	const [customerOptions] = trpc.customers.getAll.useSuspenseQuery();
-	const [hairAssignments] = trpc.hairOrders.getHairAssignments.useSuspenseQuery(
-		{ hairOrderId },
-	);
 
-	const openNewHairOrderNoteDrawer = useHairOrderNoteDrawerStore(
-		(state) => state.openDrawer,
-	);
+	const { openNewNoteDrawer } = useNewNoteStoreActions();
 
-	const showNewTransactionDrawer = useSetAtom(newTransactionDrawerAtom);
-
-	const updateHairOrderMutation = trpc.hairOrders.update.useMutation({
-		onSuccess: () => {
-			utils.hairOrders.getById.invalidate({ id: hairOrderId });
-			notifications.show({
-				color: "green",
-				title: "Success!",
-				message: "Hair Order updated.",
-			});
-		},
-		onError: () => {
-			notifications.show({
-				color: "red",
-				title: "Failed!",
-				message: "Something went wrong updating Hair Order.",
-			});
-		},
-	});
+	const { openEditHairOrderDrawer } = useEditHairOrderStoreActions();
 
 	const recalculateHairOrderPrice =
 		trpc.hairOrders.recalculatePrices.useMutation({
 			onSuccess: () => {
 				utils.hairOrders.getById.invalidate({ id: hairOrderId });
+				utils.hairAssigned.getByHairOrderId.invalidate({ hairOrderId });
 				notifications.show({
 					color: "green",
 					title: "Success!",
@@ -133,63 +106,10 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 			},
 		});
 
-	const updateHairOrderTotalWeightMutation =
-		trpc.hairOrders.updateTotalWeight.useMutation({
-			onSuccess: () => {
-				recalculateHairOrderPrice.mutate({ hairOrderId: hairOrder.id });
-				utils.hairOrders.getById.invalidate({ id: hairOrderId });
-				notifications.show({
-					color: "green",
-					title: "Success!",
-					message: "Hair Order updated.",
-				});
-			},
-			onError: () => {
-				notifications.show({
-					color: "red",
-					title: "Failed!",
-					message: "Something went wrong updating Hair Order.",
-				});
-			},
-		});
-
-	const transactionsTotal = transactions.reduce(
-		(sum, transaction) => sum + transaction.amount,
+	const hairTotalSoldFor = hairAssigned.reduce(
+		(sum, hairAssignment) => sum + hairAssignment.soldFor,
 		0,
 	);
-
-	const transactionsCompletedTotal = transactions
-		.filter((transaction) => transaction.status === "COMPLETED")
-		.reduce((sum, transaction) => sum + transaction.amount, 0);
-
-	const transactionsPendingTotal = transactions
-		.filter((transaction) => transaction.status === "PENDING")
-		.reduce((sum, transaction) => sum + transaction.amount, 0);
-
-	const chartData = [
-		{
-			name: "Completed",
-			value:
-				transactionsCompletedTotal < 0
-					? transactionsCompletedTotal * -1
-					: transactionsCompletedTotal,
-			color: "green.4",
-		}, // Green
-		{
-			name: "Outstanding",
-			value:
-				transactionsPendingTotal < 0
-					? transactionsPendingTotal * -1
-					: transactionsPendingTotal,
-			color: "pink.6",
-		}, // Red
-	];
-
-	const formatAmount = (amount: number) =>
-		new Intl.NumberFormat("en-UK", {
-			style: "currency",
-			currency: "GBP",
-		}).format(amount);
 
 	return (
 		<Grid>
@@ -203,20 +123,22 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 								</Text>
 								{hairOrder.placedAt ? (
 									<Text size="sm" w={500}>
-										{dayjs(hairOrder.placedAt).format("ddd MMM YYYY")}
+										{dayjs(hairOrder.placedAt).format("DD MMM YYYY")}
 									</Text>
 								) : (
-									<DatePickerDrawer
-										date={hairOrder.placedAt}
-										onSelected={(date) =>
-											updateHairOrderMutation.mutate({
-												hairOrder: {
-													...hairOrder,
-													placedAt: date,
-												},
+									<Button
+										onClick={() =>
+											openEditHairOrderDrawer({
+												hairOrderId,
+												onSuccess: () =>
+													utils.hairOrders.getById.invalidate({
+														id: hairOrderId,
+													}),
 											})
 										}
-									/>
+									>
+										Update
+									</Button>
 								)}
 							</Flex>
 							<Flex direction="column">
@@ -225,21 +147,31 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 								</Text>
 								{hairOrder.arrivedAt ? (
 									<Text size="sm" w={500}>
-										{dayjs(hairOrder.arrivedAt).format("ddd MMM YYYY")}
+										{dayjs(hairOrder.arrivedAt).format("DD MMM YYYY")}
 									</Text>
 								) : (
-									<DatePickerDrawer
-										date={hairOrder.arrivedAt}
-										onSelected={(date) =>
-											updateHairOrderMutation.mutate({
-												hairOrder: {
-													...hairOrder,
-													arrivedAt: date,
-												},
+									<Button
+										onClick={() =>
+											openEditHairOrderDrawer({
+												hairOrderId,
+												onSuccess: () =>
+													utils.hairOrders.getById.invalidate({
+														id: hairOrderId,
+													}),
 											})
 										}
-									/>
+									>
+										Update
+									</Button>
 								)}
+							</Flex>
+							<Flex direction="column">
+								<Text c="dimmed" size="xs">
+									UID:
+								</Text>
+								<Text size="sm" w={500}>
+									{hairOrder.uid}
+								</Text>
 							</Flex>
 							<Flex direction="column">
 								<Text c="dimmed" size="xs">
@@ -262,7 +194,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 									Total:
 								</Text>
 								<Text size="sm" w={500}>
-									£{transactionsTotal.toFixed(2)}
+									{formatAmount(hairOrder.total)}
 								</Text>
 							</Flex>
 							<Flex direction="column">
@@ -270,9 +202,7 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 									Price per gram:
 								</Text>
 								<Text size="sm" w={500}>
-									{hairOrder.pricePerGram
-										? formatAmount(hairOrder.pricePerGram)
-										: 0}
+									{formatAmount(hairOrder.pricePerGram)}
 								</Text>
 							</Flex>
 							<SimpleGrid cols={{ base: 1, sm: 2 }}>
@@ -285,18 +215,12 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 									</Text>
 								</Stack>
 								<Button
+									size={"xs"}
 									onClick={() =>
-										openTypedContextModal("hairOrderTotalWeight", {
-											innerProps: {
-												weight: hairOrder.weightReceived,
-												onConfirm: (weight) => {
-													updateHairOrderTotalWeightMutation.mutate({
-														hairOrder: {
-															id: hairOrder.id,
-															weightReceived: weight,
-														},
-													});
-												},
+										openEditHairOrderDrawer({
+											hairOrderId,
+											onSuccess: () => {
+												recalculateHairOrderPrice.mutate({ hairOrderId });
 											},
 										})
 									}
@@ -320,33 +244,43 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 									{hairOrder.customer ? (
 										hairOrder.customer.name
 									) : (
-										<CustomerPickerModal
-											customers={customerOptions}
-											onSubmit={(id) => {
-												updateHairOrderMutation.mutate({
-													hairOrder: {
-														...hairOrder,
-														customerId: id as string,
+										<Button
+											size={"xs"}
+											onClick={() =>
+												openEditHairOrderDrawer({
+													hairOrderId,
+													onSuccess: () => {
+														utils.hairOrders.getById.invalidate({
+															id: hairOrderId,
+														});
 													},
-												});
-											}}
-											multiple={false}
-										/>
+												})
+											}
+										>
+											Update
+										</Button>
 									)}
 								</Text>
 							</Flex>
+							<Button
+								onClick={() =>
+									recalculateHairOrderPrice.mutate({ hairOrderId })
+								}
+							>
+								Recalculate
+							</Button>
 						</Stack>
 					</Paper>
 					<Paper withBorder p="md" radius="md" shadow="sm">
 						<Text size="lg" fw={700} ta="center">
-							Transactions Summary
+							Summary
 						</Text>
 						<Center>
-							<DonutChart size={124} thickness={15} data={chartData} />
+							<RecoveryCard
+								spent={hairOrder.total}
+								recovered={hairTotalSoldFor}
+							/>
 						</Center>
-						<Text size="md" ta="center" fw={500} mt="sm">
-							Total: <b>£ {transactionsTotal.toFixed(2)}</b>
-						</Text>
 					</Paper>
 				</Stack>
 			</GridCol>
@@ -356,35 +290,14 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 						<Group justify="space-between" gap="sm">
 							<Title order={4}>Notes</Title>
 							<Button
-								onClick={() =>
-									openNewHairOrderNoteDrawer({
-										hairOrderId,
-										onCreated: () => {
-											utils.hairOrderNotes.getNotesByHairOrderId.invalidate({
-												hairOrderId,
-											});
-										},
-									})
-								}
-							>
-								New
-							</Button>
-						</Group>
-						<HairOrderNotesTable hairOrderId={hairOrderId} notes={notes} />
-					</Paper>
-					<Paper withBorder p="md" radius="md" shadow="sm">
-						<Group justify="space-between" gap="sm">
-							<Title order={4}>Transactions</Title>
-							<Button
-								disabled={!hairOrder.customer}
 								onClick={() => {
-									showNewTransactionDrawer({
-										isOpen: true,
-										hairOrderId,
-										// biome-ignore lint/style/noNonNullAssertion: <explanation>
-										customerId: hairOrder.customer!.id,
-										onCreated: () => {
-											utils.transactions.getByHairOrderId.invalidate({
+									openNewNoteDrawer({
+										relations: {
+											hairOrderId,
+											customerId: hairOrder.customerId,
+										},
+										onSuccess: () => {
+											utils.notes.getBy.invalidate({
 												hairOrderId,
 											});
 										},
@@ -394,17 +307,60 @@ function HairOrdersSuspense({ hairOrderId }: Props) {
 								New
 							</Button>
 						</Group>
-						<TransactionsTable
-							hairOrderId={hairOrderId}
-							transactions={transactions}
+						<NotesTable
+							notes={notes}
+							columns={["Created At", "Note", ""]}
+							row={
+								<>
+									<NotesTable.RowCreatedAt />
+									<NotesTable.RowNote />
+									<NotesTable.RowActions>
+										<NotesTable.RowActionUpdate
+											onSuccess={() =>
+												utils.notes.getBy.invalidate({
+													hairOrderId,
+												})
+											}
+										/>
+										<NotesTable.RowActionDelete
+											onSuccess={() =>
+												utils.notes.getBy.invalidate({
+													hairOrderId,
+												})
+											}
+										/>
+									</NotesTable.RowActions>
+								</>
+							}
 						/>
 					</Paper>
 					<Paper withBorder p="md" radius="md" shadow="sm">
 						<Group justify="space-between" gap="sm">
-							<Title order={4}>Hair Assignments</Title>
+							<Title order={4}>Hair Assigned</Title>
 						</Group>
-						<HairAssignmentToAppointmentTable
-							hairAssignments={hairAssignments}
+						<HairAssignedTable
+							hair={hairAssigned}
+							columns={[
+								"Weight in Grams",
+								"Sold For",
+								"Profit",
+								"Price per Gram",
+								"Client",
+								"",
+							]}
+							row={
+								<>
+									<HairAssignedTable.RowWeight />
+									<HairAssignedTable.RowSoldFor />
+									<HairAssignedTable.RowProfit />
+									<HairAssignedTable.RowPricePerGram />
+									<HairAssignedTable.RowClient />
+									<HairAssignedTable.RowActions>
+										<HairAssignedTable.RowActionViewAppointment />
+										<HairAssignedTable.RowActionViewClient />
+									</HairAssignedTable.RowActions>
+								</>
+							}
 						/>
 					</Paper>
 				</Stack>

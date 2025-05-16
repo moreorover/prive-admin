@@ -1,24 +1,17 @@
-import { HairOrderTotalWeightModal } from "@/modules/hair_orders/ui/components/hair-order-total-weight-modal";
-import { HairOrderPickerModal } from "@/modules/ui/components/hair-order-picker-modal";
+import { ChangePassword } from "@/components/profile/change-password";
+import { EditUser } from "@/components/profile/edit-user";
 import { type ContextModalProps, modals } from "@mantine/modals";
 
-export type ModalNames = "hairOrderTotalWeight" | "hairOrderPicker";
+type ModalNames = "changePassword" | "editUser";
 
-export const modalTitles: Record<ModalNames, string> = {
-	hairOrderTotalWeight: "Please input total weight in grams:",
-	hairOrderPicker: "Please select hair order:",
+const modalTitles: Record<ModalNames, string> = {
+	changePassword: "Change Password",
+	editUser: "Edit User",
 };
 
-export interface ModalPropsMap {
-	hairOrderTotalWeight: {
-		weight: number;
-		onConfirm: (weight: number) => void;
-	};
-	hairOrderPicker: {
-		appointmentId: string;
-		onConfirm: (id: string[]) => void;
-		multiple: boolean;
-	};
+interface ModalPropsMap {
+	changePassword: object;
+	editUser: { fullName: string };
 }
 
 export type TypedContextModalProps<K extends ModalNames> = ContextModalProps<
@@ -44,6 +37,6 @@ export function openTypedContextModal<N extends ModalNames>(
 }
 
 export const providerModals = {
-	hairOrderTotalWeight: HairOrderTotalWeightModal,
-	hairOrderPicker: HairOrderPickerModal,
+	changePassword: ChangePassword,
+	editUser: EditUser,
 };

@@ -1,49 +1,27 @@
+import theme from "@/app/theme";
 import {
 	ColorSchemeScript,
-	DEFAULT_THEME,
 	MantineProvider,
-	createTheme,
-	mergeMantineTheme,
+	mantineHtmlProps,
 } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import Head from "next/head";
 import "./globals.css";
 import "@mantine/charts/styles.css";
 import "@mantine/dates/styles.css";
 import "@mantine/notifications/styles.css";
 import { providerModals } from "@/lib/modal-helper";
-import { TRPCProvider } from "@/trpc/client";
+import { TRPCReactProvider } from "@/trpc/client";
 import { ModalsProvider } from "@mantine/modals";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type React from "react";
-import { breakpoints, colors } from "./theme";
-
-const geistSans = localFont({
-	src: "./fonts/GeistVF.woff",
-	variable: "--font-geist-sans",
-	weight: "100 900",
-});
-const geistMono = localFont({
-	src: "./fonts/GeistMonoVF.woff",
-	variable: "--font-geist-mono",
-	weight: "100 900",
-});
 
 export const metadata: Metadata = {
 	title: "PRIVÉ Admin dashboard",
 	description: "PRIVÉ Admin dashboard",
 };
-
-const theme = mergeMantineTheme(
-	DEFAULT_THEME,
-	createTheme({
-		fontFamily: geistSans.style.fontFamily,
-		fontFamilyMonospace: geistMono.style.fontFamily,
-		breakpoints,
-		colors,
-	}),
-);
 
 export default function RootLayout({
 	children,
@@ -51,19 +29,23 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" suppressHydrationWarning>
-			<Head>
+		<html
+			lang="en"
+			{...mantineHtmlProps}
+			className={`${GeistSans.variable} ${GeistMono.variable}`}
+		>
+			<head>
 				<ColorSchemeScript />
-			</Head>
+			</head>
 			<body className="antialiased">
-				<TRPCProvider>
-					<MantineProvider theme={theme}>
+				<TRPCReactProvider>
+					<MantineProvider defaultColorScheme="light" theme={theme}>
 						<ModalsProvider modals={providerModals}>
-							{children}
+							<NuqsAdapter>{children}</NuqsAdapter>
 							<Notifications />
 						</ModalsProvider>
 					</MantineProvider>
-				</TRPCProvider>
+				</TRPCReactProvider>
 			</body>
 		</html>
 	);

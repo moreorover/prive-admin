@@ -1,8 +1,6 @@
 "use client";
-
-import { useSession } from "@/hooks/use-session";
 import { authClient } from "@/lib/auth-client";
-import { signInFormSchema } from "@/lib/auth-schema";
+import { signInSchema } from "@/lib/auth-schema";
 import {
 	Anchor,
 	Button,
@@ -15,33 +13,26 @@ import {
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { zodResolver } from "mantine-form-zod-resolver";
-import { redirect } from "next/navigation";
 
 export function LoginForm() {
-	const { session, isLoading } = useSession();
-
 	const form = useForm({
 		mode: "uncontrolled",
 		initialValues: {
 			email: process.env.NODE_ENV === "development" ? "x@x.com" : "",
 			password: process.env.NODE_ENV === "development" ? "password123" : "",
+			rememberMe: false,
 		},
 
-		validate: zodResolver(signInFormSchema),
+		validate: zodResolver(signInSchema),
 	});
 
-	if (isLoading) {
-		return <div>Loading...</div>;
-	}
-
-	if (session) redirect("/dashboard");
-
 	async function handleSubmit(values: typeof form.values) {
-		const { email, password } = values;
+		const { email, password, rememberMe } = values;
 		await authClient.signIn.email(
 			{
 				email,
 				password,
+				rememberMe,
 				callbackURL: "/dashboard",
 			},
 			{
@@ -83,7 +74,12 @@ export function LoginForm() {
 					{...form.getInputProps("password")}
 				/>
 				<Group mt="md" justify="space-between">
-					<Checkbox label="Remember me" />
+					<Checkbox
+						label="Remember me"
+						name="rememberMe"
+						key={form.key("rememberMe")}
+						{...form.getInputProps("rememberMe", { type: "checkbox" })}
+					/>
 					<Anchor size="sm" href="#">
 						Forgot Password？
 					</Anchor>

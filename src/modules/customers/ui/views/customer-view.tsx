@@ -1,24 +1,10 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import {
-	editCustomerDrawerAtom,
-	newAppointmentDrawerAtom,
-	newOrderDrawerAtom,
-} from "@/lib/atoms";
-import { AppointmentsTable } from "@/modules/customers/ui/components/appointments-table";
-import { OrdersTable } from "@/modules/orders/ui/components/orders-table";
+import { StatCard } from "@/modules/ui/components/stat-card";
 import { trpc } from "@/trpc/client";
-import {
-	Button,
-	Grid,
-	GridCol,
-	Group,
-	Paper,
-	Text,
-	Title,
-} from "@mantine/core";
-import { useSetAtom } from "jotai";
+import { Group, Paper, SimpleGrid, Stack, Title } from "@mantine/core";
+import dayjs from "dayjs";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -37,111 +23,68 @@ export const CustomerView = ({ customerId }: Props) => {
 };
 
 function CustomerSuspense({ customerId }: Props) {
-	const utils = trpc.useUtils();
-	const [customer] = trpc.customers.getOne.useSuspenseQuery({ id: customerId });
-	const [appointments] =
-		trpc.appointments.getAppointmentsByCustomerId.useSuspenseQuery({
-			customerId,
-		});
-	const [orders] = trpc.orders.getOrdersByCustomerId.useSuspenseQuery({
-		customerId,
+	const [summary] = trpc.customers.getViewById.useSuspenseQuery({
+		id: customerId,
 	});
-	const showUpdateCustomerDrawer = useSetAtom(editCustomerDrawerAtom);
-	const showCreateOrderDrawer = useSetAtom(newOrderDrawerAtom);
-	const showCreateAppointmentDrawer = useSetAtom(newAppointmentDrawerAtom);
+
+	const stats = [
+		{
+			title: "Appointments",
+			value: summary.appointmentCount.toString(),
+			icon: "mdi:calendar-check",
+		},
+		{
+			title: "Transactions Sum",
+			value: `£${summary.transactionSum}`,
+			icon: "mdi:cash-multiple",
+		},
+		{
+			title: "Hair Assigned Profit",
+			value: `£${summary.hairAssignedProfitSum}`,
+			icon: "mdi:cash-plus",
+		},
+		{
+			title: "Hair Assigned Sold For",
+			value: `£${summary.hairAssignedSoldForSum}`,
+			icon: "mdi:cash-100",
+		},
+		{
+			title: "Hair Weight Total",
+			value: `${summary.hairAssignedWeightInGramsSum}g`,
+			icon: "mdi:hair-dryer-outline",
+		},
+		{
+			title: "Notes Count",
+			value: summary.noteCount.toString(),
+			icon: "mdi:note-multiple-outline",
+		},
+		{
+			title: "Joined At",
+			value: dayjs(summary.customerCreatedAt).format("DD MMMM YYYY"),
+			icon: "mdi:calendar",
+		},
+	];
 
 	return (
-		<Grid>
-			<GridCol span={12}>
-				<Paper withBorder p="md" radius="md" shadow="sm">
-					<Group justify="space-between">
-						<Title order={4}>{customer.name}</Title>
-						<Group>
-							<Button
-								onClick={() => {
-									showUpdateCustomerDrawer({
-										isOpen: true,
-										customer,
-										onUpdated: () => {
-											utils.customers.getOne.invalidate({ id: customerId });
-										},
-									});
-								}}
-							>
-								Edit
-							</Button>
-						</Group>
-					</Group>
-				</Paper>
-			</GridCol>
-			<GridCol span={3}>
-				<Paper withBorder p="md" radius="md" shadow="sm">
-					<Title order={4}>Customer Details</Title>
-					<Text size="sm" mt="xs">
-						<strong>Phone Number:</strong> {customer.phoneNumber || "N/A"}
-					</Text>
-				</Paper>
-			</GridCol>
-			<GridCol span={12}>
-				<Paper withBorder p="md" radius="md" shadow="sm">
-					<Group justify="space-between">
-						<Title order={4}>Appointments</Title>
-						<Group>
-							<Button
-								onClick={() => {
-									showCreateAppointmentDrawer({
-										isOpen: true,
-										clientId: customer.id,
-										onCreated: () => {
-											utils.appointments.getAppointmentsByCustomerId.invalidate(
-												{ customerId },
-											);
-										},
-									});
-								}}
-							>
-								New
-							</Button>
-						</Group>
-					</Group>
-					{appointments.length > 0 ? (
-						<>
-							<AppointmentsTable appointments={appointments} />
-						</>
-					) : (
-						<Text c="gray">No Appointments found.</Text>
-					)}
-				</Paper>
-			</GridCol>
-			<GridCol span={12}>
-				<Paper withBorder p="md" radius="md" shadow="sm">
-					<Group justify="space-between">
-						<Title order={4}>Orders</Title>
-						<Group>
-							<Button
-								onClick={() => {
-									showCreateOrderDrawer({
-										isOpen: true,
-										customerId,
-										onCreated: () => {
-											utils.orders.getOrdersByCustomerId.invalidate({
-												customerId,
-											});
-										},
-									});
-								}}
-							>
-								New
-							</Button>
-						</Group>
-					</Group>
-					{orders.length > 0 ? (
-						<OrdersTable orders={orders} />
-					) : (
-						<Text c="gray">No Orders found.</Text>
-					)}
-				</Paper>
-			</GridCol>
-		</Grid>
+		<Stack>
+			<Paper withBorder p="md" radius="md" shadow="sm">
+				<Group justify="space-between">
+					<Title order={4}>Customer Summary</Title>
+				</Group>
+			</Paper>
+			<SimpleGrid
+				cols={{ base: 1, sm: 2, md: 3 }}
+				spacing={{ base: 10, "300px": "xl" }}
+			>
+				{stats.map((stat) => (
+					<StatCard
+						key={stat.title}
+						title={stat.title}
+						value={stat.value}
+						icon={stat.icon}
+					/>
+				))}
+			</SimpleGrid>
+		</Stack>
 	);
 }

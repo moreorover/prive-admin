@@ -1,13 +1,14 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import HairOrdersTable from "@/modules/hair_orders/ui/components/hair-orders-table";
+import { useNewHairOrderStoreActions } from "@/modules/hair_orders/ui/components/newHairOrderStore";
 import { FilterDateMenu } from "@/modules/ui/components/filter-date-menu";
-import Surface from "@/modules/ui/components/surface";
+import HairOrdersTable from "@/modules/ui/components/hair-orders-table";
 import useDateRange from "@/modules/ui/hooks/useDateRange";
 import { trpc } from "@/trpc/client";
 import {
 	Button,
+	Container,
 	Divider,
 	Flex,
 	Grid,
@@ -17,8 +18,6 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
-import { modals } from "@mantine/modals";
-import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
 import { useRouter } from "next/navigation";
@@ -37,40 +36,11 @@ export const HairOrdersView = () => {
 	const router = useRouter();
 	const { start, end, range, rangeText, createQueryString } = useDateRange();
 
-	const createHairOrderMutation = trpc.hairOrders.create.useMutation({
-		onSuccess: () => {
-			utils.hairOrders.getAll.invalidate();
-			notifications.show({
-				color: "green",
-				title: "Success!",
-				message: "Hair Order created.",
-			});
-		},
-		onError: (err) => {
-			notifications.show({
-				color: "red",
-				title: "Failed to create Hair Order.",
-				message: `${err}`,
-			});
-		},
-	});
-
-	const openCreateHairOrderModal = () =>
-		modals.openConfirmModal({
-			title: "Create Hair Order?",
-			centered: true,
-			children: (
-				<Text size="sm">Are you sure you want to create new Hair Order?</Text>
-			),
-			labels: { confirm: "Create Hair Order", cancel: "Cancel" },
-			confirmProps: { color: "red" },
-			onCancel: () => {},
-			onConfirm: () => createHairOrderMutation.mutate(),
-		});
+	const { openNewHairOrderDrawer } = useNewHairOrderStoreActions();
 
 	return (
-		<Stack gap="sm">
-			<Surface component={Paper} style={{ backgroundColor: "transparent" }}>
+		<Container size="lg">
+			<Stack gap="sm">
 				<Flex
 					justify="space-between"
 					direction={{ base: "column", sm: "row" }}
@@ -91,21 +61,29 @@ export const HairOrdersView = () => {
 								router.push(`/dashboard/hair-orders${createQueryString(range)}`)
 							}
 						/>
-						<Button onClick={openCreateHairOrderModal}>New</Button>
+						<Button
+							onClick={() =>
+								openNewHairOrderDrawer({
+									onSuccess: () => utils.hairOrders.getAll.invalidate(),
+								})
+							}
+						>
+							New
+						</Button>
 					</Flex>
 				</Flex>
-			</Surface>
-			<Divider />
-			<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
-				<GridCol span={12}>
-					<Suspense fallback={<LoaderSkeleton />}>
-						<ErrorBoundary fallback={<p>Error</p>}>
-							<HairOrdersSuspense startDate={start} endDate={end} />
-						</ErrorBoundary>
-					</Suspense>
-				</GridCol>
-			</Grid>
-		</Stack>
+				<Divider />
+				<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
+					<GridCol span={12}>
+						<Suspense fallback={<LoaderSkeleton />}>
+							<ErrorBoundary fallback={<p>Error</p>}>
+								<HairOrdersSuspense startDate={start} endDate={end} />
+							</ErrorBoundary>
+						</Suspense>
+					</GridCol>
+				</Grid>
+			</Stack>
+		</Container>
 	);
 };
 
@@ -116,7 +94,28 @@ function HairOrdersSuspense({ startDate, endDate }: Props) {
 			<Stack gap="lg">
 				<Paper withBorder p="md" radius="md" shadow="sm">
 					{hairOrders.length > 0 ? (
-						<HairOrdersTable hairOrders={hairOrders} />
+						<HairOrdersTable
+							hairOrders={hairOrders}
+							columns={[
+								"Unique ID",
+								"Placed At",
+								"Arrived At",
+								"Status",
+								"Created By",
+							]}
+							row={
+								<>
+									<HairOrdersTable.RowUID />
+									<HairOrdersTable.RowPlacedAt />
+									<HairOrdersTable.RowArrivedAt />
+									<HairOrdersTable.RowStatus />
+									<HairOrdersTable.RowCreatedBy />
+									<HairOrdersTable.RowActions>
+										<HairOrdersTable.RowActionViewHairOrder />
+									</HairOrdersTable.RowActions>
+								</>
+							}
+						/>
 					) : (
 						<Text c="gray">
 							No hair orders found for following dates: {startDate} {endDate}.

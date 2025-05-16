@@ -2,13 +2,13 @@
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { aggregateTransactions } from "@/modules/transactions/hooks/chartUtils";
-import TransactionsTable from "@/modules/transactions/ui/components/transactions-table";
 import { FilterDateMenu } from "@/modules/ui/components/filter-date-menu";
-import Surface from "@/modules/ui/components/surface";
+import TransactionsTable from "@/modules/ui/components/transactions-table";
 import useDateRange from "@/modules/ui/hooks/useDateRange";
 import { trpc } from "@/trpc/client";
 import { LineChart } from "@mantine/charts";
 import {
+	Container,
 	Divider,
 	Flex,
 	Grid,
@@ -32,8 +32,8 @@ export const TransactionsView = () => {
 	const { start, end, range, rangeText, createQueryString } = useDateRange();
 
 	return (
-		<Stack>
-			<Surface component={Paper} style={{ backgroundColor: "transparent" }}>
+		<Container size="lg">
+			<Stack>
 				<Flex
 					justify="space-between"
 					direction={{ base: "column", sm: "row" }}
@@ -54,28 +54,26 @@ export const TransactionsView = () => {
 						/>
 					</Flex>
 				</Flex>
-			</Surface>
-			<Divider />
-			<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
-				<Suspense
-					fallback={
-						<GridCol>
-							<LoaderSkeleton />
-						</GridCol>
-					}
-				>
-					<ErrorBoundary fallback={<p>Error</p>}>
-						<TransactionsSuspense startDate={start} endDate={end} />
-					</ErrorBoundary>
-				</Suspense>
-			</Grid>
-		</Stack>
+				<Divider />
+				<Grid gutter={{ base: 5, xs: "md", md: "lg" }}>
+					<Suspense
+						fallback={
+							<GridCol>
+								<LoaderSkeleton />
+							</GridCol>
+						}
+					>
+						<ErrorBoundary fallback={<p>Error</p>}>
+							<TransactionsSuspense startDate={start} endDate={end} />
+						</ErrorBoundary>
+					</Suspense>
+				</Grid>
+			</Stack>
+		</Container>
 	);
 };
 
 function TransactionsSuspense({ startDate, endDate }: Props) {
-	const utils = trpc.useUtils();
-
 	const [transactions] =
 		trpc.transactions.getTransactionsPageBetweenDates.useSuspenseQuery({
 			startDate,
@@ -112,12 +110,30 @@ function TransactionsSuspense({ startDate, endDate }: Props) {
 					{transactions.length > 0 ? (
 						<TransactionsTable
 							transactions={transactions}
-							onUpdateAction={() => {
-								utils.transactions.getTransactionsBetweenDates.invalidate({
-									startDate,
-									endDate,
-								});
-							}}
+							columns={[
+								"Created At",
+								"Completed At",
+								"Title",
+								"Type",
+								"Amount",
+								"Customer",
+								"",
+							]}
+							row={
+								<>
+									<TransactionsTable.RowCreatedAt />
+									<TransactionsTable.RowCompletedAt />
+									<TransactionsTable.RowTransactionName />
+									<TransactionsTable.RowType />
+									<TransactionsTable.RowAmount />
+									<TransactionsTable.RowCustomerName />
+									<TransactionsTable.RowActions>
+										{/*	<TransactionsTable.RowActionViewTransaction />*/}
+										<TransactionsTable.RowActionViewCustomer />
+										<TransactionsTable.RowActionViewAppointment />
+									</TransactionsTable.RowActions>
+								</>
+							}
 						/>
 					) : (
 						<Text c="gray">No transactions found.</Text>

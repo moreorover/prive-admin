@@ -1,32 +1,42 @@
 "use client";
-
-import { editAppointmentDrawerAtom } from "@/lib/atoms";
+import { LoaderSkeleton } from "@/components/loader-skeleton";
 import type { Appointment } from "@/lib/schemas";
 import { AppointmentForm } from "@/modules/appointments/ui/components/appointment-form";
+import {
+	useEditAppointmentStoreActions,
+	useEditAppointmentStoreDrawerAppointmentId,
+	useEditAppointmentStoreDrawerIsOpen,
+	useEditAppointmentStoreDrawerOnSuccess,
+} from "@/modules/appointments/ui/components/editAppointmentStore";
 import { trpc } from "@/trpc/client";
 import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import dayjs from "dayjs";
-import { useAtom } from "jotai";
 
 export const EditAppointmentDrawer = () => {
-	const [value, setOpen] = useAtom(editAppointmentDrawerAtom);
-
 	const utils = trpc.useUtils();
+	const isOpen = useEditAppointmentStoreDrawerIsOpen();
+	const onSuccess = useEditAppointmentStoreDrawerOnSuccess();
+	const { reset } = useEditAppointmentStoreActions();
+	const appointmentId = useEditAppointmentStoreDrawerAppointmentId();
+
+	const { data: appointment, isLoading } = trpc.appointments.getById.useQuery(
+		{ id: appointmentId },
+		{
+			enabled: !!appointmentId,
+		},
+	);
 
 	const editAppointment = trpc.appointments.update.useMutation({
 		onSuccess: () => {
-			utils.appointments.getOne.invalidate({
-				id: value.appointment.id,
+			onSuccess();
+			utils.appointments.getById.invalidate({
+				id: appointmentId,
 			});
+			reset();
 			notifications.show({
 				color: "green",
 				title: "Success!",
 				message: "Appointment updated.",
-			});
-			setOpen({
-				isOpen: false,
-				appointment: { name: "", startsAt: dayjs().toDate() },
 			});
 		},
 		onError: () => {
@@ -48,21 +58,20 @@ export const EditAppointmentDrawer = () => {
 
 	return (
 		<Drawer
-			opened={value.isOpen}
-			onClose={() =>
-				setOpen({
-					isOpen: false,
-					appointment: { name: "", startsAt: dayjs().toDate() },
-				})
-			}
+			opened={isOpen}
+			onClose={reset}
 			position="right"
 			title="Update Appointment"
 		>
-			<AppointmentForm
-				onSubmitAction={onSubmit}
-				onDelete={onDelete}
-				appointment={{ ...value.appointment }}
-			/>
+			{isLoading || !appointment ? (
+				<LoaderSkeleton />
+			) : (
+				<AppointmentForm
+					onSubmitAction={onSubmit}
+					onDelete={onDelete}
+					appointment={appointment}
+				/>
+			)}
 		</Drawer>
 	);
 };

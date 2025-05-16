@@ -1,22 +1,18 @@
 "use client";
 
-import { EditAppointmentNoteDrawer } from "@/modules/appointment_notes/ui/components/edit-appointment-note-drawer";
-import { NewAppointmentNoteDrawer } from "@/modules/appointment_notes/ui/components/new-appointment-note-drawer";
 import { EditAppointmentDrawer } from "@/modules/appointments/ui/components/edit-appointment-drawer";
-import { EditHairAssignmentToAppointmentDrawer } from "@/modules/appointments/ui/components/edit-hair-assignment-drawer";
 import { NewAppointmentDrawer } from "@/modules/appointments/ui/components/new-appointment-drawer";
 import { EditCustomerDrawer } from "@/modules/customers/ui/components/edit-customer-drawer";
 import { NewCustomerDrawer } from "@/modules/customers/ui/components/new-customer-drawer";
-import { EditHairOrderNoteDrawer } from "@/modules/hair_order_notes/ui/components/edit-appointment-note-drawer";
-import { NewHairOrderNoteDrawer } from "@/modules/hair_order_notes/ui/components/new-hair-order-note-drawer";
-import { EditOrderItemDrawer } from "@/modules/order_item/ui/components/edit-order-item-drawer";
-import { NewOrderItemDrawer } from "@/modules/order_item/ui/components/new-order-item-drawer";
-import { EditOrderDrawer } from "@/modules/orders/ui/components/edit-order-drawer";
-import { NewOrderDrawer } from "@/modules/orders/ui/components/new-order-drawer";
-import { EditProductVariantDrawer } from "@/modules/product_variants/ui/components/edit-product-variant-drawer";
-import { NewProductVariantDrawer } from "@/modules/product_variants/ui/components/new-product-variant-drawer";
-import { EditProductDrawer } from "@/modules/products/ui/components/edit-product-drawer";
-import { NewProductDrawer } from "@/modules/products/ui/components/new-product-drawer";
+import { DeleteHairAssignedDrawer } from "@/modules/hair-assigned/ui/components/delete-hairAssigned-drawer";
+import { EditHairAssignedDrawer } from "@/modules/hair-assigned/ui/components/edit-hairAssigned-drawer";
+import { NewHairAssignedDrawer } from "@/modules/hair-assigned/ui/components/new-hairAssigned-drawer";
+import { EditHairOrderDrawer } from "@/modules/hair_orders/ui/components/edit-hairOrder-drawer";
+import { NewHairOrderDrawer } from "@/modules/hair_orders/ui/components/new-hairOrder-drawer";
+import { DeleteNoteDrawer } from "@/modules/notes/ui/components/delete-note-drawer";
+import { EditNoteDrawer } from "@/modules/notes/ui/components/edit-note-drawer";
+import { NewNoteDrawer } from "@/modules/notes/ui/components/new-note-drawer";
+import { DeleteTransactionDrawer } from "@/modules/transactions/ui/components/delete-transaction-drawer";
 import { EditTransactionDrawer } from "@/modules/transactions/ui/components/edit-transaction-drawer";
 import { NewTransactionDrawer } from "@/modules/transactions/ui/components/new-transaction-drawer";
 
@@ -26,31 +22,23 @@ export default function DrawerProvider() {
 			<NewCustomerDrawer />
 			<EditCustomerDrawer />
 
-			<NewProductDrawer />
-			<EditProductDrawer />
-
-			<NewProductVariantDrawer />
-			<EditProductVariantDrawer />
-
-			<NewOrderDrawer />
-			<EditOrderDrawer />
-
-			<NewOrderItemDrawer />
-			<EditOrderItemDrawer />
-
 			<NewTransactionDrawer />
 			<EditTransactionDrawer />
+			<DeleteTransactionDrawer />
 
 			<NewAppointmentDrawer />
 			<EditAppointmentDrawer />
 
-			<NewAppointmentNoteDrawer />
-			<EditAppointmentNoteDrawer />
+			<NewHairOrderDrawer />
+			<EditHairOrderDrawer />
 
-			<NewHairOrderNoteDrawer />
-			<EditHairOrderNoteDrawer />
+			<NewHairAssignedDrawer />
+			<EditHairAssignedDrawer />
+			<DeleteHairAssignedDrawer />
 
-			<EditHairAssignmentToAppointmentDrawer />
+			<NewNoteDrawer />
+			<EditNoteDrawer />
+			<DeleteNoteDrawer />
 		</>
 	);
 }

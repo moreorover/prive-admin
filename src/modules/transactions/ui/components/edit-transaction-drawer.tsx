@@ -1,42 +1,47 @@
 "use client";
 
-import { editTransactionDrawerAtom } from "@/lib/atoms";
+import { LoaderSkeleton } from "@/components/loader-skeleton";
 import type { Transaction } from "@/lib/schemas";
+import {
+	useEditTransactionStoreActions,
+	useEditTransactionStoreDrawerIsOpen,
+	useEditTransactionStoreDrawerOnSuccess,
+	useEditTransactionStoreDrawerTransactionId,
+} from "@/modules/transactions/ui/components/editTransactionStore";
 import { TransactionForm } from "@/modules/transactions/ui/components/transaction-form";
 import { trpc } from "@/trpc/client";
 import { Drawer } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import dayjs from "dayjs";
-import { useAtom } from "jotai/index";
 
 export const EditTransactionDrawer = () => {
-	const [value, setOpen] = useAtom(editTransactionDrawerAtom);
+	const utils = trpc.useUtils();
+	const isOpen = useEditTransactionStoreDrawerIsOpen();
+	const onSuccess = useEditTransactionStoreDrawerOnSuccess();
+	const { reset } = useEditTransactionStoreActions();
+	const transactionId = useEditTransactionStoreDrawerTransactionId();
+
+	const { data: transaction, isLoading } = trpc.transactions.getById.useQuery(
+		{ id: transactionId },
+		{
+			enabled: !!transactionId,
+		},
+	);
 
 	const editTransaction = trpc.transactions.update.useMutation({
 		onSuccess: () => {
+			utils.transactions.getById.invalidate({ id: transactionId });
+			onSuccess();
+			reset();
 			notifications.show({
 				color: "green",
 				title: "Success!",
-				message: "Transaction created.",
-			});
-			value.onUpdated();
-			setOpen({
-				isOpen: false,
-				transaction: {
-					name: "",
-					notes: "",
-					amount: 0,
-					type: "CASH",
-					status: "PENDING",
-					completedDateBy: dayjs().toDate(),
-				},
-				onUpdated: () => {},
+				message: "Transaction updated.",
 			});
 		},
 		onError: () => {
 			notifications.show({
 				color: "red",
-				title: "Failed to create Transaction",
+				title: "Failed to update Transaction",
 				message: "Please try again.",
 			});
 		},
@@ -51,29 +56,20 @@ export const EditTransactionDrawer = () => {
 	return (
 		<>
 			<Drawer
-				opened={value.isOpen}
-				onClose={() =>
-					setOpen({
-						isOpen: false,
-						transaction: {
-							name: "",
-							notes: "",
-							amount: 0,
-							type: "CASH",
-							status: "PENDING",
-							completedDateBy: dayjs().toDate(),
-						},
-						onUpdated: () => {},
-					})
-				}
+				opened={isOpen}
+				onClose={reset}
 				position="right"
 				title="Update Transaction"
 			>
-				<TransactionForm
-					onSubmitAction={onSubmit}
-					transaction={value.transaction}
-					disabled={editTransaction.isPending}
-				/>
+				{isLoading || !transaction ? (
+					<LoaderSkeleton />
+				) : (
+					<TransactionForm
+						onSubmitAction={onSubmit}
+						transaction={transaction}
+						disabled={editTransaction.isPending}
+					/>
+				)}
 			</Drawer>
 		</>
 	);

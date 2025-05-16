@@ -11,7 +11,7 @@ type Props = {
 export default async function Page({ params }: Props) {
 	const { appointmentId } = await params;
 
-	void trpc.appointments.getOne.prefetch({ id: appointmentId });
+	void trpc.appointments.getById.prefetch({ id: appointmentId });
 	void trpc.customers.getClientByAppointmentId.prefetch({ appointmentId });
 	void trpc.customers.getPersonnelByAppointmentId.prefetch({ appointmentId });
 	void trpc.customers.getAvailablePersonnelByAppointmentId.prefetch({
@@ -20,9 +20,6 @@ export default async function Page({ params }: Props) {
 	void trpc.transactions.getByAppointmentId.prefetch({
 		appointmentId,
 		includeCustomer: true,
-	});
-	void trpc.appointmentNotes.getNotesByAppointmentId.prefetch({
-		appointmentId,
 	});
 
 	const session = await auth.api.getSession({

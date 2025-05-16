@@ -1,11 +1,12 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { newCustomerDrawerAtom } from "@/lib/atoms";
-import { CustomersTable } from "@/modules/customers/ui/components/customers-table";
+import { useNewCustomerStoreActions } from "@/modules/customers/ui/components/newCustomerStore";
+import CustomersTable from "@/modules/ui/components/customers-table";
 import { trpc } from "@/trpc/client";
 import {
 	Button,
+	Container,
 	Grid,
 	GridCol,
 	Group,
@@ -14,7 +15,6 @@ import {
 	TextInput,
 	Title,
 } from "@mantine/core";
-import { useSetAtom } from "jotai";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -30,7 +30,7 @@ export const CustomersView = () => {
 
 function CustomersSuspense() {
 	const utils = trpc.useUtils();
-	const showNewCustomerDrawer = useSetAtom(newCustomerDrawerAtom);
+	const { openNewCustomerDrawer } = useNewCustomerStoreActions();
 	const [customers] = trpc.customers.getAll.useSuspenseQuery();
 
 	const [searchTerm, setSearchTerm] = useState("");
@@ -45,42 +45,55 @@ function CustomersSuspense() {
 	});
 
 	return (
-		<Grid>
-			<GridCol span={12}>
-				<Paper withBorder p="md" radius="md" shadow="sm">
-					<Group justify="space-between">
-						<Title order={4}>Customers</Title>
-						<Group>
-							<TextInput
-								placeholder="Search..."
-								value={searchTerm}
-								onChange={(event) => setSearchTerm(event.currentTarget.value)}
-							/>
-							<Button
-								onClick={() => {
-									showNewCustomerDrawer({
-										isOpen: true,
-										onCreated: () => {
-											utils.customers.getAll.invalidate();
-										},
-									});
-								}}
-							>
-								New
-							</Button>
+		<Container size="lg">
+			<Grid>
+				<GridCol span={12}>
+					<Paper withBorder p="md" radius="md" shadow="sm">
+						<Group justify="space-between">
+							<Title order={4}>Customers</Title>
+							<Group>
+								<TextInput
+									placeholder="Search..."
+									value={searchTerm}
+									onChange={(event) => setSearchTerm(event.currentTarget.value)}
+								/>
+								<Button
+									onClick={() => {
+										openNewCustomerDrawer({
+											onSuccess: () => {
+												utils.customers.getAll.invalidate();
+											},
+										});
+									}}
+								>
+									New
+								</Button>
+							</Group>
 						</Group>
-					</Group>
-				</Paper>
-			</GridCol>
-			<GridCol span={12}>
-				<Paper withBorder p="md" radius="md" shadow="sm">
-					{filteredCustomers.length > 0 ? (
-						<CustomersTable customers={filteredCustomers} />
-					) : (
-						<Text c="gray">No customers found.</Text>
-					)}
-				</Paper>
-			</GridCol>
-		</Grid>
+					</Paper>
+				</GridCol>
+				<GridCol span={12}>
+					<Paper withBorder p="md" radius="md" shadow="sm">
+						{filteredCustomers.length > 0 ? (
+							<CustomersTable
+								customers={filteredCustomers}
+								columns={["Name", "Phone Number", ""]}
+								row={
+									<>
+										<CustomersTable.RowName />
+										<CustomersTable.RowPhoneNumber />
+										<CustomersTable.RowActions>
+											<CustomersTable.RowActionViewCustomer />
+										</CustomersTable.RowActions>
+									</>
+								}
+							/>
+						) : (
+							<Text c="gray">No customers found.</Text>
+						)}
+					</Paper>
+				</GridCol>
+			</Grid>
+		</Container>
 	);
 }
