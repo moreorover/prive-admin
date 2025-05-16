@@ -69,6 +69,17 @@ export const DashboardView = () => {
 						</SimpleGrid>
 					</ErrorBoundary>
 				</Suspense>
+				<Suspense fallback={<LoaderSkeleton />}>
+					<ErrorBoundary fallback={<p>Error</p>}>
+						<Title order={4}>Hair Assigned during Sale</Title>
+						<SimpleGrid
+							cols={{ base: 1, sm: 2, md: 4 }}
+							spacing={{ base: 10, "300px": "xl" }}
+						>
+							<HairAssignedThroughSaleStatisticsSuspense date={date} />
+						</SimpleGrid>
+					</ErrorBoundary>
+				</Suspense>
 			</Stack>
 		</Container>
 	);
@@ -92,6 +103,38 @@ function TransactionsStatisticsSuspense({ date }: { date: Date }) {
 function HairAssignedStatisticsSuspense({ date }: { date: Date }) {
 	const [hairAssignedStats] =
 		trpc.dashboard.getHairAssignedStatsForDate.useSuspenseQuery({
+			date,
+		});
+
+	return (
+		<>
+			<EnhancedStatCard
+				title={"Weight in Grams"}
+				data={hairAssignedStats.weightInGrams}
+				icon={"mdi:currency-gbp"}
+			/>
+			<EnhancedStatCard
+				title={"Sold For"}
+				data={hairAssignedStats.soldFor}
+				icon={"mdi:currency-gbp"}
+			/>
+			<EnhancedStatCard
+				title={"Profit"}
+				data={hairAssignedStats.profit}
+				icon={"mdi:currency-gbp"}
+			/>
+			<EnhancedStatCard
+				title={"Price per Gram"}
+				data={hairAssignedStats.pricePerGram}
+				icon={"mdi:currency-gbp"}
+			/>
+		</>
+	);
+}
+
+function HairAssignedThroughSaleStatisticsSuspense({ date }: { date: Date }) {
+	const [hairAssignedStats] =
+		trpc.dashboard.getHairAssignedThroughSaleStatsForDate.useSuspenseQuery({
 			date,
 		});
 

@@ -1,5 +1,6 @@
 import {
 	calculateHairAssignedMetrics,
+	calculateHairSoldMetrics,
 	calculateMonthlyTimeRange,
 	calculateTransactionMetrics,
 } from "@/server/services/dashboard";
@@ -37,5 +38,20 @@ export const dashboardRouter = createTRPCRouter({
 			);
 
 			return await calculateHairAssignedMetrics(currentRange, previousRange);
+		}),
+	getHairAssignedThroughSaleStatsForDate: protectedProcedure
+		.input(z.object({ date: z.date() }))
+		.query(async ({ input }) => {
+			const { date } = input;
+
+			if (!date) {
+				throw new Error("Missing date");
+			}
+
+			const { currentRange, previousRange } = calculateMonthlyTimeRange(
+				dayjs(date),
+			);
+
+			return await calculateHairSoldMetrics(currentRange, previousRange);
 		}),
 });
