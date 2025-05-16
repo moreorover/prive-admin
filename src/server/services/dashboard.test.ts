@@ -138,21 +138,20 @@ test("calculateTransactionMetrics - calculates metrics correctly", async () => {
 		previousRange,
 	);
 
-	expect(metrics.total).toBe(30);
-	expect(metrics.average).toBe(10);
-	expect(metrics.count).toBe(3);
+	expect(metrics.total.current).toBe(30);
+	expect(metrics.total.previous).toBe(11);
+	expect(metrics.total.difference).toBe(19);
+	expect(metrics.total.percentage).toBe(172.73);
 
-	expect(metrics.totalChange.previous).toBe(11);
-	expect(metrics.totalChange.difference).toBe(19);
-	expect(metrics.totalChange.percentage).toBe(172.73);
+	expect(metrics.average.current).toBe(10);
+	expect(metrics.average.previous).toBe(5.5);
+	expect(metrics.average.difference).toBe(4.5);
+	expect(metrics.average.percentage).toBe(81.82);
 
-	expect(metrics.averageChange.previous).toBe(5.5);
-	expect(metrics.averageChange.difference).toBe(4.5);
-	expect(metrics.averageChange.percentage).toBe(81.82);
-
-	expect(metrics.countChange.previous).toBe(2);
-	expect(metrics.countChange.difference).toBe(1);
-	expect(metrics.countChange.percentage).toBe(50);
+	expect(metrics.count.current).toBe(3);
+	expect(metrics.count.previous).toBe(2);
+	expect(metrics.count.difference).toBe(1);
+	expect(metrics.count.percentage).toBe(50);
 });
 
 test("fetchTransactions - fetches transactions within the given current date range", async () => {
@@ -223,19 +222,18 @@ test("calculateTransactionMetrics - calculates negative metrics correctly", asyn
 		previousRange,
 	);
 
-	expect(metrics.total).toBe(-1000);
-	expect(metrics.average).toBe(-1000);
-	expect(metrics.count).toBe(1);
+	expect(metrics.total.current).toBe(-1000);
+	expect(metrics.total.previous).toBe(-500);
+	expect(metrics.total.difference).toBe(-500);
+	expect(metrics.total.percentage).toBe(-100);
 
-	expect(metrics.totalChange.previous).toBe(-500);
-	expect(metrics.totalChange.difference).toBe(-500);
-	expect(metrics.totalChange.percentage).toBe(-100);
+	expect(metrics.average.current).toBe(-1000);
+	expect(metrics.average.previous).toBe(-500);
+	expect(metrics.average.difference).toBe(-500);
+	expect(metrics.average.percentage).toBe(-100);
 
-	expect(metrics.averageChange.previous).toBe(-500);
-	expect(metrics.averageChange.difference).toBe(-500);
-	expect(metrics.averageChange.percentage).toBe(-100);
-
-	expect(metrics.countChange.previous).toBe(1);
-	expect(metrics.countChange.difference).toBe(0);
-	expect(metrics.countChange.percentage).toBe(0);
+	expect(metrics.count.current).toBe(1);
+	expect(metrics.count.previous).toBe(1);
+	expect(metrics.count.difference).toBe(0);
+	expect(metrics.count.percentage).toBe(0);
 });

@@ -47,7 +47,7 @@ export const calculateChange = (current: number, previous: number) => {
 	const percentageDiff =
 		previous !== 0 ? (diff / Math.abs(previous)) * 100 : current > 0 ? 100 : 0;
 
-	return { previous, diff, percentageDiff };
+	return { current, previous, diff, percentageDiff };
 };
 
 export const calculateAll = (current: number[], previous: number[]) => {
@@ -68,20 +68,20 @@ export const calculateAll = (current: number[], previous: number[]) => {
 	);
 
 	return {
-		total: currentStatistics.sum / 100,
-		average: +(currentStatistics.average / 100).toFixed(2),
-		count: currentStatistics.count,
-		totalChange: {
+		total: {
+			current: totalSumDiff.current / 100,
 			previous: totalSumDiff.previous / 100,
 			difference: totalSumDiff.diff / 100,
 			percentage: +totalSumDiff.percentageDiff.toFixed(2),
 		},
-		averageChange: {
+		average: {
+			current: +(averageAmountDiff.current / 100).toFixed(2),
 			previous: averageAmountDiff.previous / 100,
 			difference: averageAmountDiff.diff / 100,
 			percentage: +averageAmountDiff.percentageDiff.toFixed(2),
 		},
-		countChange: {
+		count: {
+			current: transactionCountDiff.current,
 			previous: transactionCountDiff.previous,
 			difference: transactionCountDiff.diff,
 			percentage: +transactionCountDiff.percentageDiff.toFixed(2),
