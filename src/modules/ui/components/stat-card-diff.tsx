@@ -5,7 +5,7 @@ import { Group, Paper, Text } from "@mantine/core";
 interface StatCardProps {
 	title: string;
 	value: number | string;
-	previous: number;
+	previous: number | string;
 	diff: number;
 	icon: string;
 }
@@ -30,12 +30,7 @@ export function StatCardDiff({
 			</Group>
 
 			<Group align="flex-end" gap="xs" mt={25}>
-				<div>
-					<Text className={classes.value}>{value}</Text>
-					<Text fz="xs" c="dimmed" mt={3}>
-						Previous: {previous}
-					</Text>
-				</div>
+				<Text className={classes.value}>{value}</Text>
 				<Text
 					c={diff > 0 ? "teal" : "red"}
 					fz="sm"
@@ -46,6 +41,10 @@ export function StatCardDiff({
 					<Icon width={22} height={22} icon={iconDiff} />
 				</Text>
 			</Group>
+
+			<Text fz="xs" c="dimmed" mt={3}>
+				Previous: {previous}
+			</Text>
 
 			<Text fz="xs" c="dimmed" mt={7}>
 				Compared to previous period
