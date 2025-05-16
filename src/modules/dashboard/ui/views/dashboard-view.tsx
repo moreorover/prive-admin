@@ -45,14 +45,14 @@ function DashboardSuspense() {
 			title: "Transactions Sum",
 			value: formatAmount(transactionStats.totalSum),
 			diff: transactionStats.totalSumDiff.percentage,
-			previous: transactionStats.totalSumDiff.previous,
+			previous: formatAmount(transactionStats.totalSumDiff.previous),
 			icon: "mdi:currency-gbp",
 		},
 		{
 			title: "Transactions Average",
 			value: formatAmount(transactionStats.averageAmount),
 			diff: transactionStats.averageAmountDiff.percentage,
-			previous: transactionStats.averageAmountDiff.previous,
+			previous: formatAmount(transactionStats.averageAmountDiff.previous),
 			icon: "mdi:chart-line",
 		},
 		{
