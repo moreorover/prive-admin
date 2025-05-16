@@ -11,7 +11,7 @@ import "@mantine/charts/styles.css";
 import "@mantine/dates/styles.css";
 import "@mantine/notifications/styles.css";
 import { providerModals } from "@/lib/modal-helper";
-import { TRPCProvider } from "@/trpc/client";
+import { TRPCReactProvider } from "@/trpc/client";
 import { ModalsProvider } from "@mantine/modals";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
@@ -38,14 +38,14 @@ export default function RootLayout({
 				<ColorSchemeScript />
 			</head>
 			<body className="antialiased">
-				<TRPCProvider>
+				<TRPCReactProvider>
 					<MantineProvider defaultColorScheme="light" theme={theme}>
 						<ModalsProvider modals={providerModals}>
 							<NuqsAdapter>{children}</NuqsAdapter>
 							<Notifications />
 						</ModalsProvider>
 					</MantineProvider>
-				</TRPCProvider>
+				</TRPCReactProvider>
 			</body>
 		</html>
 	);

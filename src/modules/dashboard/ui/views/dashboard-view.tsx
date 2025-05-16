@@ -1,7 +1,6 @@
 "use client";
-
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { StatCardDiff } from "@/modules/ui/components/stat-card-diff";
+import { EnhancedStatCard } from "@/modules/ui/components/enhanced-stat-card";
 import { trpc } from "@/trpc/client";
 import {
 	Button,
@@ -19,54 +18,10 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
 export const DashboardView = () => {
-	return (
-		<Suspense fallback={<LoaderSkeleton />}>
-			<ErrorBoundary fallback={<p>Error</p>}>
-				<DashboardSuspense />
-			</ErrorBoundary>
-		</Suspense>
+	const [date, setDate] = useQueryState(
+		"date",
+		parseAsIsoDate.withDefault(dayjs().startOf("date").toDate()),
 	);
-};
-
-function DashboardSuspense() {
-	const [start, setStart] = useQueryState(
-		"start",
-		parseAsIsoDate.withDefault(dayjs().startOf("month").toDate()),
-	);
-	const [end, setEnd] = useQueryState(
-		"end",
-		parseAsIsoDate.withDefault(dayjs().endOf("month").toDate()),
-	);
-
-	const [transactionStats] =
-		trpc.dashboard.getTransactionStats.useSuspenseQuery({
-			start: start,
-			end: end,
-		});
-
-	const stats = [
-		{
-			title: "Transactions Sum",
-			value: `£${transactionStats.totalSum}`,
-			diff: transactionStats.totalSumDiff.percentage,
-			previous: transactionStats.totalSumDiff.previous,
-			icon: "mdi:currency-gbp",
-		},
-		{
-			title: "Transactions Average",
-			value: `£${transactionStats.averageAmount}`,
-			diff: transactionStats.averageAmountDiff.percentage,
-			previous: transactionStats.averageAmountDiff.previous,
-			icon: "mdi:chart-line",
-		},
-		{
-			title: "Transactions Count",
-			value: `${transactionStats.transactionCount}`,
-			diff: transactionStats.transactionCountDiff.percentage,
-			previous: transactionStats.transactionCountDiff.previous,
-			icon: "mdi:counter",
-		},
-	];
 
 	return (
 		<Container size="lg">
@@ -77,17 +32,15 @@ function DashboardSuspense() {
 						<Group>
 							<Button
 								onClick={() => {
-									setStart(dayjs(start).subtract(1, "month").toDate());
-									setEnd(dayjs(end).subtract(1, "month").toDate());
+									setDate(dayjs(date).subtract(1, "month").toDate());
 								}}
 							>
 								Previous
 							</Button>
-							<Text>{`${dayjs(start).format("MMMM YYYY")}`}</Text>
+							<Text>{`${dayjs(date).format("MMMM YYYY")}`}</Text>
 							<Button
 								onClick={() => {
-									setStart(dayjs(start).add(1, "month").toDate());
-									setEnd(dayjs(end).add(1, "month").toDate());
+									setDate(dayjs(date).add(1, "month").toDate());
 								}}
 							>
 								Next
@@ -95,22 +48,118 @@ function DashboardSuspense() {
 						</Group>
 					</Group>
 				</Paper>
-				<SimpleGrid
-					cols={{ base: 1, sm: 2, md: 3 }}
-					spacing={{ base: 10, "300px": "xl" }}
-				>
-					{stats.map((stat) => (
-						<StatCardDiff
-							key={stat.title}
-							title={stat.title}
-							value={stat.value}
-							diff={stat.diff}
-							previous={stat.previous}
-							icon={stat.icon}
-						/>
-					))}
-				</SimpleGrid>
+				<Suspense fallback={<LoaderSkeleton />}>
+					<ErrorBoundary fallback={<p>Error</p>}>
+						<SimpleGrid
+							cols={{ base: 1, sm: 2, md: 3 }}
+							spacing={{ base: 10, "300px": "xl" }}
+						>
+							<TransactionsStatisticsSuspense date={date} />
+						</SimpleGrid>
+					</ErrorBoundary>
+				</Suspense>
+				<Suspense fallback={<LoaderSkeleton />}>
+					<ErrorBoundary fallback={<p>Error</p>}>
+						<Title order={4}>Hair Assigned during Appointments</Title>
+						<SimpleGrid
+							cols={{ base: 1, sm: 2, md: 4 }}
+							spacing={{ base: 10, "300px": "xl" }}
+						>
+							<HairAssignedStatisticsSuspense date={date} />
+						</SimpleGrid>
+					</ErrorBoundary>
+				</Suspense>
+				<Suspense fallback={<LoaderSkeleton />}>
+					<ErrorBoundary fallback={<p>Error</p>}>
+						<Title order={4}>Hair Assigned during Sale</Title>
+						<SimpleGrid
+							cols={{ base: 1, sm: 2, md: 4 }}
+							spacing={{ base: 10, "300px": "xl" }}
+						>
+							<HairAssignedThroughSaleStatisticsSuspense date={date} />
+						</SimpleGrid>
+					</ErrorBoundary>
+				</Suspense>
 			</Stack>
 		</Container>
+	);
+};
+
+function TransactionsStatisticsSuspense({ date }: { date: Date }) {
+	const [transactionStats] =
+		trpc.dashboard.getTransactionStatsForDate.useSuspenseQuery({
+			date,
+		});
+
+	return (
+		<EnhancedStatCard
+			title={"Transactions"}
+			data={transactionStats}
+			icon={"mdi:currency-gbp"}
+		/>
+	);
+}
+
+function HairAssignedStatisticsSuspense({ date }: { date: Date }) {
+	const [hairAssignedStats] =
+		trpc.dashboard.getHairAssignedStatsForDate.useSuspenseQuery({
+			date,
+		});
+
+	return (
+		<>
+			<EnhancedStatCard
+				title={"Weight in Grams"}
+				data={hairAssignedStats.weightInGrams}
+				icon={"mdi:currency-gbp"}
+			/>
+			<EnhancedStatCard
+				title={"Sold For"}
+				data={hairAssignedStats.soldFor}
+				icon={"mdi:currency-gbp"}
+			/>
+			<EnhancedStatCard
+				title={"Profit"}
+				data={hairAssignedStats.profit}
+				icon={"mdi:currency-gbp"}
+			/>
+			<EnhancedStatCard
+				title={"Price per Gram"}
+				data={hairAssignedStats.pricePerGram}
+				icon={"mdi:currency-gbp"}
+			/>
+		</>
+	);
+}
+
+function HairAssignedThroughSaleStatisticsSuspense({ date }: { date: Date }) {
+	const [hairAssignedStats] =
+		trpc.dashboard.getHairAssignedThroughSaleStatsForDate.useSuspenseQuery({
+			date,
+		});
+
+	return (
+		<>
+			<EnhancedStatCard
+				title={"Weight in Grams"}
+				data={hairAssignedStats.weightInGrams}
+				icon={"mdi:currency-gbp"}
+			/>
+			<EnhancedStatCard
+				title={"Sold For"}
+				data={hairAssignedStats.soldFor}
+				icon={"mdi:currency-gbp"}
+			/>
+			<EnhancedStatCard
+				title={"Profit"}
+				data={hairAssignedStats.profit}
+				icon={"mdi:currency-gbp"}
+			/>
+			<EnhancedStatCard
+				title={"Price per Gram"}
+				data={hairAssignedStats.pricePerGram}
+				icon={"mdi:currency-gbp"}
+			/>
+		</>
 	);
 }

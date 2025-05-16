@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { hairOrderSchema } from "@/lib/schemas";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -94,11 +94,10 @@ export const hairOrderRouter = createTRPCRouter({
 		.input(z.object({ hairOrder: hairOrderSchema }))
 		.mutation(async ({ ctx, input }) => {
 			const { hairOrder } = input;
-			const { user } = ctx;
 			const c = await prisma.hairOrder.create({
 				data: {
 					...hairOrder,
-					createdById: user.id,
+					createdById: ctx.session.user.id,
 				},
 			});
 			return c;

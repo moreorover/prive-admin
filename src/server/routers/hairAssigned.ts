@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
@@ -128,7 +128,7 @@ export const hairAssignedRouter = createTRPCRouter({
 					hairOrderId,
 					appointmentId,
 					clientId,
-					createdById: ctx.user.id,
+					createdById: ctx.session.user.id,
 				},
 			});
 			return hairAssigned;

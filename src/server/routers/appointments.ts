@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { appointmentSchema } from "@/lib/schemas";
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/server/trpc";
 import { TRPCError } from "@trpc/server";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
