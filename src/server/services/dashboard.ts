@@ -18,6 +18,22 @@ const fetchTransactions = async (start: Dayjs, end: Dayjs) => {
 	});
 };
 
+const fetchHairSoldThroughAppointment = async (start: Dayjs, end: Dayjs) => {
+	return prisma.hairAssigned.findMany({
+		where: {
+			appointment: {
+				startsAt: { gte: start.toDate(), lt: end.toDate() },
+			},
+		},
+		select: {
+			weightInGrams: true,
+			soldFor: true,
+			profit: true,
+			pricePerGram: true,
+		},
+	});
+};
+
 export const calculateMonthlyTimeRange = (date: Dayjs) => {
 	const start = date.startOf("month");
 	const end = dayjs(start).endOf("month").add(1, "day");
@@ -97,9 +113,40 @@ export const calculateTransactionMetrics = async (
 		fetchTransactions(currentRange.start, currentRange.end),
 		fetchTransactions(previousRange.start, previousRange.end),
 	]);
-
 	return calculateAll(
 		transactions.map((t) => t.amount),
 		previousTransactions.map((t) => t.amount),
 	);
+};
+
+export const calculateHairAssignedMetrics = async (
+	currentRange: { start: Dayjs; end: Dayjs },
+	previousRange: { start: Dayjs; end: Dayjs },
+) => {
+	const [hairAssigned, previousHairAssigned] = await Promise.all([
+		fetchHairSoldThroughAppointment(currentRange.start, currentRange.end),
+		fetchHairSoldThroughAppointment(previousRange.start, previousRange.end),
+	]);
+
+	const weightInGrams = calculateAll(
+		hairAssigned.map((h) => h.weightInGrams),
+		previousHairAssigned.map((h) => h.weightInGrams),
+	);
+
+	const soldFor = calculateAll(
+		hairAssigned.map((h) => h.soldFor),
+		previousHairAssigned.map((h) => h.soldFor),
+	);
+
+	const profit = calculateAll(
+		hairAssigned.map((h) => h.profit),
+		previousHairAssigned.map((h) => h.profit),
+	);
+
+	const pricePerGram = calculateAll(
+		hairAssigned.map((h) => h.pricePerGram),
+		previousHairAssigned.map((h) => h.pricePerGram),
+	);
+
+	return { weightInGrams, soldFor, profit, pricePerGram };
 };

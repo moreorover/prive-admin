@@ -55,7 +55,12 @@ export const DashboardView = () => {
 				>
 					<Suspense fallback={<LoaderSkeleton />}>
 						<ErrorBoundary fallback={<p>Error</p>}>
-							<DashboardSuspense date={date} />
+							<TransactionsStatisticsSuspense date={date} />
+						</ErrorBoundary>
+					</Suspense>
+					<Suspense fallback={<LoaderSkeleton />}>
+						<ErrorBoundary fallback={<p>Error</p>}>
+							<HairAssignedStatisticsSuspense date={date} />
 						</ErrorBoundary>
 					</Suspense>
 				</SimpleGrid>
@@ -64,7 +69,7 @@ export const DashboardView = () => {
 	);
 };
 
-function DashboardSuspense({ date }: { date: Date }) {
+function TransactionsStatisticsSuspense({ date }: { date: Date }) {
 	const [transactionStats] =
 		trpc.dashboard.getTransactionStatsForDate.useSuspenseQuery({
 			date,
@@ -90,6 +95,52 @@ function DashboardSuspense({ date }: { date: Date }) {
 			value: transactionStats.count.current,
 			percentage: transactionStats.count.percentage,
 			previous: transactionStats.count.previous,
+			icon: "mdi:counter",
+		},
+	];
+
+	return (
+		<>
+			{stats.map((stat) => (
+				<StatCardDiff
+					key={stat.title}
+					title={stat.title}
+					value={stat.value}
+					percentage={stat.percentage}
+					previous={stat.previous}
+					icon={stat.icon}
+				/>
+			))}
+		</>
+	);
+}
+
+function HairAssignedStatisticsSuspense({ date }: { date: Date }) {
+	const [hairAssignedStats] =
+		trpc.dashboard.getHairAssignedStatsForDate.useSuspenseQuery({
+			date,
+		});
+
+	const stats = [
+		{
+			title: "Weight in Grams Sum",
+			value: `${hairAssignedStats.weightInGrams.total.current}g`,
+			percentage: hairAssignedStats.weightInGrams.total.percentage,
+			previous: `${hairAssignedStats.weightInGrams.total.previous}g`,
+			icon: "mdi:currency-gbp",
+		},
+		{
+			title: "Transactions Average",
+			value: formatAmount(hairAssignedStats.weightInGrams.average.current),
+			percentage: hairAssignedStats.weightInGrams.average.percentage,
+			previous: formatAmount(hairAssignedStats.weightInGrams.average.previous),
+			icon: "mdi:chart-line",
+		},
+		{
+			title: "Transactions Count",
+			value: hairAssignedStats.weightInGrams.count.current,
+			percentage: hairAssignedStats.weightInGrams.count.percentage,
+			previous: hairAssignedStats.weightInGrams.count.previous,
 			icon: "mdi:counter",
 		},
 	];
