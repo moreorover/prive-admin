@@ -19,6 +19,7 @@ import { LogoGradient } from "./logo-gradient";
 
 const links = [
 	{ link: "/dashboard", label: "Dashboard" },
+	{ link: "/dashboard/calendar", label: "Calendar" },
 	{ link: "/dashboard/customers", label: "Customers" },
 	{ link: "/dashboard/appointments", label: "Appointments" },
 	{ link: "/dashboard/hair-orders", label: "Hair Orders" },
