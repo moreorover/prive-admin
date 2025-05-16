@@ -20,9 +20,15 @@ interface StatCardProps {
 	title: string;
 	data: StatCategory;
 	icon: string;
+	defaultTab?: string;
 }
 
-export function EnhancedStatCard({ title, data, icon }: StatCardProps) {
+export function EnhancedStatCard({
+	title,
+	data,
+	icon,
+	defaultTab = "total",
+}: StatCardProps) {
 	// Get arrow icon based on positive/negative value
 	const getArrowIcon = (value: number) =>
 		value >= 0 ? "mdi:arrow-up-right-thick" : "mdi:arrow-down-right-thick";
@@ -39,7 +45,7 @@ export function EnhancedStatCard({ title, data, icon }: StatCardProps) {
 				<Icon className={classes.icon} width={22} height={22} icon={icon} />
 			</Group>
 
-			<Tabs defaultValue="total" mt="md">
+			<Tabs defaultValue={defaultTab} mt="md">
 				<Tabs.List>
 					<Tabs.Tab value="total">Total</Tabs.Tab>
 					<Tabs.Tab value="average">Average</Tabs.Tab>

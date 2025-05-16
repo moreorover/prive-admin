@@ -127,15 +127,15 @@ export const calculateTransactionMetrics = async (
 
 	return {
 		total: {
-			current: rawMetrics.total.current / 100,
-			previous: rawMetrics.total.previous / 100,
-			difference: rawMetrics.total.difference / 100,
+			current: formatAmount(rawMetrics.total.current / 100),
+			previous: formatAmount(rawMetrics.total.previous / 100),
+			difference: formatAmount(rawMetrics.total.difference / 100),
 			percentage: rawMetrics.total.percentage,
 		},
 		average: {
-			current: +(rawMetrics.average.current / 100).toFixed(2),
-			previous: +(rawMetrics.average.previous / 100).toFixed(2),
-			difference: rawMetrics.average.difference / 100,
+			current: formatAmount(rawMetrics.average.current / 100),
+			previous: formatAmount(rawMetrics.average.previous / 100),
+			difference: formatAmount(rawMetrics.average.difference / 100),
 			percentage: rawMetrics.average.percentage,
 		},
 		count: {
@@ -202,9 +202,9 @@ export const mapHairAssigned = (
 				percentage: profit.total.percentage,
 			},
 			average: {
-				current: formatAmount(profit.average.current),
-				previous: formatAmount(profit.average.previous),
-				difference: formatAmount(profit.average.difference),
+				current: formatAmount(profit.average.current / 100),
+				previous: formatAmount(profit.average.previous / 100),
+				difference: formatAmount(profit.average.difference / 100),
 				percentage: profit.average.percentage,
 			},
 			count: {
@@ -216,15 +216,15 @@ export const mapHairAssigned = (
 		},
 		pricePerGram: {
 			total: {
-				current: formatAmount(pricePerGram.total.current / 100),
-				previous: formatAmount(pricePerGram.total.previous / 100),
-				difference: formatAmount(pricePerGram.total.difference / 100),
-				percentage: pricePerGram.total.percentage,
+				current: 0,
+				previous: 0,
+				difference: 0,
+				percentage: 0,
 			},
 			average: {
-				current: formatAmount(pricePerGram.average.current),
-				previous: formatAmount(pricePerGram.average.previous),
-				difference: formatAmount(pricePerGram.average.difference),
+				current: formatAmount(pricePerGram.average.current / 100),
+				previous: formatAmount(pricePerGram.average.previous / 100),
+				difference: formatAmount(pricePerGram.average.difference / 100),
 				percentage: pricePerGram.average.percentage,
 			},
 			count: {

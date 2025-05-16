@@ -156,14 +156,14 @@ test("calculateTransactionMetrics - calculates metrics correctly", async () => {
 		previousRange,
 	);
 
-	expect(metrics.total.current).toBe(30);
-	expect(metrics.total.previous).toBe(11);
-	expect(metrics.total.difference).toBe(19);
+	expect(metrics.total.current).toBe("£30.00");
+	expect(metrics.total.previous).toBe("£11.00");
+	expect(metrics.total.difference).toBe("£19.00");
 	expect(metrics.total.percentage).toBe(172.73);
 
-	expect(metrics.average.current).toBe(10);
-	expect(metrics.average.previous).toBe(5.5);
-	expect(metrics.average.difference).toBe(4.5);
+	expect(metrics.average.current).toBe("£10.00");
+	expect(metrics.average.previous).toBe("£5.50");
+	expect(metrics.average.difference).toBe("£4.50");
 	expect(metrics.average.percentage).toBe(81.82);
 
 	expect(metrics.count.current).toBe(3);
@@ -240,14 +240,14 @@ test("calculateTransactionMetrics - calculates negative metrics correctly", asyn
 		previousRange,
 	);
 
-	expect(metrics.total.current).toBe(-1000);
-	expect(metrics.total.previous).toBe(-500);
-	expect(metrics.total.difference).toBe(-500);
+	expect(metrics.total.current).toBe("-£1,000.00");
+	expect(metrics.total.previous).toBe("-£500.00");
+	expect(metrics.total.difference).toBe("-£500.00");
 	expect(metrics.total.percentage).toBe(-100);
 
-	expect(metrics.average.current).toBe(-1000);
-	expect(metrics.average.previous).toBe(-500);
-	expect(metrics.average.difference).toBe(-500);
+	expect(metrics.average.current).toBe("-£1,000.00");
+	expect(metrics.average.previous).toBe("-£500.00");
+	expect(metrics.average.difference).toBe("-£500.00");
 	expect(metrics.average.percentage).toBe(-100);
 
 	expect(metrics.count.current).toBe(1);
