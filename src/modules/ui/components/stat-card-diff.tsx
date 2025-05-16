@@ -10,13 +10,7 @@ interface StatCardProps {
 	icon: string;
 }
 
-export function StatCardDiff({
-	title,
-	value,
-	previous,
-	diff,
-	icon,
-}: StatCardProps) {
+export function StatCardDiff({ title, value, diff, icon }: StatCardProps) {
 	const iconDiff =
 		diff > 0 ? "mdi:arrow-up-right-thick" : "mdi:arrow-down-right-thick";
 
@@ -42,9 +36,9 @@ export function StatCardDiff({
 				</Text>
 			</Group>
 
-			<Text fz="xs" c="dimmed" mt={3}>
-				Previous: {previous}
-			</Text>
+			{/*<Text fz="xs" c="dimmed" mt={3}>*/}
+			{/*	Previous: {previous}*/}
+			{/*</Text>*/}
 
 			<Text fz="xs" c="dimmed" mt={7}>
 				Compared to previous period
