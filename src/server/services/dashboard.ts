@@ -1,4 +1,5 @@
 import "server-only";
+import { formatAmount } from "@/lib/helpers";
 import prisma from "@/lib/prisma";
 import dayjs, { type Dayjs } from "dayjs";
 
@@ -163,15 +164,15 @@ export const calculateHairAssignedMetrics = async (
 	return {
 		weightInGrams: {
 			total: {
-				current: weightInGrams.total.current,
-				previous: weightInGrams.total.previous,
-				difference: weightInGrams.total.difference,
+				current: `${weightInGrams.total.current}g`,
+				previous: `${weightInGrams.total.previous}g`,
+				difference: `${weightInGrams.total.difference}g`,
 				percentage: weightInGrams.total.percentage,
 			},
 			average: {
-				current: +weightInGrams.average.current.toFixed(2),
-				previous: +weightInGrams.average.previous.toFixed(2),
-				difference: weightInGrams.average.difference,
+				current: `${weightInGrams.average.current.toFixed(1)}g`,
+				previous: `${weightInGrams.average.previous.toFixed(1)}g`,
+				difference: `${weightInGrams.average.difference.toFixed(1)}g`,
 				percentage: weightInGrams.average.percentage,
 			},
 			count: {
@@ -183,15 +184,15 @@ export const calculateHairAssignedMetrics = async (
 		},
 		soldFor: {
 			total: {
-				current: soldFor.total.current / 100,
-				previous: soldFor.total.previous / 100,
-				difference: soldFor.total.difference / 100,
+				current: formatAmount(soldFor.total.current / 100),
+				previous: formatAmount(soldFor.total.previous / 100),
+				difference: formatAmount(soldFor.total.difference / 100),
 				percentage: soldFor.total.percentage,
 			},
 			average: {
-				current: soldFor.average.current / 100,
-				previous: soldFor.average.previous / 100,
-				difference: soldFor.average.difference / 100,
+				current: formatAmount(soldFor.average.current / 100),
+				previous: formatAmount(soldFor.average.previous / 100),
+				difference: formatAmount(soldFor.average.difference / 100),
 				percentage: soldFor.average.percentage,
 			},
 			count: {
@@ -203,15 +204,15 @@ export const calculateHairAssignedMetrics = async (
 		},
 		profit: {
 			total: {
-				current: profit.total.current / 100,
-				previous: profit.total.previous / 100,
-				difference: profit.total.difference / 100,
+				current: formatAmount(profit.total.current / 100),
+				previous: formatAmount(profit.total.previous / 100),
+				difference: formatAmount(profit.total.difference / 100),
 				percentage: profit.total.percentage,
 			},
 			average: {
-				current: +profit.average.current.toFixed(2),
-				previous: +profit.average.previous.toFixed(2),
-				difference: profit.average.difference,
+				current: formatAmount(profit.average.current),
+				previous: formatAmount(profit.average.previous),
+				difference: formatAmount(profit.average.difference),
 				percentage: profit.average.percentage,
 			},
 			count: {
@@ -223,15 +224,15 @@ export const calculateHairAssignedMetrics = async (
 		},
 		pricePerGram: {
 			total: {
-				current: pricePerGram.total.current / 100,
-				previous: pricePerGram.total.previous / 100,
-				difference: pricePerGram.total.difference / 100,
+				current: formatAmount(pricePerGram.total.current / 100),
+				previous: formatAmount(pricePerGram.total.previous / 100),
+				difference: formatAmount(pricePerGram.total.difference / 100),
 				percentage: pricePerGram.total.percentage,
 			},
 			average: {
-				current: +pricePerGram.average.current.toFixed(2),
-				previous: +pricePerGram.average.previous.toFixed(2),
-				difference: pricePerGram.average.difference,
+				current: formatAmount(pricePerGram.average.current),
+				previous: formatAmount(pricePerGram.average.previous),
+				difference: formatAmount(pricePerGram.average.difference),
 				percentage: pricePerGram.average.percentage,
 			},
 			count: {

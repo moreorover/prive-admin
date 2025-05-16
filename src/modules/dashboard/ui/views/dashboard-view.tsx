@@ -1,8 +1,6 @@
 "use client";
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { formatAmount } from "@/lib/helpers";
 import { EnhancedStatCard } from "@/modules/ui/components/enhanced-stat-card";
-import { StatCardDiff } from "@/modules/ui/components/stat-card-diff";
 import { trpc } from "@/trpc/client";
 import {
 	Button,
@@ -50,26 +48,27 @@ export const DashboardView = () => {
 						</Group>
 					</Group>
 				</Paper>
-				<SimpleGrid
-					cols={{ base: 1, sm: 2, md: 3 }}
-					spacing={{ base: 10, "300px": "xl" }}
-				>
-					<Suspense fallback={<LoaderSkeleton />}>
-						<ErrorBoundary fallback={<p>Error</p>}>
+				<Suspense fallback={<LoaderSkeleton />}>
+					<ErrorBoundary fallback={<p>Error</p>}>
+						<SimpleGrid
+							cols={{ base: 1, sm: 2, md: 3 }}
+							spacing={{ base: 10, "300px": "xl" }}
+						>
 							<TransactionsStatisticsSuspense date={date} />
-						</ErrorBoundary>
-					</Suspense>
-				</SimpleGrid>
-				<SimpleGrid
-					cols={{ base: 1, sm: 2, md: 4 }}
-					spacing={{ base: 10, "300px": "xl" }}
-				>
-					<Suspense fallback={<LoaderSkeleton />}>
-						<ErrorBoundary fallback={<p>Error</p>}>
+						</SimpleGrid>
+					</ErrorBoundary>
+				</Suspense>
+				<Suspense fallback={<LoaderSkeleton />}>
+					<ErrorBoundary fallback={<p>Error</p>}>
+						<Title order={4}>Hair Assigned during Appointments</Title>
+						<SimpleGrid
+							cols={{ base: 1, sm: 2, md: 4 }}
+							spacing={{ base: 10, "300px": "xl" }}
+						>
 							<HairAssignedStatisticsSuspense date={date} />
-						</ErrorBoundary>
-					</Suspense>
-				</SimpleGrid>
+						</SimpleGrid>
+					</ErrorBoundary>
+				</Suspense>
 			</Stack>
 		</Container>
 	);
@@ -81,43 +80,12 @@ function TransactionsStatisticsSuspense({ date }: { date: Date }) {
 			date,
 		});
 
-	const stats = [
-		{
-			title: "Transactions Sum",
-			value: formatAmount(transactionStats.total.current),
-			percentage: transactionStats.total.percentage,
-			previous: formatAmount(transactionStats.total.previous),
-			icon: "mdi:currency-gbp",
-		},
-		{
-			title: "Transactions Average",
-			value: formatAmount(transactionStats.average.current),
-			percentage: transactionStats.average.percentage,
-			previous: formatAmount(transactionStats.average.previous),
-			icon: "mdi:chart-line",
-		},
-		{
-			title: "Transactions Count",
-			value: transactionStats.count.current,
-			percentage: transactionStats.count.percentage,
-			previous: transactionStats.count.previous,
-			icon: "mdi:counter",
-		},
-	];
-
 	return (
-		<>
-			{stats.map((stat) => (
-				<StatCardDiff
-					key={stat.title}
-					title={stat.title}
-					value={stat.value}
-					percentage={stat.percentage}
-					previous={stat.previous}
-					icon={stat.icon}
-				/>
-			))}
-		</>
+		<EnhancedStatCard
+			title={"Transactions"}
+			data={transactionStats}
+			icon={"mdi:currency-gbp"}
+		/>
 	);
 }
 
@@ -130,7 +98,7 @@ function HairAssignedStatisticsSuspense({ date }: { date: Date }) {
 	return (
 		<>
 			<EnhancedStatCard
-				title={"Wight in Grams"}
+				title={"Weight in Grams"}
 				data={hairAssignedStats.weightInGrams}
 				icon={"mdi:currency-gbp"}
 			/>

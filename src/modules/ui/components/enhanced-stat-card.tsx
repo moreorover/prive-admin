@@ -4,9 +4,9 @@ import { Divider, Group, Paper, Stack, Tabs, Text } from "@mantine/core";
 
 // Define the statistics type structure
 type StatValue = {
-	current: number;
-	previous: number;
-	difference: number;
+	current: number | string;
+	previous: number | string;
+	difference: number | string;
 	percentage: number;
 };
 
