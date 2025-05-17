@@ -94,12 +94,22 @@ const CalendarDemo = () => {
 		const daysCount = currentMonth.daysInMonth();
 		const startDay = firstDayOfMonth.day();
 
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-		const calendarDays: any[] = [];
+		const calendarDays: {
+			day: number | null;
+			date: string | null;
+			events: {
+				id: number;
+				title: string;
+				description: string;
+				date: string;
+				time: string;
+				color: string;
+			}[];
+		}[] = [];
 
 		// Add empty cells for days before first day of month
 		for (let i = 0; i < startDay; i++) {
-			calendarDays.push({ day: null, date: null });
+			calendarDays.push({ day: null, date: null, events: [] });
 		}
 
 		// Add cells for days in month
@@ -150,19 +160,19 @@ const CalendarDemo = () => {
 
 					{/* Calendar grid */}
 					<Grid columns={7} gutter="xs">
-						{days.map((dayObj, i) => (
-							<Grid.Col key={i} span={1}>
+						{days.map((dayObj) => (
+							<Grid.Col key={dayObj.day} span={1}>
 								{!dayObj.day ? (
 									<Box style={{ height: "100%", minHeight: 100 }} />
 								) : (
-									<HoverCard width={280} shadow="md" withArrow>
+									<HoverCard shadow="md">
 										<HoverCard.Target>
 											<Paper
 												p="xs"
 												style={{
 													height: "100%",
 													minHeight: 100,
-													position: "relative",
+													// position: "relative",
 													cursor:
 														dayObj.events.length > 0 ? "pointer" : "default",
 													border: `1px solid ${theme.colors.gray[3]}`,
@@ -234,7 +244,7 @@ const CalendarDemo = () => {
 				</Box>
 			) : (
 				// Mobile List View
-				<Stack>
+				<Stack gap={"xs"}>
 					{days
 						.filter((day) => day.day !== null)
 						.map((dayObj) => (

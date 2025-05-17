@@ -358,7 +358,7 @@ function CalendarSuspense() {
 		parseAsIsoDate.withDefault(dayjs().startOf("date").toDate()),
 	);
 	const [appointments] =
-		trpc.appointments.getAppointmentsBetweenDates.useSuspenseQuery({
+		trpc.appointments.getAppointmentsForMonth.useSuspenseQuery({
 			date,
 		});
 
