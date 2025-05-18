@@ -8,7 +8,6 @@ import {
 	Container,
 	Grid,
 	Group,
-	HoverCard,
 	Paper,
 	Stack,
 	Text,
@@ -20,7 +19,22 @@ import dayjs from "dayjs";
 import { useState } from "react";
 
 // Sample events data
-const events = [
+interface Event {
+	id: number;
+	title: string;
+	description: string;
+	date: string;
+	time: string;
+	color: string;
+}
+
+interface CalendarDay {
+	day: number | null;
+	date: string | null;
+	events: Event[];
+}
+
+const events: Event[] = [
 	{
 		id: 1,
 		title: "Team Meeting",
@@ -38,28 +52,44 @@ const events = [
 		color: "green",
 	},
 	{
+		id: 2,
+		title: "Product Launch",
+		description: "New feature release",
+		date: dayjs().date(22).format("YYYY-MM-DD"),
+		time: "2:00 PM",
+		color: "green",
+	},
+	{
+		id: 2,
+		title: "Product Launch",
+		description: "New feature release",
+		date: dayjs().date(22).format("YYYY-MM-DD"),
+		time: "2:00 PM",
+		color: "green",
+	},
+	{
+		id: 2,
+		title: "Product Launch",
+		description: "New feature release",
+		date: dayjs().date(22).format("YYYY-MM-DD"),
+		time: "2:00 PM",
+		color: "green",
+	},
+	{
+		id: 2,
+		title: "Product Launch",
+		description: "New feature release",
+		date: dayjs().date(22).format("YYYY-MM-DD"),
+		time: "2:00 PM",
+		color: "green",
+	},
+	{
 		id: 3,
 		title: "Client Call",
 		description: "Quarterly review with client",
 		date: dayjs().date(10).format("YYYY-MM-DD"),
 		time: "11:30 AM",
 		color: "violet",
-	},
-	{
-		id: 4,
-		title: "Lunch with Team",
-		description: "Team building lunch",
-		date: dayjs().date(10).format("YYYY-MM-DD"),
-		time: "12:30 PM",
-		color: "orange",
-	},
-	{
-		id: 4,
-		title: "Lunch with Team",
-		description: "Team building lunch",
-		date: dayjs().date(10).format("YYYY-MM-DD"),
-		time: "12:30 PM",
-		color: "orange",
 	},
 	{
 		id: 4,
@@ -94,18 +124,7 @@ const CalendarDemo = () => {
 		const daysCount = currentMonth.daysInMonth();
 		const startDay = firstDayOfMonth.day();
 
-		const calendarDays: {
-			day: number | null;
-			date: string | null;
-			events: {
-				id: number;
-				title: string;
-				description: string;
-				date: string;
-				time: string;
-				color: string;
-			}[];
-		}[] = [];
+		const calendarDays: CalendarDay[] = [];
 
 		// Add empty cells for days before first day of month
 		for (let i = 0; i < startDay; i++) {
@@ -134,10 +153,18 @@ const CalendarDemo = () => {
 			<Group justify="apart" mb="lg">
 				<Title order={2}>{currentMonth.format("MMMM YYYY")}</Title>
 				<Group>
-					<Button variant="outline" onClick={prevMonth}>
+					<Button
+						variant="outline"
+						onClick={prevMonth}
+						// leftIcon={<IconChevronLeft size={16} />}
+					>
 						Previous
 					</Button>
-					<Button variant="outline" onClick={nextMonth}>
+					<Button
+						variant="outline"
+						onClick={nextMonth}
+						// rightIcon={<IconChevronRight size={16} />}
+					>
 						Next
 					</Button>
 				</Group>
@@ -165,78 +192,47 @@ const CalendarDemo = () => {
 								{!dayObj.day ? (
 									<Box style={{ height: "100%", minHeight: 100 }} />
 								) : (
-									<HoverCard shadow="md">
-										<HoverCard.Target>
-											<Paper
-												p="xs"
-												style={{
-													height: "100%",
-													minHeight: 100,
-													// position: "relative",
-													cursor:
-														dayObj.events.length > 0 ? "pointer" : "default",
-													border: `1px solid ${theme.colors.gray[3]}`,
-													"&:hover": {
-														backgroundColor: theme.colors.gray[0],
-													},
-												}}
-											>
-												<Text
-													w={
-														dayjs(dayObj.date).isSame(dayjs(), "day")
-															? "bold"
-															: "normal"
-													}
-													c={
-														dayjs(dayObj.date).isSame(dayjs(), "day")
-															? theme.colors.blue[6]
-															: "inherit"
-													}
+									<Paper
+										p="xs"
+										style={{
+											height: "100%",
+											minHeight: 100,
+											cursor: dayObj.events.length > 0 ? "pointer" : "default",
+											border: `1px solid ${theme.colors.gray[3]}`,
+										}}
+									>
+										<Text
+											w={
+												dayjs(dayObj.date).isSame(dayjs(), "day")
+													? "bold"
+													: "normal"
+											}
+											c={
+												dayjs(dayObj.date).isSame(dayjs(), "day")
+													? theme.colors.blue[6]
+													: "inherit"
+											}
+										>
+											{dayObj.day}
+										</Text>
+										<Stack gap="xs" mt="xs">
+											{dayObj.events.slice(0, 2).map((event) => (
+												<Badge
+													key={event.id}
+													color={event.color}
+													size="sm"
+													fullWidth
 												>
-													{dayObj.day}
+													{event.title}
+												</Badge>
+											))}
+											{dayObj.events.length > 2 && (
+												<Text size="xs" c="dimmed">
+													+{dayObj.events.length - 2} more
 												</Text>
-												<Stack gap="xs" mt="xs">
-													{dayObj.events.slice(0, 2).map((event) => (
-														<Badge
-															key={event.id}
-															color={event.color}
-															size="sm"
-															fullWidth
-														>
-															{event.title}
-														</Badge>
-													))}
-													{dayObj.events.length > 2 && (
-														<Text size="xs" c="dimmed">
-															+{dayObj.events.length - 2} more
-														</Text>
-													)}
-												</Stack>
-											</Paper>
-										</HoverCard.Target>
-										<HoverCard.Dropdown>
-											<Stack>
-												<Text w="bold">
-													{dayjs(dayObj.date).format("MMMM D, YYYY")}
-												</Text>
-												{dayObj.events.length === 0 ? (
-													<Text size="sm" c="dimmed">
-														No events scheduled
-													</Text>
-												) : (
-													dayObj.events.map((event) => (
-														<Card key={event.id} p="xs" withBorder>
-															<Group justify="apart" mb="xs">
-																<Text w="bold">{event.title}</Text>
-																<Badge color={event.color}>{event.time}</Badge>
-															</Group>
-															<Text size="sm">{event.description}</Text>
-														</Card>
-													))
-												)}
-											</Stack>
-										</HoverCard.Dropdown>
-									</HoverCard>
+											)}
+										</Stack>
+									</Paper>
 								)}
 							</Grid.Col>
 						))}
@@ -244,11 +240,11 @@ const CalendarDemo = () => {
 				</Box>
 			) : (
 				// Mobile List View
-				<Stack gap={"xs"}>
+				<Stack gap="xs">
 					{days
 						.filter((day) => day.day !== null)
 						.map((dayObj) => (
-							<Paper key={dayObj.date} p="md" mb="md" withBorder>
+							<Paper key={dayObj.date} p="md" withBorder>
 								<Group justify="apart" mb="xs">
 									<Text w="bold">
 										{dayjs(dayObj.date).format("D")} -{" "}
