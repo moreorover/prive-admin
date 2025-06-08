@@ -131,7 +131,7 @@ function DayCell({
 function CalendarEventBadge({ event }: { event: GetAppointments[0] }) {
 	return (
 		<Tooltip
-			label={`${event.name}${event.startsAt ? ` - ${dayjs(event.startsAt).format("h:mm A")}` : ""}`}
+			label={`${event.name}${event.startsAt ? ` - ${dayjs(event.startsAt).format("HH:mm")}` : ""}`}
 			position="bottom"
 			withArrow
 		>
