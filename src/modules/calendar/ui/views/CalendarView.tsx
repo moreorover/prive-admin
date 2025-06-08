@@ -68,7 +68,12 @@ function CalendarSuspense() {
 	};
 
 	return (
-		<Calendar days={days} onPrevMonth={onPrevMonth} onNextMonth={onNextMonth} />
+		<Calendar
+			currentDate={date}
+			days={days}
+			onPrevMonth={onPrevMonth}
+			onNextMonth={onNextMonth}
+		/>
 		// <MonthlyCalendar
 		// 	appointments={appointments}
 		// 	date={dayjs(date)}

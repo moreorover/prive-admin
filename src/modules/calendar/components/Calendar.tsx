@@ -1,17 +1,22 @@
 import type { GetAppointments } from "@/modules/appointments/types";
 import {
+	ActionIcon,
 	Badge,
 	Box,
+	Group,
 	SimpleGrid,
 	Stack,
 	Text,
+	Title,
 	Tooltip,
 	rem,
 } from "@mantine/core";
 import { format } from "date-fns";
 import dayjs from "dayjs";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Props {
+	currentDate: Date;
 	onPrevMonth?: () => void;
 	onNextMonth?: () => void;
 	days: {
@@ -27,6 +32,11 @@ const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 export function Calendar(props: Props) {
 	return (
 		<Stack>
+			<CalendarHeader
+				currentDate={props.currentDate}
+				onPrevMonth={props.onPrevMonth}
+				onNextMonth={props.onNextMonth}
+			/>
 			<SimpleGrid cols={7} spacing={0}>
 				{daysOfWeek.map((day) => (
 					<Text key={day} ta="center" fw={600} size="sm">
@@ -51,6 +61,38 @@ export function Calendar(props: Props) {
 				))}
 			</SimpleGrid>
 		</Stack>
+	);
+}
+
+function CalendarHeader({
+	currentDate,
+	onPrevMonth,
+	onNextMonth,
+}: {
+	currentDate: Date;
+	onPrevMonth?: () => void;
+	onNextMonth?: () => void;
+}) {
+	return (
+		<Group justify="space-between" wrap="wrap" mb="md">
+			<Title order={3}>{format(currentDate, "MMMM yyyy")}</Title>
+			<Group gap="xs">
+				<ActionIcon
+					variant="subtle"
+					onClick={onPrevMonth}
+					aria-label="Previous month"
+				>
+					<ChevronLeft size={16} />
+				</ActionIcon>
+				<ActionIcon
+					variant="subtle"
+					onClick={onNextMonth}
+					aria-label="Next month"
+				>
+					<ChevronRight size={16} />
+				</ActionIcon>
+			</Group>
+		</Group>
 	);
 }
 
