@@ -51,7 +51,7 @@ function CalendarSuspense() {
 	const days = Array.from({ length: numberOfDays }, (_, i) => {
 		const day = addDays(startDate, i);
 		return {
-			day: day,
+			day,
 			events: appointments.filter((appointment) =>
 				isSameDay(appointment.startsAt, day),
 			),
