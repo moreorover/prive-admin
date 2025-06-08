@@ -13,6 +13,7 @@ import {
 } from "@mantine/core";
 import { format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 interface Props {
 	currentDate: Date;
@@ -165,13 +166,15 @@ function CalendarEventBadge({ event }: { event: GetAppointments[number] }) {
 	const badgeText = startsAtTime ? `${startsAtTime} ${event.name}` : event.name;
 
 	return (
-		<Tooltip label={badgeText} position="bottom" withArrow>
+		<Tooltip label={badgeText} position="bottom" withArrow openDelay={500}>
 			<Badge
 				fullWidth
 				size="xs"
 				radius="sm"
 				style={{ cursor: "pointer" }}
 				aria-label={`Event: ${badgeText}`}
+				component={Link}
+				href={`/dashboard/appointments/${event.id}`}
 			>
 				{badgeText}
 			</Badge>

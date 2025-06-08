@@ -54,7 +54,7 @@ export function Header() {
 
 	return (
 		<header className={classes.header}>
-			<Container size="md" className={classes.inner}>
+			<Container size="lg" className={classes.inner}>
 				{logo}
 
 				{/* Desktop nav */}
