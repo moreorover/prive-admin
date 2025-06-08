@@ -19,8 +19,8 @@ import { LogoGradient } from "./logo-gradient";
 
 const links = [
 	{ link: "/dashboard", label: "Dashboard" },
+	{ link: "/dashboard/calendar", label: "Calendar" },
 	{ link: "/dashboard/customers", label: "Customers" },
-	{ link: "/dashboard/appointments", label: "Appointments" },
 	{ link: "/dashboard/hair-orders", label: "Hair Orders" },
 	{ link: "/dashboard/transactions", label: "Transactions" },
 	// { link: "/", label: "" },
@@ -53,7 +53,7 @@ export function Header() {
 
 	return (
 		<header className={classes.header}>
-			<Container size="md" className={classes.inner}>
+			<Container size="lg" className={classes.inner}>
 				{logo}
 
 				{/* Desktop nav */}

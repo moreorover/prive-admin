@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { AppointmentsView } from "@/modules/appointments/ui/views/appointments-view";
+import CalendarView from "@/modules/calendar/ui/views/CalendarView";
 import { HydrateClient } from "@/trpc/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -15,7 +15,7 @@ export default async function Page() {
 
 	return (
 		<HydrateClient>
-			<AppointmentsView />
+			<CalendarView />
 		</HydrateClient>
 	);
 }
