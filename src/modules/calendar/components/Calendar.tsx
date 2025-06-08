@@ -144,12 +144,12 @@ function DayCell({
 								lineHeight: rem(24),
 								display: "inline-block",
 							}
-						: {}
+						: undefined
 				}
 			>
 				{format(day, "dd")}
 			</Text>
-			<Stack gap={rem(2)}>
+			<Stack gap={rem(2)} mt="auto">
 				{events.map((event) => (
 					<CalendarEventBadge key={event.id} event={event} />
 				))}
@@ -159,7 +159,9 @@ function DayCell({
 }
 
 function CalendarEventBadge({ event }: { event: GetAppointments[number] }) {
-	const startsAtTime = format(event.startsAt, "HH:mm");
+	const startsAtTime = event.startsAt
+		? format(new Date(event.startsAt), "HH:mm")
+		: null;
 	const badgeText = startsAtTime ? `${startsAtTime} ${event.name}` : event.name;
 
 	return (
