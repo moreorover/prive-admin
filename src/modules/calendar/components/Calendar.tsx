@@ -114,7 +114,12 @@ function DayCell({
 			}}
 			p={rem(4)}
 		>
-			<Text fw={isToday ? 700 : 600} size="sm" mb={rem(4)}>
+			<Text
+				fw={isToday ? 700 : 600}
+				size="sm"
+				mb={rem(2)}
+				c={isCurrentMonth ? "brand" : "brand.2"}
+			>
 				{format(day, "dd")}
 			</Text>
 			<Stack gap={rem(2)}>
