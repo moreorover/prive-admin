@@ -74,11 +74,5 @@ function CalendarSuspense() {
 			onPrevMonth={onPrevMonth}
 			onNextMonth={onNextMonth}
 		/>
-		// <MonthlyCalendar
-		// 	appointments={appointments}
-		// 	date={dayjs(date)}
-		// 	onNextMonth={onNextMonth}
-		// 	onPrevMonth={onPrevMonth}
-		// />
 	);
 }
