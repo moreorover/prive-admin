@@ -5,6 +5,7 @@ import { Calendar } from "@/modules/calendar/components/Calendar";
 import { trpc } from "@/trpc/client";
 import {
 	addDays,
+	addMonths,
 	differenceInCalendarDays,
 	endOfMonth,
 	endOfWeek,
@@ -13,8 +14,8 @@ import {
 	isToday,
 	startOfMonth,
 	startOfWeek,
+	subMonths,
 } from "date-fns";
-import dayjs from "dayjs";
 import { parseAsIsoDate, useQueryState } from "nuqs";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -32,7 +33,7 @@ export default function CalendarView() {
 function CalendarSuspense() {
 	const [date, setDate] = useQueryState(
 		"date",
-		parseAsIsoDate.withDefault(dayjs().startOf("date").toDate()),
+		parseAsIsoDate.withDefault(new Date()),
 	);
 	const monthStart = startOfMonth(date);
 	const monthEnd = endOfMonth(monthStart);
@@ -60,11 +61,11 @@ function CalendarSuspense() {
 	});
 
 	const onPrevMonth = () => {
-		setDate(dayjs(date).subtract(1, "month").toDate());
+		setDate(subMonths(date, 1));
 	};
 
 	const onNextMonth = () => {
-		setDate(dayjs(date).add(1, "month").toDate());
+		setDate(addMonths(date, 1));
 	};
 
 	return (
