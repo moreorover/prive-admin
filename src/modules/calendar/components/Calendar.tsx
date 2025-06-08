@@ -111,9 +111,7 @@ function DayCell({
 		<Box
 			style={{
 				border: "1px solid var(--mantine-color-gray-3)",
-				// minHeight: isTablet ? rem(80) : rem(120),
 			}}
-			// h={isTablet ? rem(80) : rem(120)}
 			p={rem(4)}
 		>
 			<Text fw={isToday ? 700 : 600} size="sm" mb={rem(4)}>
@@ -136,9 +134,7 @@ function CalendarEventBadge({ event }: { event: GetAppointments[0] }) {
 			withArrow
 		>
 			<Badge fullWidth size="xs" radius="sm" style={{ cursor: "pointer" }}>
-				{event.name.length > 6
-					? `${dayjs(event.startsAt).format("HH:mm")} ${event.name.substring(0, 5)}...`
-					: event.name}
+				{`${dayjs(event.startsAt).format("HH:mm")} ${event.name}`}
 			</Badge>
 		</Tooltip>
 	);
