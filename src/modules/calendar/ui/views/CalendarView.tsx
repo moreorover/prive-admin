@@ -1,8 +1,19 @@
 "use client";
 
 import { LoaderSkeleton } from "@/components/loader-skeleton";
-import MonthlyCalendar from "@/modules/calendar/components/MontlyCalendar";
+import { Calendar } from "@/modules/calendar/components/Calendar";
 import { trpc } from "@/trpc/client";
+import {
+	addDays,
+	differenceInCalendarDays,
+	endOfMonth,
+	endOfWeek,
+	isSameDay,
+	isSameMonth,
+	isToday,
+	startOfMonth,
+	startOfWeek,
+} from "date-fns";
 import dayjs from "dayjs";
 import { parseAsIsoDate, useQueryState } from "nuqs";
 import { Suspense } from "react";
@@ -23,10 +34,30 @@ function CalendarSuspense() {
 		"date",
 		parseAsIsoDate.withDefault(dayjs().startOf("date").toDate()),
 	);
+	const monthStart = startOfMonth(date);
+	const monthEnd = endOfMonth(monthStart);
+	const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
+	const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
+
+	const numberOfDays = differenceInCalendarDays(endDate, startDate) + 1;
+
 	const [appointments] =
-		trpc.appointments.getAppointmentsForMonth.useSuspenseQuery({
-			date,
+		trpc.appointments.getAppointmentsBetweenDates.useSuspenseQuery({
+			startDate,
+			endDate,
 		});
+
+	const days = Array.from({ length: numberOfDays }, (_, i) => {
+		const day = addDays(startDate, i);
+		return {
+			day,
+			events: appointments.filter((appointment) =>
+				isSameDay(appointment.startsAt, day),
+			),
+			isCurrentMonth: isSameMonth(day, date),
+			isToday: isToday(day),
+		};
+	});
 
 	const onPrevMonth = () => {
 		setDate(dayjs(date).subtract(1, "month").toDate());
@@ -37,11 +68,12 @@ function CalendarSuspense() {
 	};
 
 	return (
-		<MonthlyCalendar
-			appointments={appointments}
-			date={dayjs(date)}
-			onNextMonth={onNextMonth}
-			onPrevMonth={onPrevMonth}
-		/>
+		<Calendar days={days} onPrevMonth={onPrevMonth} onNextMonth={onNextMonth} />
+		// <MonthlyCalendar
+		// 	appointments={appointments}
+		// 	date={dayjs(date)}
+		// 	onNextMonth={onNextMonth}
+		// 	onPrevMonth={onPrevMonth}
+		// />
 	);
 }

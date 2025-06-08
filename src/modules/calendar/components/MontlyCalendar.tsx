@@ -100,22 +100,20 @@ function DayCell({
 
 	return (
 		<Box
-			style={{ border: "1px solid var(--mantine-color-gray-3)" }}
-			h={isTablet ? rem(80) : rem(120)}
+			style={{
+				border: "1px solid var(--mantine-color-gray-3)",
+				minHeight: isTablet ? rem(80) : rem(120),
+			}}
+			// h={isTablet ? rem(80) : rem(120)}
 			p={rem(4)}
 		>
 			<Text fw={isToday ? 700 : 600} size="sm" mb={rem(4)}>
 				{date.date()}
 			</Text>
 			<Stack gap={rem(2)}>
-				{events.slice(0, isTablet ? 2 : 3).map((event) => (
+				{events.map((event) => (
 					<CalendarEventBadge key={event.id} event={event} />
 				))}
-				{events.length > (isTablet ? 2 : 3) && (
-					<Text size="xs" ta="center" c="dimmed">
-						+{events.length - (isTablet ? 2 : 3)} more
-					</Text>
-				)}
 			</Stack>
 		</Box>
 	);
