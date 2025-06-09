@@ -21,11 +21,16 @@ model User {
   image         String?
   createdAt     DateTime
   updatedAt     DateTime
-  Session       Session[]
-  Account       Account[]
   hairOrder     HairOrder[]
   hairAssigned  HairAssigned[]
   notesCreated  Note[]
+
+  role       String?
+  banned     Boolean?
+  banReason  String?
+  banExpires DateTime?
+  sessions   Session[]
+  accounts   Account[]
 
   @@map("users")
 }
@@ -40,6 +45,8 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String?
 
   @@unique([token])
   @@map("sessions")
