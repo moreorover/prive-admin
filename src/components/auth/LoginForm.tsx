@@ -18,7 +18,7 @@ export function LoginForm() {
 	const form = useForm({
 		mode: "uncontrolled",
 		initialValues: {
-			email: process.env.NODE_ENV === "development" ? "x@x.com" : "",
+			email: process.env.NODE_ENV === "development" ? "admin@admin.com" : "",
 			password: process.env.NODE_ENV === "development" ? "password123" : "",
 			rememberMe: false,
 		},

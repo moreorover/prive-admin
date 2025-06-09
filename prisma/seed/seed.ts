@@ -18,20 +18,44 @@ faker.seed(410149);
 const customerIds: string[] = [];
 
 async function seedUsers() {
-	const userEmail = "x@x.com";
-	const existingUser = await prisma.user.findUnique({
+	const adminEmail = "admin@admin.com";
+	const existingAdminUser = await prisma.user.findUnique({
+		where: { email: adminEmail },
+	});
+
+	if (!existingAdminUser) {
+		await auth.api.signUpEmail({
+			body: {
+				email: adminEmail,
+				password: "password123",
+				name: "Admin",
+			},
+		});
+	}
+
+	const userEmail = "user@user.com";
+	const existingUserUser = await prisma.user.findUnique({
 		where: { email: userEmail },
 	});
 
-	if (!existingUser) {
+	if (!existingUserUser) {
 		await auth.api.signUpEmail({
 			body: {
 				email: userEmail,
 				password: "password123",
-				name: "X",
+				name: "User",
 			},
 		});
 	}
+
+	await prisma.user.update({
+		where: { email: adminEmail },
+		data: { role: "admin" },
+	});
+	await prisma.user.update({
+		where: { email: userEmail },
+		data: { role: "user" },
+	});
 }
 
 async function seedCustomers() {
