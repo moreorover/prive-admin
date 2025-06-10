@@ -26,7 +26,7 @@ export function HeaderAuth() {
 	if (!data?.user)
 		return (
 			<Group visibleFrom="sm">
-				<Button component={Link} variant="default" href={"/signin"}>
+				<Button component={Link} variant="default" href={"/sign-in"}>
 					Sign in
 				</Button>
 				<Button>Sign up</Button>

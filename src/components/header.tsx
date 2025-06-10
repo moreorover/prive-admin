@@ -15,6 +15,7 @@ import { usePathname } from "next/navigation";
 import { HeaderAuth } from "@/components/header-auth";
 import classes from "@/components/header.module.css";
 import { ThemeSwitcher } from "@/components/theme_switcher/ThemeSwitcher";
+import type { Session } from "@/lib/auth-schema";
 import { LogoGradient } from "./logo-gradient";
 
 const links = [
@@ -23,16 +24,29 @@ const links = [
 	{ link: "/dashboard/customers", label: "Customers" },
 	{ link: "/dashboard/hair-orders", label: "Hair Orders" },
 	{ link: "/dashboard/transactions", label: "Transactions" },
+	{ link: "/admin", label: "Admin", role: "admin" },
 	// { link: "/", label: "" },
 ];
 
-export function Header() {
+interface Props {
+	session: Session;
+}
+
+export function Header({ session }: Props) {
 	const [opened, { toggle }] = useDisclosure(false);
 	const pathname = usePathname();
 
 	const logo = <LogoGradient href="/" />;
 
-	const items = links.map((link) => {
+	const filteredLinks = links.filter((link) => {
+		// If the link has a role requirement, match it with the user's role
+		if (link.role && session.user.role !== link.role) {
+			return false;
+		}
+		return true;
+	});
+
+	const items = filteredLinks.map((link) => {
 		const isExactMatch = pathname === link.link;
 		const isNestedMatch = pathname.startsWith(`${link.link}/`);
 
