@@ -70,9 +70,20 @@ export default function UserCard(props: Props) {
 							</Button>
 							<Button
 								onClick={() => {
-									openTypedContextModal("changePassword", {
-										innerProps: {},
-									});
+									if (session?.user.twoFactorEnabled) {
+										openTypedContextModal("totpVerification", {
+											innerProps: {
+												onVerified: () =>
+													openTypedContextModal("changePassword", {
+														innerProps: {},
+													}),
+											},
+										});
+									} else {
+										openTypedContextModal("changePassword", {
+											innerProps: {},
+										});
+									}
 								}}
 							>
 								Change Password
@@ -191,6 +202,123 @@ export default function UserCard(props: Props) {
 								</Group>
 							);
 						})}
+
+					<Divider />
+
+					<Text size="xs">Two Factor</Text>
+
+					{session?.user.twoFactorEnabled && (
+						<Button
+							leftSection={
+								<Icon
+									icon="lucide:scroll-text"
+									width={14}
+									height={14}
+									// style={{ color: "green" }}
+								/>
+							}
+							variant="default"
+							onClick={() =>
+								openTypedContextModal("totpVerification", {
+									innerProps: {
+										onVerified: () =>
+											openTypedContextModal("showBackupCodes", {
+												innerProps: {},
+											}),
+									},
+								})
+							}
+						>
+							Show Backup Codes
+						</Button>
+					)}
+
+					{session?.user.twoFactorEnabled && (
+						<Button
+							leftSection={
+								<Icon
+									icon="lucide:package-open"
+									width={14}
+									height={14}
+									// style={{ color: "green" }}
+								/>
+							}
+							variant="default"
+							onClick={() =>
+								openTypedContextModal("totpVerification", {
+									innerProps: {
+										onVerified: () =>
+											openTypedContextModal("generateBackupCodes", {
+												innerProps: {},
+											}),
+									},
+								})
+							}
+						>
+							Generate New Backup Codes
+						</Button>
+					)}
+
+					{session?.user.twoFactorEnabled && (
+						<Button
+							leftSection={
+								<Icon
+									icon="lucide:qr-code"
+									width={14}
+									height={14}
+									// style={{ color: "green" }}
+								/>
+							}
+							variant="default"
+							onClick={() =>
+								openTypedContextModal("showTwoFactorQrCode", { innerProps: {} })
+							}
+						>
+							Scan QR Code
+						</Button>
+					)}
+
+					<Button
+						leftSection={
+							session?.user.twoFactorEnabled ? (
+								<Icon
+									icon="lucide:shield-off"
+									width={14}
+									height={14}
+									style={{ color: "red" }}
+								/>
+							) : (
+								<Icon
+									icon="lucide:shield-check"
+									width={14}
+									height={14}
+									style={{ color: "green" }}
+								/>
+							)
+						}
+						variant="default"
+						onClick={() => {
+							if (session?.user.twoFactorEnabled) {
+								openTypedContextModal("totpVerification", {
+									innerProps: {
+										onVerified: () => {
+											openTypedContextModal("enable2fa", {
+												title: "Disable 2FA",
+												innerProps: { session },
+											});
+										},
+									},
+								});
+							} else {
+								openTypedContextModal("enable2fa", {
+									title: "Enable 2FA",
+									innerProps: { session },
+								});
+							}
+						}}
+					>
+						{session?.user.twoFactorEnabled ? "Disable 2FA" : "Enable 2FA"}
+					</Button>
 				</Stack>
 			</Card>
 		</Container>

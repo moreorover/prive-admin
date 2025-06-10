@@ -6,9 +6,11 @@ import { hairAssignedRouter } from "@/server/routers/hairAssigned";
 import { notesRouter } from "@/server/routers/notes";
 import { transactionsRouter } from "@/server/routers/transactions";
 
+import { authRouter } from "@/server/routers/auth";
 import { createCallerFactory, createTRPCRouter } from "@/server/trpc";
 
 export const appRouter = createTRPCRouter({
+	auth: authRouter,
 	appointments: appointmentsRouter,
 	customers: customersRouter,
 	dashboard: dashboardRouter,

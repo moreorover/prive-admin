@@ -32,6 +32,9 @@ model User {
   sessions   Session[]
   accounts   Account[]
 
+  twoFactorEnabled Boolean?
+  twofactors       TwoFactor[]
+
   @@map("users")
 }
 
@@ -80,6 +83,16 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verifications")
+}
+
+model TwoFactor {
+  id          String @id
+  secret      String
+  backupCodes String
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("twoFactor")
 }
 
 model Customer {
