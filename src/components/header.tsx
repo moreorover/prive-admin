@@ -29,7 +29,7 @@ const links = [
 ];
 
 interface Props {
-	session: Session;
+	session: Session | null;
 }
 
 export function Header({ session }: Props) {
@@ -38,32 +38,31 @@ export function Header({ session }: Props) {
 
 	const logo = <LogoGradient href="/" />;
 
-	const filteredLinks = links.filter((link) => {
-		// If the link has a role requirement, match it with the user's role
-		if (link.role && session.user.role !== link.role) {
-			return false;
-		}
-		return true;
-	});
+	const items = links
+		.filter((link) => {
+			// Show the link if:
+			// 1. It doesn't have a role requirement, OR
+			// 2. It has a role requirement that matches the user's role
+			return !link.role || session?.user?.role === link.role;
+		})
+		.map((link) => {
+			const isExactMatch = pathname === link.link;
+			const isNestedMatch = pathname.startsWith(`${link.link}/`);
 
-	const items = filteredLinks.map((link) => {
-		const isExactMatch = pathname === link.link;
-		const isNestedMatch = pathname.startsWith(`${link.link}/`);
+			const isActive =
+				isExactMatch || (isNestedMatch && link.link !== "/dashboard");
 
-		const isActive =
-			isExactMatch || (isNestedMatch && link.link !== "/dashboard");
-
-		return (
-			<Link
-				key={link.label}
-				href={link.link}
-				className={classes.link}
-				data-active={isActive || undefined}
-			>
-				{link.label}
-			</Link>
-		);
-	});
+			return (
+				<Link
+					key={link.label}
+					href={link.link}
+					className={classes.link}
+					data-active={isActive || undefined}
+				>
+					{link.label}
+				</Link>
+			);
+		});
 
 	return (
 		<header className={classes.header}>
@@ -76,7 +75,7 @@ export function Header({ session }: Props) {
 				</Group>
 
 				<Group gap="md" visibleFrom="sm">
-					<HeaderAuth />
+					<HeaderAuth session={session} />
 					<ThemeSwitcher />
 				</Group>
 
@@ -103,7 +102,7 @@ export function Header({ session }: Props) {
 									<Divider my="sm" />
 									{...items}
 									<Divider my="sm" />
-									<HeaderAuth />
+									<HeaderAuth session={session} />
 									<ThemeSwitcher />
 								</Stack>
 							</ScrollArea>

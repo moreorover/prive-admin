@@ -14,16 +14,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import classes from "@/components/header-auth.module.css";
-import { LoaderSkeleton } from "@/components/loader-skeleton";
 import { authClient } from "@/lib/auth-client";
+import type { Session } from "@/lib/auth-schema";
 
-export function HeaderAuth() {
+interface Props {
+	session: Session | null;
+}
+
+export function HeaderAuth({ session }: Props) {
 	const router = useRouter();
-	const { data, isPending } = authClient.useSession();
 
-	if (isPending) return <LoaderSkeleton />;
-
-	if (!data?.user)
+	if (!session?.user)
 		return (
 			<Group visibleFrom="sm">
 				<Button component={Link} variant="default" href={"/sign-in"}>
@@ -37,13 +38,13 @@ export function HeaderAuth() {
 		<>
 			<Menu>
 				<Menu.Target>
-					{!data.user.emailVerified ? (
+					{!session.user.emailVerified ? (
 						<Indicator inline processing color="red" size={6}>
 							<UnstyledButton className={cx(classes.user)}>
 								<Group gap={7}>
 									{/*<Avatar name={data.user.name} color="initials" />*/}
 									<Text fw={500} size="sm" lh={1} mr={3}>
-										{data.user.name}
+										{session.user.name}
 									</Text>
 								</Group>
 							</UnstyledButton>
@@ -53,7 +54,7 @@ export function HeaderAuth() {
 							<Group gap={7}>
 								{/*<Avatar name={data.user.name} color="initials" />*/}
 								<Text fw={500} size="sm" lh={1} mr={3}>
-									{data.user.name}
+									{session.user.name}
 								</Text>
 							</Group>
 						</UnstyledButton>
@@ -77,7 +78,7 @@ export function HeaderAuth() {
 							await authClient.signOut({
 								fetchOptions: {
 									onSuccess() {
-										router.push("/signin");
+										router.push("/sign-in");
 										router.refresh();
 									},
 								},

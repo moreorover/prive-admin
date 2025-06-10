@@ -16,7 +16,7 @@ export default async function Layout({ params, children }: Props) {
 	});
 
 	if (!session) {
-		return redirect("/signin");
+		return redirect("/sign-in");
 	}
 
 	return <CustomerLayout customerId={customerId}>{children}</CustomerLayout>;
