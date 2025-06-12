@@ -1,22 +1,24 @@
 "use client";
 
-import { type Appointment, appointmentSchema } from "@/lib/schemas";
-import { Button, TextInput } from "@mantine/core";
-import { DateTimePicker } from "@mantine/dates";
-import { useForm } from "@mantine/form";
-import { Trash2 } from "lucide-react";
-import { zodResolver } from "mantine-form-zod-resolver";
+import {type Appointment, appointmentSchema} from "@/lib/schemas";
+import {Button, Select, TextInput} from "@mantine/core";
+import {DateTimePicker} from "@mantine/dates";
+import {useForm} from "@mantine/form";
+import {Trash2} from "lucide-react";
+import {zodResolver} from "mantine-form-zod-resolver";
 
 type Props = {
 	appointment: Appointment;
 	onSubmitAction: (values: Appointment) => void;
 	onDelete?: () => void;
+	masterOptions: {label: string, value: string}[];
 };
 
 export const AppointmentForm = ({
 	appointment,
 	onSubmitAction,
 	onDelete,
+	masterOptions,
 }: Props) => {
 	const form = useForm({
 		mode: "uncontrolled",
@@ -47,6 +49,17 @@ export const AppointmentForm = ({
 				required
 				key={form.key("startsAt")}
 				{...form.getInputProps("startsAt")}
+			/>
+			<Select
+			checkIconPosition="left"
+			data={masterOptions}
+			pb={150}
+			limit={5}
+			label="Master"
+			placeholder="Pick master"
+			searchable
+			key={form.key("masterId")}
+			{...form.getInputProps("masterId")}
 			/>
 			<Button fullWidth mt="xl" type="submit">
 				{appointment.id ? "Update" : "Create"}

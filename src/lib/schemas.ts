@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { z } from "zod";
+import {z} from "zod";
 
 const dateSchema = z
 	.string({
@@ -49,6 +49,7 @@ export const appointmentSchema = z.object({
 	id: z.string().cuid2().optional(),
 	name: z.string(),
 	startsAt: z.union([dateSchema, z.date()]),
+	masterId: z.string().nullable(),
 });
 
 export type Appointment = z.infer<typeof appointmentSchema>;

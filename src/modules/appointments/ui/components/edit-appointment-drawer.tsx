@@ -1,16 +1,16 @@
 "use client";
-import { LoaderSkeleton } from "@/components/loader-skeleton";
-import type { Appointment } from "@/lib/schemas";
-import { AppointmentForm } from "@/modules/appointments/ui/components/appointment-form";
+import {LoaderSkeleton} from "@/components/loader-skeleton";
+import type {Appointment} from "@/lib/schemas";
+import {AppointmentForm} from "@/modules/appointments/ui/components/appointment-form";
 import {
 	useEditAppointmentStoreActions,
 	useEditAppointmentStoreDrawerAppointmentId,
 	useEditAppointmentStoreDrawerIsOpen,
 	useEditAppointmentStoreDrawerOnSuccess,
 } from "@/modules/appointments/ui/components/editAppointmentStore";
-import { trpc } from "@/trpc/client";
-import { Drawer } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
+import {trpc} from "@/trpc/client";
+import {Drawer} from "@mantine/core";
+import {notifications} from "@mantine/notifications";
 
 export const EditAppointmentDrawer = () => {
 	const utils = trpc.useUtils();
@@ -22,9 +22,14 @@ export const EditAppointmentDrawer = () => {
 	const { data: appointment, isLoading } = trpc.appointments.getById.useQuery(
 		{ id: appointmentId },
 		{
-			enabled: !!appointmentId,
+			enabled: isOpen,
 		},
 	);
+
+	const { data: masterOptions, isLoading: isLoadingMasterOptions } =
+		trpc.appointments.getMasterOptions.useQuery(undefined, {
+			enabled: isOpen,
+		});
 
 	const editAppointment = trpc.appointments.update.useMutation({
 		onSuccess: () => {
@@ -63,13 +68,14 @@ export const EditAppointmentDrawer = () => {
 			position="right"
 			title="Update Appointment"
 		>
-			{isLoading || !appointment ? (
+			{isLoading || isLoadingMasterOptions || !appointment || !masterOptions ? (
 				<LoaderSkeleton />
 			) : (
 				<AppointmentForm
 					onSubmitAction={onSubmit}
 					onDelete={onDelete}
 					appointment={appointment}
+					masterOptions={masterOptions}
 				/>
 			)}
 		</Drawer>
