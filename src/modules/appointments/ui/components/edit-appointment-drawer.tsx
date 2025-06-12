@@ -37,6 +37,7 @@ export const EditAppointmentDrawer = () => {
 			utils.appointments.getById.invalidate({
 				id: appointmentId,
 			});
+			utils.appointments.getAppointmentsBetweenDates.invalidate()
 			reset();
 			notifications.show({
 				color: "green",

@@ -20,7 +20,7 @@ export const appointmentsRouter = createTRPCRouter({
 
 			const appointment = await prisma.appointment.findUnique({
 				where: { id },
-				include: { client: true },
+				include: { client: true, master: true },
 			});
 
 			if (!appointment) {
@@ -52,6 +52,7 @@ export const appointmentsRouter = createTRPCRouter({
 				data: {
 					name: appointment.name,
 					startsAt: appointment.startsAt,
+					masterId: appointment.masterId,
 				},
 				where: { id: appointment.id },
 			});
@@ -90,6 +91,7 @@ export const appointmentsRouter = createTRPCRouter({
 				},
 				include: {
 					client: true,
+					master: true
 				},
 			});
 

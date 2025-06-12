@@ -19,6 +19,7 @@ model User {
   name          String         @unique
   emailVerified Boolean
   image         String?
+  color         String         @default("rgba(250, 42, 167, 1)")
   createdAt     DateTime
   updatedAt     DateTime
   hairOrder     HairOrder[]

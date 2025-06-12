@@ -1,17 +1,17 @@
 "use client";
 
-import { LoaderSkeleton } from "@/components/loader-skeleton";
-import { useEditAppointmentStoreActions } from "@/modules/appointments/ui/components/editAppointmentStore";
-import { PersonnelPickerModal } from "@/modules/appointments/ui/components/personnel-picker-modal";
-import { useNewHairAssignedStoreActions } from "@/modules/hair-assigned/ui/components/newHairAssignedStore";
-import { useNewNoteStoreActions } from "@/modules/notes/ui/components/newNoteStore";
-import { useNewTransactionStoreActions } from "@/modules/transactions/ui/components/newTransactionStore";
+import {LoaderSkeleton} from "@/components/loader-skeleton";
+import {useEditAppointmentStoreActions} from "@/modules/appointments/ui/components/editAppointmentStore";
+import {PersonnelPickerModal} from "@/modules/appointments/ui/components/personnel-picker-modal";
+import {useNewHairAssignedStoreActions} from "@/modules/hair-assigned/ui/components/newHairAssignedStore";
+import {useNewNoteStoreActions} from "@/modules/notes/ui/components/newNoteStore";
+import {useNewTransactionStoreActions} from "@/modules/transactions/ui/components/newTransactionStore";
 import CustomersTable from "@/modules/ui/components/customers-table";
 import HairAssignedTable from "@/modules/ui/components/hair-assigned-table";
 import NotesTable from "@/modules/ui/components/notes-table";
 import TransactionsTable from "@/modules/ui/components/transactions-table";
-import { trpc } from "@/trpc/client";
-import { DonutChart } from "@mantine/charts";
+import {trpc} from "@/trpc/client";
+import {DonutChart} from "@mantine/charts";
 import {
 	ActionIcon,
 	Button,
@@ -27,10 +27,10 @@ import {
 	Title,
 } from "@mantine/core";
 import dayjs from "dayjs";
-import { GripVertical } from "lucide-react";
+import {GripVertical} from "lucide-react";
 import Link from "next/link";
-import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import {Suspense} from "react";
+import {ErrorBoundary} from "react-error-boundary";
 
 interface Props {
 	appointmentId: string;
@@ -125,6 +125,17 @@ function AppointmentSuspense({ appointmentId }: Props) {
 			<Grid grow>
 				<GridCol span={{ base: 12, lg: 3 }}>
 					<Stack>
+						<Paper withBorder p="md" radius="md" shadow="sm">
+							<Group justify="space-between" gap="sm">
+								<Title order={4}>Master</Title>
+							</Group>
+							<Text size="sm" mt="xs">
+								<strong>Name:</strong> {appointment.master?.name}
+							</Text>
+							<Text size="sm" mt="xs">
+								<strong>Email:</strong> {appointment.master?.email}
+							</Text>
+						</Paper>
 						<Paper withBorder p="md" radius="md" shadow="sm">
 							<Group justify="space-between" gap="sm">
 								<Title order={4}>Client</Title>
