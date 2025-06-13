@@ -45,8 +45,10 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DATABASE: ${{ secrets.POSTGRES_DATABASE }}
         run: |
-          ssh cicd@prive "chmod +x ~/backup_postgres.sh && \
-          POSTGRES_USER='${POSTGRES_USER}' \
-          POSTGRES_PASSWORD='${POSTGRES_PASSWORD}' \
-          POSTGRES_DATABASE='${POSTGRES_DATABASE}' \
-          ~/backup_postgres.sh"
+          ssh cicd@prive "
+            chmod +x ~/backup_postgres.sh && \
+            POSTGRES_USER='${POSTGRES_USER}' \
+            POSTGRES_PASSWORD='${POSTGRES_PASSWORD}' \
+            POSTGRES_DATABASE='${POSTGRES_DATABASE}' \
+            ~/backup_postgres.sh"
+
