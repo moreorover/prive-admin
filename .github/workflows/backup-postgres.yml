@@ -2,7 +2,7 @@ name: Daily Postgres Backup
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Midnight UTC daily
+    - cron: '0 0 * * *'
 
 jobs:
   backup:
@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Tailscale
         uses: tailscale/github-action@v3
@@ -28,26 +28,23 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           chmod 0700 ~/.ssh
-          ssh-keyscan -p "22" -H "prive" >> ~/.ssh/known_hosts
+          ssh-keyscan -H prive >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
       - name: Test SSH Connection
         run: ssh -o ConnectTimeout=30 "cicd@prive" "echo 'SSH connection successful!'"
 
-      - name: Run Backup Script on VPS
+      - name: Copy backup script to VPS
+        run: scp scripts/backup-postgres.sh cicd@prive:~/backup-postgres.sh
+
+      - name: Run backup script on VPS
         env:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DATABASE: ${{ secrets.POSTGRES_DATABASE }}
         run: |
-          ssh cicd@prive 'bash -s' <<'EOF'
-          set -e
-
-          TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-          BACKUP_DIR="$HOME/db_backups"
-          mkdir -p "$BACKUP_DIR"
-
-          pg_dump -U "${POSTGRES_USER}" pg_dump > "$BACKUP_DIR/postgres_backup_$TIMESTAMP.sql"
-
-          echo "Backup completed and stored at $BACKUP_DIR/postgres_backup_$TIMESTAMP.sql"
-          EOF
+          ssh cicd@prive "chmod +x ~/backup-postgres.sh && \
+          POSTGRES_USER='${POSTGRES_USER}' \
+          POSTGRES_PASSWORD='${POSTGRES_PASSWORD}' \
+          POSTGRES_DATABASE='${POSTGRES_DATABASE}' \
+          ~/backup-postgres.sh"
