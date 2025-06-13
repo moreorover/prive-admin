@@ -37,7 +37,7 @@ jobs:
         run: ssh -o ConnectTimeout=30 "cicd@prive" "echo 'SSH connection successful!'"
 
       - name: Copy backup script to VPS
-        run: scp scripts/backup-postgres.sh cicd@prive:~/backup-postgres.sh
+        run: scp scripts/backup_postgres.sh cicd@prive:~/backup_postgres.sh
 
       - name: Run backup script on VPS
         env:
@@ -45,8 +45,8 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DATABASE: ${{ secrets.POSTGRES_DATABASE }}
         run: |
-          ssh cicd@prive "chmod +x ~/backup-postgres.sh && \
+          ssh cicd@prive "chmod +x ~/backup_postgres.sh && \
           POSTGRES_USER='${POSTGRES_USER}' \
           POSTGRES_PASSWORD='${POSTGRES_PASSWORD}' \
           POSTGRES_DATABASE='${POSTGRES_DATABASE}' \
-          ~/backup-postgres.sh"
+          ~/backup_postgres.sh"
