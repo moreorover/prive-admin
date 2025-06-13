@@ -8,6 +8,9 @@ on:
 
 jobs:
   backup:
+    environment:
+      name: production
+      url: https://prive.salon
     runs-on: ubuntu-latest
 
     steps:
