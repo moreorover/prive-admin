@@ -2,6 +2,7 @@
 
 import {
 	Button,
+	ColorInput,
 	Container,
 	PasswordInput,
 	Stack,
@@ -32,12 +33,13 @@ export const CreateUser = ({
 			email: "",
 			password: "",
 			confirmPassword: "",
+			color: "",
 		},
 		validate: zodResolver(signUpSchema),
 	});
 
 	async function handleSubmit(values: typeof form.values) {
-		const { firstName, lastName, email, password } = values;
+		const { firstName, lastName, email, password, color } = values;
 		setIsLoading(true);
 		await authClient.admin.createUser(
 			{
@@ -45,6 +47,9 @@ export const CreateUser = ({
 				email,
 				password,
 				role: "user",
+				data: {
+					color,
+				},
 			},
 			{
 				onSuccess: () => {
@@ -119,6 +124,12 @@ export const CreateUser = ({
 						mt="md"
 						key={form.key("confirmPassword")}
 						{...form.getInputProps("confirmPassword")}
+					/>
+					<ColorInput
+						label="Color"
+						format="rgba"
+						key={form.key("color")}
+						{...form.getInputProps("color")}
 					/>
 					<Button disabled={isLoading} fullWidth mt="xl" type="submit">
 						Create

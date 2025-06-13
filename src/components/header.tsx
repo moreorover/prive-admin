@@ -19,7 +19,7 @@ import type { Session } from "@/lib/auth-schema";
 import { LogoGradient } from "./logo-gradient";
 
 const links = [
-	{ link: "/dashboard", label: "Dashboard" },
+	{ link: "/dashboard", label: "Dashboard", role: "admin" },
 	{ link: "/dashboard/calendar", label: "Calendar" },
 	{ link: "/dashboard/customers", label: "Customers" },
 	{ link: "/dashboard/hair-orders", label: "Hair Orders" },

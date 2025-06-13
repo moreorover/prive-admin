@@ -33,7 +33,7 @@ export function LoginForm() {
 				email,
 				password,
 				rememberMe,
-				callbackURL: "/dashboard",
+				callbackURL: "/dashboard/calendar",
 			},
 			{
 				onSuccess: () => {
