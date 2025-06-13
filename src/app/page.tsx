@@ -51,7 +51,7 @@ export default function Home() {
 				<div className="flex justify-center mt-10">
 					<Group>
 						<NavLink
-							href="/signin"
+							href="/sign-in"
 							label="Sign In"
 							leftSection={<Activity size="1rem" />}
 							rightSection={
