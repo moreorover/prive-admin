@@ -4,6 +4,7 @@ on:
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch: # 👈 Enables manual trigger via GitHub UI
+  pull_request: # 👈 This enables it for PRs
 
 jobs:
   backup:
