@@ -1,0 +1,53 @@
+name: Daily Postgres Backup
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Midnight UTC daily
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:prod-ci
+
+      - name: Test Hostname Resolution
+        run: |
+          ping -c 3 prive || (echo "Hostname resolution failed!" && exit 1)
+          nc -zv prive 22 || (echo "Port 22 is not accessible!" && exit 1)
+
+      - name: Prepare SSH Directory
+        run: |
+          mkdir -p ~/.ssh
+          chmod 0700 ~/.ssh
+          ssh-keyscan -p "22" -H "prive" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Test SSH Connection
+        run: ssh -o ConnectTimeout=30 "cicd@prive" "echo 'SSH connection successful!'"
+
+      - name: Run Backup Script on VPS
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DATABASE: ${{ secrets.POSTGRES_DATABASE }}
+        run: |
+          ssh cicd@prive 'bash -s' <<'EOF'
+          set -e
+
+          TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+          BACKUP_DIR="$HOME/db_backups"
+          mkdir -p "$BACKUP_DIR"
+
+          pg_dump -U "${POSTGRES_USER}" pg_dump > "$BACKUP_DIR/postgres_backup_$TIMESTAMP.sql"
+
+          echo "Backup completed and stored at $BACKUP_DIR/postgres_backup_$TIMESTAMP.sql"
+          EOF
