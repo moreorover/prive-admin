@@ -47,7 +47,7 @@ jobs:
         run: |
           ssh cicd@prive "
             chmod +x ~/backup_postgres.sh && \
-            PGUSER='${POSTGRES_USER}' \
-            PGPASSWORD='${POSTGRES_PASSWORD}' \
+            PG_USER='${POSTGRES_USER}' \
+            PG_PASSWORD='${POSTGRES_PASSWORD}' \
             PG_DATABASE='${POSTGRES_DATABASE}' \
             ~/backup_postgres.sh"
