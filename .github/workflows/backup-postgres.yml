@@ -55,6 +55,22 @@ jobs:
             PG_DATABASE='${POSTGRES_DATABASE}' \
             ~/backup_postgres.sh"
 
+      - name: Set up S3cmd cli tool
+        uses: s3-actions/s3cmd@v2.0.0
+        with:
+          provider: digitalocean
+          region: 'lon-1'
+          access_key: ${{ secrets.DO_SPACES_KEY }}
+          secret_key: ${{ secrets.DO_SPACES_SECRET }}
+
+      - name: Interact with object storage
+        run: |
+          FILE_NAME=$(ssh cicd@prive "ls -t ~/db_backups/ | head -n1")
+          ssh cicd@prive "cat ~/db_backups/$FILE_NAME" > "$FILE_NAME"
+          s3cmd sync --recursive --acl-public dist s3://prive-admin-postgres-backup/
+          s3cmd put $FILE_NAME --mime-type 'text/plain' --acl-public s3://prive-admin-postgres-backup/$FILE_NAME
+          s3cmd info s3://prive-admin-postgres-backup
+
       - name: Install s3cmd
         run: |
           sudo apt-get update
