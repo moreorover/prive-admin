@@ -67,7 +67,6 @@ jobs:
         run: |
           FILE_NAME=$(ssh cicd@prive "ls -t ~/db_backups/ | head -n1")
           ssh cicd@prive "cat ~/db_backups/$FILE_NAME" > "$FILE_NAME"
-          s3cmd sync --recursive --acl-public dist s3://prive-admin-postgres-backup/
           s3cmd put $FILE_NAME --mime-type 'text/plain' --acl-public s3://prive-admin-postgres-backup/$FILE_NAME
           s3cmd info s3://prive-admin-postgres-backup
 
