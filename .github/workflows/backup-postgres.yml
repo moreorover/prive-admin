@@ -73,8 +73,8 @@ jobs:
           [default]
           access_key = $DO_SPACES_KEY
           secret_key = $DO_SPACES_SECRET
-          host_base = lom-1.digitaloceanspaces.com
-          host_bucket = %(bucket)s.lon-1digitaloceanspaces.com
+          host_base = lon-1.digitaloceanspaces.com
+          host_bucket = %(bucket)s.lon-1.digitaloceanspaces.com
           bucket_location = lon-1
           use_https = True
           EOF
