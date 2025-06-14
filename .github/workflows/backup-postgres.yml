@@ -1,0 +1,97 @@
+name: Daily Postgres Backup
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 👈 Enables manual trigger via GitHub UI
+
+jobs:
+  backup:
+    environment:
+      name: production
+      url: https://prive.salon
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:prod-ci
+
+      - name: Test Hostname Resolution
+        run: |
+          ping -c 3 prive || (echo "Hostname resolution failed!" && exit 1)
+          nc -zv prive 22 || (echo "Port 22 is not accessible!" && exit 1)
+
+      - name: Prepare SSH Directory
+        run: |
+          mkdir -p ~/.ssh
+          chmod 0700 ~/.ssh
+          ssh-keyscan -H prive >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Test SSH Connection
+        run: ssh -o ConnectTimeout=30 "cicd@prive" "echo 'SSH connection successful!'"
+
+      - name: Copy backup script to VPS
+        run: scp scripts/backup_postgres.sh cicd@prive:~/backup_postgres.sh
+
+      - name: Run backup script on VPS
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DATABASE: ${{ secrets.POSTGRES_DATABASE }}
+        run: |
+          ssh cicd@prive "
+            chmod +x ~/backup_postgres.sh && \
+            PG_USER='${POSTGRES_USER}' \
+            PG_PASSWORD='${POSTGRES_PASSWORD}' \
+            PG_DATABASE='${POSTGRES_DATABASE}' \
+            ~/backup_postgres.sh"
+
+      - name: Install s3cmd
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y s3cmd
+
+      - name: Upload backup to DigitalOcean Spaces
+        env:
+          DO_SPACES_KEY: ${{ secrets.DO_SPACES_KEY }}
+          DO_SPACES_SECRET: ${{ secrets.DO_SPACES_SECRET }}
+          DO_SPACES_BUCKET: ${{ secrets.DO_SPACES_BUCKET }}
+        run: |
+          set -e  # Exit on any error
+          
+          # Fetch latest backup file name from remote server
+          FILE_NAME=$(ssh cicd@prive "ls -t ~/db_backups/ | head -n1")
+          
+          # Download the backup file
+          ssh cicd@prive "cat ~/db_backups/$FILE_NAME" > "$FILE_NAME"
+          
+          # Configure s3cmd for DigitalOcean Spaces
+          cat > ~/.s3cfg <<EOF
+          [default]
+          access_key = $DO_SPACES_KEY
+          secret_key = $DO_SPACES_SECRET
+          host_base = lon1.digitaloceanspaces.com
+          host_bucket = %(bucket)s.lon1.digitaloceanspaces.com
+          bucket_location = lon1
+          use_https = True
+          EOF
+          
+          # (Optional) Set expiration rule — run once, or guard with a check
+          s3cmd expire --expiry-days=30 --expiry-prefix=postgres_backup_ "s3://${DO_SPACES_BUCKET}"
+          
+          # Upload the file to DigitalOcean Spaces
+          s3cmd put "$FILE_NAME" "s3://${DO_SPACES_BUCKET}/$FILE_NAME"
+          
+          # Print bucket info for verification
+          s3cmd info "s3://${DO_SPACES_BUCKET}"
+          
+          echo "✅ Uploaded to https://${DO_SPACES_BUCKET}.lon1.digitaloceanspaces.com/$FILE_NAME"
+
