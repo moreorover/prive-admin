@@ -67,7 +67,7 @@ jobs:
         run: |
           FILE_NAME=$(ssh cicd@prive "ls -t ~/db_backups/ | head -n1")
           ssh cicd@prive "cat ~/db_backups/$FILE_NAME" > "$FILE_NAME"
-          s3cmd put $FILE_NAME --mime-type 'text/plain' --acl-public s3://prive-admin-postgres-backup/$FILE_NAME
+          s3cmd --debug put $FILE_NAME --mime-type 'text/plain' --acl-public s3://prive-admin-postgres-backup/$FILE_NAME
           s3cmd info s3://prive-admin-postgres-backup
 
       - name: Install s3cmd
@@ -94,6 +94,6 @@ jobs:
           use_https = True
           EOF
           
-          s3cmd --debug put "$FILE_NAME" "s3://$DO_SPACES_BUCKET/$FILE_NAME"
+          s3cmd --debug put "$FILE_NAME" "s3://prive-admin-postgres-backup/$FILE_NAME"
           
-          echo "✅ Uploaded to https://$DO_SPACES_BUCKET.lon-1.digitaloceanspaces.com/$FILE_NAME"
+          echo "✅ Uploaded to https://prive-admin-postgres-backup.lon-1.digitaloceanspaces.com/$FILE_NAME"
