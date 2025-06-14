@@ -55,25 +55,9 @@ jobs:
             PG_DATABASE='${POSTGRES_DATABASE}' \
             ~/backup_postgres.sh"
 
-      - name: Set up S3cmd cli tool
-        uses: s3-actions/s3cmd@v2.0.0
-        with:
-          provider: digitalocean
-          region: 'lon1'
-          access_key: ${{ secrets.DO_SPACES_KEY }}
-          secret_key: ${{ secrets.DO_SPACES_SECRET }}
-
-      - name: Interact with object storage
-        run: |
-          FILE_NAME=$(ssh cicd@prive "ls -t ~/db_backups/ | head -n1")
-          ssh cicd@prive "cat ~/db_backups/$FILE_NAME" > "$FILE_NAME"
-          s3cmd expire --expiry-days=30 --expiry-prefix=postgres_backup_ s3://prive-admin-postgres-backup
-          s3cmd --debug put $FILE_NAME --mime-type 'text/plain' --acl-private s3://prive-admin-postgres-backup/$FILE_NAME
-          s3cmd info s3://prive-admin-postgres-backup
-
       - name: Install s3cmd
         run: |
-          sudo apt-get update
+          sudo apt-get update -y
           sudo apt-get install -y s3cmd
 
       - name: Upload backup to DigitalOcean Spaces
@@ -82,9 +66,15 @@ jobs:
           DO_SPACES_SECRET: ${{ secrets.DO_SPACES_SECRET }}
           DO_SPACES_BUCKET: ${{ secrets.DO_SPACES_BUCKET }}
         run: |
+          set -e  # Exit on any error
+          
+          # Fetch latest backup file name from remote server
           FILE_NAME=$(ssh cicd@prive "ls -t ~/db_backups/ | head -n1")
+          
+          # Download the backup file
           ssh cicd@prive "cat ~/db_backups/$FILE_NAME" > "$FILE_NAME"
           
+          # Configure s3cmd for DigitalOcean Spaces
           cat > ~/.s3cfg <<EOF
           [default]
           access_key = $DO_SPACES_KEY
@@ -95,9 +85,14 @@ jobs:
           use_https = True
           EOF
           
-          s3cmd expire --expiry-days=30 --expiry-prefix=postgres_backup_ s3://prive-admin-postgres-backup
+          # (Optional) Set expiration rule — run once, or guard with a check
+          s3cmd expire --expiry-days=30 --expiry-prefix=postgres_backup_ "s3://${DO_SPACES_BUCKET}"
           
-          s3cmd --debug put "$FILE_NAME" "s3://prive-admin-postgres-backup/$FILE_NAME"
-          s3cmd info s3://prive-admin-postgres-backup
+          # Upload the file to DigitalOcean Spaces
+          s3cmd put "$FILE_NAME" "s3://${DO_SPACES_BUCKET}/$FILE_NAME"
           
-          echo "✅ Uploaded to https://prive-admin-postgres-backup.lon1.digitaloceanspaces.com/$FILE_NAME"
+          # Print bucket info for verification
+          s3cmd info "s3://${DO_SPACES_BUCKET}"
+          
+          echo "✅ Uploaded to https://${DO_SPACES_BUCKET}.lon1.digitaloceanspaces.com/$FILE_NAME"
+
