@@ -80,6 +80,6 @@ jobs:
           use_https = True
           EOF
           
-          s3cmd put "$FILE_NAME" "s3://$DO_SPACES_BUCKET/$FILE_NAME"
+          s3cmd --debug put "$FILE_NAME" "s3://$DO_SPACES_BUCKET/$FILE_NAME"
           
           echo "✅ Uploaded to https://$DO_SPACES_BUCKET.$DO_SPACES_REGION.digitaloceanspaces.com/$FILE_NAME"
