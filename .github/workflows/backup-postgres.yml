@@ -7,6 +7,9 @@ on:
 
 jobs:
   backup:
+    environment:
+      name: production
+      url: https://prive.hair
     runs-on: ubuntu-latest
 
     steps:
