@@ -15,41 +15,54 @@ import { usePathname } from "next/navigation";
 import { HeaderAuth } from "@/components/header-auth";
 import classes from "@/components/header.module.css";
 import { ThemeSwitcher } from "@/components/theme_switcher/ThemeSwitcher";
+import type { Session } from "@/lib/auth-schema";
 import { LogoGradient } from "./logo-gradient";
 
 const links = [
-	{ link: "/dashboard", label: "Dashboard" },
+	{ link: "/dashboard", label: "Dashboard", role: "admin" },
 	{ link: "/dashboard/calendar", label: "Calendar" },
 	{ link: "/dashboard/customers", label: "Customers" },
 	{ link: "/dashboard/hair-orders", label: "Hair Orders" },
 	{ link: "/dashboard/transactions", label: "Transactions" },
+	{ link: "/admin", label: "Admin", role: "admin" },
 	// { link: "/", label: "" },
 ];
 
-export function Header() {
+interface Props {
+	session: Session | null;
+}
+
+export function Header({ session }: Props) {
 	const [opened, { toggle }] = useDisclosure(false);
 	const pathname = usePathname();
 
 	const logo = <LogoGradient href="/" />;
 
-	const items = links.map((link) => {
-		const isExactMatch = pathname === link.link;
-		const isNestedMatch = pathname.startsWith(`${link.link}/`);
+	const items = links
+		.filter((link) => {
+			// Show the link if:
+			// 1. It doesn't have a role requirement, OR
+			// 2. It has a role requirement that matches the user's role
+			return !link.role || session?.user?.role === link.role;
+		})
+		.map((link) => {
+			const isExactMatch = pathname === link.link;
+			const isNestedMatch = pathname.startsWith(`${link.link}/`);
 
-		const isActive =
-			isExactMatch || (isNestedMatch && link.link !== "/dashboard");
+			const isActive =
+				isExactMatch || (isNestedMatch && link.link !== "/dashboard");
 
-		return (
-			<Link
-				key={link.label}
-				href={link.link}
-				className={classes.link}
-				data-active={isActive || undefined}
-			>
-				{link.label}
-			</Link>
-		);
-	});
+			return (
+				<Link
+					key={link.label}
+					href={link.link}
+					className={classes.link}
+					data-active={isActive || undefined}
+				>
+					{link.label}
+				</Link>
+			);
+		});
 
 	return (
 		<header className={classes.header}>
@@ -62,7 +75,7 @@ export function Header() {
 				</Group>
 
 				<Group gap="md" visibleFrom="sm">
-					<HeaderAuth />
+					<HeaderAuth session={session} />
 					<ThemeSwitcher />
 				</Group>
 
@@ -89,7 +102,7 @@ export function Header() {
 									<Divider my="sm" />
 									{...items}
 									<Divider my="sm" />
-									<HeaderAuth />
+									<HeaderAuth session={session} />
 									<ThemeSwitcher />
 								</Stack>
 							</ScrollArea>

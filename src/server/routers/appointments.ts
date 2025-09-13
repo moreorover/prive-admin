@@ -1,10 +1,10 @@
 import prisma from "@/lib/prisma";
-import { appointmentSchema } from "@/lib/schemas";
-import { createTRPCRouter, protectedProcedure } from "@/server/trpc";
-import { TRPCError } from "@trpc/server";
+import {appointmentSchema} from "@/lib/schemas";
+import {createTRPCRouter, protectedProcedure} from "@/server/trpc";
+import {TRPCError} from "@trpc/server";
 import dayjs from "dayjs";
 import isoWeek from "dayjs/plugin/isoWeek";
-import { z } from "zod";
+import {z} from "zod";
 
 dayjs.extend(isoWeek);
 
@@ -20,7 +20,7 @@ export const appointmentsRouter = createTRPCRouter({
 
 			const appointment = await prisma.appointment.findUnique({
 				where: { id },
-				include: { client: true },
+				include: { client: true, master: true },
 			});
 
 			if (!appointment) {
@@ -52,6 +52,7 @@ export const appointmentsRouter = createTRPCRouter({
 				data: {
 					name: appointment.name,
 					startsAt: appointment.startsAt,
+					masterId: appointment.masterId,
 				},
 				where: { id: appointment.id },
 			});
@@ -75,8 +76,12 @@ export const appointmentsRouter = createTRPCRouter({
 		}),
 	getAppointmentsBetweenDates: protectedProcedure
 		.input(z.object({ startDate: z.date(), endDate: z.date() }))
-		.query(async ({ input }) => {
+		.query(async ({ input, ctx }) => {
 			const { startDate, endDate } = input;
+
+			const role = ctx.session.user.role;
+
+			const masterId = role === "admin" ? undefined : ctx.session.user.id;
 
 			const appointments = await prisma.appointment.findMany({
 				where: {
@@ -84,12 +89,14 @@ export const appointmentsRouter = createTRPCRouter({
 						gte: startDate,
 						lte: endDate,
 					},
+					masterId
 				},
 				orderBy: {
 					startsAt: "asc",
 				},
 				include: {
 					client: true,
+					master: true
 				},
 			});
 
@@ -107,5 +114,14 @@ export const appointmentsRouter = createTRPCRouter({
 			});
 
 			return appointments;
+		}),
+	getMasterOptions: protectedProcedure
+		.query(async () => {
+
+			const users = await prisma.user.findMany({
+				select: {name: true, id: true },
+			});
+
+			return users.map(user => ({label: user.name, value: user.id }));
 		}),
 });

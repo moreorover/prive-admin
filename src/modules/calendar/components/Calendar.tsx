@@ -1,18 +1,7 @@
-import type { GetAppointments } from "@/modules/appointments/types";
-import {
-	ActionIcon,
-	Badge,
-	Box,
-	Group,
-	SimpleGrid,
-	Stack,
-	Text,
-	Title,
-	Tooltip,
-	rem,
-} from "@mantine/core";
-import { format } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import type {GetAppointments} from "@/modules/appointments/types";
+import {ActionIcon, Badge, Box, Group, rem, SimpleGrid, Stack, Text, Title, Tooltip,} from "@mantine/core";
+import {format} from "date-fns";
+import {ChevronLeft, ChevronRight} from "lucide-react";
 import Link from "next/link";
 
 interface Props {
@@ -175,6 +164,7 @@ function CalendarEventBadge({ event }: { event: GetAppointments[number] }) {
 				aria-label={`Event: ${badgeText}`}
 				component={Link}
 				href={`/dashboard/appointments/${event.id}`}
+				color={event.master?.color}
 			>
 				{badgeText}
 			</Badge>

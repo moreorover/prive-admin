@@ -16,16 +16,26 @@ datasource db {
 model User {
   id            String         @id
   email         String         @unique
-  name          String?
+  name          String         @unique
   emailVerified Boolean
   image         String?
+  color         String         @default("rgba(250, 42, 167, 1)")
   createdAt     DateTime
   updatedAt     DateTime
-  Session       Session[]
-  Account       Account[]
   hairOrder     HairOrder[]
   hairAssigned  HairAssigned[]
   notesCreated  Note[]
+
+  role       String?
+  banned     Boolean?
+  banReason  String?
+  banExpires DateTime?
+  sessions   Session[]
+  accounts   Account[]
+
+  twoFactorEnabled Boolean?
+  twofactors       TwoFactor[]
+  appointments     Appointment[]
 
   @@map("users")
 }
@@ -40,6 +50,8 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String?
 
   @@unique([token])
   @@map("sessions")
@@ -73,6 +85,16 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verifications")
+}
+
+model TwoFactor {
+  id          String @id
+  secret      String
+  backupCodes String
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("twoFactor")
 }
 
 model Customer {
@@ -206,6 +228,8 @@ model Appointment {
   transactions Transaction[]
   hairAssigned HairAssigned[]
   notes        Note[]
+  masterId     String?
+  master       User?          @relation(fields: [masterId], references: [id], onDelete: Cascade)
 
   @@map("appointments")
 }
