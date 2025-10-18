@@ -21,6 +21,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@prive-admin/auth": "workspace:*",
     "@trpc/server": "catalog:",
     "@trpc/client": "catalog:",
     "hono": "catalog:",

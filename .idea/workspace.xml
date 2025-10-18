@@ -4,26 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="003c4f17-fd75-43db-8328-d173062928bf" name="Changes" comment="first run">
-      <change afterPath="$PROJECT_DIR$/packages/auth/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/auth/package.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/auth/src/index.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/auth/tsconfig.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/auth/tsdown.config.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/db/src/schema/auth.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/packages/tsconfig/package.json" afterDir="false" />
+    <list default="true" id="003c4f17-fd75-43db-8328-d173062928bf" name="Changes" comment="bump react version">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/apps/server/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/server/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/apps/server/tsconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/packages/api/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/api/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/api/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/api/tsconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/db/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/db/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/db/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/db/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/context.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/api/src/context.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/api/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/api/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/auth/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/packages/auth/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/packages/auth/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/auth/tsconfig.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pnpm-lock.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pnpm-lock.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pnpm-workspace.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pnpm-workspace.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.base.json" beforeDir="false" afterPath="$PROJECT_DIR$/packages/tsconfig/tsconfig.base.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,12 +61,30 @@
       <option name="project" value="LOCAL" />
       <updated>1760561008022</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="added auth and tsconfig packages">
+      <option name="closed" value="true" />
+      <created>1760806013728</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1760806013728</updated>
+    </task>
+    <task id="LOCAL-00003" summary="bump react version">
+      <option name="closed" value="true" />
+      <created>1760806435779</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1760806435779</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first run" />
-    <option name="LAST_COMMIT_MESSAGE" value="first run" />
+    <MESSAGE value="added auth and tsconfig packages" />
+    <MESSAGE value="bump react version" />
+    <option name="LAST_COMMIT_MESSAGE" value="bump react version" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

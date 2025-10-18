@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "@tanstack-check/db";
-import * as schema from "@tanstack-check/db/schema/auth";
+import { db } from "@prive-admin/db";
+import * as schema from "@prive-admin/db/schema/auth";
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
