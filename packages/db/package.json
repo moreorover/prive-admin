@@ -34,6 +34,7 @@
     "drizzle-orm": "^0.44.2",
     "pg": "^8.14.1",
     "dotenv": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "@prive-admin/tsconfig": "workspace:*"
   }
 }

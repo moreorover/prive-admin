@@ -31,7 +31,8 @@
     "turbo": "^2.5.4",
     "@biomejs/biome": "^2.2.0",
     "tsdown": "^0.15.5",
-    "@types/node": "^22.13.11"
+    "@types/node": "^22.13.11",
+    "@prive-admin/tsconfig": "workspace:"
   },
   "packageManager": "pnpm@10.12.1"
 }

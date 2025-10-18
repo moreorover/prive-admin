@@ -17,7 +17,8 @@
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@prive-admin/api": "workspace:*",
-    "@prive-admin/db": "workspace:*"
+    "@prive-admin/db": "workspace:*",
+    "@prive-admin/tsconfig": "workspace:*"
   },
   "devDependencies": {
     "typescript": "catalog:",
