@@ -17,6 +17,7 @@
     "dotenv": "catalog:",
     "zod": "catalog:",
     "@prive-admin/api": "workspace:*",
+    "@prive-admin/auth": "workspace:*",
     "@prive-admin/db": "workspace:*",
     "@prive-admin/tsconfig": "workspace:*"
   },

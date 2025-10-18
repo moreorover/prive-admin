@@ -72,6 +72,9 @@ importers:
       '@prive-admin/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@prive-admin/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@prive-admin/db':
         specifier: workspace:*
         version: link:../../packages/db
