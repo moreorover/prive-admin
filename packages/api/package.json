@@ -22,12 +22,13 @@
   },
   "dependencies": {
     "@prive-admin/auth": "workspace:*",
-    "@trpc/server": "catalog:",
-    "@trpc/client": "catalog:",
-    "hono": "catalog:",
-    "dotenv": "catalog:",
-    "zod": "catalog:",
     "@prive-admin/db": "workspace:*",
-    "@prive-admin/tsconfig": "workspace:*"
+    "@prive-admin/tsconfig": "workspace:*",
+    "@trpc/client": "catalog:",
+    "@trpc/server": "catalog:",
+    "dotenv": "catalog:",
+    "drizzle-orm": "catalog:",
+    "hono": "catalog:",
+    "zod": "catalog:"
   }
 }
