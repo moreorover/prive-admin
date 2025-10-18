@@ -85,6 +85,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                       className="flex items-center gap-2"
                       activeOptions={{
                         exact: true,
+                        includeSearch: false,
                       }}
                       activeProps={{
                         className: "bg-primary text-primary-foreground",
