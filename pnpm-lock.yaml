@@ -274,6 +274,9 @@ importers:
       drizzle-orm:
         specifier: ^0.44.2
         version: 0.44.6(@types/pg@8.15.5)(kysely@0.28.8)(pg@8.16.3)
+      drizzle-zod:
+        specifier: ^0.8.3
+        version: 0.8.3(drizzle-orm@0.44.6(@types/pg@8.15.5)(kysely@0.28.8)(pg@8.16.3))(zod@4.1.12)
       pg:
         specifier: ^8.14.1
         version: 8.16.3
@@ -2329,6 +2332,12 @@ packages:
         optional: true
       sqlite3:
         optional: true
+
+  drizzle-zod@0.8.3:
+    resolution: {integrity: sha512-66yVOuvGhKJnTdiqj1/Xaaz9/qzOdRJADpDa68enqS6g3t0kpNkwNYjUuaeXgZfO/UWuIM9HIhSlJ6C5ZraMww==}
+    peerDependencies:
+      drizzle-orm: '>=0.36.0'
+      zod: ^3.25.0 || ^4.0.0
 
   dts-resolver@2.1.2:
     resolution: {integrity: sha512-xeXHBQkn2ISSXxbJWD828PFjtyg+/UrMDo7W4Ffcs7+YWCquxU8YjV1KoxuiL+eJ5pg3ll+bC6flVv61L3LKZg==}
@@ -4996,6 +5005,11 @@ snapshots:
       '@types/pg': 8.15.5
       kysely: 0.28.8
       pg: 8.16.3
+
+  drizzle-zod@0.8.3(drizzle-orm@0.44.6(@types/pg@8.15.5)(kysely@0.28.8)(pg@8.16.3))(zod@4.1.12):
+    dependencies:
+      drizzle-orm: 0.44.6(@types/pg@8.15.5)(kysely@0.28.8)(pg@8.16.3)
+      zod: 4.1.12
 
   dts-resolver@2.1.2: {}
 
