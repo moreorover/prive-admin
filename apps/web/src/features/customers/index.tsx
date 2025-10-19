@@ -14,7 +14,7 @@ export default function CustomerPage() {
   const search = Route.useSearch();
 
   const filters: CustomersFilters = {
-    pageIndex: search.pageIndex,
+    page: search.page,
     pageSize: search.pageSize,
     sortBy: search.sortBy,
     name: search.name,
@@ -37,7 +37,7 @@ export default function CustomerPage() {
           </div>
           <CustomersPrimaryButtons />
         </div>
-        <CustomersTable data={customers} />
+        <CustomersTable data={customers} pagination_data={pagination} />
       </Main>
 
       <CustomersDialogs />

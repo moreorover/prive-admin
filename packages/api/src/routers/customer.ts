@@ -13,7 +13,7 @@ export const customerRouter = router({
   getAll: protectedProcedure
     .input(
       z.object({
-        page: z.number().min(0).catch(0).default(0),
+        page: z.number().min(1).catch(1).default(1),
         pageSize: z.coerce
           .number()
           .min(10)
@@ -68,7 +68,7 @@ export const customerRouter = router({
         where: whereConditions.length > 0 ? and(...whereConditions) : undefined,
         orderBy: getOrderBy(),
         limit: pageSize,
-        offset: page * pageSize,
+        offset: (page - 1) * pageSize,
       });
 
       // Get total count for pagination
@@ -81,7 +81,7 @@ export const customerRouter = router({
       return {
         customers,
         pagination: {
-          pageIndex: page - 1,
+          page: page,
           pageSize,
           totalCount,
           totalPages: Math.ceil(totalCount / pageSize),

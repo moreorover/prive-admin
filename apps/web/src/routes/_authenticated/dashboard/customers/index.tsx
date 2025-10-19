@@ -3,7 +3,7 @@ import z from "zod";
 import CustomerPage from "@/features/customers";
 
 const customersSearchSchema = z.object({
-  pageIndex: z.number().optional().catch(0),
+  page: z.number().optional().catch(0),
   pageSize: z.number().optional().catch(10),
   sortBy: z.string().optional().catch(undefined),
   name: z.string().optional().catch(undefined),
@@ -11,7 +11,7 @@ const customersSearchSchema = z.object({
 });
 
 export type CustomersFilters = {
-  pageIndex?: number;
+  page?: number;
   pageSize?: number;
   sortBy?: string;
   name?: string;
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/dashboard/customers/")({
   component: CustomerPage,
   validateSearch: (search) => customersSearchSchema.parse(search),
   loaderDeps: ({ search }) => ({
-    pageIndex: search.pageIndex,
+    page: search.page,
     pageSize: search.pageSize,
     sortBy: search.sortBy,
     name: search.name,
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/dashboard/customers/")({
   }),
   loader: async ({ context: { queryClient, trpc }, deps }) => {
     const filters = {
-      pageIndex: deps.pageIndex,
+      page: deps.page,
       pageSize: deps.pageSize,
       sortBy: deps.sortBy,
       name: deps.name,

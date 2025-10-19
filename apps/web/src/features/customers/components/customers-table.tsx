@@ -32,9 +32,15 @@ const route = getRouteApi("/_authenticated/dashboard/customers/");
 
 type DataTableProps = {
   data: Customer[];
+  pagination_data: {
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+  };
 };
 
-export function CustomersTable({ data }: DataTableProps) {
+export function CustomersTable({ data, pagination_data }: DataTableProps) {
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({});
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -60,11 +66,6 @@ export function CustomersTable({ data }: DataTableProps) {
     search: route.useSearch(),
     navigate: route.useNavigate(),
     pagination: { defaultPage: 1, defaultPageSize: 10 },
-    globalFilter: { enabled: true, key: "filter" },
-    columnFilters: [
-      { columnId: "status", searchKey: "status", type: "array" },
-      { columnId: "priority", searchKey: "priority", type: "array" },
-    ],
   });
 
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -77,8 +78,11 @@ export function CustomersTable({ data }: DataTableProps) {
       rowSelection,
       columnFilters,
       globalFilter,
-      pagination,
+      pagination: { ...pagination },
     },
+    pageCount: pagination_data.totalPages,
+    rowCount: pagination_data.totalCount,
+    manualPagination: true,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,

@@ -26,6 +26,7 @@ export function DataTablePagination<TData>({
 }: DataTablePaginationProps<TData>) {
   const currentPage = table.getState().pagination.pageIndex + 1;
   const totalPages = table.getPageCount();
+  const rowCount = table.getRowCount();
   const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   return (
@@ -38,8 +39,8 @@ export function DataTablePagination<TData>({
       style={{ overflowClipMargin: 1 }}
     >
       <div className="flex w-full items-center justify-between">
-        <div className="flex @2xl/content:hidden w-[100px] items-center justify-center font-medium text-sm">
-          Page {currentPage} of {totalPages}
+        <div className="flex @2xl/content:hidden w-[150px] items-center justify-center font-medium text-sm">
+          Total of {rowCount} records.
         </div>
         <div className="flex @max-2xl/content:flex-row-reverse items-center gap-2">
           <Select
