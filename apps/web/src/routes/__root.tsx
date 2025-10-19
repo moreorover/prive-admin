@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import type { trpc } from "@/utils/trpc";
 import "../index.css";
+import { NavigationProgress } from "@/components/navigation-progress";
 
 export interface RouterAppContext {
   trpc: typeof trpc;
@@ -45,6 +46,7 @@ function RootComponent() {
 
   return (
     <>
+      <NavigationProgress />
       <HeadContent />
       <ThemeProvider
         attribute="class"
