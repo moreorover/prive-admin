@@ -1,4 +1,3 @@
-import { useRouter } from "@tanstack/react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,22 +10,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
+import { Route } from "@/routes/_authenticated/dashboard/route";
 
-interface UserNavProps {
-  user?: {
-    name: string;
-    email: string;
-    avatar?: string;
-  };
-}
+export function UserNav() {
+  const { user } = Route.useLoaderData();
+  const navigate = Route.useNavigate();
 
-export async function UserNav({ user }: UserNavProps) {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await authClient.signOut();
+  const handleLogout = () => {
+    authClient.signOut();
     // await queryClient.invalidateQueries({ queryKey: authQueries.all });
-    router.invalidate();
+    // navigate.invalidate();
+    navigate({ to: "/signin" });
   };
 
   return (
@@ -35,7 +29,7 @@ export async function UserNav({ user }: UserNavProps) {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
             <AvatarImage
-              src={user?.avatar || ""}
+              src={user?.image || ""}
               alt={user?.name}
               referrerPolicy="no-referrer"
             />

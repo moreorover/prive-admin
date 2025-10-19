@@ -37,7 +37,7 @@ export function DashboardLayout() {
           </div>
           <div className="flex items-center gap-3">
             <ModeToggle />
-            <UserNav user={user} />
+            <UserNav />
           </div>
         </header>
 
