@@ -36,7 +36,7 @@ export function CustomerTable({
     <DataTable
       columns={tableColumns}
       data={data.customers}
-      searchKey="name"
+      filterKeys={["name", "phoneNumber"]}
       onPaginationChange={handlePaginationChange}
       onSortingChange={handleSortingChange}
       onFilterChange={handleFilterChange}

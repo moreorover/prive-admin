@@ -29,6 +29,7 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   searchKey?: string;
+  filterKeys?: string[]; // New prop for multiple filter fields
   onPaginationChange?: (page: number, pageSize: number) => void;
   onSortingChange?: (sorting: SortingState) => void;
   onFilterChange?: (filters: ColumnFiltersState) => void;
@@ -44,6 +45,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   searchKey,
+  filterKeys,
   onPaginationChange,
   onSortingChange,
   onFilterChange,
@@ -117,9 +119,36 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  // Helper function to format filter key for display
+  const formatFilterLabel = (key: string) => {
+    return key
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (str) => str.toUpperCase())
+      .trim();
+  };
+
   return (
     <div className="space-y-4">
-      {searchKey && (
+      {/* Multiple filter inputs */}
+      {filterKeys && filterKeys.length > 0 && (
+        <div className="flex items-center gap-4 py-4">
+          {filterKeys.map((key) => (
+            <Input
+              key={key}
+              placeholder={`Filter by ${formatFilterLabel(key)}...`}
+              value={(table.getColumn(key)?.getFilterValue() as string) ?? ""}
+              onChange={(event) =>
+                table.getColumn(key)?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm"
+            />
+          ))}
+          <DataTableViewOptions table={table} />
+        </div>
+      )}
+
+      {/* Legacy single search key support */}
+      {searchKey && !filterKeys && (
         <div className="flex items-center py-4">
           <Input
             placeholder={`Filter by ${searchKey}...`}
@@ -134,6 +163,7 @@ export function DataTable<TData, TValue>({
           <DataTableViewOptions table={table} />
         </div>
       )}
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
