@@ -20,7 +20,7 @@ export type CustomersFilters = {
   phoneNumber?: string;
 };
 
-export const Route = createFileRoute("/_authenticated/dashboard/customers")({
+export const Route = createFileRoute("/_authenticated/dashboard/customers/")({
   component: CustomerPage,
   validateSearch: (search) => customersSearchSchema.parse(search),
   loaderDeps: ({ search }) => ({

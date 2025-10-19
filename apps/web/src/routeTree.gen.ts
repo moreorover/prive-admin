@@ -14,7 +14,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteRouteImport } from './routes/_authenticated/dashboard/route'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
-import { Route as AuthenticatedDashboardCustomersRouteImport } from './routes/_authenticated/dashboard/customers'
+import { Route as AuthenticatedDashboardCustomersIndexRouteImport } from './routes/_authenticated/dashboard/customers/index'
 
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
@@ -42,10 +42,10 @@ const AuthenticatedDashboardIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedDashboardRouteRoute,
   } as any)
-const AuthenticatedDashboardCustomersRoute =
-  AuthenticatedDashboardCustomersRouteImport.update({
-    id: '/customers',
-    path: '/customers',
+const AuthenticatedDashboardCustomersIndexRoute =
+  AuthenticatedDashboardCustomersIndexRouteImport.update({
+    id: '/customers/',
+    path: '/customers/',
     getParentRoute: () => AuthenticatedDashboardRouteRoute,
   } as any)
 
@@ -53,14 +53,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/signin': typeof SigninRoute
   '/dashboard': typeof AuthenticatedDashboardRouteRouteWithChildren
-  '/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/customers': typeof AuthenticatedDashboardCustomersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/signin': typeof SigninRoute
-  '/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/customers': typeof AuthenticatedDashboardCustomersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,8 +68,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/signin': typeof SigninRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteRouteWithChildren
-  '/_authenticated/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/dashboard/customers/': typeof AuthenticatedDashboardCustomersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -77,18 +77,18 @@ export interface FileRouteTypes {
     | '/'
     | '/signin'
     | '/dashboard'
-    | '/dashboard/customers'
     | '/dashboard/'
+    | '/dashboard/customers'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/signin' | '/dashboard/customers' | '/dashboard'
+  to: '/' | '/signin' | '/dashboard' | '/dashboard/customers'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/signin'
     | '/_authenticated/dashboard'
-    | '/_authenticated/dashboard/customers'
     | '/_authenticated/dashboard/'
+    | '/_authenticated/dashboard/customers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -134,25 +134,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
       parentRoute: typeof AuthenticatedDashboardRouteRoute
     }
-    '/_authenticated/dashboard/customers': {
-      id: '/_authenticated/dashboard/customers'
+    '/_authenticated/dashboard/customers/': {
+      id: '/_authenticated/dashboard/customers/'
       path: '/customers'
       fullPath: '/dashboard/customers'
-      preLoaderRoute: typeof AuthenticatedDashboardCustomersRouteImport
+      preLoaderRoute: typeof AuthenticatedDashboardCustomersIndexRouteImport
       parentRoute: typeof AuthenticatedDashboardRouteRoute
     }
   }
 }
 
 interface AuthenticatedDashboardRouteRouteChildren {
-  AuthenticatedDashboardCustomersRoute: typeof AuthenticatedDashboardCustomersRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+  AuthenticatedDashboardCustomersIndexRoute: typeof AuthenticatedDashboardCustomersIndexRoute
 }
 
 const AuthenticatedDashboardRouteRouteChildren: AuthenticatedDashboardRouteRouteChildren =
   {
-    AuthenticatedDashboardCustomersRoute: AuthenticatedDashboardCustomersRoute,
     AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+    AuthenticatedDashboardCustomersIndexRoute:
+      AuthenticatedDashboardCustomersIndexRoute,
   }
 
 const AuthenticatedDashboardRouteRouteWithChildren =
