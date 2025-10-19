@@ -66,6 +66,9 @@
         "useKeyWithClickEvents": "off",
         "useFocusableInteractive": "off",
         "useSemanticElements": "off"
+      },
+      "suspicious": {
+        "noIndexArray": "off"
       }
     }
   },

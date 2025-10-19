@@ -13,22 +13,37 @@ export const customerRouter = router({
   getAll: protectedProcedure
     .input(
       z.object({
-        page: z.number().min(1).catch(1).default(1),
+        page: z.number().min(0).catch(0).default(0),
         pageSize: z.coerce
-          .number() // ensures "35" → 35
+          .number()
           .min(10)
           .max(100)
           .transform((v) => ([10, 20, 30, 50, 100].includes(v) ? v : 10))
-          .catch(10) // handles completely invalid values like null, NaN, or undefined
+          .catch(10)
           .default(10),
-        sortBy: z.string().optional(),
-        sortOrder: z.enum(["asc", "desc"]).optional(),
+        sortBy: z
+          .string()
+          .refine(
+            (val) => {
+              if (!val) return true; // optional field
+              const [field, order] = val.split(".");
+              if (!field || !order) return false;
+              const validFields = ["name", "phoneNumber"];
+              const validOrders = ["asc", "desc"];
+              return validFields.includes(field) && validOrders.includes(order);
+            },
+            {
+              message:
+                'sortBy must be in format "field.order" where field is name or phoneNumber and order is asc or desc',
+            },
+          )
+          .optional(),
         name: z.string().optional(),
         phoneNumber: z.string().optional(),
       }),
     )
     .query(async ({ input }) => {
-      const { page, pageSize, sortBy, sortOrder, name, phoneNumber } = input;
+      const { page, pageSize, sortBy, name, phoneNumber } = input;
 
       // Build where conditions
       const whereConditions = [];
@@ -39,18 +54,21 @@ export const customerRouter = router({
         whereConditions.push(ilike(customer.phoneNumber, `%${phoneNumber}%`));
       }
 
-      // Determine order by
+      // Determine order by from sortBy format "field.asc" or "field.desc"
       const getOrderBy = () => {
+        if (!sortBy) return asc(customer.name); // default sort
+
+        const [field, order] = sortBy.split(".");
         const column =
-          sortBy === "phoneNumber" ? customer.phoneNumber : customer.name;
-        return sortOrder === "desc" ? desc(column) : asc(column);
+          field === "phoneNumber" ? customer.phoneNumber : customer.name;
+        return order === "desc" ? desc(column) : asc(column);
       };
 
       const customers = await db.query.customer.findMany({
         where: whereConditions.length > 0 ? and(...whereConditions) : undefined,
         orderBy: getOrderBy(),
         limit: pageSize,
-        offset: (page - 1) * pageSize,
+        offset: page * pageSize,
       });
 
       // Get total count for pagination
@@ -63,7 +81,7 @@ export const customerRouter = router({
       return {
         customers,
         pagination: {
-          page: page - 1,
+          pageIndex: page - 1,
           pageSize,
           totalCount,
           totalPages: Math.ceil(totalCount / pageSize),

@@ -7,9 +7,10 @@ catalog:
   hono: ^4.8.2
   '@trpc/server': ^11.5.0
   dotenv: ^17.2.2
-  zod: ^4.1.11
+  zod: 4.1.12
   typescript: ^5.8.2
   '@types/node': ^22.13.11
   tsdown: ^0.15.5
   '@trpc/client': ^11.5.0
   drizzle-orm: ^0.44.6
+  '@tanstack/react-table': ^8.21.3

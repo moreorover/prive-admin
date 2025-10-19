@@ -24,6 +24,7 @@
     "@prive-admin/auth": "workspace:*",
     "@prive-admin/db": "workspace:*",
     "@prive-admin/tsconfig": "workspace:*",
+    "@tanstack/react-table": "catalog:",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",
     "dotenv": "catalog:",
