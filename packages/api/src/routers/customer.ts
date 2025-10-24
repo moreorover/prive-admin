@@ -5,7 +5,7 @@ import {
   customerUpdateSchema,
 } from "@prive-admin/db/schema/customer";
 import { TRPCError } from "@trpc/server";
-import { and, asc, desc, eq, ilike, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm";
 import z from "zod";
 import { protectedProcedure, router } from "../index";
 
@@ -38,20 +38,21 @@ export const customerRouter = router({
             },
           )
           .optional(),
-        name: z.string().optional(),
-        phoneNumber: z.string().optional(),
+        filter: z.string().optional(),
       }),
     )
     .query(async ({ input }) => {
-      const { page, pageSize, sortBy, name, phoneNumber } = input;
+      const { page, pageSize, sortBy, filter } = input;
 
       // Build where conditions
       const whereConditions = [];
-      if (name) {
-        whereConditions.push(ilike(customer.name, `%${name}%`));
-      }
-      if (phoneNumber) {
-        whereConditions.push(ilike(customer.phoneNumber, `%${phoneNumber}%`));
+      if (filter) {
+        whereConditions.push(
+          or(
+            ilike(customer.name, `%${filter}%`),
+            ilike(customer.phoneNumber, `%${filter}%`),
+          ),
+        );
       }
 
       // Determine order by from sortBy format "field.asc" or "field.desc"

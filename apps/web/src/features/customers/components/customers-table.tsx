@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/table";
 import { useTableUrlState } from "@/hooks/use-table-url-state";
 import { cn } from "@/lib/utils";
-import { priorities, statuses } from "../data/data";
 import type { Customer } from "../data/schema";
 import { customersColumns as columns } from "./customers-columns";
 import { DataTableBulkActions } from "./data-table-bulk-actions";
@@ -88,11 +87,11 @@ export function CustomersTable({ data, pagination_data }: DataTableProps) {
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
     globalFilterFn: (row, _columnId, filterValue) => {
-      const id = String(row.getValue("id")).toLowerCase();
-      const title = String(row.getValue("title")).toLowerCase();
+      const name = String(row.getValue("name")).toLowerCase();
+      const phoneNumber = String(row.getValue("phoneNumber")).toLowerCase();
       const searchValue = String(filterValue).toLowerCase();
 
-      return id.includes(searchValue) || title.includes(searchValue);
+      return name.includes(searchValue) || phoneNumber.includes(searchValue);
     },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -119,19 +118,7 @@ export function CustomersTable({ data, pagination_data }: DataTableProps) {
     >
       <DataTableToolbar
         table={table}
-        searchPlaceholder="Filter by title or ID..."
-        filters={[
-          {
-            columnId: "status",
-            title: "Status",
-            options: statuses,
-          },
-          {
-            columnId: "priority",
-            title: "Priority",
-            options: priorities,
-          },
-        ]}
+        searchPlaceholder="Filter by name or phone number..."
       />
       <div className="overflow-hidden rounded-md border">
         <Table>

@@ -17,8 +17,7 @@ export default function CustomerPage() {
     page: search.page,
     pageSize: search.pageSize,
     sortBy: search.sortBy,
-    name: search.name,
-    phoneNumber: search.phoneNumber,
+    filter: search.filter,
   };
 
   const customersQuery = useQuery(trpc.customer.getAll.queryOptions(filters));
