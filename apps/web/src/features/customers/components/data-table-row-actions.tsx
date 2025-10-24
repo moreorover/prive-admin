@@ -1,7 +1,7 @@
-import { DotsHorizontalIcon } from '@radix-ui/react-icons'
-import { type Row } from '@tanstack/react-table'
-import { Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import type { Row } from "@tanstack/react-table";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,62 +14,63 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { labels } from '../data/data'
-import { customerSchema } from '../data/schema'
-import { useCustomers } from './customers-provider'
+} from "@/components/ui/dropdown-menu";
+import { labels } from "../data/data";
+import { customerSchema } from "../data/schema";
+import { useCustomers } from "./customers-provider";
 
 type DataTableRowActionsProps<TData> = {
-  row: Row<TData>
-}
+  row: Row<TData>;
+};
 
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const customer = customerSchema.parse(row.original)
+  const customer = customerSchema.parse(row.original);
 
-  const { setOpen, setCurrentRow } = useCustomers()
+  const { setOpen, setCurrentRow } = useCustomers();
 
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
-          variant='ghost'
-          className='data-[state=open]:bg-muted flex h-8 w-8 p-0'
+          variant="ghost"
+          className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
         >
-          <DotsHorizontalIcon className='h-4 w-4' />
-          <span className='sr-only'>Open menu</span>
+          <DotsHorizontalIcon className="h-4 w-4" />
+          <span className="sr-only">Open menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='w-[160px]'>
+      <DropdownMenuContent align="end" className="w-[160px]">
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(customer)
-            setOpen('update')
+            setCurrentRow(customer);
+            setOpen("update");
           }}
         >
           Edit
         </DropdownMenuItem>
-        <DropdownMenuItem disabled>Make a copy</DropdownMenuItem>
-        <DropdownMenuItem disabled>Favorite</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            <DropdownMenuRadioGroup value={customer.label}>
-              {labels.map((label) => (
-                <DropdownMenuRadioItem key={label.value} value={label.value}>
-                  {label.label}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
+        {/*<DropdownMenuItem disabled>Make a copy</DropdownMenuItem>*/}
+        {/*<DropdownMenuItem disabled>Favorite</DropdownMenuItem>*/}
+        {/*<DropdownMenuSeparator />*/}
+        {/*<DropdownMenuSub>*/}
+        {/*  <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>*/}
+        {/*  <DropdownMenuSubContent>*/}
+        {/*    <DropdownMenuRadioGroup value={customer.label}>*/}
+        {/*      {labels.map((label) => (*/}
+        {/*        <DropdownMenuRadioItem key={label.value} value={label.value}>*/}
+        {/*          {label.label}*/}
+        {/*        </DropdownMenuRadioItem>*/}
+        {/*      ))}*/}
+        {/*    </DropdownMenuRadioGroup>*/}
+        {/*  </DropdownMenuSubContent>*/}
+        {/*</DropdownMenuSub>*/}
         <DropdownMenuSeparator />
         <DropdownMenuItem
+          disabled={true}
           onClick={() => {
-            setCurrentRow(customer)
-            setOpen('delete')
+            setCurrentRow(customer);
+            setOpen("delete");
           }}
         >
           Delete
@@ -79,5 +80,5 @@ export function DataTableRowActions<TData>({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }
