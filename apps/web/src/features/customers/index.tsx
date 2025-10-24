@@ -24,6 +24,8 @@ export default function CustomerPage() {
   const customers = customersQuery.data?.customers || [];
   const pagination = customersQuery.data?.pagination;
 
+  const onSuccess = () => customersQuery.refetch();
+
   return (
     <CustomersProvider>
       <Main className="flex flex-1 flex-col gap-4 sm:gap-6">
@@ -39,7 +41,7 @@ export default function CustomerPage() {
         <CustomersTable data={customers} pagination_data={pagination} />
       </Main>
 
-      <CustomersDialogs />
+      <CustomersDialogs onSuccess={onSuccess} />
     </CustomersProvider>
   );
 }

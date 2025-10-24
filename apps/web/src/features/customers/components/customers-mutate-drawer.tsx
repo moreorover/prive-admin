@@ -1,8 +1,10 @@
-import { z } from 'zod'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { showSubmittedData } from '@/lib/show-submitted-data'
-import { Button } from '@/components/ui/button'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -10,9 +12,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetClose,
@@ -21,80 +22,108 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from '@/components/ui/sheet'
-import { SelectDropdown } from '@/components/select-dropdown'
-import { type Customer } from '../data/schema'
+} from "@/components/ui/sheet";
+import { showSubmittedData } from "@/lib/show-submitted-data";
+import { trpc } from "@/utils/trpc";
+import type { Customer } from "../data/schema";
 
 type CustomerMutateDrawerProps = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  currentRow?: Customer
-}
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  currentRow?: Customer;
+  onSuccess?: () => void;
+};
 
 const formSchema = z.object({
-  title: z.string().min(1, 'Title is required.'),
-  status: z.string().min(1, 'Please select a status.'),
-  label: z.string().min(1, 'Please select a label.'),
-  priority: z.string().min(1, 'Please choose a priority.'),
-})
-type CustomerForm = z.infer<typeof formSchema>
+  name: z.string().min(1, "Name is required."),
+  phoneNumber: z.string().min(10, "Phone number too short.").or(z.literal("")),
+});
+type CustomerForm = z.infer<typeof formSchema>;
 
 export function CustomersMutateDrawer({
   open,
   onOpenChange,
   currentRow,
+  onSuccess,
 }: CustomerMutateDrawerProps) {
-  const isUpdate = !!currentRow
+  const isUpdate = !!currentRow;
 
   const form = useForm<CustomerForm>({
     resolver: zodResolver(formSchema),
-    defaultValues: currentRow ?? {
-      title: '',
-      status: '',
-      label: '',
-      priority: '',
-    },
-  })
+    defaultValues: currentRow
+      ? { ...currentRow, phoneNumber: currentRow.phoneNumber ?? "" }
+      : { name: "", phoneNumber: "" },
+  });
+
+  const createCustomerMutation = useMutation(
+    trpc.customer.create.mutationOptions({
+      onSuccess: () => {
+        toast.success("Customer created successfully!");
+        onSuccess?.();
+      },
+      onError: (error) => {
+        toast.error(error.message || "Failed to create customer.");
+      },
+    }),
+  );
+
+  const updateCustomerMutation = useMutation(
+    trpc.customer.update.mutationOptions({
+      onSuccess: () => {
+        toast.success("Customer updated successfully!");
+        onSuccess?.();
+      },
+      onError: (error) => {
+        toast.error(error.message || "Failed to update customer.");
+      },
+    }),
+  );
 
   const onSubmit = (data: CustomerForm) => {
-    // do something with the form data
-    onOpenChange(false)
-    form.reset()
-    showSubmittedData(data)
-  }
+    if (isUpdate) {
+      // update data
+      updateCustomerMutation.mutate({ id: currentRow?.id, ...data });
+    } else {
+      // save data
+      createCustomerMutation.mutate({ ...data });
+    }
+    onOpenChange(false);
+    form.reset();
+    showSubmittedData(data);
+  };
 
   return (
     <Sheet
       open={open}
       onOpenChange={(v) => {
-        onOpenChange(v)
-        form.reset()
+        onOpenChange(v);
+        form.reset();
       }}
     >
-      <SheetContent className='flex flex-col'>
-        <SheetHeader className='text-start'>
-          <SheetTitle>{isUpdate ? 'Update' : 'Create'} Customer</SheetTitle>
+      <SheetContent className="flex flex-col">
+        <SheetHeader className="text-start">
+          <SheetTitle>{isUpdate ? "Update" : "Create"} Customer</SheetTitle>
           <SheetDescription>
             {isUpdate
-              ? 'Update the customer by providing necessary info.'
-              : 'Add a new customer by providing necessary info.'}
+              ? "Update the customer by providing necessary info."
+              : "Add a new customer by providing necessary info."}
             Click save when you&apos;re done.
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
           <form
-            id='customers-form'
+            id="customers-form"
             onSubmit={form.handleSubmit(onSubmit)}
-            className='flex-1 space-y-6 overflow-y-auto px-4'
+            className="flex-1 space-y-6 overflow-y-auto px-4"
           >
             <FormField
               control={form.control}
-              name='title'
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder='Enter a title' />
+                    <Input {...field} placeholder="Enter a name" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -102,95 +131,12 @@ export function CustomersMutateDrawer({
             />
             <FormField
               control={form.control}
-              name='status'
+              name="phoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <SelectDropdown
-                    defaultValue={field.value}
-                    onValueChange={field.onChange}
-                    placeholder='Select dropdown'
-                    items={[
-                      { label: 'In Progress', value: 'in progress' },
-                      { label: 'Backlog', value: 'backlog' },
-                      { label: 'Todo', value: 'todo' },
-                      { label: 'Canceled', value: 'canceled' },
-                      { label: 'Done', value: 'done' },
-                    ]}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='label'
-              render={({ field }) => (
-                <FormItem className='relative'>
-                  <FormLabel>Label</FormLabel>
+                  <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className='flex flex-col space-y-1'
-                    >
-                      <FormItem className='flex items-center'>
-                        <FormControl>
-                          <RadioGroupItem value='documentation' />
-                        </FormControl>
-                        <FormLabel className='font-normal'>
-                          Documentation
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className='flex items-center'>
-                        <FormControl>
-                          <RadioGroupItem value='feature' />
-                        </FormControl>
-                        <FormLabel className='font-normal'>Feature</FormLabel>
-                      </FormItem>
-                      <FormItem className='flex items-center'>
-                        <FormControl>
-                          <RadioGroupItem value='bug' />
-                        </FormControl>
-                        <FormLabel className='font-normal'>Bug</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='priority'
-              render={({ field }) => (
-                <FormItem className='relative'>
-                  <FormLabel>Priority</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className='flex flex-col space-y-1'
-                    >
-                      <FormItem className='flex items-center'>
-                        <FormControl>
-                          <RadioGroupItem value='high' />
-                        </FormControl>
-                        <FormLabel className='font-normal'>High</FormLabel>
-                      </FormItem>
-                      <FormItem className='flex items-center'>
-                        <FormControl>
-                          <RadioGroupItem value='medium' />
-                        </FormControl>
-                        <FormLabel className='font-normal'>Medium</FormLabel>
-                      </FormItem>
-                      <FormItem className='flex items-center'>
-                        <FormControl>
-                          <RadioGroupItem value='low' />
-                        </FormControl>
-                        <FormLabel className='font-normal'>Low</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
+                    <Input {...field} placeholder="Enter a phone number" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -198,15 +144,15 @@ export function CustomersMutateDrawer({
             />
           </form>
         </Form>
-        <SheetFooter className='gap-2'>
+        <SheetFooter className="gap-2">
           <SheetClose asChild>
-            <Button variant='outline'>Close</Button>
+            <Button variant="outline">Close</Button>
           </SheetClose>
-          <Button form='customers-form' type='submit'>
+          <Button form="customers-form" type="submit">
             Save changes
           </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>
-  )
+  );
 }
