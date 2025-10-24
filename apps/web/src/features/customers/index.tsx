@@ -22,7 +22,12 @@ export default function CustomerPage() {
 
   const customersQuery = useQuery(trpc.customer.getAll.queryOptions(filters));
   const customers = customersQuery.data?.customers || [];
-  const pagination = customersQuery.data?.pagination;
+  const pagination = customersQuery.data?.pagination || {
+    page: 1,
+    pageSize: 10,
+    totalCount: 0,
+    totalPages: 1,
+  };
 
   const onSuccess = () => customersQuery.refetch();
 
