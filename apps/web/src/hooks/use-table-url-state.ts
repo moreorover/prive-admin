@@ -2,6 +2,7 @@ import type {
   ColumnFiltersState,
   OnChangeFn,
   PaginationState,
+  SortingState,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 
@@ -28,6 +29,9 @@ type UseTableUrlStateParams = {
     enabled?: boolean;
     key?: string;
     trim?: boolean;
+  };
+  sorting?: {
+    key?: string;
   };
   columnFilters?: Array<
     | {
@@ -58,6 +62,9 @@ type UseTableUrlStateReturn = {
   // Pagination
   pagination: PaginationState;
   onPaginationChange: OnChangeFn<PaginationState>;
+  // Sorting
+  sorting: SortingState;
+  onSortingChange: OnChangeFn<SortingState>;
   // Helpers
   ensurePageInRange: (
     pageCount: number,
@@ -74,6 +81,7 @@ export function useTableUrlState(
     pagination: paginationCfg,
     globalFilter: globalFilterCfg,
     columnFilters: columnFiltersCfg = [],
+    sorting: sortingCfg,
   } = params;
 
   const pageKey = paginationCfg?.pageKey ?? ("page" as string);
@@ -83,6 +91,7 @@ export function useTableUrlState(
 
   const globalFilterKey = globalFilterCfg?.key ?? ("filter" as string);
   const globalFilterEnabled = globalFilterCfg?.enabled ?? true;
+  const sortingKey = sortingCfg?.key ?? "sort";
   const trimGlobal = globalFilterCfg?.trim ?? true;
 
   // Build initial column filters from the current search params
@@ -207,6 +216,26 @@ export function useTableUrlState(
     }
   };
 
+  const sorting: SortingState = useMemo(() => {
+    const raw = (search as SearchRecord)[sortingKey];
+    if (typeof raw !== "string") return [];
+    const [id, desc] = raw.split(".");
+    return [{ id, desc: desc === "desc" }];
+  }, [search, sortingKey]);
+
+  const onSortingChange: OnChangeFn<SortingState> = (updater) => {
+    const next = typeof updater === "function" ? updater(sorting) : updater;
+    const value = next[0]
+      ? `${next[0].id}.${next[0].desc ? "desc" : "asc"}`
+      : undefined;
+    navigate({
+      search: (prev) => ({
+        ...(prev as SearchRecord),
+        [sortingKey]: value,
+      }),
+    });
+  };
+
   return {
     globalFilter: globalFilterEnabled ? (globalFilter ?? "") : undefined,
     onGlobalFilterChange,
@@ -215,5 +244,7 @@ export function useTableUrlState(
     pagination,
     onPaginationChange,
     ensurePageInRange,
+    sorting,
+    onSortingChange,
   };
 }

@@ -42,7 +42,7 @@ type DataTableProps = {
 export function CustomersTable({ data, pagination_data }: DataTableProps) {
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({});
-  const [sorting, setSorting] = useState<SortingState>([]);
+  // const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     id: false,
   });
@@ -61,6 +61,8 @@ export function CustomersTable({ data, pagination_data }: DataTableProps) {
     pagination,
     onPaginationChange,
     ensurePageInRange,
+    sorting,
+    onSortingChange,
   } = useTableUrlState({
     search: route.useSearch(),
     navigate: route.useNavigate(),
@@ -84,7 +86,6 @@ export function CustomersTable({ data, pagination_data }: DataTableProps) {
     manualPagination: true,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
     globalFilterFn: (row, _columnId, filterValue) => {
       const name = String(row.getValue("name")).toLowerCase();
@@ -102,6 +103,7 @@ export function CustomersTable({ data, pagination_data }: DataTableProps) {
     onPaginationChange,
     onGlobalFilterChange,
     onColumnFiltersChange,
+    onSortingChange,
   });
 
   const pageCount = table.getPageCount();
