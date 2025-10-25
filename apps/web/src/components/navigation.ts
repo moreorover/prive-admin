@@ -30,18 +30,3 @@ export const navigationItems: NavigationItem[] = [
     icon: HelpCircle,
   },
 ];
-
-export const userMenuItems = [
-  {
-    title: "Profile",
-    href: "/dashboard/profile",
-  },
-  {
-    title: "Account Settings",
-    href: "/dashboard/account",
-  },
-  {
-    title: "Logout",
-    href: "/logout",
-  },
-];

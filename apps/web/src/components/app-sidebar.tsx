@@ -6,12 +6,14 @@ import {
   User,
   User2,
 } from "lucide-react";
-import { navigationItems, userMenuItems } from "@/components/navigation";
+import { navigationItems } from "@/components/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -147,29 +149,28 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 align="end"
                 sideOffset={4}
               >
-                {userMenuItems.map((item) => (
-                  <DropdownMenuItem key={item.href} asChild>
-                    {item.title === "Logout" ? (
-                      <div
-                        className="flex items-center gap-2"
-                        onClick={handleLogout}
-                      >
-                        <LogOut className="size-4" />
-                        {item.title}
-                      </div>
-                    ) : (
-                      <Link to={item.href} className="flex items-center gap-2">
-                        {item.title === "Profile" && (
-                          <User className="size-4" />
-                        )}
-                        {item.title === "Account Settings" && (
-                          <SettingsIcon className="size-4" />
-                        )}
-                        {item.title}
-                      </Link>
-                    )}
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to="/dashboard/profile"
+                      className="flex items-center gap-2"
+                    >
+                      <User className="size-4" /> Profile
+                    </Link>
                   </DropdownMenuItem>
-                ))}
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to="/dashboard/settings"
+                      className="flex items-center gap-2"
+                    >
+                      <SettingsIcon className="size-4" /> Settings
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onClick={handleLogout}>
+                  <LogOut className="size-4" /> Log out
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

@@ -13,7 +13,7 @@ import { authClient } from "@/lib/auth-client";
 import { Route } from "@/routes/_authenticated/dashboard/route";
 
 export function UserNav() {
-  const { user } = Route.useLoaderData();
+  const user = Route.useLoaderData();
   const navigate = Route.useNavigate();
 
   const handleLogout = () => {

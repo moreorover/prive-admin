@@ -11,14 +11,26 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import type { trpc } from "@/utils/trpc";
 import "../index.css";
+import type { User } from "better-auth";
 import { NavigationProgress } from "@/components/navigation-progress";
+import { authClient } from "@/lib/auth-client";
 
 export interface RouterAppContext {
   trpc: typeof trpc;
   queryClient: QueryClient;
+  user: User | null;
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
+  beforeLoad: async () => {
+    try {
+      const session = await authClient.getSession();
+      return { user: session.data?.user ?? null };
+    } catch (error) {
+      console.error("Failed to fetch user session:", error);
+      return { user: null };
+    }
+  },
   component: RootComponent,
   head: () => ({
     meta: [

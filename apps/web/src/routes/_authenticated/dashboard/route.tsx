@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import z from "zod";
 import { AppSidebar } from "@/components/app-sidebar";
 import { PathBreadcrumbs } from "@/components/path-breadcrumbs";
 import { ModeToggle } from "@/components/ui/mode-toggle";
@@ -11,20 +12,15 @@ import {
 import { UserNav } from "@/components/user-nav";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  beforeLoad: async ({ context }) => {
-    if (!context.auth.user) {
-      throw redirect({ to: "/" });
-    }
-  },
   component: DashboardLayout,
-  loader: ({ context }) => context.auth,
+  loader: ({ context }) => context.user,
 });
 
 export function DashboardLayout() {
-  const { user } = Route.useLoaderData();
+  const user = Route.useLoaderData();
   return (
     <SidebarProvider>
-      <AppSidebar user={user} />
+      <AppSidebar user={user!} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center justify-between gap-2">
           <div className="flex items-center gap-2 px-4">
