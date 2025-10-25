@@ -14,6 +14,8 @@ export const Route = createFileRoute(
     await queryClient.ensureQueryData(
       trpc.customer.getHistory.queryOptions({ customerId: params.id }),
     );
+
+    return { crumb: "History" };
   },
 });
 
