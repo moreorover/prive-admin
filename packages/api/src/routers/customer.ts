@@ -107,12 +107,12 @@ export const customerRouter = router({
     }),
 
   getHistory: protectedProcedure
-    // Define input schema - expects an object with customerId as a string
+    // Validate input - requires customerId as string
     .input(z.object({ customerId: z.string() }))
     .query(async ({ input }) => {
       // Fetch all history records for this customer from database
-      // Order by most recent first (descending changedAt timestamp)
-      // Include the user who made each change (join with user table)
+      // Sort by most recent first (newest changes at top)
+      // Include user details who made each change via relation
       const records = await db.query.customerHistory.findMany({
         where: eq(customerHistory.customerId, input.customerId),
         orderBy: desc(customerHistory.changedAt),
@@ -123,60 +123,40 @@ export const customerRouter = router({
         },
       });
 
-      // Define the grouped result structure
-      // Each group represents one "edit session" - multiple field changes
-      // made by the same user within 5 seconds of each other
-      const grouped: Array<{
-        changedBy: { id: string; name: string; email: string };
-        changedAt: Date;
-        changes: Array<{
-          fieldName: string;
-          oldValue: string | null;
-          newValue: string | null;
-        }>;
-      }> = [];
+      // Group records by user and timestamp
+      // Since updates happen in transactions, all field changes from one update
+      // will have the exact same timestamp and user
+      // We group them to show as a single "edit event" in the UI
+      const grouped = records.reduce(
+        (acc, record) => {
+          // Create unique key from userId and timestamp
+          // This ensures changes from same user at same time are grouped together
+          const key = `${record.changedById}-${record.changedAt}`;
 
-      // Loop through each database record to group them
-      for (const record of records) {
-        // Convert timestamp to milliseconds for time comparison
-        const recordTime = new Date(record.changedAt).getTime();
+          // If this key doesn't exist yet, create a new group
+          if (!acc[key]) {
+            acc[key] = {
+              changedBy: record.changedBy, // User who made the change
+              changedAt: record.changedAt, // When the change happened
+              changes: [], // Array to hold all field changes in this group
+            };
+          }
 
-        // Try to find an existing group that matches:
-        // 1. Same user (changedById matches)
-        // 2. Within 5 seconds (5000ms) of this record
-        const existingGroup = grouped.find(
-          (group) =>
-            group.changedBy.id === record.changedById &&
-            Math.abs(new Date(group.changedAt).getTime() - recordTime) <= 5000,
-        );
-
-        // If found a matching group, add this change to it
-        if (existingGroup) {
-          existingGroup.changes.push({
-            fieldName: record.fieldName,
-            oldValue: record.oldValue,
-            newValue: record.newValue,
+          // Add this field change to the group
+          acc[key].changes.push({
+            fieldName: record.fieldName, // Which field was changed (name, phoneNumber, etc)
+            oldValue: record.oldValue, // Previous value
+            newValue: record.newValue, // New value
           });
-        } else {
-          // No matching group found - create a new group
-          // This represents a new "edit session"
-          grouped.push({
-            changedBy: record.changedBy,
-            changedAt: record.changedAt,
-            changes: [
-              {
-                fieldName: record.fieldName,
-                oldValue: record.oldValue,
-                newValue: record.newValue,
-              },
-            ],
-          });
-        }
-      }
 
-      // Return grouped data ready for UI rendering
-      // UI doesn't need to do any processing
-      return grouped;
+          return acc;
+        },
+        {} as Record<string, any>,
+      );
+
+      // Convert grouped object to array for easier iteration in UI
+      // Each array item represents one "edit session" with multiple field changes
+      return Object.values(grouped);
     }),
 
   create: protectedProcedure
