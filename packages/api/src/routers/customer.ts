@@ -107,9 +107,13 @@ export const customerRouter = router({
     }),
 
   getHistory: protectedProcedure
+    // Define input schema - expects an object with customerId as a string
     .input(z.object({ customerId: z.string() }))
     .query(async ({ input }) => {
-      return db.query.customerHistory.findMany({
+      // Fetch all history records for this customer from database
+      // Order by most recent first (descending changedAt timestamp)
+      // Include the user who made each change (join with user table)
+      const records = await db.query.customerHistory.findMany({
         where: eq(customerHistory.customerId, input.customerId),
         orderBy: desc(customerHistory.changedAt),
         with: {
@@ -118,6 +122,61 @@ export const customerRouter = router({
           },
         },
       });
+
+      // Define the grouped result structure
+      // Each group represents one "edit session" - multiple field changes
+      // made by the same user within 5 seconds of each other
+      const grouped: Array<{
+        changedBy: { id: string; name: string; email: string };
+        changedAt: Date;
+        changes: Array<{
+          fieldName: string;
+          oldValue: string | null;
+          newValue: string | null;
+        }>;
+      }> = [];
+
+      // Loop through each database record to group them
+      for (const record of records) {
+        // Convert timestamp to milliseconds for time comparison
+        const recordTime = new Date(record.changedAt).getTime();
+
+        // Try to find an existing group that matches:
+        // 1. Same user (changedById matches)
+        // 2. Within 5 seconds (5000ms) of this record
+        const existingGroup = grouped.find(
+          (group) =>
+            group.changedBy.id === record.changedById &&
+            Math.abs(new Date(group.changedAt).getTime() - recordTime) <= 5000,
+        );
+
+        // If found a matching group, add this change to it
+        if (existingGroup) {
+          existingGroup.changes.push({
+            fieldName: record.fieldName,
+            oldValue: record.oldValue,
+            newValue: record.newValue,
+          });
+        } else {
+          // No matching group found - create a new group
+          // This represents a new "edit session"
+          grouped.push({
+            changedBy: record.changedBy,
+            changedAt: record.changedAt,
+            changes: [
+              {
+                fieldName: record.fieldName,
+                oldValue: record.oldValue,
+                newValue: record.newValue,
+              },
+            ],
+          });
+        }
+      }
+
+      // Return grouped data ready for UI rendering
+      // UI doesn't need to do any processing
+      return grouped;
     }),
 
   create: protectedProcedure
@@ -151,35 +210,29 @@ export const customerRouter = router({
         });
       }
 
-      const changes: Record<string, { old: any; new: any }> = {};
-
       if (input.name && input.name !== existing.name) {
-        changes.name = { old: existing.name, new: input.name };
+        await db.insert(customerHistory).values({
+          customerId: input.id,
+          changedById: ctx.session.user.id,
+          fieldName: "name",
+          oldValue: existing.name,
+          newValue: input.name,
+        });
       }
+
       if (
         input.phoneNumber !== undefined &&
         input.phoneNumber !== existing.phoneNumber
       ) {
-        changes.phoneNumber = {
-          old: existing.phoneNumber,
-          new: input.phoneNumber,
-        };
-      }
-
-      if (Object.keys(changes).length > 0) {
         await db.insert(customerHistory).values({
           customerId: input.id,
           changedById: ctx.session.user.id,
-          changes,
+          fieldName: "phoneNumber",
+          oldValue: existing.phoneNumber,
+          newValue: input.phoneNumber,
         });
       }
 
       return db.update(customer).set(input).where(eq(customer.id, input.id));
-    }),
-
-  delete: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      return db.delete(customer).where(eq(customer.id, input.id));
     }),
 });

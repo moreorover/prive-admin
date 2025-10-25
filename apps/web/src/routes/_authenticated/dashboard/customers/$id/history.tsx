@@ -77,33 +77,31 @@ function CustomerHistory() {
             </div>
           ) : (
             <div className="space-y-4">
-              {history.map((record) => (
-                <div key={record.id} className="border-muted border-l-2 pl-4">
+              {history.map((group, index) => (
+                <div key={index} className="border-muted border-l-2 pl-4">
                   <div className="mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">
-                        {record.changedBy.name}
+                        {group.changedBy.name}
                       </span>
-                      <Badge variant="secondary">
-                        {record.changedBy.email}
-                      </Badge>
+                      <Badge variant="secondary">{group.changedBy.email}</Badge>
                     </div>
                     <div className="text-muted-foreground text-sm">
-                      {format(new Date(record.changedAt), "PPpp")}
+                      {format(new Date(group.changedAt), "PPpp")}
                     </div>
                   </div>
                   <div className="space-y-1">
-                    {Object.entries(
-                      record.changes as Record<string, { old: any; new: any }>,
-                    ).map(([field, change]) => (
-                      <div key={field} className="text-sm">
-                        <span className="font-medium capitalize">{field}:</span>{" "}
+                    {group.changes.map((change, changeIndex) => (
+                      <div key={changeIndex} className="text-sm">
+                        <span className="font-medium capitalize">
+                          {change.fieldName}:
+                        </span>{" "}
                         <span className="text-muted-foreground line-through">
-                          {change.old || "empty"}
+                          {change.oldValue || "empty"}
                         </span>{" "}
                         →{" "}
                         <span className="text-green-600">
-                          {change.new || "empty"}
+                          {change.newValue || "empty"}
                         </span>
                       </div>
                     ))}

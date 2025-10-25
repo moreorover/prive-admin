@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { user } from "./auth";
 
@@ -22,7 +22,9 @@ export const customerHistory = pgTable("customer_history", {
   changedById: text("changed_by_id")
     .notNull()
     .references(() => user.id),
-  changes: jsonb("changes").notNull(), // { field: { old: value, new: value } }
+  fieldName: text("field_name").notNull(), // "name", "phoneNumber", etc.
+  oldValue: text("old_value"), // Store as text, cast when needed
+  newValue: text("new_value"), // Store as text, cast when needed
   changedAt: timestamp("changed_at").defaultNow().notNull(),
 });
 
