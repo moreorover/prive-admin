@@ -3,6 +3,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { toast } from "sonner";
 import z from "zod";
 import { authClient } from "@/lib/auth-client";
+import { getSafeRedirect } from "@/utils/safeRedirect";
 import Loader from "./loader";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -32,8 +33,9 @@ export default function SignInForm({
         },
         {
           onSuccess: () => {
+            const safeRedirect = getSafeRedirect(search.redirect);
             navigate({
-              to: search.redirect,
+              to: safeRedirect,
             });
             toast.success("Sign in successful");
           },
