@@ -36,9 +36,9 @@ export default function CustomerPage() {
       <Main className="flex flex-1 flex-col gap-4 sm:gap-6">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h2 className="font-bold text-2xl tracking-tight">Tasks</h2>
+            <h2 className="font-bold text-2xl tracking-tight">Customers</h2>
             <p className="text-muted-foreground">
-              Here&apos;s a list of your tasks for this month!
+              Here&apos;s a list of your customers!
             </p>
           </div>
           <CustomersPrimaryButtons />

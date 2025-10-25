@@ -83,10 +83,17 @@ export function AppSidebar({ user }: AppSidebarProps) {
                     <Link
                       to={item.href}
                       className="flex items-center gap-2"
-                      activeOptions={{
-                        exact: true,
-                        includeSearch: false,
-                      }}
+                      activeOptions={
+                        item.href === "/dashboard"
+                          ? {
+                              exact: true,
+                              includeSearch: false,
+                            }
+                          : {
+                              exact: false,
+                              includeSearch: false,
+                            }
+                      }
                       activeProps={{
                         className: "bg-primary text-primary-foreground",
                       }}

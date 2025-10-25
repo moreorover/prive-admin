@@ -18,7 +18,7 @@ type DataTableRowActionsProps<TData> = {
   row: Row<TData>;
 };
 
-export async function DataTableRowActions<TData>({
+export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
   const navigate = useNavigate();
