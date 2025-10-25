@@ -188,7 +188,6 @@ export const customerRouter = router({
         createdById: ctx.session.user.id,
       });
     }),
-
   update: protectedProcedure
     .input(customerUpdateSchema)
     .mutation(async ({ input, ctx }) => {
@@ -199,40 +198,49 @@ export const customerRouter = router({
         });
       }
 
-      const existing = await db.query.customer.findFirst({
-        where: eq(customer.id, input.id),
+      // Wrap everything in a transaction
+      // If any operation fails, all changes are rolled back
+      return db.transaction(async (tx) => {
+        // Fetch existing customer record
+        const existing = await tx.query.customer.findFirst({
+          where: eq(customer.id, input.id),
+        });
+
+        if (!existing) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Customer not found.",
+          });
+        }
+
+        // Track name change in history if changed
+        if (input.name && input.name !== existing.name) {
+          await tx.insert(customerHistory).values({
+            customerId: input.id,
+            changedById: ctx.session.user.id,
+            fieldName: "name",
+            oldValue: existing.name,
+            newValue: input.name,
+          });
+        }
+
+        // Track phone number change in history if changed
+        if (
+          input.phoneNumber !== undefined &&
+          input.phoneNumber !== existing.phoneNumber
+        ) {
+          await tx.insert(customerHistory).values({
+            customerId: input.id,
+            changedById: ctx.session.user.id,
+            fieldName: "phoneNumber",
+            oldValue: existing.phoneNumber,
+            newValue: input.phoneNumber,
+          });
+        }
+
+        // Update the customer record
+        // If this fails, history inserts above are rolled back
+        return tx.update(customer).set(input).where(eq(customer.id, input.id));
       });
-
-      if (!existing) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Customer not found.",
-        });
-      }
-
-      if (input.name && input.name !== existing.name) {
-        await db.insert(customerHistory).values({
-          customerId: input.id,
-          changedById: ctx.session.user.id,
-          fieldName: "name",
-          oldValue: existing.name,
-          newValue: input.name,
-        });
-      }
-
-      if (
-        input.phoneNumber !== undefined &&
-        input.phoneNumber !== existing.phoneNumber
-      ) {
-        await db.insert(customerHistory).values({
-          customerId: input.id,
-          changedById: ctx.session.user.id,
-          fieldName: "phoneNumber",
-          oldValue: existing.phoneNumber,
-          newValue: input.phoneNumber,
-        });
-      }
-
-      return db.update(customer).set(input).where(eq(customer.id, input.id));
     }),
 });

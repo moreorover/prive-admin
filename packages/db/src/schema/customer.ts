@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
+import { z } from "zod";
 import { user } from "./auth";
 
 export const customer = pgTable("customer", {
@@ -31,7 +32,9 @@ export const customerHistory = pgTable("customer_history", {
 export const customerCreateSchema = createInsertSchema(customer).omit({
   createdById: true,
 });
-export const customerUpdateSchema = createUpdateSchema(customer);
+export const customerUpdateSchema = createUpdateSchema(customer).extend({
+  id: z.uuid(), // Make id required for updates
+});
 
 export const customerRelations = relations(customer, ({ one, many }) => ({
   createdBy: one(user, {
