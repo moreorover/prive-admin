@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteRouteImport } from './routes/_authenticated/dashboard/route'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedDashboardCustomersIndexRouteImport } from './routes/_authenticated/dashboard/customers/index'
+import { Route as AuthenticatedDashboardCustomersIdRouteImport } from './routes/_authenticated/dashboard/customers/$id'
 
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
@@ -48,18 +49,26 @@ const AuthenticatedDashboardCustomersIndexRoute =
     path: '/customers/',
     getParentRoute: () => AuthenticatedDashboardRouteRoute,
   } as any)
+const AuthenticatedDashboardCustomersIdRoute =
+  AuthenticatedDashboardCustomersIdRouteImport.update({
+    id: '/customers/$id',
+    path: '/customers/$id',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/signin': typeof SigninRoute
   '/dashboard': typeof AuthenticatedDashboardRouteRouteWithChildren
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/customers/$id': typeof AuthenticatedDashboardCustomersIdRoute
   '/dashboard/customers': typeof AuthenticatedDashboardCustomersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/signin': typeof SigninRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/customers/$id': typeof AuthenticatedDashboardCustomersIdRoute
   '/dashboard/customers': typeof AuthenticatedDashboardCustomersIndexRoute
 }
 export interface FileRoutesById {
@@ -69,6 +78,7 @@ export interface FileRoutesById {
   '/signin': typeof SigninRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteRouteWithChildren
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/dashboard/customers/$id': typeof AuthenticatedDashboardCustomersIdRoute
   '/_authenticated/dashboard/customers/': typeof AuthenticatedDashboardCustomersIndexRoute
 }
 export interface FileRouteTypes {
@@ -78,9 +88,15 @@ export interface FileRouteTypes {
     | '/signin'
     | '/dashboard'
     | '/dashboard/'
+    | '/dashboard/customers/$id'
     | '/dashboard/customers'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/signin' | '/dashboard' | '/dashboard/customers'
+  to:
+    | '/'
+    | '/signin'
+    | '/dashboard'
+    | '/dashboard/customers/$id'
+    | '/dashboard/customers'
   id:
     | '__root__'
     | '/'
@@ -88,6 +104,7 @@ export interface FileRouteTypes {
     | '/signin'
     | '/_authenticated/dashboard'
     | '/_authenticated/dashboard/'
+    | '/_authenticated/dashboard/customers/$id'
     | '/_authenticated/dashboard/customers/'
   fileRoutesById: FileRoutesById
 }
@@ -141,17 +158,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardCustomersIndexRouteImport
       parentRoute: typeof AuthenticatedDashboardRouteRoute
     }
+    '/_authenticated/dashboard/customers/$id': {
+      id: '/_authenticated/dashboard/customers/$id'
+      path: '/customers/$id'
+      fullPath: '/dashboard/customers/$id'
+      preLoaderRoute: typeof AuthenticatedDashboardCustomersIdRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
   }
 }
 
 interface AuthenticatedDashboardRouteRouteChildren {
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+  AuthenticatedDashboardCustomersIdRoute: typeof AuthenticatedDashboardCustomersIdRoute
   AuthenticatedDashboardCustomersIndexRoute: typeof AuthenticatedDashboardCustomersIndexRoute
 }
 
 const AuthenticatedDashboardRouteRouteChildren: AuthenticatedDashboardRouteRouteChildren =
   {
     AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+    AuthenticatedDashboardCustomersIdRoute:
+      AuthenticatedDashboardCustomersIdRoute,
     AuthenticatedDashboardCustomersIndexRoute:
       AuthenticatedDashboardCustomersIndexRoute,
   }

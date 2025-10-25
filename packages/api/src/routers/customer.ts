@@ -2,6 +2,7 @@ import { db } from "@prive-admin/db";
 import {
   customer,
   customerCreateSchema,
+  customerHistory,
   customerUpdateSchema,
 } from "@prive-admin/db/schema/customer";
 import { TRPCError } from "@trpc/server";
@@ -25,7 +26,7 @@ export const customerRouter = router({
           .string()
           .refine(
             (val) => {
-              if (!val) return true; // optional field
+              if (!val) return true;
               const [field, order] = val.split(".");
               if (!field || !order) return false;
               const validFields = ["name", "phoneNumber"];
@@ -44,7 +45,6 @@ export const customerRouter = router({
     .query(async ({ input }) => {
       const { page, pageSize, sortBy, filter } = input;
 
-      // Build where conditions
       const whereConditions = [];
       if (filter) {
         whereConditions.push(
@@ -55,9 +55,8 @@ export const customerRouter = router({
         );
       }
 
-      // Determine order by from sortBy format "field.asc" or "field.desc"
       const getOrderBy = () => {
-        if (!sortBy) return asc(customer.name); // default sort
+        if (!sortBy) return asc(customer.name);
 
         const [field, order] = sortBy.split(".");
         const column =
@@ -70,9 +69,13 @@ export const customerRouter = router({
         orderBy: getOrderBy(),
         limit: pageSize,
         offset: (page - 1) * pageSize,
+        with: {
+          createdBy: {
+            columns: { id: true, name: true, email: true },
+          },
+        },
       });
 
-      // Get total count for pagination
       const totalCount = await db
         .select({ count: sql<number>`count(*)` })
         .from(customer)
@@ -90,24 +93,87 @@ export const customerRouter = router({
       };
     }),
 
+  getById: protectedProcedure
+    .input(z.object({ customerId: z.string() }))
+    .query(async ({ input }) => {
+      return db.query.customer.findFirst({
+        where: eq(customer.id, input.customerId),
+        with: {
+          createdBy: {
+            columns: { id: true, name: true, email: true },
+          },
+        },
+      });
+    }),
+
+  getHistory: protectedProcedure
+    .input(z.object({ customerId: z.string() }))
+    .query(async ({ input }) => {
+      return db.query.customerHistory.findMany({
+        where: eq(customerHistory.customerId, input.customerId),
+        orderBy: desc(customerHistory.changedAt),
+        with: {
+          changedBy: {
+            columns: { id: true, name: true, email: true },
+          },
+        },
+      });
+    }),
+
   create: protectedProcedure
     .input(customerCreateSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       return db.insert(customer).values({
         name: input.name,
         phoneNumber: input.phoneNumber,
+        createdById: ctx.session.user.id,
       });
     }),
 
   update: protectedProcedure
     .input(customerUpdateSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       if (!input.id) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "ID is not valid.",
         });
       }
+
+      const existing = await db.query.customer.findFirst({
+        where: eq(customer.id, input.id),
+      });
+
+      if (!existing) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Customer not found.",
+        });
+      }
+
+      const changes: Record<string, { old: any; new: any }> = {};
+
+      if (input.name && input.name !== existing.name) {
+        changes.name = { old: existing.name, new: input.name };
+      }
+      if (
+        input.phoneNumber !== undefined &&
+        input.phoneNumber !== existing.phoneNumber
+      ) {
+        changes.phoneNumber = {
+          old: existing.phoneNumber,
+          new: input.phoneNumber,
+        };
+      }
+
+      if (Object.keys(changes).length > 0) {
+        await db.insert(customerHistory).values({
+          customerId: input.id,
+          changedById: ctx.session.user.id,
+          changes,
+        });
+      }
+
       return db.update(customer).set(input).where(eq(customer.id, input.id));
     }),
 
