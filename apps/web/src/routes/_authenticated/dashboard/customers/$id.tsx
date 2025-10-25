@@ -17,8 +17,12 @@ export const Route = createFileRoute("/_authenticated/dashboard/customers/$id")(
         trpc.customer.getById.queryOptions({ customerId: params.id }),
       );
 
+      const customer = queryClient.getQueryData(
+        trpc.customer.getById.queryOptions({ customerId: params.id }).queryKey,
+      );
+
       return {
-        crumb: "Customers",
+        crumb: customer?.name || "Customer",
       };
     },
   },

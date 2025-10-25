@@ -36,9 +36,5 @@ export const Route = createFileRoute("/_authenticated/dashboard/customers/")({
     await queryClient.ensureQueryData(
       trpc.customer.getAll.queryOptions(filters),
     );
-
-    return {
-      crumb: "Customers",
-    };
   },
 });

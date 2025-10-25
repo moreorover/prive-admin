@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteRouteImport } from './routes/_authenticated/dashboard/route'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
+import { Route as AuthenticatedDashboardCustomersRouteImport } from './routes/_authenticated/dashboard/customers'
 import { Route as AuthenticatedDashboardCustomersIndexRouteImport } from './routes/_authenticated/dashboard/customers/index'
 import { Route as AuthenticatedDashboardCustomersIdRouteImport } from './routes/_authenticated/dashboard/customers/$id'
 import { Route as AuthenticatedDashboardCustomersIdIndexRouteImport } from './routes/_authenticated/dashboard/customers/$id/index'
@@ -45,17 +46,23 @@ const AuthenticatedDashboardIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedDashboardRouteRoute,
   } as any)
+const AuthenticatedDashboardCustomersRoute =
+  AuthenticatedDashboardCustomersRouteImport.update({
+    id: '/customers',
+    path: '/customers',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
 const AuthenticatedDashboardCustomersIndexRoute =
   AuthenticatedDashboardCustomersIndexRouteImport.update({
-    id: '/customers/',
-    path: '/customers/',
-    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedDashboardCustomersRoute,
   } as any)
 const AuthenticatedDashboardCustomersIdRoute =
   AuthenticatedDashboardCustomersIdRouteImport.update({
-    id: '/customers/$id',
-    path: '/customers/$id',
-    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedDashboardCustomersRoute,
   } as any)
 const AuthenticatedDashboardCustomersIdIndexRoute =
   AuthenticatedDashboardCustomersIdIndexRouteImport.update({
@@ -74,9 +81,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/signin': typeof SigninRoute
   '/dashboard': typeof AuthenticatedDashboardRouteRouteWithChildren
+  '/dashboard/customers': typeof AuthenticatedDashboardCustomersRouteWithChildren
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/customers/$id': typeof AuthenticatedDashboardCustomersIdRouteWithChildren
-  '/dashboard/customers': typeof AuthenticatedDashboardCustomersIndexRoute
+  '/dashboard/customers/': typeof AuthenticatedDashboardCustomersIndexRoute
   '/dashboard/customers/$id/history': typeof AuthenticatedDashboardCustomersIdHistoryRoute
   '/dashboard/customers/$id/': typeof AuthenticatedDashboardCustomersIdIndexRoute
 }
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/signin': typeof SigninRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteRouteWithChildren
+  '/_authenticated/dashboard/customers': typeof AuthenticatedDashboardCustomersRouteWithChildren
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/customers/$id': typeof AuthenticatedDashboardCustomersIdRouteWithChildren
   '/_authenticated/dashboard/customers/': typeof AuthenticatedDashboardCustomersIndexRoute
@@ -106,9 +115,10 @@ export interface FileRouteTypes {
     | '/'
     | '/signin'
     | '/dashboard'
+    | '/dashboard/customers'
     | '/dashboard/'
     | '/dashboard/customers/$id'
-    | '/dashboard/customers'
+    | '/dashboard/customers/'
     | '/dashboard/customers/$id/history'
     | '/dashboard/customers/$id/'
   fileRoutesByTo: FileRoutesByTo
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/signin'
     | '/_authenticated/dashboard'
+    | '/_authenticated/dashboard/customers'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/customers/$id'
     | '/_authenticated/dashboard/customers/'
@@ -175,19 +186,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
       parentRoute: typeof AuthenticatedDashboardRouteRoute
     }
-    '/_authenticated/dashboard/customers/': {
-      id: '/_authenticated/dashboard/customers/'
+    '/_authenticated/dashboard/customers': {
+      id: '/_authenticated/dashboard/customers'
       path: '/customers'
       fullPath: '/dashboard/customers'
-      preLoaderRoute: typeof AuthenticatedDashboardCustomersIndexRouteImport
+      preLoaderRoute: typeof AuthenticatedDashboardCustomersRouteImport
       parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
+    '/_authenticated/dashboard/customers/': {
+      id: '/_authenticated/dashboard/customers/'
+      path: '/'
+      fullPath: '/dashboard/customers/'
+      preLoaderRoute: typeof AuthenticatedDashboardCustomersIndexRouteImport
+      parentRoute: typeof AuthenticatedDashboardCustomersRoute
     }
     '/_authenticated/dashboard/customers/$id': {
       id: '/_authenticated/dashboard/customers/$id'
-      path: '/customers/$id'
+      path: '/$id'
       fullPath: '/dashboard/customers/$id'
       preLoaderRoute: typeof AuthenticatedDashboardCustomersIdRouteImport
-      parentRoute: typeof AuthenticatedDashboardRouteRoute
+      parentRoute: typeof AuthenticatedDashboardCustomersRoute
     }
     '/_authenticated/dashboard/customers/$id/': {
       id: '/_authenticated/dashboard/customers/$id/'
@@ -224,19 +242,34 @@ const AuthenticatedDashboardCustomersIdRouteWithChildren =
     AuthenticatedDashboardCustomersIdRouteChildren,
   )
 
-interface AuthenticatedDashboardRouteRouteChildren {
-  AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+interface AuthenticatedDashboardCustomersRouteChildren {
   AuthenticatedDashboardCustomersIdRoute: typeof AuthenticatedDashboardCustomersIdRouteWithChildren
   AuthenticatedDashboardCustomersIndexRoute: typeof AuthenticatedDashboardCustomersIndexRoute
 }
 
-const AuthenticatedDashboardRouteRouteChildren: AuthenticatedDashboardRouteRouteChildren =
+const AuthenticatedDashboardCustomersRouteChildren: AuthenticatedDashboardCustomersRouteChildren =
   {
-    AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
     AuthenticatedDashboardCustomersIdRoute:
       AuthenticatedDashboardCustomersIdRouteWithChildren,
     AuthenticatedDashboardCustomersIndexRoute:
       AuthenticatedDashboardCustomersIndexRoute,
+  }
+
+const AuthenticatedDashboardCustomersRouteWithChildren =
+  AuthenticatedDashboardCustomersRoute._addFileChildren(
+    AuthenticatedDashboardCustomersRouteChildren,
+  )
+
+interface AuthenticatedDashboardRouteRouteChildren {
+  AuthenticatedDashboardCustomersRoute: typeof AuthenticatedDashboardCustomersRouteWithChildren
+  AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+}
+
+const AuthenticatedDashboardRouteRouteChildren: AuthenticatedDashboardRouteRouteChildren =
+  {
+    AuthenticatedDashboardCustomersRoute:
+      AuthenticatedDashboardCustomersRouteWithChildren,
+    AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
   }
 
 const AuthenticatedDashboardRouteRouteWithChildren =

@@ -1,5 +1,6 @@
 import { isMatch, Link, useMatches } from "@tanstack/react-router";
 import { Home } from "lucide-react";
+import React from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -41,20 +42,22 @@ export function PathBreadcrumbs() {
           const isLast = index === matchesWithCrumbs.length - 1;
 
           return (
-            <BreadcrumbItem key={match.fullPath}>
-              {isLast ? (
-                <BreadcrumbPage>
-                  {(match.loaderData as any)?.crumb}
-                </BreadcrumbPage>
-              ) : (
-                <BreadcrumbLink asChild>
-                  <Link from={match.fullPath}>
+            <React.Fragment key={match.fullPath}>
+              <BreadcrumbItem>
+                {isLast ? (
+                  <BreadcrumbPage>
                     {(match.loaderData as any)?.crumb}
-                  </Link>
-                </BreadcrumbLink>
-              )}
+                  </BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink asChild>
+                    <Link from={match.fullPath}>
+                      {(match.loaderData as any)?.crumb}
+                    </Link>
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
               {!isLast && <BreadcrumbSeparator />}
-            </BreadcrumbItem>
+            </React.Fragment>
           );
         })}
       </BreadcrumbList>
