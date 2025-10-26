@@ -12,7 +12,10 @@ export const customer = pgTable("customer", {
     .notNull()
     .references(() => user.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
 });
 
 export const customerHistory = pgTable("customer_history", {
