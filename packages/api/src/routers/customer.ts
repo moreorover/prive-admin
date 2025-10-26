@@ -4,11 +4,11 @@ import {
   customerCreateSchema,
   customerUpdateSchema,
 } from "@prive-admin/db/schema/customer";
-import { entityHistory } from "@prive-admin/db/schema/entityHistory";
 import { TRPCError } from "@trpc/server";
 import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm";
 import z from "zod";
 import { protectedProcedure, router } from "../index";
+import { trackFieldChange } from "../lib/history";
 
 export const customerRouter = router({
   getAll: protectedProcedure
@@ -106,63 +106,6 @@ export const customerRouter = router({
       });
     }),
 
-  getHistory: protectedProcedure
-    // Validate input - requires customerId as string
-    .input(z.object({ customerId: z.string() }))
-    .query(async ({ input }) => {
-      // Fetch all history records for this customer from unified history table
-      // Filter by entity type "customer" and the specific customer ID
-      // Sort by most recent first (newest changes at top)
-      // Include user details who made each change via relation
-      const records = await db.query.entityHistory.findMany({
-        where: and(
-          eq(entityHistory.entityType, "customer"),
-          eq(entityHistory.entityId, input.customerId),
-        ),
-        orderBy: desc(entityHistory.changedAt),
-        with: {
-          changedBy: {
-            columns: { id: true, name: true, email: true },
-          },
-        },
-      });
-
-      // Group records by user and timestamp
-      // Since updates happen in transactions, all field changes from one update
-      // will have the exact same timestamp and user
-      // We group them to show as a single "edit event" in the UI
-      const grouped = records.reduce(
-        (acc, record) => {
-          // Create unique key from userId and timestamp
-          // This ensures changes from same user at same time are grouped together
-          const key = `${record.changedById}-${record.changedAt}`;
-
-          // If this key doesn't exist yet, create a new group
-          if (!acc[key]) {
-            acc[key] = {
-              changedBy: record.changedBy, // User who made the change
-              changedAt: record.changedAt, // When the change happened
-              changes: [], // Array to hold all field changes in this group
-            };
-          }
-
-          // Add this field change to the group
-          acc[key].changes.push({
-            fieldName: record.fieldName, // Which field was changed (name, phoneNumber, etc)
-            oldValue: record.oldValue, // Previous value
-            newValue: record.newValue, // New value
-          });
-
-          return acc;
-        },
-        {} as Record<string, any>,
-      );
-
-      // Convert grouped object to array for easier iteration in UI
-      // Each array item represents one "edit session" with multiple field changes
-      return Object.values(grouped);
-    }),
-
   create: protectedProcedure
     .input(customerCreateSchema)
     .mutation(async ({ input, ctx }) => {
@@ -183,10 +126,7 @@ export const customerRouter = router({
         });
       }
 
-      // Wrap everything in a transaction
-      // If any operation fails, all changes are rolled back
       return db.transaction(async (tx) => {
-        // Fetch existing customer record
         const existing = await tx.query.customer.findFirst({
           where: eq(customer.id, input.id),
         });
@@ -198,35 +138,35 @@ export const customerRouter = router({
           });
         }
 
-        // Track name change in unified history table if changed
+        // Track name change if changed
         if (input.name && input.name !== existing.name) {
-          await tx.insert(entityHistory).values({
-            entityType: "customer",
-            entityId: input.id,
-            changedById: ctx.session.user.id,
-            fieldName: "name",
-            oldValue: existing.name,
-            newValue: input.name,
-          });
+          await trackFieldChange(
+            tx,
+            "customer",
+            input.id,
+            ctx.session.user.id,
+            "name",
+            existing.name,
+            input.name,
+          );
         }
 
-        // Track phone number change in unified history table if changed
+        // Track phone number change if changed
         if (
           input.phoneNumber !== undefined &&
           input.phoneNumber !== existing.phoneNumber
         ) {
-          await tx.insert(entityHistory).values({
-            entityType: "customer",
-            entityId: input.id,
-            changedById: ctx.session.user.id,
-            fieldName: "phoneNumber",
-            oldValue: existing.phoneNumber,
-            newValue: input.phoneNumber,
-          });
+          await trackFieldChange(
+            tx,
+            "customer",
+            input.id,
+            ctx.session.user.id,
+            "phoneNumber",
+            existing.phoneNumber,
+            input.phoneNumber,
+          );
         }
 
-        // Update the customer record
-        // If this fails, history inserts above are rolled back
         return tx.update(customer).set(input).where(eq(customer.id, input.id));
       });
     }),
