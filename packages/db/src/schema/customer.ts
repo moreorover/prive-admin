@@ -3,6 +3,9 @@ import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { z } from "zod";
 import { user } from "./auth";
+import { booking } from "./booking";
+import { entityHistory } from "./entityHistory";
+import { hairAssigned, hairOrder } from "./hairOrder";
 
 export const customer = pgTable("customer", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -14,29 +17,15 @@ export const customer = pgTable("customer", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
-    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .$onUpdate(() => new Date())
     .notNull(),
-});
-
-export const customerHistory = pgTable("customer_history", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  customerId: uuid("customer_id")
-    .notNull()
-    .references(() => customer.id, { onDelete: "cascade" }),
-  changedById: text("changed_by_id")
-    .notNull()
-    .references(() => user.id),
-  fieldName: text("field_name").notNull(), // "name", "phoneNumber", etc.
-  oldValue: text("old_value"), // Store as text, cast when needed
-  newValue: text("new_value"), // Store as text, cast when needed
-  changedAt: timestamp("changed_at").defaultNow().notNull(),
 });
 
 export const customerCreateSchema = createInsertSchema(customer).omit({
   createdById: true,
 });
 export const customerUpdateSchema = createUpdateSchema(customer).extend({
-  id: z.uuid(), // Make id required for updates
+  id: z.uuid(),
 });
 
 export const customerRelations = relations(customer, ({ one, many }) => ({
@@ -44,19 +33,8 @@ export const customerRelations = relations(customer, ({ one, many }) => ({
     fields: [customer.createdById],
     references: [user.id],
   }),
-  history: many(customerHistory),
+  createdBookings: many(booking),
+  createdHairOrders: many(hairOrder),
+  createdHairAssigned: many(hairAssigned),
+  history: many(entityHistory),
 }));
-
-export const customerHistoryRelations = relations(
-  customerHistory,
-  ({ one }) => ({
-    customer: one(customer, {
-      fields: [customerHistory.customerId],
-      references: [customer.id],
-    }),
-    changedBy: one(user, {
-      fields: [customerHistory.changedById],
-      references: [user.id],
-    }),
-  }),
-);

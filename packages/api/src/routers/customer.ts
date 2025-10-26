@@ -2,9 +2,9 @@ import { db } from "@prive-admin/db";
 import {
   customer,
   customerCreateSchema,
-  customerHistory,
   customerUpdateSchema,
 } from "@prive-admin/db/schema/customer";
+import { entityHistory } from "@prive-admin/db/schema/entityHistory";
 import { TRPCError } from "@trpc/server";
 import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm";
 import z from "zod";
@@ -110,12 +110,16 @@ export const customerRouter = router({
     // Validate input - requires customerId as string
     .input(z.object({ customerId: z.string() }))
     .query(async ({ input }) => {
-      // Fetch all history records for this customer from database
+      // Fetch all history records for this customer from unified history table
+      // Filter by entity type "customer" and the specific customer ID
       // Sort by most recent first (newest changes at top)
       // Include user details who made each change via relation
-      const records = await db.query.customerHistory.findMany({
-        where: eq(customerHistory.customerId, input.customerId),
-        orderBy: desc(customerHistory.changedAt),
+      const records = await db.query.entityHistory.findMany({
+        where: and(
+          eq(entityHistory.entityType, "customer"),
+          eq(entityHistory.entityId, input.customerId),
+        ),
+        orderBy: desc(entityHistory.changedAt),
         with: {
           changedBy: {
             columns: { id: true, name: true, email: true },
@@ -168,6 +172,7 @@ export const customerRouter = router({
         createdById: ctx.session.user.id,
       });
     }),
+
   update: protectedProcedure
     .input(customerUpdateSchema)
     .mutation(async ({ input, ctx }) => {
@@ -193,10 +198,11 @@ export const customerRouter = router({
           });
         }
 
-        // Track name change in history if changed
+        // Track name change in unified history table if changed
         if (input.name && input.name !== existing.name) {
-          await tx.insert(customerHistory).values({
-            customerId: input.id,
+          await tx.insert(entityHistory).values({
+            entityType: "customer",
+            entityId: input.id,
             changedById: ctx.session.user.id,
             fieldName: "name",
             oldValue: existing.name,
@@ -204,13 +210,14 @@ export const customerRouter = router({
           });
         }
 
-        // Track phone number change in history if changed
+        // Track phone number change in unified history table if changed
         if (
           input.phoneNumber !== undefined &&
           input.phoneNumber !== existing.phoneNumber
         ) {
-          await tx.insert(customerHistory).values({
-            customerId: input.id,
+          await tx.insert(entityHistory).values({
+            entityType: "customer",
+            entityId: input.id,
             changedById: ctx.session.user.id,
             fieldName: "phoneNumber",
             oldValue: existing.phoneNumber,
