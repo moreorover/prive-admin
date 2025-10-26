@@ -33,7 +33,7 @@ export const customerRelations = relations(customer, ({ one, many }) => ({
     fields: [customer.createdById],
     references: [user.id],
   }),
-  createdBookings: many(booking),
+  bookings: many(booking),
   createdHairOrders: many(hairOrder),
   createdHairAssigned: many(hairAssigned),
   history: many(entityHistory),

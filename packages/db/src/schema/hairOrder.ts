@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { z } from "zod";
 import { user } from "./auth";
@@ -8,23 +8,19 @@ import { customer } from "./customer";
 import { entityHistory } from "./entityHistory";
 
 export const hairOrder = pgTable("hair_orders", {
-  id: text("id").primaryKey(),
-  uid: integer("uid").notNull().unique(),
+  id: uuid("id").primaryKey().defaultRandom(),
   placedAt: timestamp("placed_at", { mode: "date" }),
   arrivedAt: timestamp("arrived_at", { mode: "date" }),
   weightReceived: integer("weight_received").default(0).notNull(),
   weightUsed: integer("weight_used").default(0).notNull(),
   pricePerGram: integer("price_per_gram").default(0).notNull(),
   total: integer("total").default(0).notNull(),
-
-  customerId: text("customer_id")
+  customerId: uuid("customer_id")
     .notNull()
     .references(() => customer.id, { onDelete: "cascade" }),
-
   createdById: text("created_by_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
@@ -33,18 +29,18 @@ export const hairOrder = pgTable("hair_orders", {
 });
 
 export const hairAssigned = pgTable("hair_assigned", {
-  id: text("id").primaryKey(),
-  bookingId: text("booking_id").references(() => booking.id, {
+  id: uuid("id").primaryKey().defaultRandom(),
+  bookingId: uuid("booking_id").references(() => booking.id, {
     onDelete: "cascade",
   }),
-  hairOrderId: text("hair_order_id")
+  hairOrderId: uuid("hair_order_id")
     .notNull()
     .references(() => hairOrder.id, { onDelete: "cascade" }),
   weightInGrams: integer("weight_in_grams").default(0).notNull(),
   soldFor: integer("sold_for").default(0).notNull(),
   profit: integer("profit").default(0).notNull(),
   pricePerGram: integer("price_per_gram").default(0).notNull(),
-  clientId: text("client_id")
+  clientId: uuid("client_id")
     .notNull()
     .references(() => customer.id, { onDelete: "cascade" }),
   createdById: text("created_by_id")

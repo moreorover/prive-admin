@@ -18,8 +18,6 @@ function BookingsPage() {
   const navigate = Route.useNavigate();
   const { month } = Route.useSearch();
 
-  const { data: bookings } = useQuery(trpc.booking.getAll.queryOptions());
-
   // Parse current month from URL or default to today
   const getCurrentMonth = () => {
     if (!month) return new Date();
@@ -35,6 +33,14 @@ function BookingsPage() {
   };
 
   const currentMonth = getCurrentMonth();
+
+  // Fetch bookings for current month
+  const { data: bookings } = useQuery(
+    trpc.booking.getByMonth.queryOptions({
+      year: currentMonth.getFullYear(),
+      month: currentMonth.getMonth() + 1,
+    }),
+  );
 
   const handleMonthChange = (date: Date) => {
     const year = date.getFullYear();
