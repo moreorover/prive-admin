@@ -9,13 +9,6 @@ const customersSearchSchema = z.object({
   filter: z.string().optional().catch(undefined),
 });
 
-export type CustomersFilters = {
-  page?: number;
-  pageSize?: number;
-  sortBy?: string;
-  filter?: string;
-};
-
 export const Route = createFileRoute("/_authenticated/dashboard/customers/")({
   component: CustomerPage,
   validateSearch: (search) => customersSearchSchema.parse(search),

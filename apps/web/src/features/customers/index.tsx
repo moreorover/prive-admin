@@ -4,11 +4,15 @@ import { CustomersDialogs } from "@/features/customers/components/customers-dial
 import { CustomersPrimaryButtons } from "@/features/customers/components/customers-primary-buttons";
 import { CustomersProvider } from "@/features/customers/components/customers-provider";
 import { CustomersTable } from "@/features/customers/components/customers-table";
-import {
-  type CustomersFilters,
-  Route,
-} from "@/routes/_authenticated/dashboard/customers";
+import { Route } from "@/routes/_authenticated/dashboard/customers/index";
 import { trpc } from "@/utils/trpc";
+
+export type CustomersFilters = {
+  page?: number;
+  pageSize?: number;
+  sortBy?: string;
+  filter?: string;
+};
 
 export default function CustomerPage() {
   const search = Route.useSearch();

@@ -19,8 +19,8 @@ import { Route as AuthenticatedDashboardProfileRouteImport } from './routes/_aut
 import { Route as AuthenticatedDashboardCustomersRouteImport } from './routes/_authenticated/dashboard/customers'
 import { Route as AuthenticatedDashboardCustomersIndexRouteImport } from './routes/_authenticated/dashboard/customers/index'
 import { Route as AuthenticatedDashboardCustomersIdRouteImport } from './routes/_authenticated/dashboard/customers/$id'
-import { Route as AuthenticatedDashboardCustomersIdIndexRouteImport } from './routes/_authenticated/dashboard/customers/$id/index'
-import { Route as AuthenticatedDashboardCustomersIdHistoryRouteImport } from './routes/_authenticated/dashboard/customers/$id/history'
+import { Route as AuthenticatedDashboardCustomersIdIndexRouteImport } from './routes/_authenticated/dashboard/customers/$id.index'
+import { Route as AuthenticatedDashboardCustomersIdHistoryRouteImport } from './routes/_authenticated/dashboard/customers/$id.history'
 
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
