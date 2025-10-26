@@ -1,4 +1,10 @@
-import { HelpCircle, LayoutDashboard, Package, Settings } from "lucide-react";
+import {
+  Calendar,
+  HelpCircle,
+  LayoutDashboard,
+  Package,
+  Settings,
+} from "lucide-react";
 
 export interface NavigationItem {
   title: string;
@@ -18,6 +24,11 @@ export const navigationItems: NavigationItem[] = [
     title: "Customers",
     href: "/dashboard/customers",
     icon: Package,
+  },
+  {
+    title: "Bookings",
+    href: "/dashboard/bookings",
+    icon: Calendar,
   },
   {
     title: "Settings",

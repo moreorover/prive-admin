@@ -18,6 +18,7 @@ import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_au
 import { Route as AuthenticatedDashboardProfileRouteImport } from './routes/_authenticated/dashboard/profile'
 import { Route as AuthenticatedDashboardCustomersRouteImport } from './routes/_authenticated/dashboard/customers'
 import { Route as AuthenticatedDashboardCustomersIndexRouteImport } from './routes/_authenticated/dashboard/customers/index'
+import { Route as AuthenticatedDashboardBookingsIndexRouteImport } from './routes/_authenticated/dashboard/bookings/index'
 import { Route as AuthenticatedDashboardCustomersIdRouteImport } from './routes/_authenticated/dashboard/customers/$id'
 import { Route as AuthenticatedDashboardCustomersIdIndexRouteImport } from './routes/_authenticated/dashboard/customers/$id.index'
 import { Route as AuthenticatedDashboardCustomersIdHistoryRouteImport } from './routes/_authenticated/dashboard/customers/$id.history'
@@ -72,6 +73,12 @@ const AuthenticatedDashboardCustomersIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedDashboardCustomersRoute,
   } as any)
+const AuthenticatedDashboardBookingsIndexRoute =
+  AuthenticatedDashboardBookingsIndexRouteImport.update({
+    id: '/bookings/',
+    path: '/bookings/',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
 const AuthenticatedDashboardCustomersIdRoute =
   AuthenticatedDashboardCustomersIdRouteImport.update({
     id: '/$id',
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/customers/$id': typeof AuthenticatedDashboardCustomersIdRouteWithChildren
+  '/dashboard/bookings': typeof AuthenticatedDashboardBookingsIndexRoute
   '/dashboard/customers/': typeof AuthenticatedDashboardCustomersIndexRoute
   '/dashboard/customers/$id/history': typeof AuthenticatedDashboardCustomersIdHistoryRoute
   '/dashboard/customers/$id/': typeof AuthenticatedDashboardCustomersIdIndexRoute
@@ -110,6 +118,7 @@ export interface FileRoutesByTo {
   '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/bookings': typeof AuthenticatedDashboardBookingsIndexRoute
   '/dashboard/customers': typeof AuthenticatedDashboardCustomersIndexRoute
   '/dashboard/customers/$id/history': typeof AuthenticatedDashboardCustomersIdHistoryRoute
   '/dashboard/customers/$id': typeof AuthenticatedDashboardCustomersIdIndexRoute
@@ -125,6 +134,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/customers/$id': typeof AuthenticatedDashboardCustomersIdRouteWithChildren
+  '/_authenticated/dashboard/bookings/': typeof AuthenticatedDashboardBookingsIndexRoute
   '/_authenticated/dashboard/customers/': typeof AuthenticatedDashboardCustomersIndexRoute
   '/_authenticated/dashboard/customers/$id/history': typeof AuthenticatedDashboardCustomersIdHistoryRoute
   '/_authenticated/dashboard/customers/$id/': typeof AuthenticatedDashboardCustomersIdIndexRoute
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/dashboard/settings'
     | '/dashboard/'
     | '/dashboard/customers/$id'
+    | '/dashboard/bookings'
     | '/dashboard/customers/'
     | '/dashboard/customers/$id/history'
     | '/dashboard/customers/$id/'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/dashboard/profile'
     | '/dashboard/settings'
     | '/dashboard'
+    | '/dashboard/bookings'
     | '/dashboard/customers'
     | '/dashboard/customers/$id/history'
     | '/dashboard/customers/$id'
@@ -164,6 +176,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/settings'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/customers/$id'
+    | '/_authenticated/dashboard/bookings/'
     | '/_authenticated/dashboard/customers/'
     | '/_authenticated/dashboard/customers/$id/history'
     | '/_authenticated/dashboard/customers/$id/'
@@ -240,6 +253,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardCustomersIndexRouteImport
       parentRoute: typeof AuthenticatedDashboardCustomersRoute
     }
+    '/_authenticated/dashboard/bookings/': {
+      id: '/_authenticated/dashboard/bookings/'
+      path: '/bookings'
+      fullPath: '/dashboard/bookings'
+      preLoaderRoute: typeof AuthenticatedDashboardBookingsIndexRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
     '/_authenticated/dashboard/customers/$id': {
       id: '/_authenticated/dashboard/customers/$id'
       path: '/$id'
@@ -305,6 +325,7 @@ interface AuthenticatedDashboardRouteRouteChildren {
   AuthenticatedDashboardProfileRoute: typeof AuthenticatedDashboardProfileRoute
   AuthenticatedDashboardSettingsRoute: typeof AuthenticatedDashboardSettingsRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+  AuthenticatedDashboardBookingsIndexRoute: typeof AuthenticatedDashboardBookingsIndexRoute
 }
 
 const AuthenticatedDashboardRouteRouteChildren: AuthenticatedDashboardRouteRouteChildren =
@@ -314,6 +335,8 @@ const AuthenticatedDashboardRouteRouteChildren: AuthenticatedDashboardRouteRoute
     AuthenticatedDashboardProfileRoute: AuthenticatedDashboardProfileRoute,
     AuthenticatedDashboardSettingsRoute: AuthenticatedDashboardSettingsRoute,
     AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+    AuthenticatedDashboardBookingsIndexRoute:
+      AuthenticatedDashboardBookingsIndexRoute,
   }
 
 const AuthenticatedDashboardRouteRouteWithChildren =
