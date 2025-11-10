@@ -145,3 +145,5 @@ sketch
 .turbo
 
 .idea/workspace.xml
+
+.dist
