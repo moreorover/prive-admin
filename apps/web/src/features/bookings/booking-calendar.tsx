@@ -144,7 +144,7 @@ export function BookingCalendar({
                     {dayBookings.slice(0, 3).map((booking) => (
                       <div
                         key={booking.id}
-                        className="truncate rounded bg-primary/10 px-1 text-xs"
+                        className="flex flex-row truncate rounded bg-primary/10 px-1 text-xs space-x-2"
                       >
                         <div className="font-medium">
                           {format(new Date(booking.startsAt), "HH:mm")}
