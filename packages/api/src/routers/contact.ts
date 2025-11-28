@@ -1,16 +1,16 @@
 import { db } from "@prive-admin/db";
 import {
-  customer,
-  customerCreateSchema,
-  customerUpdateSchema,
-} from "@prive-admin/db/schema/customer";
+  contact,
+  contactCreateSchema,
+  contactUpdateSchema,
+} from "@prive-admin/db/schema/contact";
 import { TRPCError } from "@trpc/server";
 import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm";
 import z from "zod";
 import { protectedProcedure, router } from "../index";
 import { trackFieldChange } from "../lib/history";
 
-export const customerRouter = router({
+export const contactRouter = router({
   getAll: protectedProcedure
     .input(
       z.object({
@@ -49,22 +49,22 @@ export const customerRouter = router({
       if (filter) {
         whereConditions.push(
           or(
-            ilike(customer.name, `%${filter}%`),
-            ilike(customer.phoneNumber, `%${filter}%`),
+            ilike(contact.name, `%${filter}%`),
+            ilike(contact.phoneNumber, `%${filter}%`),
           ),
         );
       }
 
       const getOrderBy = () => {
-        if (!sortBy) return asc(customer.name);
+        if (!sortBy) return asc(contact.name);
 
         const [field, order] = sortBy.split(".");
         const column =
-          field === "phoneNumber" ? customer.phoneNumber : customer.name;
+          field === "phoneNumber" ? contact.phoneNumber : contact.name;
         return order === "desc" ? desc(column) : asc(column);
       };
 
-      const customers = await db.query.customer.findMany({
+      const contacts = await db.query.contact.findMany({
         where: whereConditions.length > 0 ? and(...whereConditions) : undefined,
         orderBy: getOrderBy(),
         limit: pageSize,
@@ -78,12 +78,12 @@ export const customerRouter = router({
 
       const totalCount = await db
         .select({ count: sql<number>`count(*)` })
-        .from(customer)
+        .from(contact)
         .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
         .then((result) => Number(result[0] ? result[0].count : 0));
 
       return {
-        customers,
+        contacts,
         pagination: {
           page: page,
           pageSize,
@@ -94,10 +94,10 @@ export const customerRouter = router({
     }),
 
   getById: protectedProcedure
-    .input(z.object({ customerId: z.string() }))
+    .input(z.object({ contactId: z.string() }))
     .query(async ({ input }) => {
-      return db.query.customer.findFirst({
-        where: eq(customer.id, input.customerId),
+      return db.query.contact.findFirst({
+        where: eq(contact.id, input.contactId),
         with: {
           createdBy: {
             columns: { id: true, name: true, email: true },
@@ -107,9 +107,9 @@ export const customerRouter = router({
     }),
 
   create: protectedProcedure
-    .input(customerCreateSchema)
+    .input(contactCreateSchema)
     .mutation(async ({ input, ctx }) => {
-      return db.insert(customer).values({
+      return db.insert(contact).values({
         name: input.name,
         phoneNumber: input.phoneNumber,
         createdById: ctx.session.user.id,
@@ -117,7 +117,7 @@ export const customerRouter = router({
     }),
 
   update: protectedProcedure
-    .input(customerUpdateSchema)
+    .input(contactUpdateSchema)
     .mutation(async ({ input, ctx }) => {
       if (!input.id) {
         throw new TRPCError({
@@ -127,14 +127,14 @@ export const customerRouter = router({
       }
 
       return db.transaction(async (tx) => {
-        const existing = await tx.query.customer.findFirst({
-          where: eq(customer.id, input.id),
+        const existing = await tx.query.contact.findFirst({
+          where: eq(contact.id, input.id),
         });
 
         if (!existing) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Customer not found.",
+            message: "Contact not found.",
           });
         }
 
@@ -142,7 +142,7 @@ export const customerRouter = router({
         if (input.name && input.name !== existing.name) {
           await trackFieldChange(
             tx,
-            "customer",
+            "contact",
             input.id,
             ctx.session.user.id,
             "name",
@@ -158,7 +158,7 @@ export const customerRouter = router({
         ) {
           await trackFieldChange(
             tx,
-            "customer",
+            "contact",
             input.id,
             ctx.session.user.id,
             "phoneNumber",
@@ -167,7 +167,7 @@ export const customerRouter = router({
           );
         }
 
-        return tx.update(customer).set(input).where(eq(customer.id, input.id));
+        return tx.update(contact).set(input).where(eq(contact.id, input.id));
       });
     }),
 });

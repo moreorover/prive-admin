@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/tooltip";
 import { sleep } from "@/lib/utils";
 import { priorities, statuses } from "../data/data";
-import type { Customer } from "../data/schema";
-import { CustomersMultiDeleteDialog } from "./customers-multi-delete-dialog";
+import type { Contact } from "../data/schema";
+import { ContactsMultiDeleteDialog } from "./contacts-multi-delete-dialog";
 
 type DataTableBulkActionsProps<TData> = {
   table: Table<TData>;
@@ -31,14 +31,14 @@ export function DataTableBulkActions<TData>({
   const selectedRows = table.getFilteredSelectedRowModel().rows;
 
   const handleBulkStatusChange = (status: string) => {
-    const selectedCustomers = selectedRows.map(
-      (row) => row.original as Customer,
+    const selectedContacts = selectedRows.map(
+      (row) => row.original as Contact,
     );
     toast.promise(sleep(2000), {
       loading: "Updating status...",
       success: () => {
         table.resetRowSelection();
-        return `Status updated to "${status}" for ${selectedCustomers.length} customer${selectedCustomers.length > 1 ? "s" : ""}.`;
+        return `Status updated to "${status}" for ${selectedContacts.length} contact${selectedContacts.length > 1 ? "s" : ""}.`;
       },
       error: "Error",
     });
@@ -46,14 +46,14 @@ export function DataTableBulkActions<TData>({
   };
 
   const handleBulkPriorityChange = (priority: string) => {
-    const selectedCustomers = selectedRows.map(
-      (row) => row.original as Customer,
+    const selectedContacts = selectedRows.map(
+      (row) => row.original as Contact,
     );
     toast.promise(sleep(2000), {
       loading: "Updating priority...",
       success: () => {
         table.resetRowSelection();
-        return `Priority updated to "${priority}" for ${selectedCustomers.length} customer${selectedCustomers.length > 1 ? "s" : ""}.`;
+        return `Priority updated to "${priority}" for ${selectedContacts.length} contact${selectedContacts.length > 1 ? "s" : ""}.`;
       },
       error: "Error",
     });
@@ -61,14 +61,14 @@ export function DataTableBulkActions<TData>({
   };
 
   const handleBulkExport = () => {
-    const selectedCustomers = selectedRows.map(
-      (row) => row.original as Customer,
+    const selectedContacts = selectedRows.map(
+      (row) => row.original as Contact,
     );
     toast.promise(sleep(2000), {
-      loading: "Exporting customers...",
+      loading: "Exporting contacts...",
       success: () => {
         table.resetRowSelection();
-        return `Exported ${selectedCustomers.length} customer${selectedCustomers.length > 1 ? "s" : ""} to CSV.`;
+        return `Exported ${selectedContacts.length} contact${selectedContacts.length > 1 ? "s" : ""} to CSV.`;
       },
       error: "Error",
     });
@@ -77,7 +77,7 @@ export function DataTableBulkActions<TData>({
 
   return (
     <>
-      <BulkActionsToolbar table={table} entityName="customer">
+      <BulkActionsToolbar table={table} entityName="contact">
         <DropdownMenu>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -157,15 +157,15 @@ export function DataTableBulkActions<TData>({
               size="icon"
               onClick={() => handleBulkExport()}
               className="size-8"
-              aria-label="Export customers"
-              title="Export customers"
+              aria-label="Export contacts"
+              title="Export contacts"
             >
               <Download />
-              <span className="sr-only">Export customers</span>
+              <span className="sr-only">Export contacts</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Export customers</p>
+            <p>Export contacts</p>
           </TooltipContent>
         </Tooltip>
 
@@ -176,20 +176,20 @@ export function DataTableBulkActions<TData>({
               size="icon"
               onClick={() => setShowDeleteConfirm(true)}
               className="size-8"
-              aria-label="Delete selected customers"
-              title="Delete selected customers"
+              aria-label="Delete selected contacts"
+              title="Delete selected contacts"
             >
               <Trash2 />
-              <span className="sr-only">Delete selected customers</span>
+              <span className="sr-only">Delete selected contacts</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Delete selected customers</p>
+            <p>Delete selected contacts</p>
           </TooltipContent>
         </Tooltip>
       </BulkActionsToolbar>
 
-      <CustomersMultiDeleteDialog
+      <ContactsMultiDeleteDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
         table={table}

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 
-type CustomerMultiDeleteDialogProps<TData> = {
+type ContactMultiDeleteDialogProps<TData> = {
   open: boolean
   onOpenChange: (open: boolean) => void
   table: Table<TData>
@@ -18,11 +18,11 @@ type CustomerMultiDeleteDialogProps<TData> = {
 
 const CONFIRM_WORD = 'DELETE'
 
-export function CustomersMultiDeleteDialog<TData>({
+export function ContactsMultiDeleteDialog<TData>({
   open,
   onOpenChange,
   table,
-}: CustomerMultiDeleteDialogProps<TData>) {
+}: ContactMultiDeleteDialogProps<TData>) {
   const [value, setValue] = useState('')
 
   const selectedRows = table.getFilteredSelectedRowModel().rows
@@ -36,11 +36,11 @@ export function CustomersMultiDeleteDialog<TData>({
     onOpenChange(false)
 
     toast.promise(sleep(2000), {
-      loading: 'Deleting customers...',
+      loading: 'Deleting contacts...',
       success: () => {
         table.resetRowSelection()
         return `Deleted ${selectedRows.length} ${
-          selectedRows.length > 1 ? 'customers' : 'customer'
+          selectedRows.length > 1 ? 'contacts' : 'contact'
         }`
       },
       error: 'Error',
@@ -60,13 +60,13 @@ export function CustomersMultiDeleteDialog<TData>({
             size={18}
           />{' '}
           Delete {selectedRows.length}{' '}
-          {selectedRows.length > 1 ? 'customers' : 'customer'}
+          {selectedRows.length > 1 ? 'contacts' : 'contact'}
         </span>
       }
       desc={
         <div className='space-y-4'>
           <p className='mb-2'>
-            Are you sure you want to delete the selected customers? <br />
+            Are you sure you want to delete the selected contacts? <br />
             This action cannot be undone.
           </p>
 

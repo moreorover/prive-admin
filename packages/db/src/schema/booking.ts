@@ -3,7 +3,7 @@ import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { z } from "zod";
 import { user } from "./auth";
-import { customer } from "./customer";
+import { contact } from "./contact";
 import { entityHistory } from "./entityHistory";
 import { hairAssigned } from "./hairOrder";
 
@@ -13,7 +13,7 @@ export const booking = pgTable("booking", {
   startsAt: timestamp("starts_at").notNull(),
   clientId: uuid("client_id")
     .notNull()
-    .references(() => customer.id, { onDelete: "cascade" }),
+    .references(() => contact.id, { onDelete: "cascade" }),
   createdById: text("created_by_id")
     .notNull()
     .references(() => user.id),
@@ -26,9 +26,9 @@ export const booking = pgTable("booking", {
 
 // Relations
 export const bookingRelations = relations(booking, ({ one, many }) => ({
-  client: one(customer, {
+  client: one(contact, {
     fields: [booking.clientId],
-    references: [customer.id],
+    references: [contact.id],
   }),
   createdBy: one(user, {
     fields: [booking.createdById],

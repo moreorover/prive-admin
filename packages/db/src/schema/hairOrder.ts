@@ -4,7 +4,7 @@ import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { z } from "zod";
 import { user } from "./auth";
 import { booking } from "./booking";
-import { customer } from "./customer";
+import { contact } from "./contact";
 import { entityHistory } from "./entityHistory";
 
 export const hairOrder = pgTable("hair_orders", {
@@ -17,7 +17,7 @@ export const hairOrder = pgTable("hair_orders", {
   total: integer("total").default(0).notNull(),
   customerId: uuid("customer_id")
     .notNull()
-    .references(() => customer.id, { onDelete: "cascade" }),
+    .references(() => contact.id, { onDelete: "cascade" }),
   createdById: text("created_by_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -42,7 +42,7 @@ export const hairAssigned = pgTable("hair_assigned", {
   pricePerGram: integer("price_per_gram").default(0).notNull(),
   clientId: uuid("client_id")
     .notNull()
-    .references(() => customer.id, { onDelete: "cascade" }),
+    .references(() => contact.id, { onDelete: "cascade" }),
   createdById: text("created_by_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -55,9 +55,9 @@ export const hairAssigned = pgTable("hair_assigned", {
 
 // Relations
 export const hairOrderRelations = relations(hairOrder, ({ one, many }) => ({
-  customer: one(customer, {
+  customer: one(contact, {
     fields: [hairOrder.customerId],
-    references: [customer.id],
+    references: [contact.id],
   }),
   createdBy: one(user, {
     fields: [hairOrder.createdById],
@@ -78,9 +78,9 @@ export const hairAssignedRelations = relations(
       fields: [hairAssigned.hairOrderId],
       references: [hairOrder.id],
     }),
-    client: one(customer, {
+    client: one(contact, {
       fields: [hairAssigned.clientId],
-      references: [customer.id],
+      references: [contact.id],
     }),
     createdBy: one(user, {
       fields: [hairAssigned.createdById],

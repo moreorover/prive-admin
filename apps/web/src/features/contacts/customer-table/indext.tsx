@@ -1,10 +1,10 @@
 import type { ColumnFiltersState, SortingState } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
-import { type Customer, createColumns } from "./columns";
+import { type Contact, createColumns } from "./columns";
 
-interface CustomerTableProps {
+interface ContactTableProps {
   data: {
-    customers: Customer[];
+    contacts: Contact[];
     pagination: {
       page: number;
       pageSize: number;
@@ -14,28 +14,28 @@ interface CustomerTableProps {
   handlePaginationChange: (page: number, pageSize: number) => void;
   handleSortingChange: (sorting: SortingState) => void;
   handleFilterChange: (filters: ColumnFiltersState) => void;
-  onEditCustomer?: (customer: Customer) => void;
-  onDeleteCustomer?: (customer: Customer) => void;
+  onEditContact?: (contact: Contact) => void;
+  onDeleteContact?: (contact: Contact) => void;
 }
 
-export function CustomerTable({
+export function ContactTable({
   data,
   handlePaginationChange,
   handleSortingChange,
   handleFilterChange,
-  onEditCustomer,
-  onDeleteCustomer,
-}: CustomerTableProps) {
+  onEditContact,
+  onDeleteContact,
+}: ContactTableProps) {
   // Create columns with action handlers
   const tableColumns = createColumns({
-    onEdit: onEditCustomer,
-    onDelete: onDeleteCustomer,
+    onEdit: onEditContact,
+    onDelete: onDeleteContact,
   });
 
   return (
     <DataTable
       columns={tableColumns}
-      data={data.customers}
+      data={data.contacts}
       filterKeys={["name", "phoneNumber"]}
       onPaginationChange={handlePaginationChange}
       onSortingChange={handleSortingChange}

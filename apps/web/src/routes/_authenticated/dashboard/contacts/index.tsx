@@ -1,17 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import z from "zod";
-import CustomerPage from "@/features/customers";
+import ContactPage from "@/features/contacts";
 
-const customersSearchSchema = z.object({
+const contactsSearchSchema = z.object({
   page: z.number().optional().catch(0),
   pageSize: z.number().optional().catch(10),
   sortBy: z.string().optional().catch(undefined),
   filter: z.string().optional().catch(undefined),
 });
 
-export const Route = createFileRoute("/_authenticated/dashboard/customers/")({
-  component: CustomerPage,
-  validateSearch: (search) => customersSearchSchema.parse(search),
+export const Route = createFileRoute("/_authenticated/dashboard/contacts/")({
+  component: ContactPage,
+  validateSearch: (search) => contactsSearchSchema.parse(search),
   loaderDeps: ({ search }) => ({
     page: search.page,
     pageSize: search.pageSize,
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/dashboard/customers/")({
     };
 
     await queryClient.ensureQueryData(
-      trpc.customer.getAll.queryOptions(filters),
+      trpc.contact.getAll.queryOptions(filters),
     );
   },
 });

@@ -3,7 +3,7 @@ import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
 export const entityHistoryEnum = pgEnum("entity_type", [
-  "customer",
+  "contact",
   "booking",
   "hair_order",
   "hair_assigned",

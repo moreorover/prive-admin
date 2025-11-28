@@ -34,15 +34,15 @@ const formSchema = z.object({
     ),
 })
 
-type CustomerImportDialogProps = {
+type ContactImportDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function CustomersImportDialog({
+export function ContactsImportDialog({
   open,
   onOpenChange,
-}: CustomerImportDialogProps) {
+}: ContactImportDialogProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { file: undefined },
@@ -74,13 +74,13 @@ export function CustomersImportDialog({
     >
       <DialogContent className='gap-2 sm:max-w-sm'>
         <DialogHeader className='text-start'>
-          <DialogTitle>Import Customers</DialogTitle>
+          <DialogTitle>Import Contacts</DialogTitle>
           <DialogDescription>
-            Import customers quickly from a CSV file.
+            Import contacts quickly from a CSV file.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form id='customer-import-form' onSubmit={form.handleSubmit(onSubmit)}>
+          <form id='contact-import-form' onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
               name='file'
@@ -100,7 +100,7 @@ export function CustomersImportDialog({
           <DialogClose asChild>
             <Button variant='outline'>Close</Button>
           </DialogClose>
-          <Button type='submit' form='customer-import-form'>
+          <Button type='submit' form='contact-import-form'>
             Import
           </Button>
         </DialogFooter>

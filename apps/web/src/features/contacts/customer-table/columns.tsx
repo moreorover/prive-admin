@@ -11,26 +11,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export interface Customer {
+export interface Contact {
   id: string;
   name: string;
   phoneNumber?: string | null;
   createdAt: string;
 }
 
-interface CustomerActionsProps {
-  onEdit?: (customer: Customer) => void;
-  onDelete?: (customer: Customer) => void;
+interface ContactActionsProps {
+  onEdit?: (contact: Contact) => void;
+  onDelete?: (contact: Contact) => void;
 }
 
 export const createColumns = ({
   onEdit,
   onDelete,
-}: CustomerActionsProps = {}): ColumnDef<Customer>[] => [
+}: ContactActionsProps = {}): ColumnDef<Contact>[] => [
   {
     accessorKey: "id",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Customer ID" />
+      <DataTableColumnHeader column={column} title="Contact ID" />
     ),
     cell: ({ row }) => <div className="font-medium">{row.getValue("id")}</div>,
   },
@@ -61,7 +61,7 @@ export const createColumns = ({
   {
     id: "actions",
     cell: ({ row }) => {
-      const customer = row.original;
+      const contact = row.original;
 
       return (
         <DropdownMenu>
@@ -74,20 +74,20 @@ export const createColumns = ({
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(customer.id)}
+              onClick={() => navigator.clipboard.writeText(contact.id)}
             >
-              Copy customer ID
+              Copy contact ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>View details</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit?.(customer)}>
-              Edit customer
+            <DropdownMenuItem onClick={() => onEdit?.(contact)}>
+              Edit contact
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => onDelete?.(customer)}
+              onClick={() => onDelete?.(contact)}
               className="text-destructive"
             >
-              Delete customer
+              Delete contact
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

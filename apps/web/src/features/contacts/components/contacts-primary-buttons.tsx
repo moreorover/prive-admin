@@ -1,9 +1,9 @@
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useCustomers } from "./customers-provider";
+import { useContacts } from "./contacts-provider";
 
-export function CustomersPrimaryButtons() {
-  const { setOpen } = useCustomers();
+export function ContactsPrimaryButtons() {
+  const { setOpen } = useContacts();
   return (
     <div className="flex gap-2">
       {/*<Button*/}

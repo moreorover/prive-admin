@@ -3,7 +3,7 @@ import { db } from "@prive-admin/db";
 import { entityHistory } from "@prive-admin/db/schema/entityHistory";
 import { and, desc, eq } from "drizzle-orm";
 
-type EntityType = "customer" | "booking" | "hair_order" | "hair_assigned";
+type EntityType = "contact" | "booking" | "hair_order" | "hair_assigned";
 
 export interface HistoryGroup {
   changedBy: { id: string; name: string; email: string };

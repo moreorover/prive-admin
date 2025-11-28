@@ -7,7 +7,7 @@ import { booking } from "./booking";
 import { entityHistory } from "./entityHistory";
 import { hairAssigned, hairOrder } from "./hairOrder";
 
-export const customer = pgTable("customer", {
+export const contact = pgTable("contact", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   phoneNumber: text("phoneNumber"),
@@ -21,16 +21,16 @@ export const customer = pgTable("customer", {
     .notNull(),
 });
 
-export const customerCreateSchema = createInsertSchema(customer).omit({
+export const contactCreateSchema = createInsertSchema(contact).omit({
   createdById: true,
 });
-export const customerUpdateSchema = createUpdateSchema(customer).extend({
+export const contactUpdateSchema = createUpdateSchema(contact).extend({
   id: z.uuid(),
 });
 
-export const customerRelations = relations(customer, ({ one, many }) => ({
+export const contactRelations = relations(contact, ({ one, many }) => ({
   createdBy: one(user, {
-    fields: [customer.createdById],
+    fields: [contact.createdById],
     references: [user.id],
   }),
   bookings: many(booking),

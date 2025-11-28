@@ -1,34 +1,34 @@
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { showSubmittedData } from "@/lib/show-submitted-data";
-import { CustomersImportDialog } from "./customers-import-dialog";
-import { CustomersMutateDrawer } from "./customers-mutate-drawer";
-import { useCustomers } from "./customers-provider";
+import { ContactsImportDialog } from "./contacts-import-dialog";
+import { ContactsMutateDrawer } from "./contacts-mutate-drawer";
+import { useContacts } from "./contacts-provider";
 
 type Props = {
   onSuccess?: () => void;
 };
 
-export function CustomersDialogs({ onSuccess }: Props) {
-  const { open, setOpen, currentRow, setCurrentRow } = useCustomers();
+export function ContactsDialogs({ onSuccess }: Props) {
+  const { open, setOpen, currentRow, setCurrentRow } = useContacts();
   return (
     <>
-      <CustomersMutateDrawer
-        key="customer-create"
+      <ContactsMutateDrawer
+        key="contact-create"
         open={open === "create"}
         onOpenChange={() => setOpen("create")}
         onSuccess={onSuccess}
       />
 
-      <CustomersImportDialog
-        key="customers-import"
+      <ContactsImportDialog
+        key="contacts-import"
         open={open === "import"}
         onOpenChange={() => setOpen("import")}
       />
 
       {currentRow && (
         <>
-          <CustomersMutateDrawer
-            key={`customer-update-${currentRow.id}`}
+          <ContactsMutateDrawer
+            key={`contact-update-${currentRow.id}`}
             open={open === "update"}
             onOpenChange={() => {
               setOpen("update");
@@ -41,7 +41,7 @@ export function CustomersDialogs({ onSuccess }: Props) {
           />
 
           <ConfirmDialog
-            key="customer-delete"
+            key="contact-delete"
             destructive
             open={open === "delete"}
             onOpenChange={() => {
@@ -57,15 +57,15 @@ export function CustomersDialogs({ onSuccess }: Props) {
               }, 500);
               showSubmittedData(
                 currentRow,
-                "The following customer has been deleted:",
+                "The following contact has been deleted:",
               );
               onSuccess?.();
             }}
             className="max-w-md"
-            title={`Delete this customer: ${currentRow.id} ?`}
+            title={`Delete this contact: ${currentRow.id} ?`}
             desc={
               <>
-                You are about to delete a customer with the ID{" "}
+                You are about to delete a contact with the ID{" "}
                 <strong>{currentRow.id}</strong>. <br />
                 This action cannot be undone.
               </>

@@ -11,8 +11,8 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { customerSchema } from "../data/schema";
-import { useCustomers } from "./customers-provider";
+import { contactSchema } from "../data/schema";
+import { useContacts } from "./contacts-provider";
 
 type DataTableRowActionsProps<TData> = {
   row: Row<TData>;
@@ -22,9 +22,9 @@ export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
   const navigate = useNavigate();
-  const customer = customerSchema.parse(row.original);
+  const contact = contactSchema.parse(row.original);
 
-  const { setOpen, setCurrentRow } = useCustomers();
+  const { setOpen, setCurrentRow } = useContacts();
 
   return (
     <DropdownMenu modal={false}>
@@ -41,8 +41,8 @@ export function DataTableRowActions<TData>({
         <DropdownMenuItem
           onClick={() => {
             navigate({
-              to: "/dashboard/customers/$id",
-              params: { id: customer.id },
+              to: "/dashboard/contacts/$id",
+              params: { id: contact.id },
             });
           }}
         >
@@ -53,16 +53,16 @@ export function DataTableRowActions<TData>({
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(customer);
+            setCurrentRow(contact);
             setOpen("update");
           }}
         >
           Edit
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => navigator.clipboard.writeText(customer.id)}
+          onClick={() => navigator.clipboard.writeText(contact.id)}
         >
-          Copy customer ID
+          Copy contact ID
         </DropdownMenuItem>
         {/*<DropdownMenuItem disabled>Make a copy</DropdownMenuItem>*/}
         {/*<DropdownMenuItem disabled>Favorite</DropdownMenuItem>*/}
@@ -70,7 +70,7 @@ export function DataTableRowActions<TData>({
         {/*<DropdownMenuSub>*/}
         {/*  <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>*/}
         {/*  <DropdownMenuSubContent>*/}
-        {/*    <DropdownMenuRadioGroup value={customer.label}>*/}
+        {/*    <DropdownMenuRadioGroup value={contact.label}>*/}
         {/*      {labels.map((label) => (*/}
         {/*        <DropdownMenuRadioItem key={label.value} value={label.value}>*/}
         {/*          {label.label}*/}
@@ -83,7 +83,7 @@ export function DataTableRowActions<TData>({
         <DropdownMenuItem
           disabled={true}
           onClick={() => {
-            setCurrentRow(customer);
+            setCurrentRow(contact);
             setOpen("delete");
           }}
         >

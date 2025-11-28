@@ -21,8 +21,8 @@ export const navigationItems: NavigationItem[] = [
     icon: LayoutDashboard,
   },
   {
-    title: "Customers",
-    href: "/dashboard/customers",
+    title: "Contacts",
+    href: "/dashboard/contacts",
     icon: Package,
   },
   {

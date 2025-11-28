@@ -1,6 +1,6 @@
 import { db } from "@prive-admin/db";
 import { booking, bookingCreateSchema } from "@prive-admin/db/schema/booking";
-import { customer } from "@prive-admin/db/schema/customer";
+import { contact } from "@prive-admin/db/schema/contact";
 import { between } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure, router } from "../index";
@@ -55,8 +55,8 @@ export const bookingRouter = router({
         monthsBack: z.number().min(1).max(12).default(3),
         monthsForward: z.number().min(1).max(12).default(3),
         bookingsPerMonth: z.number().min(1).max(50).default(10),
-        generateCustomers: z.boolean().default(false),
-        customerCount: z.number().min(1).max(100).default(20),
+        generateContacts: z.boolean().default(false),
+        contactCount: z.number().min(1).max(100).default(20),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -64,12 +64,12 @@ export const bookingRouter = router({
         monthsBack,
         monthsForward,
         bookingsPerMonth,
-        generateCustomers,
-        customerCount,
+        generateContacts,
+        contactCount,
       } = input;
 
-      // Generate customers if requested
-      if (generateCustomers) {
+      // Generate contacts if requested
+      if (generateContacts) {
         const firstNames = [
           "John",
           "Jane",
@@ -115,32 +115,32 @@ export const bookingRouter = router({
           "Martin",
         ];
 
-        const customersToInsert = [];
-        for (let i = 0; i < customerCount; i++) {
+        const contactsToInsert = [];
+        for (let i = 0; i < contactCount; i++) {
           const firstName =
             firstNames[Math.floor(Math.random() * firstNames.length)];
           const lastName =
             lastNames[Math.floor(Math.random() * lastNames.length)];
           const phoneNumber = `+370${Math.floor(10000000 + Math.random() * 90000000)}`;
 
-          customersToInsert.push({
+          contactsToInsert.push({
             name: `${firstName} ${lastName}`,
             phoneNumber: Math.random() > 0.2 ? phoneNumber : null, // 80% have phone numbers
             createdById: ctx.session.user.id,
           });
         }
 
-        await db.insert(customer).values(customersToInsert);
+        await db.insert(contact).values(contactsToInsert);
       }
 
-      // Get all customers to assign bookings to
-      const customers = await db.query.customer.findMany({
+      // Get all contacts to assign bookings to
+      const contacts = await db.query.contact.findMany({
         columns: { id: true },
       });
 
-      if (customers.length === 0) {
+      if (contacts.length === 0) {
         throw new Error(
-          "No customers found. Create customers first or set generateCustomers to true.",
+          "No contacts found. Create contacts first or set generateContacts to true.",
         );
       }
 
@@ -154,7 +154,7 @@ export const bookingRouter = router({
           ...generateBookingsForMonth(
             month,
             bookingsPerMonth,
-            customers,
+            contacts,
             ctx.session.user.id,
           ),
         );
@@ -165,7 +165,7 @@ export const bookingRouter = router({
         ...generateBookingsForMonth(
           now,
           bookingsPerMonth,
-          customers,
+          contacts,
           ctx.session.user.id,
         ),
       );
@@ -177,7 +177,7 @@ export const bookingRouter = router({
           ...generateBookingsForMonth(
             month,
             bookingsPerMonth,
-            customers,
+            contacts,
             ctx.session.user.id,
           ),
         );
@@ -188,7 +188,7 @@ export const bookingRouter = router({
 
       return {
         success: true,
-        customersCreated: generateCustomers ? customerCount : 0,
+        contactsCreated: generateContacts ? contactCount : 0,
         bookingsCreated: bookingsToInsert.length,
       };
     }),
@@ -198,7 +198,7 @@ export const bookingRouter = router({
 function generateBookingsForMonth(
   month: Date,
   count: number,
-  customers: Array<{ id: string }>,
+  contacts: Array<{ id: string }>,
   createdById: string,
 ) {
   const bookings = [];
@@ -228,8 +228,8 @@ function generateBookingsForMonth(
     const minute = [0, 15, 30, 45][Math.floor(Math.random() * 4)];
 
     const startsAt = new Date(year, monthNum, day, hour, minute);
-    const randomCustomer =
-      customers[Math.floor(Math.random() * customers.length)];
+    const randomContact =
+      contacts[Math.floor(Math.random() * contacts.length)];
     const randomName =
       bookingNames[Math.floor(Math.random() * bookingNames.length)];
 
@@ -237,7 +237,7 @@ function generateBookingsForMonth(
       // id: `booking_${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}`,
       name: randomName,
       startsAt,
-      clientId: randomCustomer.id,
+      clientId: randomContact.id,
       createdById,
     });
   }

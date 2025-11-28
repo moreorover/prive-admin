@@ -25,12 +25,12 @@ import {
 } from "@/components/ui/sheet";
 import { showSubmittedData } from "@/lib/show-submitted-data";
 import { trpc } from "@/utils/trpc";
-import type { Customer } from "../data/schema";
+import type { Contact } from "../data/schema";
 
-type CustomerMutateDrawerProps = {
+type ContactMutateDrawerProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  currentRow?: Customer;
+  currentRow?: Contact;
   onSuccess?: () => void;
 };
 
@@ -38,54 +38,54 @@ const formSchema = z.object({
   name: z.string().min(1, "Name is required."),
   phoneNumber: z.string().min(10, "Phone number too short.").or(z.literal("")),
 });
-type CustomerForm = z.infer<typeof formSchema>;
+type ContactForm = z.infer<typeof formSchema>;
 
-export function CustomersMutateDrawer({
+export function ContactsMutateDrawer({
   open,
   onOpenChange,
   currentRow,
   onSuccess,
-}: CustomerMutateDrawerProps) {
+}: ContactMutateDrawerProps) {
   const isUpdate = !!currentRow;
 
-  const form = useForm<CustomerForm>({
+  const form = useForm<ContactForm>({
     resolver: zodResolver(formSchema),
     defaultValues: currentRow
       ? { ...currentRow, phoneNumber: currentRow.phoneNumber ?? "" }
       : { name: "", phoneNumber: "" },
   });
 
-  const createCustomerMutation = useMutation(
-    trpc.customer.create.mutationOptions({
+  const createContactMutation = useMutation(
+    trpc.contact.create.mutationOptions({
       onSuccess: () => {
-        toast.success("Customer created successfully!");
+        toast.success("Contact created successfully!");
         onSuccess?.();
       },
       onError: (error) => {
-        toast.error(error.message || "Failed to create customer.");
+        toast.error(error.message || "Failed to create contact.");
       },
     }),
   );
 
-  const updateCustomerMutation = useMutation(
-    trpc.customer.update.mutationOptions({
+  const updateContactMutation = useMutation(
+    trpc.contact.update.mutationOptions({
       onSuccess: () => {
-        toast.success("Customer updated successfully!");
+        toast.success("Contact updated successfully!");
         onSuccess?.();
       },
       onError: (error) => {
-        toast.error(error.message || "Failed to update customer.");
+        toast.error(error.message || "Failed to update contact.");
       },
     }),
   );
 
-  const onSubmit = (data: CustomerForm) => {
+  const onSubmit = (data: ContactForm) => {
     if (isUpdate) {
       // update data
-      updateCustomerMutation.mutate({ id: currentRow?.id, ...data });
+      updateContactMutation.mutate({ id: currentRow?.id, ...data });
     } else {
       // save data
-      createCustomerMutation.mutate({ ...data });
+      createContactMutation.mutate({ ...data });
     }
     onOpenChange(false);
     form.reset();
@@ -102,17 +102,17 @@ export function CustomersMutateDrawer({
     >
       <SheetContent className="flex flex-col">
         <SheetHeader className="text-start">
-          <SheetTitle>{isUpdate ? "Update" : "Create"} Customer</SheetTitle>
+          <SheetTitle>{isUpdate ? "Update" : "Create"} Contact</SheetTitle>
           <SheetDescription>
             {isUpdate
-              ? "Update the customer by providing necessary info."
-              : "Add a new customer by providing necessary info."}
+              ? "Update the contact by providing necessary info."
+              : "Add a new contact by providing necessary info."}
             Click save when you&apos;re done.
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
           <form
-            id="customers-form"
+            id="contacts-form"
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex-1 space-y-6 overflow-y-auto px-4"
           >
@@ -148,7 +148,7 @@ export function CustomersMutateDrawer({
           <SheetClose asChild>
             <Button variant="outline">Close</Button>
           </SheetClose>
-          <Button form="customers-form" type="submit">
+          <Button form="contacts-form" type="submit">
             Save changes
           </Button>
         </SheetFooter>

@@ -23,14 +23,14 @@ import {
 } from "@/components/ui/table";
 import { useTableUrlState } from "@/hooks/use-table-url-state";
 import { cn } from "@/lib/utils";
-import type { Customer } from "../data/schema";
-import { customersColumns as columns } from "./customers-columns";
+import type { Contact } from "../data/schema";
+import { contactsColumns as columns } from "./contacts-columns";
 import { DataTableBulkActions } from "./data-table-bulk-actions";
 
-const route = getRouteApi("/_authenticated/dashboard/customers/");
+const route = getRouteApi("/_authenticated/dashboard/contacts/");
 
 type DataTableProps = {
-  data: Customer[];
+  data: Contact[];
   pagination_data: {
     page: number;
     pageSize: number;
@@ -39,7 +39,7 @@ type DataTableProps = {
   };
 };
 
-export function CustomersTable({ data, pagination_data }: DataTableProps) {
+export function ContactsTable({ data, pagination_data }: DataTableProps) {
   // Local UI-only states
   const [rowSelection, setRowSelection] = useState({});
   // const [sorting, setSorting] = useState<SortingState>([]);

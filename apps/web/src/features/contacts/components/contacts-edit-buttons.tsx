@@ -1,21 +1,21 @@
 import { Pencil } from "lucide-react";
 import type { JSX } from "react";
 import { Button } from "@/components/ui/button";
-import type { Customer } from "@/features/customers/data/schema";
-import { useCustomers } from "./customers-provider";
+import type { Contact } from "@/features/contacts/data/schema";
+import { useContacts } from "./contacts-provider";
 
 interface Props {
-  customer: Customer;
+  contact: Contact;
 }
 
-export function CustomersEditButtons(props: Props): JSX.Element {
-  const { setOpen, setCurrentRow } = useCustomers();
+export function ContactsEditButtons(props: Props): JSX.Element {
+  const { setOpen, setCurrentRow } = useContacts();
   return (
     <div className="flex gap-2">
       <Button
         className="space-x-1"
         onClick={() => {
-          setCurrentRow(props.customer);
+          setCurrentRow(props.contact);
           setOpen("update");
         }}
       >

@@ -8,30 +8,30 @@ import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/utils/trpc";
 
 export const Route = createFileRoute(
-  "/_authenticated/dashboard/customers/$id/",
+  "/_authenticated/dashboard/contacts/$id/",
 )({
-  component: CustomerOverview,
+  component: ContactOverview,
 });
 
-function CustomerOverview() {
+function ContactOverview() {
   const { id } = Route.useParams();
 
-  const { data: customer } = useQuery(
-    trpc.customer.getById.queryOptions({ customerId: id }),
+  const { data: contact } = useQuery(
+    trpc.contact.getById.queryOptions({ contactId: id }),
   );
 
-  if (!customer) return null;
+  if (!contact) return null;
 
   return (
     <div className="space-y-6">
       <div className="flex gap-2">
         <Button asChild variant="outline">
-          <Link to="/dashboard/customers/$id" params={{ id }}>
+          <Link to="/dashboard/contacts/$id" params={{ id }}>
             Overview
           </Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to="/dashboard/customers/$id/history" params={{ id }}>
+          <Link to="/dashboard/contacts/$id/history" params={{ id }}>
             History
           </Link>
         </Button>
@@ -39,17 +39,17 @@ function CustomerOverview() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Customer Details</CardTitle>
+          <CardTitle>Contact Details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <div className="text-muted-foreground text-sm">Name</div>
-            <div className="font-medium text-lg">{customer.name}</div>
+            <div className="font-medium text-lg">{contact.name}</div>
           </div>
 
           <div>
             <div className="text-muted-foreground text-sm">Phone Number</div>
-            <div className="text-lg">{customer.phoneNumber || "N/A"}</div>
+            <div className="text-lg">{contact.phoneNumber || "N/A"}</div>
           </div>
 
           <Separator />
@@ -57,19 +57,19 @@ function CustomerOverview() {
           <div>
             <div className="text-muted-foreground text-sm">Created By</div>
             <div className="flex items-center gap-2">
-              <span>{customer.createdBy.name}</span>
-              <Badge variant="outline">{customer.createdBy.email}</Badge>
+              <span>{contact.createdBy.name}</span>
+              <Badge variant="outline">{contact.createdBy.email}</Badge>
             </div>
           </div>
 
           <div>
             <div className="text-muted-foreground text-sm">Created At</div>
-            <div>{format(new Date(customer.createdAt), "PPpp")}</div>
+            <div>{format(new Date(contact.createdAt), "PPpp")}</div>
           </div>
 
           <div>
             <div className="text-muted-foreground text-sm">Last Updated</div>
-            <div>{format(new Date(customer.updatedAt), "PPpp")}</div>
+            <div>{format(new Date(contact.updatedAt), "PPpp")}</div>
           </div>
         </CardContent>
       </Card>
