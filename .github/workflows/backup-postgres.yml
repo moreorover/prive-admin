@@ -3,7 +3,7 @@ name: Daily Postgres Backup
 on:
   schedule:
     - cron: '0 0 * * *'
-  workflow_dispatch: # 👈 Enables manual trigger via GitHub UI
+  workflow_dispatch:
 
 jobs:
   backup:
@@ -54,44 +54,42 @@ jobs:
             PG_DATABASE='${POSTGRES_DATABASE}' \
             ~/backup_postgres.sh"
 
+      # --- Cloudflare R2 upload with s3cmd ---
       - name: Install s3cmd
         run: |
           sudo apt-get update -y
           sudo apt-get install -y s3cmd
 
-      - name: Upload backup to DigitalOcean Spaces
+      - name: Upload backup to Cloudflare R2
         env:
-          DO_SPACES_KEY: ${{ secrets.DO_SPACES_KEY }}
-          DO_SPACES_SECRET: ${{ secrets.DO_SPACES_SECRET }}
-          DO_SPACES_BUCKET: ${{ secrets.DO_SPACES_BUCKET }}
+          R2_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
         run: |
-          set -e  # Exit on any error
-          
+          set -e
+
           # Fetch latest backup file name from remote server
           FILE_NAME=$(ssh cicd@prive "ls -t ~/db_backups/ | head -n1")
-          
+
           # Download the backup file
           ssh cicd@prive "cat ~/db_backups/$FILE_NAME" > "$FILE_NAME"
-          
-          # Configure s3cmd for DigitalOcean Spaces
+
+          # Configure s3cmd for Cloudflare R2
           cat > ~/.s3cfg <<EOF
           [default]
-          access_key = $DO_SPACES_KEY
-          secret_key = $DO_SPACES_SECRET
-          host_base = lon1.digitaloceanspaces.com
-          host_bucket = %(bucket)s.lon1.digitaloceanspaces.com
-          bucket_location = lon1
+          access_key = $R2_ACCESS_KEY
+          secret_key = $R2_SECRET_KEY
+          host_base = ${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+          host_bucket = %(bucket)s.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+          bucket_location = auto
           use_https = True
           EOF
-          
-          # (Optional) Set expiration rule — run once, or guard with a check
-          s3cmd expire --expiry-days=30 --expiry-prefix=postgres_backup_ "s3://${DO_SPACES_BUCKET}"
-          
-          # Upload the file to DigitalOcean Spaces
-          s3cmd put "$FILE_NAME" "s3://${DO_SPACES_BUCKET}/$FILE_NAME"
-          
-          # Print bucket info for verification
-          s3cmd info "s3://${DO_SPACES_BUCKET}"
-          
-          echo "✅ Uploaded to https://${DO_SPACES_BUCKET}.lon1.digitaloceanspaces.com/$FILE_NAME"
 
+          # Upload the file to Cloudflare R2
+          s3cmd put "$FILE_NAME" "s3://${R2_BUCKET}/$FILE_NAME"
+
+          # Print bucket info for verification
+          s3cmd info "s3://${R2_BUCKET}"
+
+          echo "✅ Uploaded to https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${R2_BUCKET}/$FILE_NAME"
