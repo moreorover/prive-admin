@@ -7,6 +7,7 @@ import {
   User2,
 } from "lucide-react";
 import { navigationItems } from "@/components/navigation";
+import { VersionFooter } from "@/components/version-footer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -175,6 +176,8 @@ export function AppSidebar({ user }: AppSidebarProps) {
             </DropdownMenu>
           </SidebarMenuItem>
         </SidebarMenu>
+
+        <VersionFooter />
       </SidebarFooter>
     </Sidebar>
   );
