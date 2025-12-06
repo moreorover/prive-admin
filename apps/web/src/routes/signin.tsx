@@ -19,10 +19,11 @@ export const Route = createFileRoute("/signin")({
 });
 
 function RouteComponent() {
-  const [showSignIn, setShowSignIn] = useState(false);
+  const isProduction = import.meta.env.PROD;
+  const [showSignIn, setShowSignIn] = useState(isProduction);
 
   return showSignIn ? (
-    <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
+    <SignInForm onSwitchToSignUp={isProduction ? undefined : () => setShowSignIn(false)} />
   ) : (
     <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
   );

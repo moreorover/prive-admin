@@ -12,7 +12,7 @@ import { Label } from "./ui/label";
 export default function SignInForm({
   onSwitchToSignUp,
 }: {
-  onSwitchToSignUp: () => void;
+  onSwitchToSignUp?: () => void;
 }) {
   const search = useSearch({ from: "/signin" });
   const navigate = useNavigate({
@@ -128,15 +128,17 @@ export default function SignInForm({
         </form.Subscribe>
       </form>
 
-      <div className="mt-4 text-center">
-        <Button
-          variant="link"
-          onClick={onSwitchToSignUp}
-          className="text-indigo-600 hover:text-indigo-800"
-        >
-          Need an account? Sign Up
-        </Button>
-      </div>
+      {onSwitchToSignUp && (
+        <div className="mt-4 text-center">
+          <Button
+            variant="link"
+            onClick={onSwitchToSignUp}
+            className="text-indigo-600 hover:text-indigo-800"
+          >
+            Need an account? Sign Up
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

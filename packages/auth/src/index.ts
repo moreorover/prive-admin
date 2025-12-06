@@ -11,7 +11,7 @@ export const auth = betterAuth({
   }),
   trustedOrigins: [process.env.CORS_ORIGIN || ""],
   emailAndPassword: {
-    enabled: true,
+    enabled: process.env.ALLOW_SIGNUPS !== "false",
   },
   advanced: {
     defaultCookieAttributes: {
