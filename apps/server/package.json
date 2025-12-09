@@ -11,22 +11,22 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "hono": "catalog:",
-    "@hono/node-server": "^1.14.4",
-    "@trpc/server": "catalog:",
-    "@hono/trpc-server": "^0.4.0",
-    "better-auth": "catalog:",
-    "dotenv": "catalog:",
-    "zod": "catalog:",
+    "@hono/node-server": "^1.19.7",
+    "@hono/trpc-server": "^0.4.1",
     "@prive-admin/api": "workspace:*",
     "@prive-admin/auth": "workspace:*",
-    "@prive-admin/db": "workspace:*"
+    "@prive-admin/db": "workspace:*",
+    "@trpc/server": "catalog:",
+    "better-auth": "catalog:",
+    "dotenv": "catalog:",
+    "hono": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "typescript": "catalog:",
-    "tsx": "^4.19.2",
+    "@prive-admin/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
-    "@prive-admin/tsconfig": "workspace:*"
+    "tsx": "^4.21.0",
+    "typescript": "catalog:"
   }
 }
