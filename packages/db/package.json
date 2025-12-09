@@ -4,11 +4,9 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
     "./*": {
-      "types": "./dist/*.d.ts",
       "default": "./src/*.ts"
     }
   },
@@ -24,15 +22,14 @@
     "db:down": "docker compose down"
   },
   "devDependencies": {
-    "@types/pg": "^8.11.11",
+    "@types/pg": "catalog:",
     "drizzle-kit": "^0.31.2",
-    "tsdown": "catalog:"
+    "@prive-admin/tsconfig": "workspace:*"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
-    "@prive-admin/tsconfig": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-orm": "^0.44.2",
     "drizzle-zod": "^0.8.3",

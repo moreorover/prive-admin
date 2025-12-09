@@ -1,6 +1,6 @@
 {
   "name": "@prive-admin/tsconfig",
-  "type": "module",
+  "private": true,
   "files": [
     "tsconfig.base.json"
   ]
