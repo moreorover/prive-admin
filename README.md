@@ -69,3 +69,9 @@ prive-admin/
 - `pnpm db:push`: Push schema changes to database
 - `pnpm db:studio`: Open database studio UI
 - `pnpm check`: Run Biome formatting and linting
+
+## Updating versions
+
+```bash
+pnpm dlx taze major -r
+```
