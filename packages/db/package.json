@@ -30,6 +30,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@prive-admin/env": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-orm": "0.45.0",
     "drizzle-zod": "^0.8.3",

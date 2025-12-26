@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@prive-admin/db": "workspace:*",
+    "@prive-admin/env": "workspace:*",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "zod": "catalog:"

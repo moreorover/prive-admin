@@ -16,6 +16,7 @@
     "@prive-admin/api": "workspace:*",
     "@prive-admin/auth": "workspace:*",
     "@prive-admin/db": "workspace:*",
+    "@prive-admin/env": "workspace:*",
     "@trpc/server": "catalog:",
     "better-auth": "catalog:",
     "dotenv": "catalog:",

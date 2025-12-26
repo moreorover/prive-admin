@@ -3,15 +3,16 @@ import * as schema from "@prive-admin/db/schema/auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins";
+import { env } from "@prive-admin/env/server";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: schema,
   }),
-  trustedOrigins: [process.env.CORS_ORIGIN || ""],
+  trustedOrigins: [env.CORS_ORIGIN],
   emailAndPassword: {
-    enabled: process.env.ALLOW_SIGNUPS !== "false",
+    enabled: env.ALLOW_SIGNUPS,
   },
   advanced: {
     defaultCookieAttributes: {
