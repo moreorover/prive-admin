@@ -68,7 +68,7 @@
         "useSemanticElements": "off"
       },
       "suspicious": {
-        "noIndexArray": "off"
+        "noArrayIndexKey": "off"
       }
     }
   },
