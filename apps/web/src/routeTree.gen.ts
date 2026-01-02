@@ -17,6 +17,7 @@ import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_authenticated/dashboard/settings'
 import { Route as AuthenticatedDashboardProfileRouteImport } from './routes/_authenticated/dashboard/profile'
 import { Route as AuthenticatedDashboardCustomersRouteImport } from './routes/_authenticated/dashboard/customers'
+import { Route as AuthenticatedDashboardContactsRouteRouteImport } from './routes/_authenticated/dashboard/contacts/route'
 import { Route as AuthenticatedDashboardCreateIndexRouteImport } from './routes/_authenticated/dashboard/create/index'
 import { Route as AuthenticatedDashboardContactsIndexRouteImport } from './routes/_authenticated/dashboard/contacts/index'
 import { Route as AuthenticatedDashboardBookingsIndexRouteImport } from './routes/_authenticated/dashboard/bookings/index'
@@ -68,6 +69,12 @@ const AuthenticatedDashboardCustomersRoute =
     path: '/customers',
     getParentRoute: () => AuthenticatedDashboardRouteRoute,
   } as any)
+const AuthenticatedDashboardContactsRouteRoute =
+  AuthenticatedDashboardContactsRouteRouteImport.update({
+    id: '/contacts',
+    path: '/contacts',
+    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+  } as any)
 const AuthenticatedDashboardCreateIndexRoute =
   AuthenticatedDashboardCreateIndexRouteImport.update({
     id: '/create/',
@@ -76,9 +83,9 @@ const AuthenticatedDashboardCreateIndexRoute =
   } as any)
 const AuthenticatedDashboardContactsIndexRoute =
   AuthenticatedDashboardContactsIndexRouteImport.update({
-    id: '/contacts/',
-    path: '/contacts/',
-    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedDashboardContactsRouteRoute,
   } as any)
 const AuthenticatedDashboardBookingsIndexRoute =
   AuthenticatedDashboardBookingsIndexRouteImport.update({
@@ -88,9 +95,9 @@ const AuthenticatedDashboardBookingsIndexRoute =
   } as any)
 const AuthenticatedDashboardContactsIdRoute =
   AuthenticatedDashboardContactsIdRouteImport.update({
-    id: '/contacts/$id',
-    path: '/contacts/$id',
-    getParentRoute: () => AuthenticatedDashboardRouteRoute,
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedDashboardContactsRouteRoute,
   } as any)
 const AuthenticatedDashboardContactsIdIndexRoute =
   AuthenticatedDashboardContactsIdIndexRouteImport.update({
@@ -109,13 +116,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/signin': typeof SigninRoute
   '/dashboard': typeof AuthenticatedDashboardRouteRouteWithChildren
+  '/dashboard/contacts': typeof AuthenticatedDashboardContactsRouteRouteWithChildren
   '/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
   '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
   '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/contacts/$id': typeof AuthenticatedDashboardContactsIdRouteWithChildren
   '/dashboard/bookings': typeof AuthenticatedDashboardBookingsIndexRoute
-  '/dashboard/contacts': typeof AuthenticatedDashboardContactsIndexRoute
+  '/dashboard/contacts/': typeof AuthenticatedDashboardContactsIndexRoute
   '/dashboard/create': typeof AuthenticatedDashboardCreateIndexRoute
   '/dashboard/contacts/$id/history': typeof AuthenticatedDashboardContactsIdHistoryRoute
   '/dashboard/contacts/$id/': typeof AuthenticatedDashboardContactsIdIndexRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/signin': typeof SigninRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteRouteWithChildren
+  '/_authenticated/dashboard/contacts': typeof AuthenticatedDashboardContactsRouteRouteWithChildren
   '/_authenticated/dashboard/customers': typeof AuthenticatedDashboardCustomersRoute
   '/_authenticated/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
   '/_authenticated/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
@@ -156,13 +165,14 @@ export interface FileRouteTypes {
     | '/'
     | '/signin'
     | '/dashboard'
+    | '/dashboard/contacts'
     | '/dashboard/customers'
     | '/dashboard/profile'
     | '/dashboard/settings'
     | '/dashboard/'
     | '/dashboard/contacts/$id'
     | '/dashboard/bookings'
-    | '/dashboard/contacts'
+    | '/dashboard/contacts/'
     | '/dashboard/create'
     | '/dashboard/contacts/$id/history'
     | '/dashboard/contacts/$id/'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/signin'
     | '/_authenticated/dashboard'
+    | '/_authenticated/dashboard/contacts'
     | '/_authenticated/dashboard/customers'
     | '/_authenticated/dashboard/profile'
     | '/_authenticated/dashboard/settings'
@@ -261,6 +272,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardCustomersRouteImport
       parentRoute: typeof AuthenticatedDashboardRouteRoute
     }
+    '/_authenticated/dashboard/contacts': {
+      id: '/_authenticated/dashboard/contacts'
+      path: '/contacts'
+      fullPath: '/dashboard/contacts'
+      preLoaderRoute: typeof AuthenticatedDashboardContactsRouteRouteImport
+      parentRoute: typeof AuthenticatedDashboardRouteRoute
+    }
     '/_authenticated/dashboard/create/': {
       id: '/_authenticated/dashboard/create/'
       path: '/create'
@@ -270,10 +288,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/dashboard/contacts/': {
       id: '/_authenticated/dashboard/contacts/'
-      path: '/contacts'
-      fullPath: '/dashboard/contacts'
+      path: '/'
+      fullPath: '/dashboard/contacts/'
       preLoaderRoute: typeof AuthenticatedDashboardContactsIndexRouteImport
-      parentRoute: typeof AuthenticatedDashboardRouteRoute
+      parentRoute: typeof AuthenticatedDashboardContactsRouteRoute
     }
     '/_authenticated/dashboard/bookings/': {
       id: '/_authenticated/dashboard/bookings/'
@@ -284,10 +302,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/dashboard/contacts/$id': {
       id: '/_authenticated/dashboard/contacts/$id'
-      path: '/contacts/$id'
+      path: '/$id'
       fullPath: '/dashboard/contacts/$id'
       preLoaderRoute: typeof AuthenticatedDashboardContactsIdRouteImport
-      parentRoute: typeof AuthenticatedDashboardRouteRoute
+      parentRoute: typeof AuthenticatedDashboardContactsRouteRoute
     }
     '/_authenticated/dashboard/contacts/$id/': {
       id: '/_authenticated/dashboard/contacts/$id/'
@@ -324,29 +342,44 @@ const AuthenticatedDashboardContactsIdRouteWithChildren =
     AuthenticatedDashboardContactsIdRouteChildren,
   )
 
+interface AuthenticatedDashboardContactsRouteRouteChildren {
+  AuthenticatedDashboardContactsIdRoute: typeof AuthenticatedDashboardContactsIdRouteWithChildren
+  AuthenticatedDashboardContactsIndexRoute: typeof AuthenticatedDashboardContactsIndexRoute
+}
+
+const AuthenticatedDashboardContactsRouteRouteChildren: AuthenticatedDashboardContactsRouteRouteChildren =
+  {
+    AuthenticatedDashboardContactsIdRoute:
+      AuthenticatedDashboardContactsIdRouteWithChildren,
+    AuthenticatedDashboardContactsIndexRoute:
+      AuthenticatedDashboardContactsIndexRoute,
+  }
+
+const AuthenticatedDashboardContactsRouteRouteWithChildren =
+  AuthenticatedDashboardContactsRouteRoute._addFileChildren(
+    AuthenticatedDashboardContactsRouteRouteChildren,
+  )
+
 interface AuthenticatedDashboardRouteRouteChildren {
+  AuthenticatedDashboardContactsRouteRoute: typeof AuthenticatedDashboardContactsRouteRouteWithChildren
   AuthenticatedDashboardCustomersRoute: typeof AuthenticatedDashboardCustomersRoute
   AuthenticatedDashboardProfileRoute: typeof AuthenticatedDashboardProfileRoute
   AuthenticatedDashboardSettingsRoute: typeof AuthenticatedDashboardSettingsRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
-  AuthenticatedDashboardContactsIdRoute: typeof AuthenticatedDashboardContactsIdRouteWithChildren
   AuthenticatedDashboardBookingsIndexRoute: typeof AuthenticatedDashboardBookingsIndexRoute
-  AuthenticatedDashboardContactsIndexRoute: typeof AuthenticatedDashboardContactsIndexRoute
   AuthenticatedDashboardCreateIndexRoute: typeof AuthenticatedDashboardCreateIndexRoute
 }
 
 const AuthenticatedDashboardRouteRouteChildren: AuthenticatedDashboardRouteRouteChildren =
   {
+    AuthenticatedDashboardContactsRouteRoute:
+      AuthenticatedDashboardContactsRouteRouteWithChildren,
     AuthenticatedDashboardCustomersRoute: AuthenticatedDashboardCustomersRoute,
     AuthenticatedDashboardProfileRoute: AuthenticatedDashboardProfileRoute,
     AuthenticatedDashboardSettingsRoute: AuthenticatedDashboardSettingsRoute,
     AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
-    AuthenticatedDashboardContactsIdRoute:
-      AuthenticatedDashboardContactsIdRouteWithChildren,
     AuthenticatedDashboardBookingsIndexRoute:
       AuthenticatedDashboardBookingsIndexRoute,
-    AuthenticatedDashboardContactsIndexRoute:
-      AuthenticatedDashboardContactsIndexRoute,
     AuthenticatedDashboardCreateIndexRoute:
       AuthenticatedDashboardCreateIndexRoute,
   }
