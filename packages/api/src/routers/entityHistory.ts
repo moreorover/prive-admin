@@ -7,7 +7,7 @@ export const entityHistoryRouter = router({
     .input(
       z.object({
         entityType: z.enum([
-          "customer",
+          "contact",
           "booking",
           "hair_order",
           "hair_assigned",
