@@ -10,7 +10,7 @@
     "start": "bun run dist/index.mjs"
   },
   "dependencies": {
-    "@hono/trpc-server": "^0.4.0",
+    "@hono/trpc-server": "^0.4.2",
     "@prive-admin/api": "workspace:*",
     "@prive-admin/auth": "workspace:*",
     "@prive-admin/db": "workspace:*",
@@ -24,7 +24,7 @@
   "devDependencies": {
     "@prive-admin/config": "workspace:*",
     "@types/bun": "catalog:",
-    "tsdown": "^0.16.5",
+    "tsdown": "^0.20.3",
     "typescript": "catalog:"
   }
 }
