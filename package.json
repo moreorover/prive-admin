@@ -21,6 +21,10 @@
   },
   "type": "module",
   "scripts": {
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
     "dev": "turbo dev",
     "build": "turbo build",
     "check-types": "turbo check-types",
