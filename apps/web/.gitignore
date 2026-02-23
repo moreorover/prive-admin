@@ -29,11 +29,9 @@
 .alchemy
 
 # Environment & local files
-.env*
-!.env.example
+.env*.local
 .DS_Store
 *.pem
-*.local
 
 # Logs
 npm-debug.log*

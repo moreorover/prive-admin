@@ -2,16 +2,20 @@ import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 
-export default defineConfig({
-  plugins: [tailwindcss(), tanstackRouter({}), react()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+export default defineConfig(({ mode }) => {
+  const viteEnv = loadEnv(mode, process.cwd(), "VITE_");
+
+  return {
+    plugins: [tailwindcss(), tanstackRouter({}), react()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
     },
-  },
-  server: {
-    port: 3001,
-  },
+    server: {
+      port: Number(viteEnv.VITE_PORT),
+    },
+  };
 });
