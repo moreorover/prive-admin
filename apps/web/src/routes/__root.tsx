@@ -4,6 +4,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
+import type { Session } from "@/lib/auth-client";
 import type { trpc } from "@/utils/trpc";
 
 import Header from "@/components/header";
@@ -15,6 +16,7 @@ import "../index.css";
 export interface RouterAppContext {
   trpc: typeof trpc;
   queryClient: QueryClient;
+  auth: Session | null;
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
