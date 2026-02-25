@@ -1,30 +1,44 @@
 import type { QueryClient } from "@tanstack/react-query";
+import type { Session } from "node:inspector";
 
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router";
+import { Outlet, createRootRouteWithContext, HeadContent } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
-import type { Session } from "@/lib/auth-client";
 import type { trpc } from "@/utils/trpc";
 
-import Header from "@/components/header";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
+import { authClient } from "@/lib/auth-client.ts";
 
-import "../index.css";
+import "../styles.css";
 
 export interface RouterAppContext {
   trpc: typeof trpc;
   queryClient: QueryClient;
-  auth: Session | null;
+  session: Session | null;
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
+  beforeLoad: async () => {
+    try {
+      const session = await authClient.getSession();
+      return { session };
+    } catch (error) {
+      console.error("Failed to fetch user session:", error);
+      return { user: null };
+    }
+  },
   component: RootComponent,
   head: () => ({
     meta: [
       {
         title: "prive-admin",
+      },
+      {
+        charSet: "utf-8",
+      },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1",
       },
       {
         name: "description",
@@ -44,18 +58,9 @@ function RootComponent() {
   return (
     <>
       <HeadContent />
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="dark"
-        disableTransitionOnChange
-        storageKey="vite-ui-theme"
-      >
-        <div className="grid grid-rows-[auto_1fr] h-svh">
-          <Header />
-          <Outlet />
-        </div>
-        <Toaster richColors />
-      </ThemeProvider>
+      {/*<body>*/}
+      <Outlet />
+      {/*</body>*/}
       <TanStackRouterDevtools position="bottom-left" />
       <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
     </>
