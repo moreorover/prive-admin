@@ -23,7 +23,7 @@
     "@prive-admin/env": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
-    "pg": "^8.18.0",
+    "pg": "^8.19.0",
     "zod": "catalog:"
   },
   "devDependencies": {
