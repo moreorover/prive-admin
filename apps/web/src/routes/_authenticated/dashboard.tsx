@@ -8,14 +8,14 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function RouteComponent() {
-  const { auth } = Route.useRouteContext();
+  const { session } = Route.useRouteContext();
 
   const privateData = useQuery(trpc.privateData.queryOptions());
 
   return (
     <div>
       <h1>Dashboard</h1>
-      <p>Welcome {auth?.user.name}</p>
+      <p>Welcome {session?.data?.user.name}</p>
       <p>API: {privateData.data?.message}</p>
     </div>
   );
