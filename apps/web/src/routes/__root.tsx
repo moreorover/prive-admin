@@ -1,13 +1,14 @@
 import type { QueryClient } from "@tanstack/react-query";
-import type { Session } from "node:inspector";
 
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Outlet, createRootRouteWithContext, HeadContent } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 import type { trpc } from "@/utils/trpc";
+import type { Session } from "@/lib/auth-client";
 
-import { authClient } from "@/lib/auth-client.ts";
+import { authClient } from "@/lib/auth-client";
+import { Navbar } from "@/components/navbar";
 
 import "../styles.css";
 
@@ -20,11 +21,11 @@ export interface RouterAppContext {
 export const Route = createRootRouteWithContext<RouterAppContext>()({
   beforeLoad: async () => {
     try {
-      const session = await authClient.getSession();
-      return { session };
+      const { data } = await authClient.getSession();
+      return { session: data };
     } catch (error) {
       console.error("Failed to fetch user session:", error);
-      return { user: null };
+      return { session: null };
     }
   },
   component: RootComponent,
@@ -58,9 +59,8 @@ function RootComponent() {
   return (
     <>
       <HeadContent />
-      {/*<body>*/}
+      <Navbar />
       <Outlet />
-      {/*</body>*/}
       <TanStackRouterDevtools position="bottom-left" />
       <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
     </>

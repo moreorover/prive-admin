@@ -1,4 +1,5 @@
 {
+  "semi": false,
   "experimentalSortImports": {
     "groups": [
       "type-import",
