@@ -9,7 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/utils/trpc";
 
-export const Route = createFileRoute("/_authenticated/todos")({
+export const Route = createFileRoute("/admin/todos")({
+  staticData: { title: "Todos" },
   component: TodosRoute,
 });
 

@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_public/signin")({
   component: SignInPage,
   beforeLoad: ({ context: { session } }) => {
     if (session) {
-      throw redirect({ to: "/dashboard" })
+      throw redirect({ to: "/admin/dashboard" })
     }
   },
 })
@@ -43,7 +43,7 @@ function SignInPage() {
         return
       }
       await router.invalidate()
-      await router.navigate({ to: "/dashboard" })
+      await router.navigate({ to: "/admin/dashboard" })
     },
   })
 

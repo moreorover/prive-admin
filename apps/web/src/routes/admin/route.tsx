@@ -4,8 +4,9 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
-export const Route = createFileRoute("/_authenticated")({
-  component: AuthenticatedLayout,
+export const Route = createFileRoute("/admin")({
+  staticData: { title: "Admin" },
+  component: AdminLayout,
   beforeLoad: ({ context: { session } }) => {
     if (!session) {
       throw redirect({ to: "/signin" })
@@ -13,7 +14,7 @@ export const Route = createFileRoute("/_authenticated")({
   },
 })
 
-function AuthenticatedLayout() {
+function AdminLayout() {
   return (
     <SidebarProvider>
       <AppSidebar />

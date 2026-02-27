@@ -36,7 +36,7 @@ export function Navbar() {
         <nav className="flex items-center gap-2">
           {session?.user?.role === "admin" && (
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/dashboard">
+              <Link to="/admin/dashboard">
                 <ShieldIcon data-icon="inline-start" />
                 Admin
               </Link>
