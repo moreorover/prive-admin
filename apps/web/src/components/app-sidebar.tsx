@@ -29,6 +29,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 
 const navItems = [
@@ -49,6 +50,7 @@ export function AppSidebar() {
   const router = useRouter()
   const location = useLocation()
   const { session } = useRouteContext({ from: "__root__" })
+  const { setOpenMobile } = useSidebar()
 
   return (
     <Sidebar>
@@ -80,6 +82,7 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     isActive={location.pathname === item.href}
+                    onClick={() => setOpenMobile(false)}
                   >
                     <Link to={item.href}>
                       <item.icon />
