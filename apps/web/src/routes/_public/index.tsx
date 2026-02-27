@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_public/")({
   component: HomeComponent,
 })
 

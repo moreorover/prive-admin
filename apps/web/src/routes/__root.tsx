@@ -8,7 +8,7 @@ import type { trpc } from "@/utils/trpc";
 import type { Session } from "@/lib/auth-client";
 
 import { authClient } from "@/lib/auth-client";
-import { Navbar } from "@/components/navbar";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 import "../styles.css";
 
@@ -59,8 +59,9 @@ function RootComponent() {
   return (
     <>
       <HeadContent />
-      <Navbar />
-      <Outlet />
+      <TooltipProvider>
+        <Outlet />
+      </TooltipProvider>
       <TanStackRouterDevtools position="bottom-left" />
       <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
     </>

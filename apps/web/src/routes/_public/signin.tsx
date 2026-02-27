@@ -14,11 +14,11 @@ import {
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 
-export const Route = createFileRoute("/signin")({
+export const Route = createFileRoute("/_public/signin")({
   component: SignInPage,
   beforeLoad: ({ context: { session } }) => {
     if (session) {
-      throw redirect({ to: "/" })
+      throw redirect({ to: "/dashboard" })
     }
   },
 })
@@ -43,7 +43,7 @@ function SignInPage() {
         return
       }
       await router.invalidate()
-      await router.navigate({ to: "/" })
+      await router.navigate({ to: "/dashboard" })
     },
   })
 
