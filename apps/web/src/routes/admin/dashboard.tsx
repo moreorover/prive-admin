@@ -3,7 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { trpc } from "@/utils/trpc";
 
-export const Route = createFileRoute("/_authenticated/dashboard")({
+export const Route = createFileRoute("/admin/dashboard")({
+  staticData: { title: "Dashboard" },
   component: RouteComponent,
 });
 

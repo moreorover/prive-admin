@@ -33,8 +33,8 @@ import {
 } from "@/components/ui/sidebar"
 
 const navItems = [
-  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
-  { title: "Todos", href: "/todos", icon: ListTodoIcon },
+  { title: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboardIcon },
+  { title: "Todos", href: "/admin/todos", icon: ListTodoIcon },
 ]
 
 function getInitials(name: string) {
