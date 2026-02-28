@@ -16,8 +16,17 @@ export function CustomerCombobox({
   value: string
   onChange: (value: string) => void
 }) {
+  const customerMap = new Map(customers.map((c) => [c.id, c]))
+
   return (
-    <Combobox value={value} onValueChange={(val) => onChange(val as string)}>
+    <Combobox
+      value={value}
+      onValueChange={(val) => onChange(val as string)}
+      itemToStringLabel={(id) => {
+        const c = customerMap.get(id)
+        return c ? `${c.name} (${c.email})` : ""
+      }}
+    >
       <ComboboxInput placeholder="Search customers..." />
       <ComboboxContent>
         <ComboboxEmpty>No customers found.</ComboboxEmpty>
