@@ -1,6 +1,9 @@
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { formatDistanceToNow } from "date-fns"
+import { Undo2 } from "lucide-react"
+import { toast } from "sonner"
 
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
@@ -10,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { trpc } from "@/utils/trpc"
+import { queryClient, trpc } from "@/utils/trpc"
 
 export function EntityHistory({
   entityType,
@@ -21,6 +24,26 @@ export function EntityHistory({
 }) {
   const history = useQuery(
     trpc.entityHistory.getByEntity.queryOptions({ entityType, entityId }),
+  )
+
+  const revert = useMutation(
+    trpc.entityHistory.revert.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: [["entityHistory", "getByEntity"]],
+        })
+        if (entityType === "customer") {
+          queryClient.invalidateQueries({
+            queryKey: [["customer", "getById"]],
+          })
+        } else {
+          queryClient.invalidateQueries({
+            queryKey: [["hairOrder", "getById"]],
+          })
+        }
+        toast.success("Change reverted")
+      },
+    }),
   )
 
   return (
@@ -43,6 +66,7 @@ export function EntityHistory({
                   <TableHead>New Value</TableHead>
                   <TableHead>Changed By</TableHead>
                   <TableHead>Date</TableHead>
+                  <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -58,6 +82,21 @@ export function EntityHistory({
                       {formatDistanceToNow(new Date(entry.changedAt), {
                         addSuffix: true,
                       })}
+                    </TableCell>
+                    <TableCell>
+                      {entry.fieldName !== "deleted" && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8"
+                          disabled={revert.isPending}
+                          onClick={() =>
+                            revert.mutate({ historyId: entry.id })
+                          }
+                        >
+                          <Undo2 className="size-4" />
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
