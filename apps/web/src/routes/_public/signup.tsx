@@ -14,8 +14,8 @@ import {
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 
-export const Route = createFileRoute("/_public/signin")({
-  component: SignInPage,
+export const Route = createFileRoute("/_public/signup")({
+  component: SignUpPage,
   beforeLoad: ({ context: { session } }) => {
     if (session) {
       throw redirect({ to: "/admin/dashboard" })
@@ -23,23 +23,33 @@ export const Route = createFileRoute("/_public/signin")({
   },
 })
 
-function SignInPage() {
+function SignUpPage() {
   const router = useRouter()
   const [formError, setFormError] = useState<string | null>(null)
 
   const form = useForm({
     defaultValues: {
+      name: "",
       email: "",
       password: "",
     },
     onSubmit: async ({ value }) => {
       setFormError(null)
-      const { error } = await authClient.signIn.email({
+      const { error } = await authClient.signUp.email({
+        name: value.name,
         email: value.email,
         password: value.password,
       })
       if (error) {
-        setFormError(error.message ?? "Invalid email or password")
+        setFormError(error.message ?? "Something went wrong")
+        return
+      }
+      const { error: signInError } = await authClient.signIn.email({
+        email: value.email,
+        password: value.password,
+      })
+      if (signInError) {
+        setFormError(signInError.message ?? "Account created but sign in failed")
         return
       }
       await router.invalidate()
@@ -51,9 +61,9 @@ function SignInPage() {
     <div className="flex min-h-[calc(100vh-3rem)] items-center justify-center px-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Sign in</CardTitle>
+          <CardTitle>Sign up</CardTitle>
           <CardDescription>
-            Enter your credentials to access your account.
+            Create an account to get started.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -70,6 +80,31 @@ function SignInPage() {
                 {formError}
               </div>
             )}
+
+            <form.Field
+              name="name"
+              validators={{
+                onSubmit: ({ value }) =>
+                  !value ? "Name is required" : undefined,
+              }}
+            >
+              {(field) => (
+                <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
+                  <FieldLabel htmlFor={field.name}>Name</FieldLabel>
+                  <Input
+                    id={field.name}
+                    type="text"
+                    placeholder="John Doe"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                  )}
+                </Field>
+              )}
+            </form.Field>
 
             <form.Field
               name="email"
@@ -124,15 +159,15 @@ function SignInPage() {
             <form.Subscribe selector={(state) => state.isSubmitting}>
               {(isSubmitting) => (
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Signing in..." : "Sign in"}
+                  {isSubmitting ? "Creating account..." : "Sign up"}
                 </Button>
               )}
             </form.Subscribe>
 
             <p className="text-muted-foreground text-center text-sm">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-foreground underline underline-offset-4 hover:text-foreground/80">
-                Sign up
+              Already have an account?{" "}
+              <Link to="/signin" className="text-foreground underline underline-offset-4 hover:text-foreground/80">
+                Sign in
               </Link>
             </p>
           </form>

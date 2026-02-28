@@ -15,6 +15,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as AdminTodosRouteImport } from './routes/admin/todos'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
+import { Route as PublicSignupRouteImport } from './routes/_public/signup'
 import { Route as PublicSigninRouteImport } from './routes/_public/signin'
 import { Route as AdminHairOrdersRouteRouteImport } from './routes/admin/hair-orders/route'
 import { Route as AdminCustomersRouteRouteImport } from './routes/admin/customers/route'
@@ -53,6 +54,11 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const PublicSignupRoute = PublicSignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => PublicRoute,
 } as any)
 const PublicSigninRoute = PublicSigninRouteImport.update({
   id: '/signin',
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/admin/customers': typeof AdminCustomersRouteRouteWithChildren
   '/admin/hair-orders': typeof AdminHairOrdersRouteRouteWithChildren
   '/signin': typeof PublicSigninRoute
+  '/signup': typeof PublicSignupRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/todos': typeof AdminTodosRoute
   '/admin/': typeof AdminIndexRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/signin': typeof PublicSigninRoute
+  '/signup': typeof PublicSignupRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/todos': typeof AdminTodosRoute
   '/': typeof PublicIndexRoute
@@ -136,6 +144,7 @@ export interface FileRoutesById {
   '/admin/customers': typeof AdminCustomersRouteRouteWithChildren
   '/admin/hair-orders': typeof AdminHairOrdersRouteRouteWithChildren
   '/_public/signin': typeof PublicSigninRoute
+  '/_public/signup': typeof PublicSignupRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/todos': typeof AdminTodosRoute
   '/_public/': typeof PublicIndexRoute
@@ -155,6 +164,7 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/hair-orders'
     | '/signin'
+    | '/signup'
     | '/admin/dashboard'
     | '/admin/todos'
     | '/admin/'
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/signin'
+    | '/signup'
     | '/admin/dashboard'
     | '/admin/todos'
     | '/'
@@ -184,6 +195,7 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/hair-orders'
     | '/_public/signin'
+    | '/_public/signup'
     | '/admin/dashboard'
     | '/admin/todos'
     | '/_public/'
@@ -244,6 +256,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/dashboard'
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/_public/signup': {
+      id: '/_public/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof PublicSignupRouteImport
+      parentRoute: typeof PublicRoute
     }
     '/_public/signin': {
       id: '/_public/signin'
@@ -363,11 +382,13 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 
 interface PublicRouteChildren {
   PublicSigninRoute: typeof PublicSigninRoute
+  PublicSignupRoute: typeof PublicSignupRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
   PublicSigninRoute: PublicSigninRoute,
+  PublicSignupRoute: PublicSignupRoute,
   PublicIndexRoute: PublicIndexRoute,
 }
 
