@@ -453,7 +453,7 @@ function FormExample() {
                 <FieldLabel htmlFor="small-form-framework">
                   Framework
                 </FieldLabel>
-                <Combobox items={frameworks}>
+                <Combobox>
                   <ComboboxInput
                     id="small-form-framework"
                     placeholder="Select a framework"
@@ -462,11 +462,11 @@ function FormExample() {
                   <ComboboxContent>
                     <ComboboxEmpty>No frameworks found.</ComboboxEmpty>
                     <ComboboxList>
-                      {(item) => (
+                      {frameworks.map((item) => (
                         <ComboboxItem key={item} value={item}>
                           {item}
                         </ComboboxItem>
-                      )}
+                      ))}
                     </ComboboxList>
                   </ComboboxContent>
                 </Combobox>
