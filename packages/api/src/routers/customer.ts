@@ -5,6 +5,7 @@ import { and, desc, eq } from "drizzle-orm";
 import z from "zod";
 
 import { protectedProcedure, router } from "../index";
+import { recordChanges } from "../lib/entity-history";
 
 export const customerRouter = router({
   getAll: protectedProcedure.query(async () => {
@@ -79,7 +80,12 @@ export const customerRouter = router({
         email: z.string().email(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const [existing] = await db
+        .select({ name: customer.name, email: customer.email })
+        .from(customer)
+        .where(eq(customer.id, input.id));
+
       const [row] = await db
         .update(customer)
         .set({
@@ -89,12 +95,37 @@ export const customerRouter = router({
         .where(eq(customer.id, input.id))
         .returning();
 
+      if (existing) {
+        await recordChanges({
+          entityType: "customer",
+          entityId: input.id,
+          changedById: ctx.session.user.id,
+          oldValues: existing,
+          newValues: { name: input.name, email: input.email },
+        });
+      }
+
       return row;
     }),
 
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
+      const [existing] = await db
+        .select({ name: customer.name })
+        .from(customer)
+        .where(eq(customer.id, input.id));
+
+      if (existing) {
+        await recordChanges({
+          entityType: "customer",
+          entityId: input.id,
+          changedById: ctx.session.user.id,
+          oldValues: {},
+          newValues: { deleted: existing.name },
+        });
+      }
+
       await db.delete(customer).where(eq(customer.id, input.id));
     }),
 
