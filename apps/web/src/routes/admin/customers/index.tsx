@@ -21,7 +21,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -47,7 +46,6 @@ type CustomerRow = {
   id: string;
   name: string;
   email: string;
-  role: string | null;
   createdAt: string;
 };
 
@@ -61,13 +59,6 @@ const columns: ColumnDef<CustomerRow>[] = [
     header: "Email",
   },
   {
-    accessorKey: "role",
-    header: "Role",
-    cell: ({ row }) => (
-      <Badge variant="secondary">{row.original.role ?? "user"}</Badge>
-    ),
-  },
-  {
     accessorKey: "createdAt",
     header: "Created At",
     cell: ({ row }) => format(new Date(row.original.createdAt), "dd MMM yyyy"),
@@ -78,12 +69,12 @@ function CustomersPage() {
   const navigate = useNavigate();
   const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null);
 
-  const customers = useQuery(trpc.user.getAll.queryOptions());
+  const customers = useQuery(trpc.customer.getAll.queryOptions());
 
   const deleteMutation = useMutation(
-    trpc.user.delete.mutationOptions({
+    trpc.customer.delete.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [["user", "getAll"]] });
+        queryClient.invalidateQueries({ queryKey: [["customer", "getAll"]] });
         toast.success("Customer deleted");
         setDeletingCustomerId(null);
       },

@@ -18,9 +18,9 @@ function NewCustomerPage() {
   const navigate = useNavigate()
 
   const createMutation = useMutation(
-    trpc.user.create.mutationOptions({
+    trpc.customer.create.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [["user", "getAll"]] })
+        queryClient.invalidateQueries({ queryKey: [["customer", "getAll"]] })
         toast.success("Customer created")
         navigate({ to: "/admin/customers" })
       },

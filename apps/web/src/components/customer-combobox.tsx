@@ -8,11 +8,11 @@ import {
 } from "@/components/ui/combobox"
 
 export function CustomerCombobox({
-  users,
+  customers,
   value,
   onChange,
 }: {
-  users: { id: string; name: string; email: string }[]
+  customers: { id: string; name: string; email: string }[]
   value: string
   onChange: (value: string) => void
 }) {
@@ -22,11 +22,11 @@ export function CustomerCombobox({
       <ComboboxContent>
         <ComboboxEmpty>No customers found.</ComboboxEmpty>
         <ComboboxList>
-          {users.map((u) => (
-            <ComboboxItem key={u.id} value={u.id}>
+          {customers.map((c) => (
+            <ComboboxItem key={c.id} value={c.id}>
               <div className="flex flex-col">
-                <span className="text-sm font-medium">{u.name}</span>
-                <span className="text-muted-foreground text-xs">{u.email}</span>
+                <span className="text-sm font-medium">{c.name}</span>
+                <span className="text-muted-foreground text-xs">{c.email}</span>
               </div>
             </ComboboxItem>
           ))}

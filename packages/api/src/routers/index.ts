@@ -1,4 +1,5 @@
 import { protectedProcedure, publicProcedure, router } from "../index";
+import { customerRouter } from "./customer";
 import { hairOrderRouter } from "./hair-order";
 import { todoRouter } from "./todo";
 import { userRouter } from "./user";
@@ -13,6 +14,7 @@ export const appRouter = router({
       user: ctx.session.user,
     };
   }),
+  customer: customerRouter,
   hairOrder: hairOrderRouter,
   todo: todoRouter,
   user: userRouter,

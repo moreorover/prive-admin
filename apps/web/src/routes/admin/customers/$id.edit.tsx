@@ -1,10 +1,20 @@
 import { useForm } from "@tanstack/react-form"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { XIcon } from "lucide-react"
+import { useState } from "react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { queryClient, trpc } from "@/utils/trpc"
@@ -18,14 +28,33 @@ function EditCustomerPage() {
   const { id } = Route.useParams()
   const navigate = useNavigate()
 
-  const customer = useQuery(trpc.user.getById.queryOptions({ id }))
+  const customer = useQuery(trpc.customer.getById.queryOptions({ id }))
+  const allUsers = useQuery(trpc.user.getAll.queryOptions())
 
   const updateMutation = useMutation(
-    trpc.user.update.mutationOptions({
+    trpc.customer.update.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [["user", "getAll"]] })
+        queryClient.invalidateQueries({ queryKey: [["customer"]] })
         toast.success("Customer updated")
         navigate({ to: "/admin/customers" })
+      },
+    }),
+  )
+
+  const assignMutation = useMutation(
+    trpc.customer.assignUser.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [["customer", "getById"]] })
+        toast.success("User assigned")
+      },
+    }),
+  )
+
+  const unassignMutation = useMutation(
+    trpc.customer.unassignUser.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [["customer", "getById"]] })
+        toast.success("User unassigned")
       },
     }),
   )
@@ -38,8 +67,11 @@ function EditCustomerPage() {
     return <div className="text-muted-foreground text-center">Customer not found.</div>
   }
 
+  const assignedUserIds = new Set(customer.data.users.map((u) => u.id))
+  const availableUsers = (allUsers.data ?? []).filter((u) => !assignedUserIds.has(u.id))
+
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl space-y-6">
       <CustomerEditForm
         customer={customer.data}
         onSubmit={async (value) => {
@@ -52,6 +84,90 @@ function EditCustomerPage() {
         isPending={updateMutation.isPending}
         onCancel={() => navigate({ to: "/admin/customers" })}
       />
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Assigned Users</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {customer.data.users.length > 0 ? (
+            <ul className="space-y-2">
+              {customer.data.users.map((u) => (
+                <li key={u.id} className="flex items-center justify-between rounded-md border p-3">
+                  <div>
+                    <div className="text-sm font-medium">{u.name}</div>
+                    <div className="text-muted-foreground text-xs">{u.email}</div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() =>
+                      unassignMutation.mutate({ customerId: id, userId: u.id })
+                    }
+                    disabled={unassignMutation.isPending}
+                  >
+                    <XIcon className="size-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground text-sm">No users assigned.</p>
+          )}
+
+          <AssignUserSection
+            users={availableUsers}
+            onAssign={(userId) => assignMutation.mutate({ customerId: id, userId })}
+            isPending={assignMutation.isPending}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function AssignUserSection({
+  users,
+  onAssign,
+  isPending,
+}: {
+  users: { id: string; name: string; email: string }[]
+  onAssign: (userId: string) => void
+  isPending: boolean
+}) {
+  const [selectedUserId, setSelectedUserId] = useState("")
+
+  return (
+    <div className="flex items-end gap-2">
+      <div className="flex-1">
+        <FieldLabel>Assign User</FieldLabel>
+        <Combobox value={selectedUserId} onValueChange={(val) => setSelectedUserId(val as string)}>
+          <ComboboxInput placeholder="Search users..." />
+          <ComboboxContent>
+            <ComboboxEmpty>No users found.</ComboboxEmpty>
+            <ComboboxList>
+              {users.map((u) => (
+                <ComboboxItem key={u.id} value={u.id}>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{u.name}</span>
+                    <span className="text-muted-foreground text-xs">{u.email}</span>
+                  </div>
+                </ComboboxItem>
+              ))}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
+      </div>
+      <Button
+        type="button"
+        disabled={!selectedUserId || isPending}
+        onClick={() => {
+          onAssign(selectedUserId)
+          setSelectedUserId("")
+        }}
+      >
+        Assign
+      </Button>
     </div>
   )
 }

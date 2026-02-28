@@ -10,6 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
+import { customer } from "./customer";
 
 export const hairOrder = pgTable(
   "hair_order",
@@ -28,7 +29,7 @@ export const hairOrder = pgTable(
     total: integer("total").default(0).notNull(),
     customerId: text("customer_id")
       .notNull()
-      .references(() => user.id),
+      .references(() => customer.id),
     createdById: text("created_by_id")
       .notNull()
       .references(() => user.id),
@@ -45,10 +46,9 @@ export const hairOrder = pgTable(
 );
 
 export const hairOrderRelations = relations(hairOrder, ({ one }) => ({
-  customer: one(user, {
+  customer: one(customer, {
     fields: [hairOrder.customerId],
-    references: [user.id],
-    relationName: "hairOrderCustomer",
+    references: [customer.id],
   }),
   createdBy: one(user, {
     fields: [hairOrder.createdById],
