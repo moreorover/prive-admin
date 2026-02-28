@@ -45,7 +45,7 @@
     "geist": "^1.4.2",
     "lucide-react": "^0.513.0",
     "mantine-form-zod-resolver": "^1.2.1",
-    "next": "^15.5.9",
+    "next": "^15.5.12",
     "nuqs": "^2.4.3",
     "prisma": "^6.9.0",
     "react": "^19.1.0",
