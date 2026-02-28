@@ -26,6 +26,10 @@ export function CustomerCombobox({
         const c = customerMap.get(id)
         return c ? `${c.name} (${c.email})` : ""
       }}
+      itemToStringValue={(id) => {
+        const c = customerMap.get(id)
+        return c ? `${c.name} ${c.email}` : ""
+      }}
     >
       <ComboboxInput placeholder="Search customers..." />
       <ComboboxContent>
