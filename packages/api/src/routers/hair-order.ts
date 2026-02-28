@@ -1,4 +1,5 @@
 import { db } from "@prive-admin/db";
+import { customer } from "@prive-admin/db/schema/customer";
 import { hairOrder } from "@prive-admin/db/schema/hair-order";
 import { user } from "@prive-admin/db/schema/auth";
 import { desc, eq } from "drizzle-orm";
@@ -9,7 +10,6 @@ import { protectedProcedure, router } from "../index";
 
 export const hairOrderRouter = router({
   getAll: protectedProcedure.query(async () => {
-    const customer = alias(user, "customer");
     const creator = alias(user, "creator");
 
     const rows = await db
@@ -44,7 +44,6 @@ export const hairOrderRouter = router({
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
-      const customer = alias(user, "customer");
       const creator = alias(user, "creator");
 
       const [row] = await db

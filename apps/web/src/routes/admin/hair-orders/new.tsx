@@ -18,7 +18,7 @@ export const Route = createFileRoute("/admin/hair-orders/new")({
 
 function NewHairOrderPage() {
   const navigate = useNavigate()
-  const users = useQuery(trpc.user.getAll.queryOptions())
+  const customers = useQuery(trpc.customer.getAll.queryOptions())
 
   const createMutation = useMutation(
     trpc.hairOrder.create.mutationOptions({
@@ -74,7 +74,7 @@ function NewHairOrderPage() {
                 <Field>
                   <FieldLabel>Customer</FieldLabel>
                   <CustomerCombobox
-                    users={users.data ?? []}
+                    customers={customers.data ?? []}
                     value={field.state.value}
                     onChange={(val) => field.handleChange(val)}
                   />

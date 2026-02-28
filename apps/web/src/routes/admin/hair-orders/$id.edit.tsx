@@ -21,7 +21,7 @@ function EditHairOrderPage() {
   const navigate = useNavigate()
 
   const order = useQuery(trpc.hairOrder.getById.queryOptions({ id }))
-  const users = useQuery(trpc.user.getAll.queryOptions())
+  const customers = useQuery(trpc.customer.getAll.queryOptions())
 
   const updateMutation = useMutation(
     trpc.hairOrder.update.mutationOptions({
@@ -45,7 +45,7 @@ function EditHairOrderPage() {
     <div className="mx-auto max-w-2xl">
       <HairOrderEditForm
         order={order.data}
-        users={users.data ?? []}
+        customers={customers.data ?? []}
         onSubmit={async (value) => {
           await updateMutation.mutateAsync({
             id,
@@ -65,7 +65,7 @@ function EditHairOrderPage() {
 
 function HairOrderEditForm({
   order,
-  users,
+  customers,
   onSubmit,
   isPending,
   onCancel,
@@ -77,7 +77,7 @@ function HairOrderEditForm({
     weightReceived: number
     total: number
   }
-  users: { id: string; name: string; email: string }[]
+  customers: { id: string; name: string; email: string }[]
   onSubmit: (value: {
     customerId: string
     placedAt: string
@@ -125,7 +125,7 @@ function HairOrderEditForm({
               <Field>
                 <FieldLabel>Customer</FieldLabel>
                 <CustomerCombobox
-                  users={users}
+                  customers={customers}
                   value={field.state.value}
                   onChange={(val) => field.handleChange(val)}
                 />
