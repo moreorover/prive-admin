@@ -16,6 +16,14 @@ import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as AdminTodosRouteImport } from './routes/admin/todos'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as PublicSigninRouteImport } from './routes/_public/signin'
+import { Route as AdminHairOrdersRouteRouteImport } from './routes/admin/hair-orders/route'
+import { Route as AdminCustomersRouteRouteImport } from './routes/admin/customers/route'
+import { Route as AdminHairOrdersIndexRouteImport } from './routes/admin/hair-orders/index'
+import { Route as AdminCustomersIndexRouteImport } from './routes/admin/customers/index'
+import { Route as AdminHairOrdersNewRouteImport } from './routes/admin/hair-orders/new'
+import { Route as AdminCustomersNewRouteImport } from './routes/admin/customers/new'
+import { Route as AdminHairOrdersIdEditRouteImport } from './routes/admin/hair-orders/$id.edit'
+import { Route as AdminCustomersIdEditRouteImport } from './routes/admin/customers/$id.edit'
 
 const PublicRoute = PublicRouteImport.update({
   id: '/_public',
@@ -51,14 +59,62 @@ const PublicSigninRoute = PublicSigninRouteImport.update({
   path: '/signin',
   getParentRoute: () => PublicRoute,
 } as any)
+const AdminHairOrdersRouteRoute = AdminHairOrdersRouteRouteImport.update({
+  id: '/hair-orders',
+  path: '/hair-orders',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminCustomersRouteRoute = AdminCustomersRouteRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminHairOrdersIndexRoute = AdminHairOrdersIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminHairOrdersRouteRoute,
+} as any)
+const AdminCustomersIndexRoute = AdminCustomersIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminCustomersRouteRoute,
+} as any)
+const AdminHairOrdersNewRoute = AdminHairOrdersNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AdminHairOrdersRouteRoute,
+} as any)
+const AdminCustomersNewRoute = AdminCustomersNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AdminCustomersRouteRoute,
+} as any)
+const AdminHairOrdersIdEditRoute = AdminHairOrdersIdEditRouteImport.update({
+  id: '/$id/edit',
+  path: '/$id/edit',
+  getParentRoute: () => AdminHairOrdersRouteRoute,
+} as any)
+const AdminCustomersIdEditRoute = AdminCustomersIdEditRouteImport.update({
+  id: '/$id/edit',
+  path: '/$id/edit',
+  getParentRoute: () => AdminCustomersRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/': typeof PublicIndexRoute
+  '/admin/customers': typeof AdminCustomersRouteRouteWithChildren
+  '/admin/hair-orders': typeof AdminHairOrdersRouteRouteWithChildren
   '/signin': typeof PublicSigninRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/todos': typeof AdminTodosRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/customers/new': typeof AdminCustomersNewRoute
+  '/admin/hair-orders/new': typeof AdminHairOrdersNewRoute
+  '/admin/customers/': typeof AdminCustomersIndexRoute
+  '/admin/hair-orders/': typeof AdminHairOrdersIndexRoute
+  '/admin/customers/$id/edit': typeof AdminCustomersIdEditRoute
+  '/admin/hair-orders/$id/edit': typeof AdminHairOrdersIdEditRoute
 }
 export interface FileRoutesByTo {
   '/signin': typeof PublicSigninRoute
@@ -66,37 +122,78 @@ export interface FileRoutesByTo {
   '/admin/todos': typeof AdminTodosRoute
   '/': typeof PublicIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/customers/new': typeof AdminCustomersNewRoute
+  '/admin/hair-orders/new': typeof AdminHairOrdersNewRoute
+  '/admin/customers': typeof AdminCustomersIndexRoute
+  '/admin/hair-orders': typeof AdminHairOrdersIndexRoute
+  '/admin/customers/$id/edit': typeof AdminCustomersIdEditRoute
+  '/admin/hair-orders/$id/edit': typeof AdminHairOrdersIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/admin': typeof AdminRouteRouteWithChildren
   '/_public': typeof PublicRouteWithChildren
+  '/admin/customers': typeof AdminCustomersRouteRouteWithChildren
+  '/admin/hair-orders': typeof AdminHairOrdersRouteRouteWithChildren
   '/_public/signin': typeof PublicSigninRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/todos': typeof AdminTodosRoute
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/customers/new': typeof AdminCustomersNewRoute
+  '/admin/hair-orders/new': typeof AdminHairOrdersNewRoute
+  '/admin/customers/': typeof AdminCustomersIndexRoute
+  '/admin/hair-orders/': typeof AdminHairOrdersIndexRoute
+  '/admin/customers/$id/edit': typeof AdminCustomersIdEditRoute
+  '/admin/hair-orders/$id/edit': typeof AdminHairOrdersIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/admin'
     | '/'
+    | '/admin/customers'
+    | '/admin/hair-orders'
     | '/signin'
     | '/admin/dashboard'
     | '/admin/todos'
     | '/admin/'
+    | '/admin/customers/new'
+    | '/admin/hair-orders/new'
+    | '/admin/customers/'
+    | '/admin/hair-orders/'
+    | '/admin/customers/$id/edit'
+    | '/admin/hair-orders/$id/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/signin' | '/admin/dashboard' | '/admin/todos' | '/' | '/admin'
+  to:
+    | '/signin'
+    | '/admin/dashboard'
+    | '/admin/todos'
+    | '/'
+    | '/admin'
+    | '/admin/customers/new'
+    | '/admin/hair-orders/new'
+    | '/admin/customers'
+    | '/admin/hair-orders'
+    | '/admin/customers/$id/edit'
+    | '/admin/hair-orders/$id/edit'
   id:
     | '__root__'
     | '/admin'
     | '/_public'
+    | '/admin/customers'
+    | '/admin/hair-orders'
     | '/_public/signin'
     | '/admin/dashboard'
     | '/admin/todos'
     | '/_public/'
     | '/admin/'
+    | '/admin/customers/new'
+    | '/admin/hair-orders/new'
+    | '/admin/customers/'
+    | '/admin/hair-orders/'
+    | '/admin/customers/$id/edit'
+    | '/admin/hair-orders/$id/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -155,16 +252,106 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicSigninRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/admin/hair-orders': {
+      id: '/admin/hair-orders'
+      path: '/hair-orders'
+      fullPath: '/admin/hair-orders'
+      preLoaderRoute: typeof AdminHairOrdersRouteRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/hair-orders/': {
+      id: '/admin/hair-orders/'
+      path: '/'
+      fullPath: '/admin/hair-orders/'
+      preLoaderRoute: typeof AdminHairOrdersIndexRouteImport
+      parentRoute: typeof AdminHairOrdersRouteRoute
+    }
+    '/admin/customers/': {
+      id: '/admin/customers/'
+      path: '/'
+      fullPath: '/admin/customers/'
+      preLoaderRoute: typeof AdminCustomersIndexRouteImport
+      parentRoute: typeof AdminCustomersRouteRoute
+    }
+    '/admin/hair-orders/new': {
+      id: '/admin/hair-orders/new'
+      path: '/new'
+      fullPath: '/admin/hair-orders/new'
+      preLoaderRoute: typeof AdminHairOrdersNewRouteImport
+      parentRoute: typeof AdminHairOrdersRouteRoute
+    }
+    '/admin/customers/new': {
+      id: '/admin/customers/new'
+      path: '/new'
+      fullPath: '/admin/customers/new'
+      preLoaderRoute: typeof AdminCustomersNewRouteImport
+      parentRoute: typeof AdminCustomersRouteRoute
+    }
+    '/admin/hair-orders/$id/edit': {
+      id: '/admin/hair-orders/$id/edit'
+      path: '/$id/edit'
+      fullPath: '/admin/hair-orders/$id/edit'
+      preLoaderRoute: typeof AdminHairOrdersIdEditRouteImport
+      parentRoute: typeof AdminHairOrdersRouteRoute
+    }
+    '/admin/customers/$id/edit': {
+      id: '/admin/customers/$id/edit'
+      path: '/$id/edit'
+      fullPath: '/admin/customers/$id/edit'
+      preLoaderRoute: typeof AdminCustomersIdEditRouteImport
+      parentRoute: typeof AdminCustomersRouteRoute
+    }
   }
 }
 
+interface AdminCustomersRouteRouteChildren {
+  AdminCustomersNewRoute: typeof AdminCustomersNewRoute
+  AdminCustomersIndexRoute: typeof AdminCustomersIndexRoute
+  AdminCustomersIdEditRoute: typeof AdminCustomersIdEditRoute
+}
+
+const AdminCustomersRouteRouteChildren: AdminCustomersRouteRouteChildren = {
+  AdminCustomersNewRoute: AdminCustomersNewRoute,
+  AdminCustomersIndexRoute: AdminCustomersIndexRoute,
+  AdminCustomersIdEditRoute: AdminCustomersIdEditRoute,
+}
+
+const AdminCustomersRouteRouteWithChildren =
+  AdminCustomersRouteRoute._addFileChildren(AdminCustomersRouteRouteChildren)
+
+interface AdminHairOrdersRouteRouteChildren {
+  AdminHairOrdersNewRoute: typeof AdminHairOrdersNewRoute
+  AdminHairOrdersIndexRoute: typeof AdminHairOrdersIndexRoute
+  AdminHairOrdersIdEditRoute: typeof AdminHairOrdersIdEditRoute
+}
+
+const AdminHairOrdersRouteRouteChildren: AdminHairOrdersRouteRouteChildren = {
+  AdminHairOrdersNewRoute: AdminHairOrdersNewRoute,
+  AdminHairOrdersIndexRoute: AdminHairOrdersIndexRoute,
+  AdminHairOrdersIdEditRoute: AdminHairOrdersIdEditRoute,
+}
+
+const AdminHairOrdersRouteRouteWithChildren =
+  AdminHairOrdersRouteRoute._addFileChildren(AdminHairOrdersRouteRouteChildren)
+
 interface AdminRouteRouteChildren {
+  AdminCustomersRouteRoute: typeof AdminCustomersRouteRouteWithChildren
+  AdminHairOrdersRouteRoute: typeof AdminHairOrdersRouteRouteWithChildren
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminTodosRoute: typeof AdminTodosRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminCustomersRouteRoute: AdminCustomersRouteRouteWithChildren,
+  AdminHairOrdersRouteRoute: AdminHairOrdersRouteRouteWithChildren,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminTodosRoute: AdminTodosRoute,
   AdminIndexRoute: AdminIndexRoute,

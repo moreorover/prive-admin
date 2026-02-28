@@ -5,7 +5,9 @@ import {
   LayoutDashboardIcon,
   ListTodoIcon,
   LogOutIcon,
+  PackageIcon,
   UserIcon,
+  UsersIcon,
 } from "lucide-react"
 
 import { authClient } from "@/lib/auth-client"
@@ -34,6 +36,8 @@ import {
 
 const navItems = [
   { title: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboardIcon },
+  { title: "Customers", href: "/admin/customers", icon: UsersIcon },
+  { title: "Hair Orders", href: "/admin/hair-orders", icon: PackageIcon },
   { title: "Todos", href: "/admin/todos", icon: ListTodoIcon },
 ]
 

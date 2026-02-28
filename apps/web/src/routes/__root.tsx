@@ -1,31 +1,32 @@
-import type { QueryClient } from "@tanstack/react-query";
+import type { QueryClient } from "@tanstack/react-query"
 
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { Outlet, createRootRouteWithContext, HeadContent } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { Outlet, createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
+import { Toaster } from "sonner"
 
-import type { trpc } from "@/utils/trpc";
-import type { Session } from "@/lib/auth-client";
+import type { Session } from "@/lib/auth-client"
+import type { trpc } from "@/utils/trpc"
 
-import { authClient } from "@/lib/auth-client";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip"
 
-import "../styles.css";
+import "../styles.css"
+import { authClient } from "@/lib/auth-client"
 
 export interface RouterAppContext {
-  trpc: typeof trpc;
-  queryClient: QueryClient;
-  session: Session | null;
+  trpc: typeof trpc
+  queryClient: QueryClient
+  session: Session | null
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
   beforeLoad: async () => {
     try {
-      const { data } = await authClient.getSession();
-      return { session: data };
+      const { data } = await authClient.getSession()
+      return { session: data }
     } catch (error) {
-      console.error("Failed to fetch user session:", error);
-      return { session: null };
+      console.error("Failed to fetch user session:", error)
+      return { session: null }
     }
   },
   component: RootComponent,
@@ -53,11 +54,12 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
       },
     ],
   }),
-});
+})
 
 function RootComponent() {
   return (
     <>
+      <Toaster />
       <HeadContent />
       <TooltipProvider>
         <Outlet />
@@ -65,5 +67,5 @@ function RootComponent() {
       <TanStackRouterDevtools position="bottom-left" />
       <ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
     </>
-  );
+  )
 }
