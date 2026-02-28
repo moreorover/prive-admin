@@ -13,9 +13,12 @@ export const customerRouter = router({
         id: customer.id,
         name: customer.name,
         email: customer.email,
+        createdBy: customer.createdBy,
+        createdByName: user.name,
         createdAt: customer.createdAt,
       })
       .from(customer)
+      .leftJoin(user, eq(customer.createdBy, user.id))
       .orderBy(desc(customer.createdAt));
   }),
 
@@ -27,6 +30,7 @@ export const customerRouter = router({
           id: customer.id,
           name: customer.name,
           email: customer.email,
+          createdBy: customer.createdBy,
           createdAt: customer.createdAt,
         })
         .from(customer)
@@ -54,12 +58,13 @@ export const customerRouter = router({
         email: z.string().email(),
       }),
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const [row] = await db
         .insert(customer)
         .values({
           name: input.name,
           email: input.email,
+          createdBy: ctx.session.user.id,
         })
         .returning();
 

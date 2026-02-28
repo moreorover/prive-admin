@@ -21,6 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -46,6 +47,8 @@ type CustomerRow = {
   id: string;
   name: string;
   email: string;
+  createdBy: string | null;
+  createdByName: string | null;
   createdAt: string;
 };
 
@@ -57,6 +60,16 @@ const columns: ColumnDef<CustomerRow>[] = [
   {
     accessorKey: "email",
     header: "Email",
+  },
+  {
+    id: "createdBy",
+    header: "Created By",
+    cell: ({ row }) =>
+      row.original.createdBy ? (
+        <Badge variant="secondary">{row.original.createdByName}</Badge>
+      ) : (
+        <Badge variant="default">Self-registered</Badge>
+      ),
   },
   {
     accessorKey: "createdAt",
