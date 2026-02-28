@@ -1,9 +1,12 @@
 import { useForm } from "@tanstack/react-form"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect, useRouter } from "@tanstack/react-router"
+import { format } from "date-fns"
+import { XIcon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldLabel } from "@/components/ui/field"
@@ -35,6 +38,7 @@ function ProfilePage() {
         onSuccess={() => router.invalidate()}
       />
       <ChangePasswordCard />
+      <SessionsCard currentSessionToken={session.session.token} />
     </div>
   )
 }
@@ -108,6 +112,97 @@ function ProfileInfoCard({
           </Button>
         </CardFooter>
       </form>
+    </Card>
+  )
+}
+
+function SessionsCard({ currentSessionToken }: { currentSessionToken: string }) {
+  const sessions = useQuery({
+    queryKey: ["sessions"],
+    queryFn: async () => {
+      const res = await authClient.listSessions()
+      if (res.error) throw res.error
+      return res.data
+    },
+  })
+
+  const revokeMutation = useMutation({
+    mutationFn: async (token: string) => {
+      const res = await authClient.revokeSession({ token })
+      if (res.error) throw res.error
+    },
+    onSuccess: () => {
+      toast.success("Session revoked")
+      sessions.refetch()
+    },
+  })
+
+  const revokeOthersMutation = useMutation({
+    mutationFn: async () => {
+      const res = await authClient.revokeSessions()
+      if (res.error) throw res.error
+    },
+    onSuccess: () => {
+      toast.success("All other sessions revoked")
+      sessions.refetch()
+    },
+  })
+
+  const sessionList = sessions.data ?? []
+  const hasOtherSessions = sessionList.some((s) => s.token !== currentSessionToken)
+
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <CardTitle>Sessions</CardTitle>
+        {hasOtherSessions && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => revokeOthersMutation.mutate()}
+            disabled={revokeOthersMutation.isPending}
+          >
+            Revoke All Others
+          </Button>
+        )}
+      </CardHeader>
+      <CardContent className="m-2">
+        {sessions.isLoading ? (
+          <p className="text-muted-foreground text-sm">Loading sessions...</p>
+        ) : sessionList.length > 0 ? (
+          <ul className="space-y-2">
+            {sessionList.map((s) => (
+              <li key={s.token} className="flex items-center justify-between rounded-md border p-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">
+                      {format(new Date(s.createdAt), "dd MMM yyyy HH:mm")}
+                    </span>
+                    {s.token === currentSessionToken && (
+                      <Badge variant="secondary">Current</Badge>
+                    )}
+                  </div>
+                  <div className="text-muted-foreground text-xs">
+                    Expires: {format(new Date(s.expiresAt), "dd MMM yyyy HH:mm")}
+                  </div>
+                </div>
+                {s.token !== currentSessionToken && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => revokeMutation.mutate(s.token)}
+                    disabled={revokeMutation.isPending}
+                  >
+                    <XIcon className="size-4" />
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-muted-foreground text-sm">No active sessions.</p>
+        )}
+      </CardContent>
     </Card>
   )
 }
