@@ -42,6 +42,15 @@ export const auth = betterAuth({
                 userId: user.id,
               })),
             )
+          } else {
+            const [newCustomer] = await db
+              .insert(customer)
+              .values({ name: user.name, email: user.email })
+              .returning({ id: customer.id })
+            await db.insert(customerUser).values({
+              customerId: newCustomer!.id,
+              userId: user.id,
+            })
           }
         },
       },
