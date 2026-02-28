@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { toast } from "sonner"
 
+import { EntityHistory } from "@/components/entity-history"
 import { CustomerCombobox } from "@/components/customer-combobox"
 import { DatePicker } from "@/components/date-picker"
 import { Button } from "@/components/ui/button"
@@ -42,7 +43,7 @@ function EditHairOrderPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl space-y-6">
       <HairOrderEditForm
         order={order.data}
         customers={customers.data ?? []}
@@ -59,6 +60,8 @@ function EditHairOrderPage() {
         isPending={updateMutation.isPending}
         onCancel={() => navigate({ to: "/admin/hair-orders" })}
       />
+
+      <EntityHistory entityType="hair_order" entityId={id} />
     </div>
   )
 }
