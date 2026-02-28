@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/combobox"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { authClient } from "@/lib/auth-client"
 import { queryClient, trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/admin/customers/$id/edit")({
@@ -29,7 +30,14 @@ function EditCustomerPage() {
   const navigate = useNavigate()
 
   const customer = useQuery(trpc.customer.getById.queryOptions({ id }))
-  const allUsers = useQuery(trpc.user.getAll.queryOptions())
+  const allUsers = useQuery({
+    queryKey: ["admin", "users"],
+    queryFn: async () => {
+      const res = await authClient.admin.listUsers({ query: { limit: 100 } })
+      if (res.error) throw res.error
+      return res.data.users
+    },
+  })
 
   const updateMutation = useMutation(
     trpc.customer.update.mutationOptions({
@@ -126,6 +134,8 @@ function EditCustomerPage() {
   )
 }
 
+type UserOption = { value: string; label: string }
+
 function AssignUserSection({
   users,
   onAssign,
@@ -137,23 +147,32 @@ function AssignUserSection({
 }) {
   const [selectedUserId, setSelectedUserId] = useState("")
 
+  const options: UserOption[] = users.map((u) => ({
+    value: u.id,
+    label: `${u.name} (${u.email})`,
+  }))
+
+  const selected = options.find((o) => o.value === selectedUserId) ?? null
+
   return (
     <div className="flex items-end gap-2">
       <div className="flex-1">
         <FieldLabel>Assign User</FieldLabel>
-        <Combobox value={selectedUserId} onValueChange={(val) => setSelectedUserId(val as string)}>
+        <Combobox<UserOption>
+          value={selected}
+          onValueChange={(val) => setSelectedUserId(val?.value ?? "")}
+          isItemEqualToValue={(a, b) => a.value === b.value}
+          items={options}
+        >
           <ComboboxInput placeholder="Search users..." />
           <ComboboxContent>
             <ComboboxEmpty>No users found.</ComboboxEmpty>
             <ComboboxList>
-              {users.map((u) => (
-                <ComboboxItem key={u.id} value={u.id}>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">{u.name}</span>
-                    <span className="text-muted-foreground text-xs">{u.email}</span>
-                  </div>
+              {(item) => (
+                <ComboboxItem key={item.value} value={item}>
+                  {item.label}
                 </ComboboxItem>
-              ))}
+              )}
             </ComboboxList>
           </ComboboxContent>
         </Combobox>
