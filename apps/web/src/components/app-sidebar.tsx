@@ -157,6 +157,12 @@ export function AppSidebar() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/profile">
+                    <UserIcon />
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={async () => {
                     await authClient.signOut()
