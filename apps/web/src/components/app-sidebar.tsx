@@ -3,7 +3,6 @@ import {
   ArrowLeftIcon,
   ChevronsUpDownIcon,
   LayoutDashboardIcon,
-  ListTodoIcon,
   LogOutIcon,
   PackageIcon,
   ShieldIcon,
@@ -39,7 +38,6 @@ const navItems = [
   { title: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboardIcon },
   { title: "Customers", href: "/admin/customers", icon: UsersIcon },
   { title: "Hair Orders", href: "/admin/hair-orders", icon: PackageIcon },
-  { title: "Todos", href: "/admin/todos", icon: ListTodoIcon },
   { title: "Users", href: "/admin/users", icon: ShieldIcon },
 ]
 
