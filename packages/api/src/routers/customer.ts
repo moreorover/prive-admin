@@ -98,6 +98,20 @@ export const customerRouter = router({
       await db.delete(customer).where(eq(customer.id, input.id));
     }),
 
+  getByUserId: protectedProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ input }) => {
+      return db
+        .select({
+          id: customer.id,
+          name: customer.name,
+          email: customer.email,
+        })
+        .from(customerUser)
+        .innerJoin(customer, eq(customerUser.customerId, customer.id))
+        .where(eq(customerUser.userId, input.userId));
+    }),
+
   assignUser: protectedProcedure
     .input(
       z.object({

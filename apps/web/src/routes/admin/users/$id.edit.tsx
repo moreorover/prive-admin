@@ -29,6 +29,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { authClient } from "@/lib/auth-client"
+import { CustomerCombobox } from "@/components/customer-combobox"
+import { queryClient, trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/admin/users/$id/edit")({
   staticData: { title: "Edit User" },
@@ -74,6 +76,7 @@ function EditUserPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <UserInfoCard user={user.data} userId={id} onSuccess={() => user.refetch()} />
+      <CustomersCard userId={id} />
       <RoleCard userId={id} currentRole={(user.data.role ?? "user") as "user" | "admin"} onSuccess={() => user.refetch()} />
       <PasswordCard userId={id} />
       <BanCard userId={id} banned={!!user.data.banned} banReason={user.data.banReason} onSuccess={() => user.refetch()} />
@@ -186,6 +189,107 @@ function UserInfoCard({
           </Button>
         </CardFooter>
       </form>
+    </Card>
+  )
+}
+
+function CustomersCard({ userId }: { userId: string }) {
+  const assignedCustomers = useQuery(
+    trpc.customer.getByUserId.queryOptions({ userId }),
+  )
+  const allCustomers = useQuery(trpc.customer.getAll.queryOptions())
+  const [selectedCustomerId, setSelectedCustomerId] = useState("")
+
+  const assignedIds = new Set(
+    (assignedCustomers.data ?? []).map((c) => c.id),
+  )
+  const availableCustomers = (allCustomers.data ?? []).filter(
+    (c) => !assignedIds.has(c.id),
+  )
+
+  const assignMutation = useMutation(
+    trpc.customer.assignUser.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: [["customer", "getByUserId"]],
+        })
+        toast.success("Customer assigned")
+        setSelectedCustomerId("")
+      },
+    }),
+  )
+
+  const unassignMutation = useMutation(
+    trpc.customer.unassignUser.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: [["customer", "getByUserId"]],
+        })
+        toast.success("Customer unassigned")
+      },
+    }),
+  )
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Assigned Customers</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 m-2">
+        {(assignedCustomers.data ?? []).length > 0 ? (
+          <ul className="space-y-2">
+            {(assignedCustomers.data ?? []).map((c) => (
+              <li
+                key={c.id}
+                className="flex items-center justify-between rounded-md border p-3"
+              >
+                <div>
+                  <div className="text-sm font-medium">{c.name}</div>
+                  <div className="text-muted-foreground text-xs">{c.email}</div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() =>
+                    unassignMutation.mutate({
+                      customerId: c.id,
+                      userId,
+                    })
+                  }
+                  disabled={unassignMutation.isPending}
+                >
+                  <XIcon className="size-4" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-muted-foreground text-sm">No customers assigned.</p>
+        )}
+
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <FieldLabel>Assign Customer</FieldLabel>
+            <CustomerCombobox
+              customers={availableCustomers}
+              value={selectedCustomerId}
+              onChange={setSelectedCustomerId}
+            />
+          </div>
+          <Button
+            type="button"
+            disabled={!selectedCustomerId || assignMutation.isPending}
+            onClick={() => {
+              assignMutation.mutate({
+                customerId: selectedCustomerId,
+                userId,
+              })
+            }}
+          >
+            Assign
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   )
 }
