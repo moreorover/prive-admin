@@ -17,6 +17,7 @@ import { Route as AdminTodosRouteImport } from './routes/admin/todos'
 import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as PublicSignupRouteImport } from './routes/_public/signup'
 import { Route as PublicSigninRouteImport } from './routes/_public/signin'
+import { Route as PublicProfileRouteImport } from './routes/_public/profile'
 import { Route as AdminUsersRouteRouteImport } from './routes/admin/users/route'
 import { Route as AdminHairOrdersRouteRouteImport } from './routes/admin/hair-orders/route'
 import { Route as AdminCustomersRouteRouteImport } from './routes/admin/customers/route'
@@ -67,6 +68,11 @@ const PublicSignupRoute = PublicSignupRouteImport.update({
 const PublicSigninRoute = PublicSigninRouteImport.update({
   id: '/signin',
   path: '/signin',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicProfileRoute = PublicProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => PublicRoute,
 } as any)
 const AdminUsersRouteRoute = AdminUsersRouteRouteImport.update({
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/admin/customers': typeof AdminCustomersRouteRouteWithChildren
   '/admin/hair-orders': typeof AdminHairOrdersRouteRouteWithChildren
   '/admin/users': typeof AdminUsersRouteRouteWithChildren
+  '/profile': typeof PublicProfileRoute
   '/signin': typeof PublicSigninRoute
   '/signup': typeof PublicSignupRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/admin/users/$id/edit': typeof AdminUsersIdEditRoute
 }
 export interface FileRoutesByTo {
+  '/profile': typeof PublicProfileRoute
   '/signin': typeof PublicSigninRoute
   '/signup': typeof PublicSignupRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/admin/customers': typeof AdminCustomersRouteRouteWithChildren
   '/admin/hair-orders': typeof AdminHairOrdersRouteRouteWithChildren
   '/admin/users': typeof AdminUsersRouteRouteWithChildren
+  '/_public/profile': typeof PublicProfileRoute
   '/_public/signin': typeof PublicSigninRoute
   '/_public/signup': typeof PublicSignupRoute
   '/admin/dashboard': typeof AdminDashboardRoute
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/hair-orders'
     | '/admin/users'
+    | '/profile'
     | '/signin'
     | '/signup'
     | '/admin/dashboard'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
     | '/admin/users/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/profile'
     | '/signin'
     | '/signup'
     | '/admin/dashboard'
@@ -237,6 +248,7 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/hair-orders'
     | '/admin/users'
+    | '/_public/profile'
     | '/_public/signin'
     | '/_public/signup'
     | '/admin/dashboard'
@@ -315,6 +327,13 @@ declare module '@tanstack/react-router' {
       path: '/signin'
       fullPath: '/signin'
       preLoaderRoute: typeof PublicSigninRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/profile': {
+      id: '/_public/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof PublicProfileRouteImport
       parentRoute: typeof PublicRoute
     }
     '/admin/users': {
@@ -473,12 +492,14 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
 )
 
 interface PublicRouteChildren {
+  PublicProfileRoute: typeof PublicProfileRoute
   PublicSigninRoute: typeof PublicSigninRoute
   PublicSignupRoute: typeof PublicSignupRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
+  PublicProfileRoute: PublicProfileRoute,
   PublicSigninRoute: PublicSigninRoute,
   PublicSignupRoute: PublicSignupRoute,
   PublicIndexRoute: PublicIndexRoute,
