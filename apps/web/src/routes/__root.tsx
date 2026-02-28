@@ -1,13 +1,14 @@
 import type { QueryClient } from "@tanstack/react-query"
 
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
-import { Outlet, createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
+import { Outlet, createRootRouteWithContext, HeadContent, useRouter } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import { Toaster } from "sonner"
 
 import type { Session } from "@/lib/auth-client"
 import type { trpc } from "@/utils/trpc"
 
+import { Button } from "@/components/ui/button"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 import "../styles.css"
@@ -56,11 +57,36 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
   }),
 })
 
+function ImpersonationBanner() {
+  const { session } = Route.useRouteContext()
+  const router = useRouter()
+
+  if (!session?.session.impersonatedBy) return null
+
+  return (
+    <div className="bg-destructive text-destructive-foreground flex items-center justify-center gap-3 px-4 py-2 text-sm">
+      <span>You are impersonating {session.user.name ?? session.user.email}</span>
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-7 border-destructive-foreground/30 bg-transparent hover:bg-destructive-foreground/10"
+        onClick={async () => {
+          await authClient.admin.stopImpersonating()
+          router.invalidate()
+        }}
+      >
+        Stop Impersonating
+      </Button>
+    </div>
+  )
+}
+
 function RootComponent() {
   return (
     <>
       <Toaster />
       <HeadContent />
+      <ImpersonationBanner />
       <TooltipProvider>
         <Outlet />
       </TooltipProvider>
