@@ -6,6 +6,7 @@ import {
   ListTodoIcon,
   LogOutIcon,
   PackageIcon,
+  ShieldIcon,
   UserIcon,
   UsersIcon,
 } from "lucide-react"
@@ -39,6 +40,7 @@ const navItems = [
   { title: "Customers", href: "/admin/customers", icon: UsersIcon },
   { title: "Hair Orders", href: "/admin/hair-orders", icon: PackageIcon },
   { title: "Todos", href: "/admin/todos", icon: ListTodoIcon },
+  { title: "Users", href: "/admin/users", icon: ShieldIcon },
 ]
 
 function getInitials(name: string) {
