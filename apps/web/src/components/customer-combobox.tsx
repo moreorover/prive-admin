@@ -1,3 +1,5 @@
+import { useMemo } from "react"
+
 import {
   Combobox,
   ComboboxContent,
@@ -6,6 +8,8 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox"
+
+type CustomerOption = { value: string; label: string }
 
 export function CustomerCombobox({
   customers,
@@ -16,33 +20,36 @@ export function CustomerCombobox({
   value: string
   onChange: (value: string) => void
 }) {
-  const customerMap = new Map(customers.map((c) => [c.id, c]))
+  const options: CustomerOption[] = useMemo(
+    () =>
+      customers.map((c) => ({
+        value: c.id,
+        label: `${c.name} (${c.email})`,
+      })),
+    [customers],
+  )
+
+  const selected = useMemo(
+    () => options.find((o) => o.value === value) ?? null,
+    [options, value],
+  )
 
   return (
-    <Combobox
-      value={value}
-      onValueChange={(val) => onChange(val as string)}
-      itemToStringLabel={(id) => {
-        const c = customerMap.get(id)
-        return c ? `${c.name} (${c.email})` : ""
-      }}
-      itemToStringValue={(id) => {
-        const c = customerMap.get(id)
-        return c ? `${c.name} ${c.email}` : ""
-      }}
+    <Combobox<CustomerOption>
+      value={selected}
+      onValueChange={(val) => onChange(val?.value ?? "")}
+      isItemEqualToValue={(a, b) => a.value === b.value}
+      items={options}
     >
       <ComboboxInput placeholder="Search customers..." />
       <ComboboxContent>
         <ComboboxEmpty>No customers found.</ComboboxEmpty>
         <ComboboxList>
-          {customers.map((c) => (
-            <ComboboxItem key={c.id} value={c.id}>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">{c.name}</span>
-                <span className="text-muted-foreground text-xs">{c.email}</span>
-              </div>
+          {(item) => (
+            <ComboboxItem key={item.value} value={item}>
+              {item.label}
             </ComboboxItem>
-          ))}
+          )}
         </ComboboxList>
       </ComboboxContent>
     </Combobox>
