@@ -10,6 +10,9 @@ export const customer = pgTable("customer", {
     .$defaultFn(() => createId()),
   name: text("name").notNull(),
   email: text("email").notNull(),
+  createdBy: text("created_by").references(() => user.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()
