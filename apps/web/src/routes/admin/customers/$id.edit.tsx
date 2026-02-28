@@ -5,6 +5,7 @@ import { XIcon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { EntityHistory } from "@/components/entity-history"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -130,6 +131,8 @@ function EditCustomerPage() {
           />
         </CardContent>
       </Card>
+
+      <EntityHistory entityType="customer" entityId={id} />
     </div>
   )
 }
