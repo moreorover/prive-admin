@@ -60,7 +60,7 @@ function SignInPage() {
             {formError && (
               <div
                 role="alert"
-                className="text-destructive bg-destructive/10 rounded-lg border border-destructive/20 px-3 py-2 text-sm"
+                className="rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive"
               >
                 {formError}
               </div>
@@ -122,7 +122,7 @@ function SignInPage() {
               )}
             </form.Subscribe>
 
-            <p className="text-muted-foreground text-center text-sm">
+            <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{" "}
               <Link
                 to="/signup"

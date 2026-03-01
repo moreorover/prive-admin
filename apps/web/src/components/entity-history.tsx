@@ -51,9 +51,9 @@ export function EntityHistory({
       </CardHeader>
       <CardContent>
         {history.isLoading ? (
-          <p className="text-muted-foreground text-sm">Loading...</p>
+          <p className="text-sm text-muted-foreground">Loading...</p>
         ) : !history.data?.length ? (
-          <p className="text-muted-foreground text-sm">No changes recorded.</p>
+          <p className="text-sm text-muted-foreground">No changes recorded.</p>
         ) : (
           <div className="rounded-md border">
             <Table>

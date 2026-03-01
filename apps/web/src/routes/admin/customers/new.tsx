@@ -54,7 +54,7 @@ function NewCustomerPage() {
             form.handleSubmit()
           }}
         >
-          <CardContent className="space-y-4 m-2">
+          <CardContent className="m-2 space-y-4">
             <form.Field
               name="name"
               validators={{

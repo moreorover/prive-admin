@@ -66,11 +66,11 @@ function EditUserPage() {
   })
 
   if (user.isLoading) {
-    return <div className="text-muted-foreground text-center">Loading...</div>
+    return <div className="text-center text-muted-foreground">Loading...</div>
   }
 
   if (!user.data) {
-    return <div className="text-muted-foreground text-center">User not found.</div>
+    return <div className="text-center text-muted-foreground">User not found.</div>
   }
 
   return (
@@ -165,7 +165,7 @@ function UserInfoCard({
           form.handleSubmit()
         }}
       >
-        <CardContent className="space-y-4 m-2">
+        <CardContent className="m-2 space-y-4">
           <Field>
             <FieldLabel>Email</FieldLabel>
             <Input value={user.email} disabled />
@@ -235,14 +235,14 @@ function CustomersCard({ userId }: { userId: string }) {
       <CardHeader>
         <CardTitle>Assigned Customers</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4 m-2">
+      <CardContent className="m-2 space-y-4">
         {(assignedCustomers.data ?? []).length > 0 ? (
           <ul className="space-y-2">
             {(assignedCustomers.data ?? []).map((c) => (
               <li key={c.id} className="flex items-center justify-between rounded-md border p-3">
                 <div>
                   <div className="text-sm font-medium">{c.name}</div>
-                  <div className="text-muted-foreground text-xs">{c.email}</div>
+                  <div className="text-xs text-muted-foreground">{c.email}</div>
                 </div>
                 <Button
                   variant="ghost"
@@ -261,7 +261,7 @@ function CustomersCard({ userId }: { userId: string }) {
             ))}
           </ul>
         ) : (
-          <p className="text-muted-foreground text-sm">No customers assigned.</p>
+          <p className="text-sm text-muted-foreground">No customers assigned.</p>
         )}
 
         <div className="flex items-end gap-2">
@@ -433,13 +433,13 @@ function BanCard({
       <CardHeader>
         <CardTitle>Ban Status</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4 m-2">
+      <CardContent className="m-2 space-y-4">
         {banned ? (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Badge variant="destructive">Banned</Badge>
               {banReason && (
-                <span className="text-muted-foreground text-sm">Reason: {banReason}</span>
+                <span className="text-sm text-muted-foreground">Reason: {banReason}</span>
               )}
             </div>
             <Button
@@ -526,7 +526,7 @@ function SessionsCard({ userId }: { userId: string }) {
       </CardHeader>
       <CardContent className="m-2">
         {sessions.isLoading ? (
-          <p className="text-muted-foreground text-sm">Loading sessions...</p>
+          <p className="text-sm text-muted-foreground">Loading sessions...</p>
         ) : sessionList.length > 0 ? (
           <ul className="space-y-2">
             {sessionList.map((s) => (
@@ -535,7 +535,7 @@ function SessionsCard({ userId }: { userId: string }) {
                   <div className="text-sm font-medium">
                     {format(new Date(s.createdAt), "dd MMM yyyy HH:mm")}
                   </div>
-                  <div className="text-muted-foreground text-xs">
+                  <div className="text-xs text-muted-foreground">
                     Expires: {format(new Date(s.expiresAt), "dd MMM yyyy HH:mm")}
                   </div>
                 </div>
@@ -551,7 +551,7 @@ function SessionsCard({ userId }: { userId: string }) {
             ))}
           </ul>
         ) : (
-          <p className="text-muted-foreground text-sm">No active sessions.</p>
+          <p className="text-sm text-muted-foreground">No active sessions.</p>
         )}
       </CardContent>
     </Card>
@@ -570,7 +570,7 @@ function DangerZoneCard({
       <CardHeader>
         <CardTitle className="text-destructive">Danger Zone</CardTitle>
       </CardHeader>
-      <CardContent className="flex gap-2 m-2">
+      <CardContent className="m-2 flex gap-2">
         <Button variant="outline" onClick={onImpersonate}>
           <LogInIcon className="mr-2 size-4" />
           Impersonate

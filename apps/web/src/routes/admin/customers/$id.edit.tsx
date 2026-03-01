@@ -69,11 +69,11 @@ function EditCustomerPage() {
   )
 
   if (customer.isLoading) {
-    return <div className="text-muted-foreground text-center">Loading...</div>
+    return <div className="text-center text-muted-foreground">Loading...</div>
   }
 
   if (!customer.data) {
-    return <div className="text-muted-foreground text-center">Customer not found.</div>
+    return <div className="text-center text-muted-foreground">Customer not found.</div>
   }
 
   const assignedUserIds = new Set(customer.data.users.map((u) => u.id))
@@ -105,7 +105,7 @@ function EditCustomerPage() {
                 <li key={u.id} className="flex items-center justify-between rounded-md border p-3">
                   <div>
                     <div className="text-sm font-medium">{u.name}</div>
-                    <div className="text-muted-foreground text-xs">{u.email}</div>
+                    <div className="text-xs text-muted-foreground">{u.email}</div>
                   </div>
                   <Button
                     variant="ghost"
@@ -119,7 +119,7 @@ function EditCustomerPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-muted-foreground text-sm">No users assigned.</p>
+            <p className="text-sm text-muted-foreground">No users assigned.</p>
           )}
 
           <AssignUserSection
@@ -226,7 +226,7 @@ function CustomerEditForm({
           form.handleSubmit()
         }}
       >
-        <CardContent className="space-y-4 m-2">
+        <CardContent className="m-2 space-y-4">
           <form.Field
             name="name"
             validators={{

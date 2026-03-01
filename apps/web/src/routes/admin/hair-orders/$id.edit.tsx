@@ -35,11 +35,11 @@ function EditHairOrderPage() {
   )
 
   if (order.isLoading) {
-    return <div className="text-muted-foreground text-center">Loading...</div>
+    return <div className="text-center text-muted-foreground">Loading...</div>
   }
 
   if (!order.data) {
-    return <div className="text-muted-foreground text-center">Order not found.</div>
+    return <div className="text-center text-muted-foreground">Order not found.</div>
   }
 
   return (
@@ -117,7 +117,7 @@ function HairOrderEditForm({
           form.handleSubmit()
         }}
       >
-        <CardContent className="space-y-4 m-2">
+        <CardContent className="m-2 space-y-4">
           <form.Field
             name="customerId"
             validators={{

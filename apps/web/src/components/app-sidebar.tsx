@@ -63,7 +63,7 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild size="lg">
               <Link to="/">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <ArrowLeftIcon className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
@@ -120,7 +120,7 @@ export function AppSidebar() {
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">{session?.user.name}</span>
-                    <span className="text-muted-foreground truncate text-xs">
+                    <span className="truncate text-xs text-muted-foreground">
                       {session?.user.email}
                     </span>
                   </div>
@@ -146,7 +146,7 @@ export function AppSidebar() {
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">{session?.user.name}</span>
-                      <span className="text-muted-foreground truncate text-xs">
+                      <span className="truncate text-xs text-muted-foreground">
                         {session?.user.email}
                       </span>
                     </div>

@@ -82,7 +82,7 @@ function ProfileInfoCard({
           form.handleSubmit()
         }}
       >
-        <CardContent className="space-y-4 m-2">
+        <CardContent className="m-2 space-y-4">
           <Field>
             <FieldLabel>Email</FieldLabel>
             <Input value={email} disabled />
@@ -168,7 +168,7 @@ function SessionsCard({ currentSessionToken }: { currentSessionToken: string }) 
       </CardHeader>
       <CardContent className="m-2">
         {sessions.isLoading ? (
-          <p className="text-muted-foreground text-sm">Loading sessions...</p>
+          <p className="text-sm text-muted-foreground">Loading sessions...</p>
         ) : sessionList.length > 0 ? (
           <ul className="space-y-2">
             {sessionList.map((s) => (
@@ -180,7 +180,7 @@ function SessionsCard({ currentSessionToken }: { currentSessionToken: string }) 
                     </span>
                     {s.token === currentSessionToken && <Badge variant="secondary">Current</Badge>}
                   </div>
-                  <div className="text-muted-foreground text-xs">
+                  <div className="text-xs text-muted-foreground">
                     Expires: {format(new Date(s.expiresAt), "dd MMM yyyy HH:mm")}
                   </div>
                 </div>
@@ -198,7 +198,7 @@ function SessionsCard({ currentSessionToken }: { currentSessionToken: string }) 
             ))}
           </ul>
         ) : (
-          <p className="text-muted-foreground text-sm">No active sessions.</p>
+          <p className="text-sm text-muted-foreground">No active sessions.</p>
         )}
       </CardContent>
     </Card>
@@ -229,7 +229,7 @@ function ChangePasswordCard() {
       <CardHeader>
         <CardTitle>Change Password</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4 m-2">
+      <CardContent className="m-2 space-y-4">
         <Field>
           <FieldLabel>Current Password</FieldLabel>
           <Input

@@ -64,12 +64,12 @@ function ImpersonationBanner() {
   if (!session?.session.impersonatedBy) return null
 
   return (
-    <div className="bg-destructive text-destructive-foreground flex items-center justify-center gap-3 px-4 py-2 text-sm">
+    <div className="text-destructive-foreground flex items-center justify-center gap-3 bg-destructive px-4 py-2 text-sm">
       <span>You are impersonating {session.user.name ?? session.user.email}</span>
       <Button
         variant="outline"
         size="sm"
-        className="h-7 border-destructive-foreground/30 bg-transparent hover:bg-destructive-foreground/10"
+        className="border-destructive-foreground/30 hover:bg-destructive-foreground/10 h-7 bg-transparent"
         onClick={async () => {
           await authClient.admin.stopImpersonating()
           router.invalidate()

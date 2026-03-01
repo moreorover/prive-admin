@@ -61,7 +61,7 @@ export function Navbar() {
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuLabel>
                   <div className="truncate">{session.user.name}</div>
-                  <div className="text-muted-foreground truncate text-xs font-normal">
+                  <div className="truncate text-xs font-normal text-muted-foreground">
                     {session.user.email}
                   </div>
                 </DropdownMenuLabel>
