@@ -25,7 +25,12 @@ function NewUserPage() {
   const navigate = useNavigate()
 
   const createMutation = useMutation({
-    mutationFn: async (value: { name: string; email: string; password: string; role: "user" | "admin" }) => {
+    mutationFn: async (value: {
+      name: string
+      email: string
+      password: string
+      role: "user" | "admin"
+    }) => {
       const res = await authClient.admin.createUser({
         name: value.name,
         email: value.email,

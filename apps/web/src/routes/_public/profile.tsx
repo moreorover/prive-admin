@@ -178,9 +178,7 @@ function SessionsCard({ currentSessionToken }: { currentSessionToken: string }) 
                     <span className="text-sm font-medium">
                       {format(new Date(s.createdAt), "dd MMM yyyy HH:mm")}
                     </span>
-                    {s.token === currentSessionToken && (
-                      <Badge variant="secondary">Current</Badge>
-                    )}
+                    {s.token === currentSessionToken && <Badge variant="secondary">Current</Badge>}
                   </div>
                   <div className="text-muted-foreground text-xs">
                     Expires: {format(new Date(s.expiresAt), "dd MMM yyyy HH:mm")}
@@ -253,11 +251,7 @@ function ChangePasswordCard() {
       <CardFooter className="justify-end">
         <Button
           onClick={() => changePasswordMutation.mutate()}
-          disabled={
-            changePasswordMutation.isPending ||
-            !currentPassword ||
-            newPassword.length < 8
-          }
+          disabled={changePasswordMutation.isPending || !currentPassword || newPassword.length < 8}
         >
           {changePasswordMutation.isPending ? "Saving..." : "Change Password"}
         </Button>

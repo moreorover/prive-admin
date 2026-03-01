@@ -1,11 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table"
+import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table"
 import { format } from "date-fns"
 import {
   BanIcon,
@@ -208,16 +203,12 @@ function UsersPage() {
                           Edit
                         </DropdownMenuItem>
                         {row.original.banned ? (
-                          <DropdownMenuItem
-                            onSelect={() => unbanMutation.mutate(row.original.id)}
-                          >
+                          <DropdownMenuItem onSelect={() => unbanMutation.mutate(row.original.id)}>
                             <ShieldCheckIcon className="mr-2 size-4" />
                             Unban
                           </DropdownMenuItem>
                         ) : (
-                          <DropdownMenuItem
-                            onSelect={() => banMutation.mutate(row.original.id)}
-                          >
+                          <DropdownMenuItem onSelect={() => banMutation.mutate(row.original.id)}>
                             <BanIcon className="mr-2 size-4" />
                             Ban
                           </DropdownMenuItem>

@@ -6,6 +6,7 @@ import { LogInIcon, Trash2Icon, XIcon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { CustomerCombobox } from "@/components/customer-combobox"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { authClient } from "@/lib/auth-client"
-import { CustomerCombobox } from "@/components/customer-combobox"
 import { queryClient, trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/admin/users/$id/edit")({
@@ -77,9 +77,18 @@ function EditUserPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <UserInfoCard user={user.data} userId={id} onSuccess={() => user.refetch()} />
       <CustomersCard userId={id} />
-      <RoleCard userId={id} currentRole={(user.data.role ?? "user") as "user" | "admin"} onSuccess={() => user.refetch()} />
+      <RoleCard
+        userId={id}
+        currentRole={(user.data.role ?? "user") as "user" | "admin"}
+        onSuccess={() => user.refetch()}
+      />
       <PasswordCard userId={id} />
-      <BanCard userId={id} banned={!!user.data.banned} banReason={user.data.banReason} onSuccess={() => user.refetch()} />
+      <BanCard
+        userId={id}
+        banned={!!user.data.banned}
+        banReason={user.data.banReason}
+        onSuccess={() => user.refetch()}
+      />
       <SessionsCard userId={id} />
       <DangerZoneCard
         onDelete={() => setShowDeleteDialog(true)}
@@ -104,10 +113,7 @@ function EditUserPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() => deleteMutation.mutate()}
-            >
+            <AlertDialogAction variant="destructive" onClick={() => deleteMutation.mutate()}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -194,18 +200,12 @@ function UserInfoCard({
 }
 
 function CustomersCard({ userId }: { userId: string }) {
-  const assignedCustomers = useQuery(
-    trpc.customer.getByUserId.queryOptions({ userId }),
-  )
+  const assignedCustomers = useQuery(trpc.customer.getByUserId.queryOptions({ userId }))
   const allCustomers = useQuery(trpc.customer.getAll.queryOptions())
   const [selectedCustomerId, setSelectedCustomerId] = useState("")
 
-  const assignedIds = new Set(
-    (assignedCustomers.data ?? []).map((c) => c.id),
-  )
-  const availableCustomers = (allCustomers.data ?? []).filter(
-    (c) => !assignedIds.has(c.id),
-  )
+  const assignedIds = new Set((assignedCustomers.data ?? []).map((c) => c.id))
+  const availableCustomers = (allCustomers.data ?? []).filter((c) => !assignedIds.has(c.id))
 
   const assignMutation = useMutation(
     trpc.customer.assignUser.mutationOptions({
@@ -239,10 +239,7 @@ function CustomersCard({ userId }: { userId: string }) {
         {(assignedCustomers.data ?? []).length > 0 ? (
           <ul className="space-y-2">
             {(assignedCustomers.data ?? []).map((c) => (
-              <li
-                key={c.id}
-                className="flex items-center justify-between rounded-md border p-3"
-              >
+              <li key={c.id} className="flex items-center justify-between rounded-md border p-3">
                 <div>
                   <div className="text-sm font-medium">{c.name}</div>
                   <div className="text-muted-foreground text-xs">{c.email}</div>

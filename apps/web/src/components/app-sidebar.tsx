@@ -10,7 +10,6 @@ import {
   UsersIcon,
 } from "lucide-react"
 
-import { authClient } from "@/lib/auth-client"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -33,6 +32,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { authClient } from "@/lib/auth-client"
 
 const navItems = [
   { title: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboardIcon },
@@ -119,9 +119,7 @@ export function AppSidebar() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">
-                      {session?.user.name}
-                    </span>
+                    <span className="truncate font-semibold">{session?.user.name}</span>
                     <span className="text-muted-foreground truncate text-xs">
                       {session?.user.email}
                     </span>
@@ -147,9 +145,7 @@ export function AppSidebar() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
-                      <span className="truncate font-semibold">
-                        {session?.user.name}
-                      </span>
+                      <span className="truncate font-semibold">{session?.user.name}</span>
                       <span className="text-muted-foreground truncate text-xs">
                         {session?.user.email}
                       </span>

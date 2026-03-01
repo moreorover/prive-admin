@@ -26,6 +26,6 @@
     "noUncheckedSideEffectImports": true,
 
     "esModuleInterop": true,
-    "rootDirs": ["."],
+    "rootDirs": ["."]
   }
 }

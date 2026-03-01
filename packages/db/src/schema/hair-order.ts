@@ -1,16 +1,9 @@
-import { createId } from "@paralleldrive/cuid2";
-import { relations } from "drizzle-orm";
-import {
-  index,
-  integer,
-  pgTable,
-  serial,
-  text,
-  timestamp,
-} from "drizzle-orm/pg-core";
+import { createId } from "@paralleldrive/cuid2"
+import { relations } from "drizzle-orm"
+import { index, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core"
 
-import { user } from "./auth";
-import { customer } from "./customer";
+import { user } from "./auth"
+import { customer } from "./customer"
 
 export const hairOrder = pgTable(
   "hair_order",
@@ -43,7 +36,7 @@ export const hairOrder = pgTable(
     index("hair_order_customerId_idx").on(table.customerId),
     index("hair_order_createdById_idx").on(table.createdById),
   ],
-);
+)
 
 export const hairOrderRelations = relations(hairOrder, ({ one }) => ({
   customer: one(customer, {
@@ -55,4 +48,4 @@ export const hairOrderRelations = relations(hairOrder, ({ one }) => ({
     references: [user.id],
     relationName: "hairOrderCreatedBy",
   }),
-}));
+}))

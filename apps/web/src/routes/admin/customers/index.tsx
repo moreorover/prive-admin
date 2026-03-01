@@ -1,15 +1,10 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
-import { format } from "date-fns";
-import { MoreHorizontalIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
+import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table"
+import { format } from "date-fns"
+import { MoreHorizontalIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import { useState } from "react"
+import { toast } from "sonner"
 
 import {
   AlertDialog,
@@ -20,15 +15,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/alert-dialog"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 import {
   Table,
   TableBody,
@@ -36,21 +31,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { queryClient, trpc } from "@/utils/trpc";
+} from "@/components/ui/table"
+import { queryClient, trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/admin/customers/")({
   component: CustomersPage,
-});
+})
 
 type CustomerRow = {
-  id: string;
-  name: string;
-  email: string;
-  createdBy: string | null;
-  createdByName: string | null;
-  createdAt: string;
-};
+  id: string
+  name: string
+  email: string
+  createdBy: string | null
+  createdByName: string | null
+  createdAt: string
+}
 
 const columns: ColumnDef<CustomerRow>[] = [
   {
@@ -76,31 +71,31 @@ const columns: ColumnDef<CustomerRow>[] = [
     header: "Created At",
     cell: ({ row }) => format(new Date(row.original.createdAt), "dd MMM yyyy"),
   },
-];
+]
 
 function CustomersPage() {
-  const navigate = useNavigate();
-  const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null);
+  const navigate = useNavigate()
+  const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null)
 
-  const customers = useQuery(trpc.customer.getAll.queryOptions());
+  const customers = useQuery(trpc.customer.getAll.queryOptions())
 
   const deleteMutation = useMutation(
     trpc.customer.delete.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [["customer", "getAll"]] });
-        toast.success("Customer deleted");
-        setDeletingCustomerId(null);
+        queryClient.invalidateQueries({ queryKey: [["customer", "getAll"]] })
+        toast.success("Customer deleted")
+        setDeletingCustomerId(null)
       },
     }),
-  );
+  )
 
-  const data = (customers.data ?? []) as CustomerRow[];
+  const data = (customers.data ?? []) as CustomerRow[]
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-  });
+  })
 
   return (
     <div className="space-y-4">
@@ -184,7 +179,7 @@ function CustomersPage() {
       <AlertDialog
         open={!!deletingCustomerId}
         onOpenChange={(open) => {
-          if (!open) setDeletingCustomerId(null);
+          if (!open) setDeletingCustomerId(null)
         }}
       >
         <AlertDialogContent>
@@ -200,7 +195,7 @@ function CustomersPage() {
               variant="destructive"
               onClick={() => {
                 if (deletingCustomerId) {
-                  deleteMutation.mutate({ id: deletingCustomerId });
+                  deleteMutation.mutate({ id: deletingCustomerId })
                 }
               }}
             >
@@ -210,5 +205,5 @@ function CustomersPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  );
+  )
 }

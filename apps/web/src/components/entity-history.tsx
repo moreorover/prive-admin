@@ -22,9 +22,7 @@ export function EntityHistory({
   entityType: "customer" | "hair_order"
   entityId: string
 }) {
-  const history = useQuery(
-    trpc.entityHistory.getByEntity.queryOptions({ entityType, entityId }),
-  )
+  const history = useQuery(trpc.entityHistory.getByEntity.queryOptions({ entityType, entityId }))
 
   const revert = useMutation(
     trpc.entityHistory.revert.mutationOptions({
@@ -73,9 +71,7 @@ export function EntityHistory({
                 {history.data.map((entry) => (
                   <TableRow key={entry.id}>
                     <TableCell className="font-medium">{entry.fieldName}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {entry.oldValue ?? "—"}
-                    </TableCell>
+                    <TableCell className="text-muted-foreground">{entry.oldValue ?? "—"}</TableCell>
                     <TableCell>{entry.newValue ?? "—"}</TableCell>
                     <TableCell>{entry.changedByName ?? "Unknown"}</TableCell>
                     <TableCell className="text-muted-foreground">
@@ -90,9 +86,7 @@ export function EntityHistory({
                           size="icon"
                           className="size-8"
                           disabled={revert.isPending}
-                          onClick={() =>
-                            revert.mutate({ historyId: entry.id })
-                          }
+                          onClick={() => revert.mutate({ historyId: entry.id })}
                         >
                           <Undo2 className="size-4" />
                         </Button>

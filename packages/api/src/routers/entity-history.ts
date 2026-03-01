@@ -1,14 +1,14 @@
-import { db } from "@prive-admin/db";
-import { entityHistory } from "@prive-admin/db/schema/entity-history";
-import { user } from "@prive-admin/db/schema/auth";
-import { customer } from "@prive-admin/db/schema/customer";
-import { hairOrder } from "@prive-admin/db/schema/hair-order";
-import { desc, eq, and } from "drizzle-orm";
-import { TRPCError } from "@trpc/server";
-import z from "zod";
+import { db } from "@prive-admin/db"
+import { user } from "@prive-admin/db/schema/auth"
+import { customer } from "@prive-admin/db/schema/customer"
+import { entityHistory } from "@prive-admin/db/schema/entity-history"
+import { hairOrder } from "@prive-admin/db/schema/hair-order"
+import { TRPCError } from "@trpc/server"
+import { desc, eq, and } from "drizzle-orm"
+import z from "zod"
 
-import { protectedProcedure, router } from "../index";
-import { recordChanges } from "../lib/entity-history";
+import { protectedProcedure, router } from "../index"
+import { recordChanges } from "../lib/entity-history"
 
 export const entityHistoryRouter = router({
   getByEntity: protectedProcedure
@@ -39,7 +39,7 @@ export const entityHistoryRouter = router({
             eq(entityHistory.entityId, input.entityId),
           ),
         )
-        .orderBy(desc(entityHistory.changedAt));
+        .orderBy(desc(entityHistory.changedAt))
     }),
 
   revert: protectedProcedure
@@ -48,33 +48,33 @@ export const entityHistoryRouter = router({
       const [entry] = await db
         .select()
         .from(entityHistory)
-        .where(eq(entityHistory.id, input.historyId));
+        .where(eq(entityHistory.id, input.historyId))
 
       if (!entry) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "History entry not found" });
+        throw new TRPCError({ code: "NOT_FOUND", message: "History entry not found" })
       }
 
       if (entry.fieldName === "deleted") {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot revert a deletion" });
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot revert a deletion" })
       }
 
-      const revertValue = entry.oldValue;
+      const revertValue = entry.oldValue
 
       if (entry.entityType === "customer") {
-        const field = entry.fieldName as "name" | "email";
+        const field = entry.fieldName as "name" | "email"
         const [existing] = await db
           .select({ [field]: customer[field] })
           .from(customer)
-          .where(eq(customer.id, entry.entityId));
+          .where(eq(customer.id, entry.entityId))
 
         if (!existing) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" });
+          throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" })
         }
 
         await db
           .update(customer)
           .set({ [field]: revertValue })
-          .where(eq(customer.id, entry.entityId));
+          .where(eq(customer.id, entry.entityId))
 
         await recordChanges({
           entityType: "customer",
@@ -82,37 +82,37 @@ export const entityHistoryRouter = router({
           changedById: ctx.session.user.id,
           oldValues: existing,
           newValues: { [field]: revertValue },
-        });
+        })
       } else {
         const field = entry.fieldName as
           | "placedAt"
           | "arrivedAt"
           | "customerId"
           | "weightReceived"
-          | "total";
+          | "total"
 
         const [existing] = await db
           .select({ [field]: hairOrder[field] })
           .from(hairOrder)
-          .where(eq(hairOrder.id, entry.entityId));
+          .where(eq(hairOrder.id, entry.entityId))
 
         if (!existing) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Hair order not found" });
+          throw new TRPCError({ code: "NOT_FOUND", message: "Hair order not found" })
         }
 
-        let coerced: string | number | Date | null;
+        let coerced: string | number | Date | null
         if (field === "placedAt" || field === "arrivedAt") {
-          coerced = revertValue ? new Date(revertValue) : null;
+          coerced = revertValue ? new Date(revertValue) : null
         } else if (field === "weightReceived" || field === "total") {
-          coerced = revertValue ? Number(revertValue) : 0;
+          coerced = revertValue ? Number(revertValue) : 0
         } else {
-          coerced = revertValue;
+          coerced = revertValue
         }
 
         await db
           .update(hairOrder)
           .set({ [field]: coerced })
-          .where(eq(hairOrder.id, entry.entityId));
+          .where(eq(hairOrder.id, entry.entityId))
 
         await recordChanges({
           entityType: "hair_order",
@@ -120,7 +120,7 @@ export const entityHistoryRouter = router({
           changedById: ctx.session.user.id,
           oldValues: existing,
           newValues: { [field]: coerced },
-        });
+        })
       }
     }),
-});
+})

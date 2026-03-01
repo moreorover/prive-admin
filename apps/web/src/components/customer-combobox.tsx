@@ -29,10 +29,7 @@ export function CustomerCombobox({
     [customers],
   )
 
-  const selected = useMemo(
-    () => options.find((o) => o.value === value) ?? null,
-    [options, value],
-  )
+  const selected = useMemo(() => options.find((o) => o.value === value) ?? null, [options, value])
 
   return (
     <Combobox<CustomerOption>

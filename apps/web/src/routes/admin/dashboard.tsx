@@ -1,17 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query"
+import { createFileRoute } from "@tanstack/react-router"
 
-import { trpc } from "@/utils/trpc";
+import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/admin/dashboard")({
   staticData: { title: "Dashboard" },
   component: RouteComponent,
-});
+})
 
 function RouteComponent() {
-  const { session } = Route.useRouteContext();
+  const { session } = Route.useRouteContext()
 
-  const privateData = useQuery(trpc.privateData.queryOptions());
+  const privateData = useQuery(trpc.privateData.queryOptions())
 
   return (
     <div>
@@ -19,5 +19,5 @@ function RouteComponent() {
       <p>Welcome {session?.user.name}</p>
       <p>API: {privateData.data?.message}</p>
     </div>
-  );
+  )
 }

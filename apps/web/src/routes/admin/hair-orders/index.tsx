@@ -1,15 +1,10 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import {
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  type ColumnDef,
-} from "@tanstack/react-table";
-import { format } from "date-fns";
-import { MoreHorizontalIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
+import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table"
+import { format } from "date-fns"
+import { MoreHorizontalIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import { useState } from "react"
+import { toast } from "sonner"
 
 import {
   AlertDialog,
@@ -20,15 +15,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/alert-dialog"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 import {
   Table,
   TableBody,
@@ -36,28 +31,28 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { queryClient, trpc } from "@/utils/trpc";
+} from "@/components/ui/table"
+import { queryClient, trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/admin/hair-orders/")({
   component: HairOrdersPage,
-});
+})
 
 type HairOrderRow = {
-  id: string;
-  uid: number;
-  placedAt: string | null;
-  arrivedAt: string | null;
-  status: string;
-  weightReceived: number;
-  weightUsed: number;
-  total: number;
-  customerId: string;
-  customerName: string | null;
-  customerEmail: string | null;
-  createdByName: string | null;
-  createdAt: string;
-};
+  id: string
+  uid: number
+  placedAt: string | null
+  arrivedAt: string | null
+  status: string
+  weightReceived: number
+  weightUsed: number
+  total: number
+  customerId: string
+  customerName: string | null
+  customerEmail: string | null
+  createdByName: string | null
+  createdAt: string
+}
 
 const columns: ColumnDef<HairOrderRow>[] = [
   {
@@ -101,31 +96,31 @@ const columns: ColumnDef<HairOrderRow>[] = [
     header: "Total",
     cell: ({ row }) => `£${row.original.total.toFixed(2)}`,
   },
-];
+]
 
 function HairOrdersPage() {
-  const navigate = useNavigate();
-  const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
+  const navigate = useNavigate()
+  const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null)
 
-  const orders = useQuery(trpc.hairOrder.getAll.queryOptions());
+  const orders = useQuery(trpc.hairOrder.getAll.queryOptions())
 
   const deleteMutation = useMutation(
     trpc.hairOrder.delete.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [["hairOrder", "getAll"]] });
-        toast.success("Order deleted");
-        setDeletingOrderId(null);
+        queryClient.invalidateQueries({ queryKey: [["hairOrder", "getAll"]] })
+        toast.success("Order deleted")
+        setDeletingOrderId(null)
       },
     }),
-  );
+  )
 
-  const data = (orders.data ?? []) as HairOrderRow[];
+  const data = (orders.data ?? []) as HairOrderRow[]
 
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-  });
+  })
 
   return (
     <div className="space-y-4">
@@ -209,7 +204,7 @@ function HairOrdersPage() {
       <AlertDialog
         open={!!deletingOrderId}
         onOpenChange={(open) => {
-          if (!open) setDeletingOrderId(null);
+          if (!open) setDeletingOrderId(null)
         }}
       >
         <AlertDialogContent>
@@ -225,7 +220,7 @@ function HairOrdersPage() {
               variant="destructive"
               onClick={() => {
                 if (deletingOrderId) {
-                  deleteMutation.mutate({ id: deletingOrderId });
+                  deleteMutation.mutate({ id: deletingOrderId })
                 }
               }}
             >
@@ -235,5 +230,5 @@ function HairOrdersPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  );
+  )
 }

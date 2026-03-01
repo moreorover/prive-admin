@@ -110,9 +110,7 @@ function EditCustomerPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() =>
-                      unassignMutation.mutate({ customerId: id, userId: u.id })
-                    }
+                    onClick={() => unassignMutation.mutate({ customerId: id, userId: u.id })}
                     disabled={unassignMutation.isPending}
                   >
                     <XIcon className="size-4" />

@@ -1,18 +1,12 @@
-import { useState } from "react"
-import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router"
 import { useForm } from "@tanstack/react-form"
+import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router"
+import { useState } from "react"
 
-import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { authClient } from "@/lib/auth-client"
 
 export const Route = createFileRoute("/_public/signup")({
   component: SignUpPage,
@@ -62,9 +56,7 @@ function SignUpPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Sign up</CardTitle>
-          <CardDescription>
-            Create an account to get started.
-          </CardDescription>
+          <CardDescription>Create an account to get started.</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -76,7 +68,10 @@ function SignUpPage() {
             className="flex flex-col gap-4"
           >
             {formError && (
-              <div role="alert" className="text-destructive bg-destructive/10 rounded-lg border border-destructive/20 px-3 py-2 text-sm">
+              <div
+                role="alert"
+                className="text-destructive bg-destructive/10 rounded-lg border border-destructive/20 px-3 py-2 text-sm"
+              >
                 {formError}
               </div>
             )}
@@ -84,8 +79,7 @@ function SignUpPage() {
             <form.Field
               name="name"
               validators={{
-                onSubmit: ({ value }) =>
-                  !value ? "Name is required" : undefined,
+                onSubmit: ({ value }) => (!value ? "Name is required" : undefined),
               }}
             >
               {(field) => (
@@ -109,8 +103,7 @@ function SignUpPage() {
             <form.Field
               name="email"
               validators={{
-                onSubmit: ({ value }) =>
-                  !value ? "Email is required" : undefined,
+                onSubmit: ({ value }) => (!value ? "Email is required" : undefined),
               }}
             >
               {(field) => (
@@ -134,8 +127,7 @@ function SignUpPage() {
             <form.Field
               name="password"
               validators={{
-                onSubmit: ({ value }) =>
-                  !value ? "Password is required" : undefined,
+                onSubmit: ({ value }) => (!value ? "Password is required" : undefined),
               }}
             >
               {(field) => (
@@ -166,7 +158,10 @@ function SignUpPage() {
 
             <p className="text-muted-foreground text-center text-sm">
               Already have an account?{" "}
-              <Link to="/signin" className="text-foreground underline underline-offset-4 hover:text-foreground/80">
+              <Link
+                to="/signin"
+                className="text-foreground underline underline-offset-4 hover:text-foreground/80"
+              >
                 Sign in
               </Link>
             </p>
