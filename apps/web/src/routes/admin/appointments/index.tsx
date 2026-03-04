@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table"
 import { endOfDay, format, startOfDay } from "date-fns"
 import { MoreHorizontalIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { toast } from "sonner"
 
 import { DatePicker } from "@/components/date-picker"
@@ -107,6 +107,8 @@ const columns: ColumnDef<AppointmentRow>[] = [
   },
 ]
 
+const EMPTY_DATA: AppointmentRow[] = []
+
 function AppointmentsPage() {
   const navigate = useNavigate()
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date())
@@ -134,7 +136,7 @@ function AppointmentsPage() {
     }),
   )
 
-  const data = useMemo(() => (appointments.data ?? []) as AppointmentRow[], [appointments.data])
+  const data = (appointments.data as AppointmentRow[] | undefined) ?? EMPTY_DATA
 
   const table = useReactTable({
     data,
