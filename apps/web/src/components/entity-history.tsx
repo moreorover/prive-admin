@@ -19,7 +19,7 @@ export function EntityHistory({
   entityType,
   entityId,
 }: {
-  entityType: "customer" | "hair_order"
+  entityType: "customer" | "hair_order" | "appointment"
   entityId: string
 }) {
   const history = useQuery(trpc.entityHistory.getByEntity.queryOptions({ entityType, entityId }))
@@ -34,9 +34,13 @@ export function EntityHistory({
           queryClient.invalidateQueries({
             queryKey: [["customer", "getById"]],
           })
-        } else {
+        } else if (entityType === "hair_order") {
           queryClient.invalidateQueries({
             queryKey: [["hairOrder", "getById"]],
+          })
+        } else if (entityType === "appointment") {
+          queryClient.invalidateQueries({
+            queryKey: [["appointment", "getById"]],
           })
         }
         toast.success("Change reverted")

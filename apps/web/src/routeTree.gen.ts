@@ -20,15 +20,19 @@ import { Route as PublicProfileRouteImport } from './routes/_public/profile'
 import { Route as AdminUsersRouteRouteImport } from './routes/admin/users/route'
 import { Route as AdminHairOrdersRouteRouteImport } from './routes/admin/hair-orders/route'
 import { Route as AdminCustomersRouteRouteImport } from './routes/admin/customers/route'
+import { Route as AdminAppointmentsRouteRouteImport } from './routes/admin/appointments/route'
 import { Route as AdminUsersIndexRouteImport } from './routes/admin/users/index'
 import { Route as AdminHairOrdersIndexRouteImport } from './routes/admin/hair-orders/index'
 import { Route as AdminCustomersIndexRouteImport } from './routes/admin/customers/index'
+import { Route as AdminAppointmentsIndexRouteImport } from './routes/admin/appointments/index'
 import { Route as AdminUsersNewRouteImport } from './routes/admin/users/new'
 import { Route as AdminHairOrdersNewRouteImport } from './routes/admin/hair-orders/new'
 import { Route as AdminCustomersNewRouteImport } from './routes/admin/customers/new'
+import { Route as AdminAppointmentsNewRouteImport } from './routes/admin/appointments/new'
 import { Route as AdminUsersIdEditRouteImport } from './routes/admin/users/$id.edit'
 import { Route as AdminHairOrdersIdEditRouteImport } from './routes/admin/hair-orders/$id.edit'
 import { Route as AdminCustomersIdEditRouteImport } from './routes/admin/customers/$id.edit'
+import { Route as AdminAppointmentsIdEditRouteImport } from './routes/admin/appointments/$id.edit'
 
 const PublicRoute = PublicRouteImport.update({
   id: '/_public',
@@ -84,6 +88,11 @@ const AdminCustomersRouteRoute = AdminCustomersRouteRouteImport.update({
   path: '/customers',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminAppointmentsRouteRoute = AdminAppointmentsRouteRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminUsersIndexRoute = AdminUsersIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -98,6 +107,11 @@ const AdminCustomersIndexRoute = AdminCustomersIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminCustomersRouteRoute,
+} as any)
+const AdminAppointmentsIndexRoute = AdminAppointmentsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminAppointmentsRouteRoute,
 } as any)
 const AdminUsersNewRoute = AdminUsersNewRouteImport.update({
   id: '/new',
@@ -114,6 +128,11 @@ const AdminCustomersNewRoute = AdminCustomersNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AdminCustomersRouteRoute,
 } as any)
+const AdminAppointmentsNewRoute = AdminAppointmentsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AdminAppointmentsRouteRoute,
+} as any)
 const AdminUsersIdEditRoute = AdminUsersIdEditRouteImport.update({
   id: '/$id/edit',
   path: '/$id/edit',
@@ -129,10 +148,16 @@ const AdminCustomersIdEditRoute = AdminCustomersIdEditRouteImport.update({
   path: '/$id/edit',
   getParentRoute: () => AdminCustomersRouteRoute,
 } as any)
+const AdminAppointmentsIdEditRoute = AdminAppointmentsIdEditRouteImport.update({
+  id: '/$id/edit',
+  path: '/$id/edit',
+  getParentRoute: () => AdminAppointmentsRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/': typeof PublicIndexRoute
+  '/admin/appointments': typeof AdminAppointmentsRouteRouteWithChildren
   '/admin/customers': typeof AdminCustomersRouteRouteWithChildren
   '/admin/hair-orders': typeof AdminHairOrdersRouteRouteWithChildren
   '/admin/users': typeof AdminUsersRouteRouteWithChildren
@@ -141,12 +166,15 @@ export interface FileRoutesByFullPath {
   '/signup': typeof PublicSignupRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/appointments/new': typeof AdminAppointmentsNewRoute
   '/admin/customers/new': typeof AdminCustomersNewRoute
   '/admin/hair-orders/new': typeof AdminHairOrdersNewRoute
   '/admin/users/new': typeof AdminUsersNewRoute
+  '/admin/appointments/': typeof AdminAppointmentsIndexRoute
   '/admin/customers/': typeof AdminCustomersIndexRoute
   '/admin/hair-orders/': typeof AdminHairOrdersIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
+  '/admin/appointments/$id/edit': typeof AdminAppointmentsIdEditRoute
   '/admin/customers/$id/edit': typeof AdminCustomersIdEditRoute
   '/admin/hair-orders/$id/edit': typeof AdminHairOrdersIdEditRoute
   '/admin/users/$id/edit': typeof AdminUsersIdEditRoute
@@ -158,12 +186,15 @@ export interface FileRoutesByTo {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/': typeof PublicIndexRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/appointments/new': typeof AdminAppointmentsNewRoute
   '/admin/customers/new': typeof AdminCustomersNewRoute
   '/admin/hair-orders/new': typeof AdminHairOrdersNewRoute
   '/admin/users/new': typeof AdminUsersNewRoute
+  '/admin/appointments': typeof AdminAppointmentsIndexRoute
   '/admin/customers': typeof AdminCustomersIndexRoute
   '/admin/hair-orders': typeof AdminHairOrdersIndexRoute
   '/admin/users': typeof AdminUsersIndexRoute
+  '/admin/appointments/$id/edit': typeof AdminAppointmentsIdEditRoute
   '/admin/customers/$id/edit': typeof AdminCustomersIdEditRoute
   '/admin/hair-orders/$id/edit': typeof AdminHairOrdersIdEditRoute
   '/admin/users/$id/edit': typeof AdminUsersIdEditRoute
@@ -172,6 +203,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/admin': typeof AdminRouteRouteWithChildren
   '/_public': typeof PublicRouteWithChildren
+  '/admin/appointments': typeof AdminAppointmentsRouteRouteWithChildren
   '/admin/customers': typeof AdminCustomersRouteRouteWithChildren
   '/admin/hair-orders': typeof AdminHairOrdersRouteRouteWithChildren
   '/admin/users': typeof AdminUsersRouteRouteWithChildren
@@ -181,12 +213,15 @@ export interface FileRoutesById {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/appointments/new': typeof AdminAppointmentsNewRoute
   '/admin/customers/new': typeof AdminCustomersNewRoute
   '/admin/hair-orders/new': typeof AdminHairOrdersNewRoute
   '/admin/users/new': typeof AdminUsersNewRoute
+  '/admin/appointments/': typeof AdminAppointmentsIndexRoute
   '/admin/customers/': typeof AdminCustomersIndexRoute
   '/admin/hair-orders/': typeof AdminHairOrdersIndexRoute
   '/admin/users/': typeof AdminUsersIndexRoute
+  '/admin/appointments/$id/edit': typeof AdminAppointmentsIdEditRoute
   '/admin/customers/$id/edit': typeof AdminCustomersIdEditRoute
   '/admin/hair-orders/$id/edit': typeof AdminHairOrdersIdEditRoute
   '/admin/users/$id/edit': typeof AdminUsersIdEditRoute
@@ -196,6 +231,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/admin'
     | '/'
+    | '/admin/appointments'
     | '/admin/customers'
     | '/admin/hair-orders'
     | '/admin/users'
@@ -204,12 +240,15 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin/dashboard'
     | '/admin/'
+    | '/admin/appointments/new'
     | '/admin/customers/new'
     | '/admin/hair-orders/new'
     | '/admin/users/new'
+    | '/admin/appointments/'
     | '/admin/customers/'
     | '/admin/hair-orders/'
     | '/admin/users/'
+    | '/admin/appointments/$id/edit'
     | '/admin/customers/$id/edit'
     | '/admin/hair-orders/$id/edit'
     | '/admin/users/$id/edit'
@@ -221,12 +260,15 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/'
     | '/admin'
+    | '/admin/appointments/new'
     | '/admin/customers/new'
     | '/admin/hair-orders/new'
     | '/admin/users/new'
+    | '/admin/appointments'
     | '/admin/customers'
     | '/admin/hair-orders'
     | '/admin/users'
+    | '/admin/appointments/$id/edit'
     | '/admin/customers/$id/edit'
     | '/admin/hair-orders/$id/edit'
     | '/admin/users/$id/edit'
@@ -234,6 +276,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/admin'
     | '/_public'
+    | '/admin/appointments'
     | '/admin/customers'
     | '/admin/hair-orders'
     | '/admin/users'
@@ -243,12 +286,15 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/_public/'
     | '/admin/'
+    | '/admin/appointments/new'
     | '/admin/customers/new'
     | '/admin/hair-orders/new'
     | '/admin/users/new'
+    | '/admin/appointments/'
     | '/admin/customers/'
     | '/admin/hair-orders/'
     | '/admin/users/'
+    | '/admin/appointments/$id/edit'
     | '/admin/customers/$id/edit'
     | '/admin/hair-orders/$id/edit'
     | '/admin/users/$id/edit'
@@ -338,6 +384,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCustomersRouteRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/appointments': {
+      id: '/admin/appointments'
+      path: '/appointments'
+      fullPath: '/admin/appointments'
+      preLoaderRoute: typeof AdminAppointmentsRouteRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/users/': {
       id: '/admin/users/'
       path: '/'
@@ -358,6 +411,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/customers/'
       preLoaderRoute: typeof AdminCustomersIndexRouteImport
       parentRoute: typeof AdminCustomersRouteRoute
+    }
+    '/admin/appointments/': {
+      id: '/admin/appointments/'
+      path: '/'
+      fullPath: '/admin/appointments/'
+      preLoaderRoute: typeof AdminAppointmentsIndexRouteImport
+      parentRoute: typeof AdminAppointmentsRouteRoute
     }
     '/admin/users/new': {
       id: '/admin/users/new'
@@ -380,6 +440,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCustomersNewRouteImport
       parentRoute: typeof AdminCustomersRouteRoute
     }
+    '/admin/appointments/new': {
+      id: '/admin/appointments/new'
+      path: '/new'
+      fullPath: '/admin/appointments/new'
+      preLoaderRoute: typeof AdminAppointmentsNewRouteImport
+      parentRoute: typeof AdminAppointmentsRouteRoute
+    }
     '/admin/users/$id/edit': {
       id: '/admin/users/$id/edit'
       path: '/$id/edit'
@@ -401,8 +468,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCustomersIdEditRouteImport
       parentRoute: typeof AdminCustomersRouteRoute
     }
+    '/admin/appointments/$id/edit': {
+      id: '/admin/appointments/$id/edit'
+      path: '/$id/edit'
+      fullPath: '/admin/appointments/$id/edit'
+      preLoaderRoute: typeof AdminAppointmentsIdEditRouteImport
+      parentRoute: typeof AdminAppointmentsRouteRoute
+    }
   }
 }
+
+interface AdminAppointmentsRouteRouteChildren {
+  AdminAppointmentsNewRoute: typeof AdminAppointmentsNewRoute
+  AdminAppointmentsIndexRoute: typeof AdminAppointmentsIndexRoute
+  AdminAppointmentsIdEditRoute: typeof AdminAppointmentsIdEditRoute
+}
+
+const AdminAppointmentsRouteRouteChildren: AdminAppointmentsRouteRouteChildren =
+  {
+    AdminAppointmentsNewRoute: AdminAppointmentsNewRoute,
+    AdminAppointmentsIndexRoute: AdminAppointmentsIndexRoute,
+    AdminAppointmentsIdEditRoute: AdminAppointmentsIdEditRoute,
+  }
+
+const AdminAppointmentsRouteRouteWithChildren =
+  AdminAppointmentsRouteRoute._addFileChildren(
+    AdminAppointmentsRouteRouteChildren,
+  )
 
 interface AdminCustomersRouteRouteChildren {
   AdminCustomersNewRoute: typeof AdminCustomersNewRoute
@@ -451,6 +543,7 @@ const AdminUsersRouteRouteWithChildren = AdminUsersRouteRoute._addFileChildren(
 )
 
 interface AdminRouteRouteChildren {
+  AdminAppointmentsRouteRoute: typeof AdminAppointmentsRouteRouteWithChildren
   AdminCustomersRouteRoute: typeof AdminCustomersRouteRouteWithChildren
   AdminHairOrdersRouteRoute: typeof AdminHairOrdersRouteRouteWithChildren
   AdminUsersRouteRoute: typeof AdminUsersRouteRouteWithChildren
@@ -459,6 +552,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAppointmentsRouteRoute: AdminAppointmentsRouteRouteWithChildren,
   AdminCustomersRouteRoute: AdminCustomersRouteRouteWithChildren,
   AdminHairOrdersRouteRoute: AdminHairOrdersRouteRouteWithChildren,
   AdminUsersRouteRoute: AdminUsersRouteRouteWithChildren,

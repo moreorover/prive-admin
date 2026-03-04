@@ -1,6 +1,7 @@
 import { Link, useLocation, useRouteContext, useRouter } from "@tanstack/react-router"
 import {
   ArrowLeftIcon,
+  CalendarDaysIcon,
   ChevronsUpDownIcon,
   LayoutDashboardIcon,
   LogOutIcon,
@@ -36,6 +37,7 @@ import { authClient } from "@/lib/auth-client"
 
 const navItems = [
   { title: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboardIcon },
+  { title: "Appointments", href: "/admin/appointments", icon: CalendarDaysIcon },
   { title: "Customers", href: "/admin/customers", icon: UsersIcon },
   { title: "Hair Orders", href: "/admin/hair-orders", icon: PackageIcon },
   { title: "Users", href: "/admin/users", icon: ShieldIcon },

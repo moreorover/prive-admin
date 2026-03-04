@@ -1,4 +1,5 @@
 import { protectedProcedure, publicProcedure, router } from "../index"
+import { appointmentRouter } from "./appointment"
 import { customerRouter } from "./customer"
 import { entityHistoryRouter } from "./entity-history"
 import { hairOrderRouter } from "./hair-order"
@@ -13,6 +14,7 @@ export const appRouter = router({
       user: ctx.session.user,
     }
   }),
+  appointment: appointmentRouter,
   customer: customerRouter,
   entityHistory: entityHistoryRouter,
   hairOrder: hairOrderRouter,

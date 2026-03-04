@@ -4,7 +4,7 @@ import { index, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core"
 
 import { user } from "./auth"
 
-export const entityTypeEnum = pgEnum("entity_type", ["customer", "hair_order"])
+export const entityTypeEnum = pgEnum("entity_type", ["customer", "hair_order", "appointment"])
 
 export const entityHistory = pgTable(
   "entity_history",

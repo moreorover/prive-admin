@@ -1,4 +1,5 @@
 import { db } from "@prive-admin/db"
+import { appointment } from "@prive-admin/db/schema/appointment"
 import { user } from "@prive-admin/db/schema/auth"
 import { customer } from "@prive-admin/db/schema/customer"
 import { entityHistory } from "@prive-admin/db/schema/entity-history"
@@ -14,7 +15,7 @@ export const entityHistoryRouter = router({
   getByEntity: protectedProcedure
     .input(
       z.object({
-        entityType: z.enum(["customer", "hair_order"]),
+        entityType: z.enum(["customer", "hair_order", "appointment"]),
         entityId: z.string(),
       }),
     )
@@ -83,7 +84,7 @@ export const entityHistoryRouter = router({
           oldValues: existing,
           newValues: { [field]: revertValue },
         })
-      } else {
+      } else if (entry.entityType === "hair_order") {
         const field = entry.fieldName as
           | "placedAt"
           | "arrivedAt"
@@ -116,6 +117,43 @@ export const entityHistoryRouter = router({
 
         await recordChanges({
           entityType: "hair_order",
+          entityId: entry.entityId,
+          changedById: ctx.session.user.id,
+          oldValues: existing,
+          newValues: { [field]: coerced },
+        })
+      } else if (entry.entityType === "appointment") {
+        const field = entry.fieldName as
+          | "name"
+          | "startsAt"
+          | "endsAt"
+          | "status"
+          | "notes"
+          | "customerId"
+
+        const [existing] = await db
+          .select({ [field]: appointment[field] })
+          .from(appointment)
+          .where(eq(appointment.id, entry.entityId))
+
+        if (!existing) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" })
+        }
+
+        let coerced: string | Date | null
+        if (field === "startsAt" || field === "endsAt") {
+          coerced = revertValue ? new Date(revertValue) : null
+        } else {
+          coerced = revertValue
+        }
+
+        await db
+          .update(appointment)
+          .set({ [field]: coerced })
+          .where(eq(appointment.id, entry.entityId))
+
+        await recordChanges({
+          entityType: "appointment",
           entityId: entry.entityId,
           changedById: ctx.session.user.id,
           oldValues: existing,
