@@ -34,78 +34,90 @@ import {
 } from "@/components/ui/table"
 import { queryClient, trpc } from "@/utils/trpc"
 
-export const Route = createFileRoute("/admin/customers/")({
-  component: CustomersPage,
+export const Route = createFileRoute("/admin/transactions/")({
+  component: TransactionsPage,
 })
 
-type CustomerRow = {
+type TransactionRow = {
   id: string
-  name: string
-  email: string | null
-  phone: string | null
-  createdBy: string | null
-  createdByName: string | null
-  createdAt: string
+  amount: number
+  type: string
+  description: string | null
+  date: string
+  customerId: string
+  customerName: string | null
+  appointmentId: string | null
+  appointmentName: string | null
+  hairOrderId: string | null
+  hairOrderUid: number | null
 }
 
-const columns: ColumnDef<CustomerRow>[] = [
+function formatCents(cents: number): string {
+  return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(cents / 100)
+}
+
+const typeLabels: Record<string, string> = {
+  bank: "Bank",
+  cash: "Cash",
+  paypal: "PayPal",
+}
+
+const columns: ColumnDef<TransactionRow>[] = [
   {
-    accessorKey: "name",
-    header: "Name",
+    id: "date",
+    header: "Date",
+    cell: ({ row }) => format(new Date(row.original.date), "dd MMM yyyy"),
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+    cell: ({ row }) => row.original.description ?? "—",
+  },
+  {
+    id: "customer",
+    header: "Customer",
+    cell: ({ row }) => row.original.customerName ?? "—",
+  },
+  {
+    id: "amount",
+    header: "Amount",
+    cell: ({ row }) => {
+      const amount = row.original.amount
+      return (
+        <span className={amount >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}>
+          {formatCents(amount)}
+        </span>
+      )
+    },
+  },
+  {
+    id: "type",
+    header: "Type",
     cell: ({ row }) => (
-      <Link
-        to="/admin/customers/$id"
-        params={{ id: row.original.id }}
-        className="font-medium text-primary hover:underline"
-      >
-        {row.original.name}
-      </Link>
+      <Badge variant="outline">{typeLabels[row.original.type] ?? row.original.type}</Badge>
     ),
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
-    cell: ({ row }) => row.original.email ?? "—",
-  },
-  {
-    accessorKey: "phone",
-    header: "Phone",
-    cell: ({ row }) => row.original.phone ?? "—",
-  },
-  {
-    id: "createdBy",
-    header: "Created By",
-    cell: ({ row }) =>
-      row.original.createdBy ? (
-        <Badge variant="secondary">{row.original.createdByName}</Badge>
-      ) : (
-        <Badge variant="default">Self-registered</Badge>
-      ),
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Created At",
-    cell: ({ row }) => format(new Date(row.original.createdAt), "dd MMM yyyy"),
   },
 ]
 
-function CustomersPage() {
-  const navigate = useNavigate()
-  const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null)
+const EMPTY_DATA: TransactionRow[] = []
 
-  const customers = useQuery(trpc.customer.getAll.queryOptions())
+function TransactionsPage() {
+  const navigate = useNavigate()
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const transactions = useQuery(trpc.transaction.getAll.queryOptions())
 
   const deleteMutation = useMutation(
-    trpc.customer.delete.mutationOptions({
+    trpc.transaction.delete.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [["customer", "getAll"]] })
-        toast.success("Customer deleted")
-        setDeletingCustomerId(null)
+        queryClient.invalidateQueries({ queryKey: [["transaction"]] })
+        toast.success("Transaction deleted")
+        setDeletingId(null)
       },
     }),
   )
 
-  const data = (customers.data ?? []) as CustomerRow[]
+  const data = (transactions.data as TransactionRow[] | undefined) ?? EMPTY_DATA
 
   const table = useReactTable({
     data,
@@ -116,11 +128,11 @@ function CustomersPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Customers</h1>
+        <h1 className="text-2xl font-semibold">Transactions</h1>
         <Button asChild>
-          <Link to="/admin/customers/new">
+          <Link to="/admin/transactions/new">
             <PlusIcon className="mr-2 size-4" />
-            New Customer
+            New Transaction
           </Link>
         </Button>
       </div>
@@ -161,7 +173,7 @@ function CustomersPage() {
                         <DropdownMenuItem
                           onSelect={() =>
                             navigate({
-                              to: "/admin/customers/$id",
+                              to: "/admin/transactions/$id",
                               params: { id: row.original.id },
                             })
                           }
@@ -172,7 +184,7 @@ function CustomersPage() {
                         <DropdownMenuItem
                           onSelect={() =>
                             navigate({
-                              to: "/admin/customers/$id/edit",
+                              to: "/admin/transactions/$id/edit",
                               params: { id: row.original.id },
                             })
                           }
@@ -182,7 +194,7 @@ function CustomersPage() {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           variant="destructive"
-                          onSelect={() => setDeletingCustomerId(row.original.id)}
+                          onSelect={() => setDeletingId(row.original.id)}
                         >
                           <Trash2Icon className="mr-2 size-4" />
                           Delete
@@ -195,7 +207,7 @@ function CustomersPage() {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length + 1} className="h-24 text-center">
-                  {customers.isLoading ? "Loading..." : "No customers yet."}
+                  {transactions.isLoading ? "Loading..." : "No transactions yet."}
                 </TableCell>
               </TableRow>
             )}
@@ -204,16 +216,16 @@ function CustomersPage() {
       </div>
 
       <AlertDialog
-        open={!!deletingCustomerId}
+        open={!!deletingId}
         onOpenChange={(open) => {
-          if (!open) setDeletingCustomerId(null)
+          if (!open) setDeletingId(null)
         }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Customer</AlertDialogTitle>
+            <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this customer? This action cannot be undone.
+              Are you sure you want to delete this transaction? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -221,8 +233,8 @@ function CustomersPage() {
             <AlertDialogAction
               variant="destructive"
               onClick={() => {
-                if (deletingCustomerId) {
-                  deleteMutation.mutate({ id: deletingCustomerId })
+                if (deletingId) {
+                  deleteMutation.mutate({ id: deletingId })
                 }
               }}
             >

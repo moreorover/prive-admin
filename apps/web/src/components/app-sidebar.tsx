@@ -1,6 +1,7 @@
 import { Link, useLocation, useRouteContext, useRouter } from "@tanstack/react-router"
 import {
   ArrowLeftIcon,
+  BanknoteIcon,
   CalendarDaysIcon,
   ChevronsUpDownIcon,
   LayoutDashboardIcon,
@@ -40,6 +41,7 @@ const navItems = [
   { title: "Appointments", href: "/admin/appointments", icon: CalendarDaysIcon },
   { title: "Customers", href: "/admin/customers", icon: UsersIcon },
   { title: "Hair Orders", href: "/admin/hair-orders", icon: PackageIcon },
+  { title: "Transactions", href: "/admin/transactions", icon: BanknoteIcon },
   { title: "Users", href: "/admin/users", icon: ShieldIcon },
 ]
 

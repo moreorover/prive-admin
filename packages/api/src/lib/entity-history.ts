@@ -2,7 +2,7 @@ import { db } from "@prive-admin/db"
 import { entityHistory } from "@prive-admin/db/schema/entity-history"
 
 export async function recordChanges(opts: {
-  entityType: "customer" | "hair_order" | "appointment"
+  entityType: "customer" | "hair_order" | "appointment" | "transaction"
   entityId: string
   changedById: string
   oldValues: Record<string, unknown>

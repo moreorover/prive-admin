@@ -4,6 +4,7 @@ import { user } from "@prive-admin/db/schema/auth"
 import { customer } from "@prive-admin/db/schema/customer"
 import { entityHistory } from "@prive-admin/db/schema/entity-history"
 import { hairOrder } from "@prive-admin/db/schema/hair-order"
+import { transaction } from "@prive-admin/db/schema/transaction"
 import { TRPCError } from "@trpc/server"
 import { desc, eq, and, inArray } from "drizzle-orm"
 import z from "zod"
@@ -15,7 +16,7 @@ export const entityHistoryRouter = router({
   getByEntity: protectedProcedure
     .input(
       z.object({
-        entityType: z.enum(["customer", "hair_order", "appointment"]),
+        entityType: z.enum(["customer", "hair_order", "appointment", "transaction"]),
         entityId: z.string(),
       }),
     )
@@ -144,6 +145,46 @@ export const entityHistoryRouter = router({
 
         await recordChanges({
           entityType: "hair_order",
+          entityId: entry.entityId,
+          changedById: ctx.session.user.id,
+          oldValues: existing,
+          newValues: { [field]: coerced },
+        })
+      } else if (entry.entityType === "transaction") {
+        const field = entry.fieldName as
+          | "amount"
+          | "type"
+          | "description"
+          | "date"
+          | "customerId"
+          | "appointmentId"
+          | "hairOrderId"
+
+        const [existing] = await db
+          .select({ [field]: transaction[field] })
+          .from(transaction)
+          .where(eq(transaction.id, entry.entityId))
+
+        if (!existing) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Transaction not found" })
+        }
+
+        let coerced: string | number | Date | null
+        if (field === "amount") {
+          coerced = revertValue ? Number(revertValue) : 0
+        } else if (field === "date") {
+          coerced = revertValue ? new Date(revertValue) : new Date()
+        } else {
+          coerced = revertValue
+        }
+
+        await db
+          .update(transaction)
+          .set({ [field]: coerced })
+          .where(eq(transaction.id, entry.entityId))
+
+        await recordChanges({
+          entityType: "transaction",
           entityId: entry.entityId,
           changedById: ctx.session.user.id,
           oldValues: existing,

@@ -1,6 +1,8 @@
 import { useForm } from "@tanstack/react-form"
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
+import { format } from "date-fns"
+import { BanknoteIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { CustomerCombobox } from "@/components/customer-combobox"
@@ -10,6 +12,15 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { queryClient, trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/admin/hair-orders/$id/edit")({
@@ -17,12 +28,23 @@ export const Route = createFileRoute("/admin/hair-orders/$id/edit")({
   component: EditHairOrderPage,
 })
 
+function formatCents(cents: number): string {
+  return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(cents / 100)
+}
+
+const txTypeLabels: Record<string, string> = {
+  bank: "Bank",
+  cash: "Cash",
+  paypal: "PayPal",
+}
+
 function EditHairOrderPage() {
   const { id } = Route.useParams()
   const navigate = useNavigate()
 
   const order = useQuery(trpc.hairOrder.getById.queryOptions({ id }))
   const customers = useQuery(trpc.customer.getAll.queryOptions())
+  const transactionsQuery = useQuery(trpc.transaction.getByHairOrder.queryOptions({ hairOrderId: id }))
 
   const updateMutation = useMutation(
     trpc.hairOrder.update.mutationOptions({
@@ -44,6 +66,18 @@ function EditHairOrderPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+      <div className="flex justify-end">
+        <Button asChild size="sm" variant="outline">
+          <Link
+            to="/admin/transactions/new"
+            search={{ customerId: order.data.customerId, hairOrderId: id }}
+          >
+            <BanknoteIcon className="mr-2 size-4" />
+            Add Transaction
+          </Link>
+        </Button>
+      </div>
+
       <HairOrderEditForm
         order={order.data}
         customers={customers.data ?? []}
@@ -60,6 +94,54 @@ function EditHairOrderPage() {
         isPending={updateMutation.isPending}
         onCancel={() => navigate({ to: "/admin/hair-orders" })}
       />
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Transactions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {transactionsQuery.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          ) : !transactionsQuery.data?.length ? (
+            <p className="text-sm text-muted-foreground">No transactions linked to this order.</p>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Type</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {transactionsQuery.data.map((tx) => (
+                    <TableRow key={tx.id}>
+                      <TableCell>{format(new Date(tx.date), "dd MMM yyyy")}</TableCell>
+                      <TableCell>{tx.description ?? "—"}</TableCell>
+                      <TableCell>
+                        <span
+                          className={
+                            tx.amount >= 0
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-red-600 dark:text-red-400"
+                          }
+                        >
+                          {formatCents(tx.amount)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{txTypeLabels[tx.type] ?? tx.type}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <EntityHistory entityType="hair_order" entityId={id} />
     </div>

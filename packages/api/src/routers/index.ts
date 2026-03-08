@@ -3,6 +3,7 @@ import { appointmentRouter } from "./appointment"
 import { customerRouter } from "./customer"
 import { entityHistoryRouter } from "./entity-history"
 import { hairOrderRouter } from "./hair-order"
+import { transactionRouter } from "./transaction"
 
 export const appRouter = router({
   healthCheck: publicProcedure.query(() => {
@@ -18,5 +19,6 @@ export const appRouter = router({
   customer: customerRouter,
   entityHistory: entityHistoryRouter,
   hairOrder: hairOrderRouter,
+  transaction: transactionRouter,
 })
 export type AppRouter = typeof appRouter
