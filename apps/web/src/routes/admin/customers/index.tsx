@@ -41,7 +41,8 @@ export const Route = createFileRoute("/admin/customers/")({
 type CustomerRow = {
   id: string
   name: string
-  email: string
+  email: string | null
+  phone: string | null
   createdBy: string | null
   createdByName: string | null
   createdAt: string
@@ -55,6 +56,12 @@ const columns: ColumnDef<CustomerRow>[] = [
   {
     accessorKey: "email",
     header: "Email",
+    cell: ({ row }) => row.original.email ?? "—",
+  },
+  {
+    accessorKey: "phone",
+    header: "Phone",
+    cell: ({ row }) => row.original.phone ?? "—",
   },
   {
     id: "createdBy",

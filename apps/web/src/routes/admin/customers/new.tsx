@@ -31,11 +31,13 @@ function NewCustomerPage() {
     defaultValues: {
       name: "",
       email: "",
+      phone: "",
     },
     onSubmit: async ({ value }) => {
       await createMutation.mutateAsync({
         name: value.name,
-        email: value.email,
+        email: value.email || undefined,
+        phone: value.phone || undefined,
       })
     },
   })
@@ -76,14 +78,9 @@ function NewCustomerPage() {
               )}
             </form.Field>
 
-            <form.Field
-              name="email"
-              validators={{
-                onSubmit: ({ value }) => (!value ? "Email is required" : undefined),
-              }}
-            >
+            <form.Field name="email">
               {(field) => (
-                <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
+                <Field>
                   <FieldLabel>Email</FieldLabel>
                   <Input
                     type="email"
@@ -91,9 +88,20 @@ function NewCustomerPage() {
                     onChange={(e) => field.handleChange(e.target.value)}
                     placeholder="email@example.com"
                   />
-                  {field.state.meta.errors.length > 0 && (
-                    <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
-                  )}
+                </Field>
+              )}
+            </form.Field>
+
+            <form.Field name="phone">
+              {(field) => (
+                <Field>
+                  <FieldLabel>Phone</FieldLabel>
+                  <Input
+                    type="tel"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="+1 234 567 890"
+                  />
                 </Field>
               )}
             </form.Field>

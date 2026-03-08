@@ -16,7 +16,7 @@ export function CustomerCombobox({
   value,
   onChange,
 }: {
-  customers: { id: string; name: string; email: string }[]
+  customers: { id: string; name: string; email: string | null }[]
   value: string
   onChange: (value: string) => void
 }) {
@@ -24,7 +24,7 @@ export function CustomerCombobox({
     () =>
       customers.map((c) => ({
         value: c.id,
-        label: `${c.name} (${c.email})`,
+        label: c.email ? `${c.name} (${c.email})` : c.name,
       })),
     [customers],
   )

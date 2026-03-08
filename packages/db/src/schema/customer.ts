@@ -9,7 +9,8 @@ export const customer = pgTable("customer", {
     .primaryKey()
     .$defaultFn(() => createId()),
   name: text("name").notNull(),
-  email: text("email").notNull(),
+  email: text("email"),
+  phone: text("phone"),
   createdBy: text("created_by").references(() => user.id, {
     onDelete: "set null",
   }),

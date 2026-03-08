@@ -14,6 +14,7 @@ export const customerRouter = router({
         id: customer.id,
         name: customer.name,
         email: customer.email,
+        phone: customer.phone,
         createdBy: customer.createdBy,
         createdByName: user.name,
         createdAt: customer.createdAt,
@@ -29,6 +30,7 @@ export const customerRouter = router({
         id: customer.id,
         name: customer.name,
         email: customer.email,
+        phone: customer.phone,
         createdBy: customer.createdBy,
         createdAt: customer.createdAt,
       })
@@ -54,7 +56,8 @@ export const customerRouter = router({
     .input(
       z.object({
         name: z.string().min(1),
-        email: z.string().email(),
+        email: z.string().email().optional().or(z.literal("")),
+        phone: z.string().optional().or(z.literal("")),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -62,7 +65,8 @@ export const customerRouter = router({
         .insert(customer)
         .values({
           name: input.name,
-          email: input.email,
+          email: input.email || null,
+          phone: input.phone || null,
           createdBy: ctx.session.user.id,
         })
         .returning()
@@ -75,12 +79,13 @@ export const customerRouter = router({
       z.object({
         id: z.string(),
         name: z.string().min(1),
-        email: z.string().email(),
+        email: z.string().email().optional().or(z.literal("")),
+        phone: z.string().optional().or(z.literal("")),
       }),
     )
     .mutation(async ({ input, ctx }) => {
       const [existing] = await db
-        .select({ name: customer.name, email: customer.email })
+        .select({ name: customer.name, email: customer.email, phone: customer.phone })
         .from(customer)
         .where(eq(customer.id, input.id))
 
@@ -88,7 +93,8 @@ export const customerRouter = router({
         .update(customer)
         .set({
           name: input.name,
-          email: input.email,
+          email: input.email || null,
+          phone: input.phone || null,
         })
         .where(eq(customer.id, input.id))
         .returning()
@@ -99,7 +105,7 @@ export const customerRouter = router({
           entityId: input.id,
           changedById: ctx.session.user.id,
           oldValues: existing,
-          newValues: { name: input.name, email: input.email },
+          newValues: { name: input.name, email: input.email || null, phone: input.phone || null },
         })
       }
 
@@ -135,6 +141,7 @@ export const customerRouter = router({
           id: customer.id,
           name: customer.name,
           email: customer.email,
+          phone: customer.phone,
         })
         .from(customerUser)
         .innerJoin(customer, eq(customerUser.customerId, customer.id))
@@ -156,6 +163,25 @@ export const customerRouter = router({
           userId: input.userId,
         })
         .onConflictDoNothing()
+
+      const [cust] = await db
+        .select({ email: customer.email })
+        .from(customer)
+        .where(eq(customer.id, input.customerId))
+
+      if (cust && !cust.email) {
+        const [assignedUser] = await db
+          .select({ email: user.email })
+          .from(user)
+          .where(eq(user.id, input.userId))
+
+        if (assignedUser?.email) {
+          await db
+            .update(customer)
+            .set({ email: assignedUser.email })
+            .where(eq(customer.id, input.customerId))
+        }
+      }
     }),
 
   unassignUser: protectedProcedure

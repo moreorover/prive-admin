@@ -87,7 +87,8 @@ function EditCustomerPage() {
           await updateMutation.mutateAsync({
             id,
             name: value.name,
-            email: value.email,
+            email: value.email || undefined,
+            phone: value.phone || undefined,
           })
         }}
         isPending={updateMutation.isPending}
@@ -198,15 +199,16 @@ function CustomerEditForm({
   isPending,
   onCancel,
 }: {
-  customer: { name: string; email: string }
-  onSubmit: (value: { name: string; email: string }) => Promise<void>
+  customer: { name: string; email: string | null; phone: string | null }
+  onSubmit: (value: { name: string; email: string; phone: string }) => Promise<void>
   isPending: boolean
   onCancel: () => void
 }) {
   const form = useForm({
     defaultValues: {
       name: customer.name,
-      email: customer.email,
+      email: customer.email ?? "",
+      phone: customer.phone ?? "",
     },
     onSubmit: async ({ value }) => {
       await onSubmit(value)
@@ -248,14 +250,9 @@ function CustomerEditForm({
             )}
           </form.Field>
 
-          <form.Field
-            name="email"
-            validators={{
-              onSubmit: ({ value }) => (!value ? "Email is required" : undefined),
-            }}
-          >
+          <form.Field name="email">
             {(field) => (
-              <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
+              <Field>
                 <FieldLabel>Email</FieldLabel>
                 <Input
                   type="email"
@@ -263,9 +260,20 @@ function CustomerEditForm({
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="email@example.com"
                 />
-                {field.state.meta.errors.length > 0 && (
-                  <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
-                )}
+              </Field>
+            )}
+          </form.Field>
+
+          <form.Field name="phone">
+            {(field) => (
+              <Field>
+                <FieldLabel>Phone</FieldLabel>
+                <Input
+                  type="tel"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="+1 234 567 890"
+                />
               </Field>
             )}
           </form.Field>
