@@ -29,6 +29,8 @@ import { Route as AdminUsersNewRouteImport } from './routes/admin/users/new'
 import { Route as AdminHairOrdersNewRouteImport } from './routes/admin/hair-orders/new'
 import { Route as AdminCustomersNewRouteImport } from './routes/admin/customers/new'
 import { Route as AdminAppointmentsNewRouteImport } from './routes/admin/appointments/new'
+import { Route as AdminAppointmentsIdRouteImport } from './routes/admin/appointments/$id'
+import { Route as AdminAppointmentsIdIndexRouteImport } from './routes/admin/appointments/$id.index'
 import { Route as AdminUsersIdEditRouteImport } from './routes/admin/users/$id.edit'
 import { Route as AdminHairOrdersIdEditRouteImport } from './routes/admin/hair-orders/$id.edit'
 import { Route as AdminCustomersIdEditRouteImport } from './routes/admin/customers/$id.edit'
@@ -133,6 +135,17 @@ const AdminAppointmentsNewRoute = AdminAppointmentsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AdminAppointmentsRouteRoute,
 } as any)
+const AdminAppointmentsIdRoute = AdminAppointmentsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminAppointmentsRouteRoute,
+} as any)
+const AdminAppointmentsIdIndexRoute =
+  AdminAppointmentsIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AdminAppointmentsIdRoute,
+  } as any)
 const AdminUsersIdEditRoute = AdminUsersIdEditRouteImport.update({
   id: '/$id/edit',
   path: '/$id/edit',
@@ -149,9 +162,9 @@ const AdminCustomersIdEditRoute = AdminCustomersIdEditRouteImport.update({
   getParentRoute: () => AdminCustomersRouteRoute,
 } as any)
 const AdminAppointmentsIdEditRoute = AdminAppointmentsIdEditRouteImport.update({
-  id: '/$id/edit',
-  path: '/$id/edit',
-  getParentRoute: () => AdminAppointmentsRouteRoute,
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => AdminAppointmentsIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -166,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof PublicSignupRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/appointments/$id': typeof AdminAppointmentsIdRouteWithChildren
   '/admin/appointments/new': typeof AdminAppointmentsNewRoute
   '/admin/customers/new': typeof AdminCustomersNewRoute
   '/admin/hair-orders/new': typeof AdminHairOrdersNewRoute
@@ -178,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/admin/customers/$id/edit': typeof AdminCustomersIdEditRoute
   '/admin/hair-orders/$id/edit': typeof AdminHairOrdersIdEditRoute
   '/admin/users/$id/edit': typeof AdminUsersIdEditRoute
+  '/admin/appointments/$id/': typeof AdminAppointmentsIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/profile': typeof PublicProfileRoute
@@ -198,6 +213,7 @@ export interface FileRoutesByTo {
   '/admin/customers/$id/edit': typeof AdminCustomersIdEditRoute
   '/admin/hair-orders/$id/edit': typeof AdminHairOrdersIdEditRoute
   '/admin/users/$id/edit': typeof AdminUsersIdEditRoute
+  '/admin/appointments/$id': typeof AdminAppointmentsIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -213,6 +229,7 @@ export interface FileRoutesById {
   '/admin/dashboard': typeof AdminDashboardRoute
   '/_public/': typeof PublicIndexRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/appointments/$id': typeof AdminAppointmentsIdRouteWithChildren
   '/admin/appointments/new': typeof AdminAppointmentsNewRoute
   '/admin/customers/new': typeof AdminCustomersNewRoute
   '/admin/hair-orders/new': typeof AdminHairOrdersNewRoute
@@ -225,6 +242,7 @@ export interface FileRoutesById {
   '/admin/customers/$id/edit': typeof AdminCustomersIdEditRoute
   '/admin/hair-orders/$id/edit': typeof AdminHairOrdersIdEditRoute
   '/admin/users/$id/edit': typeof AdminUsersIdEditRoute
+  '/admin/appointments/$id/': typeof AdminAppointmentsIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -240,6 +258,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin/dashboard'
     | '/admin/'
+    | '/admin/appointments/$id'
     | '/admin/appointments/new'
     | '/admin/customers/new'
     | '/admin/hair-orders/new'
@@ -252,6 +271,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$id/edit'
     | '/admin/hair-orders/$id/edit'
     | '/admin/users/$id/edit'
+    | '/admin/appointments/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/profile'
@@ -272,6 +292,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$id/edit'
     | '/admin/hair-orders/$id/edit'
     | '/admin/users/$id/edit'
+    | '/admin/appointments/$id'
   id:
     | '__root__'
     | '/admin'
@@ -286,6 +307,7 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/_public/'
     | '/admin/'
+    | '/admin/appointments/$id'
     | '/admin/appointments/new'
     | '/admin/customers/new'
     | '/admin/hair-orders/new'
@@ -298,6 +320,7 @@ export interface FileRouteTypes {
     | '/admin/customers/$id/edit'
     | '/admin/hair-orders/$id/edit'
     | '/admin/users/$id/edit'
+    | '/admin/appointments/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -447,6 +470,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAppointmentsNewRouteImport
       parentRoute: typeof AdminAppointmentsRouteRoute
     }
+    '/admin/appointments/$id': {
+      id: '/admin/appointments/$id'
+      path: '/$id'
+      fullPath: '/admin/appointments/$id'
+      preLoaderRoute: typeof AdminAppointmentsIdRouteImport
+      parentRoute: typeof AdminAppointmentsRouteRoute
+    }
+    '/admin/appointments/$id/': {
+      id: '/admin/appointments/$id/'
+      path: '/'
+      fullPath: '/admin/appointments/$id/'
+      preLoaderRoute: typeof AdminAppointmentsIdIndexRouteImport
+      parentRoute: typeof AdminAppointmentsIdRoute
+    }
     '/admin/users/$id/edit': {
       id: '/admin/users/$id/edit'
       path: '/$id/edit'
@@ -470,25 +507,38 @@ declare module '@tanstack/react-router' {
     }
     '/admin/appointments/$id/edit': {
       id: '/admin/appointments/$id/edit'
-      path: '/$id/edit'
+      path: '/edit'
       fullPath: '/admin/appointments/$id/edit'
       preLoaderRoute: typeof AdminAppointmentsIdEditRouteImport
-      parentRoute: typeof AdminAppointmentsRouteRoute
+      parentRoute: typeof AdminAppointmentsIdRoute
     }
   }
 }
 
+interface AdminAppointmentsIdRouteChildren {
+  AdminAppointmentsIdEditRoute: typeof AdminAppointmentsIdEditRoute
+  AdminAppointmentsIdIndexRoute: typeof AdminAppointmentsIdIndexRoute
+}
+
+const AdminAppointmentsIdRouteChildren: AdminAppointmentsIdRouteChildren = {
+  AdminAppointmentsIdEditRoute: AdminAppointmentsIdEditRoute,
+  AdminAppointmentsIdIndexRoute: AdminAppointmentsIdIndexRoute,
+}
+
+const AdminAppointmentsIdRouteWithChildren =
+  AdminAppointmentsIdRoute._addFileChildren(AdminAppointmentsIdRouteChildren)
+
 interface AdminAppointmentsRouteRouteChildren {
+  AdminAppointmentsIdRoute: typeof AdminAppointmentsIdRouteWithChildren
   AdminAppointmentsNewRoute: typeof AdminAppointmentsNewRoute
   AdminAppointmentsIndexRoute: typeof AdminAppointmentsIndexRoute
-  AdminAppointmentsIdEditRoute: typeof AdminAppointmentsIdEditRoute
 }
 
 const AdminAppointmentsRouteRouteChildren: AdminAppointmentsRouteRouteChildren =
   {
+    AdminAppointmentsIdRoute: AdminAppointmentsIdRouteWithChildren,
     AdminAppointmentsNewRoute: AdminAppointmentsNewRoute,
     AdminAppointmentsIndexRoute: AdminAppointmentsIndexRoute,
-    AdminAppointmentsIdEditRoute: AdminAppointmentsIdEditRoute,
   }
 
 const AdminAppointmentsRouteRouteWithChildren =

@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table"
 import { endOfDay, format, startOfDay } from "date-fns"
-import { MoreHorizontalIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import { EyeIcon, MoreHorizontalIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -85,6 +85,15 @@ const columns: ColumnDef<AppointmentRow>[] = [
   {
     accessorKey: "name",
     header: "Name",
+    cell: ({ row }) => (
+      <Link
+        to="/admin/appointments/$id"
+        params={{ id: row.original.id }}
+        className="font-medium text-primary hover:underline"
+      >
+        {row.original.name}
+      </Link>
+    ),
   },
   {
     id: "customer",
@@ -203,6 +212,17 @@ function AppointmentsPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onSelect={() =>
+                            navigate({
+                              to: "/admin/appointments/$id",
+                              params: { id: row.original.id },
+                            })
+                          }
+                        >
+                          <EyeIcon className="mr-2 size-4" />
+                          View
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           onSelect={() =>
                             navigate({
