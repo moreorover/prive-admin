@@ -5,7 +5,7 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Field, FieldLabel } from "@/components/ui/field"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { queryClient, trpc } from "@/utils/trpc"
 
@@ -62,13 +62,16 @@ function NewCustomerPage() {
               }}
             >
               {(field) => (
-                <Field>
+                <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
                   <FieldLabel>Name</FieldLabel>
                   <Input
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     placeholder="Full name"
                   />
+                  {field.state.meta.errors.length > 0 && (
+                    <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                  )}
                 </Field>
               )}
             </form.Field>
@@ -80,7 +83,7 @@ function NewCustomerPage() {
               }}
             >
               {(field) => (
-                <Field>
+                <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
                   <FieldLabel>Email</FieldLabel>
                   <Input
                     type="email"
@@ -88,6 +91,9 @@ function NewCustomerPage() {
                     onChange={(e) => field.handleChange(e.target.value)}
                     placeholder="email@example.com"
                   />
+                  {field.state.meta.errors.length > 0 && (
+                    <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                  )}
                 </Field>
               )}
             </form.Field>

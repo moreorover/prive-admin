@@ -16,7 +16,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox"
-import { Field, FieldLabel } from "@/components/ui/field"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
 import { queryClient, trpc } from "@/utils/trpc"
@@ -234,13 +234,16 @@ function CustomerEditForm({
             }}
           >
             {(field) => (
-              <Field>
+              <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
                 <FieldLabel>Name</FieldLabel>
                 <Input
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="Full name"
                 />
+                {field.state.meta.errors.length > 0 && (
+                  <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                )}
               </Field>
             )}
           </form.Field>
@@ -252,7 +255,7 @@ function CustomerEditForm({
             }}
           >
             {(field) => (
-              <Field>
+              <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
                 <FieldLabel>Email</FieldLabel>
                 <Input
                   type="email"
@@ -260,6 +263,9 @@ function CustomerEditForm({
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="email@example.com"
                 />
+                {field.state.meta.errors.length > 0 && (
+                  <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                )}
               </Field>
             )}
           </form.Field>

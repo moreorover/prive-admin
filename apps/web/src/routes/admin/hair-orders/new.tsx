@@ -7,7 +7,7 @@ import { CustomerCombobox } from "@/components/customer-combobox"
 import { DatePicker } from "@/components/date-picker"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Field, FieldLabel } from "@/components/ui/field"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { queryClient, trpc } from "@/utils/trpc"
 
@@ -71,13 +71,16 @@ function NewHairOrderPage() {
               }}
             >
               {(field) => (
-                <Field>
+                <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
                   <FieldLabel>Customer</FieldLabel>
                   <CustomerCombobox
                     customers={customers.data ?? []}
                     value={field.state.value}
                     onChange={(val) => field.handleChange(val)}
                   />
+                  {field.state.meta.errors.length > 0 && (
+                    <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                  )}
                 </Field>
               )}
             </form.Field>

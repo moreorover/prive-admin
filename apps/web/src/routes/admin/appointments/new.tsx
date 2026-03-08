@@ -7,7 +7,7 @@ import { CustomerCombobox } from "@/components/customer-combobox"
 import { DatePicker } from "@/components/date-picker"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Field, FieldLabel } from "@/components/ui/field"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -94,13 +94,16 @@ function NewAppointmentPage() {
               }}
             >
               {(field) => (
-                <Field>
+                <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
                   <FieldLabel>Name</FieldLabel>
                   <Input
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
                     placeholder="Appointment name"
                   />
+                  {field.state.meta.errors.length > 0 && (
+                    <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                  )}
                 </Field>
               )}
             </form.Field>
@@ -112,13 +115,16 @@ function NewAppointmentPage() {
               }}
             >
               {(field) => (
-                <Field>
+                <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
                   <FieldLabel>Customer</FieldLabel>
                   <CustomerCombobox
                     customers={customers.data ?? []}
                     value={field.state.value}
                     onChange={(val) => field.handleChange(val)}
                   />
+                  {field.state.meta.errors.length > 0 && (
+                    <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                  )}
                 </Field>
               )}
             </form.Field>
@@ -130,12 +136,15 @@ function NewAppointmentPage() {
               }}
             >
               {(field) => (
-                <Field>
+                <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
                   <FieldLabel>Date</FieldLabel>
                   <DatePicker
                     value={field.state.value}
                     onChange={(date) => field.handleChange(date)}
                   />
+                  {field.state.meta.errors.length > 0 && (
+                    <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                  )}
                 </Field>
               )}
             </form.Field>
@@ -148,13 +157,16 @@ function NewAppointmentPage() {
                 }}
               >
                 {(field) => (
-                  <Field>
+                  <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
                     <FieldLabel>Start Time</FieldLabel>
                     <Input
                       type="time"
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
                     />
+                    {field.state.meta.errors.length > 0 && (
+                      <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
+                    )}
                   </Field>
                 )}
               </form.Field>
