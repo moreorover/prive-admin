@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { formatDistanceToNow } from "date-fns"
+import { format, formatDistanceToNow } from "date-fns"
 import { Undo2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -14,6 +14,15 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { queryClient, trpc } from "@/utils/trpc"
+
+function formatValue(value: string | null): string {
+  if (!value) return "—"
+  const date = new Date(value)
+  if (!Number.isNaN(date.getTime()) && /^\d{4}-|^\w{3}\s\w{3}\s\d{2}/.test(value)) {
+    return format(date, "dd MMM yyyy, HH:mm")
+  }
+  return value
+}
 
 export function EntityHistory({
   entityType,
@@ -75,8 +84,8 @@ export function EntityHistory({
                 {history.data.map((entry) => (
                   <TableRow key={entry.id}>
                     <TableCell className="font-medium">{entry.fieldName}</TableCell>
-                    <TableCell className="text-muted-foreground">{entry.oldValue ?? "—"}</TableCell>
-                    <TableCell>{entry.newValue ?? "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">{formatValue(entry.oldValue)}</TableCell>
+                    <TableCell>{formatValue(entry.newValue)}</TableCell>
                     <TableCell>{entry.changedByName ?? "Unknown"}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {formatDistanceToNow(new Date(entry.changedAt), {
