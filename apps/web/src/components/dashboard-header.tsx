@@ -1,9 +1,10 @@
-import { useMatches } from "@tanstack/react-router"
+import { Link, useMatches } from "@tanstack/react-router"
 import React from "react"
 
 import {
   Breadcrumb,
   BreadcrumbItem,
+  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -16,7 +17,7 @@ export function DashboardHeader() {
 
   const crumbs = matches.flatMap((match) => {
     const title = (match.staticData as Record<string, unknown>)?.title
-    return typeof title === "string" ? [title] : []
+    return typeof title === "string" ? [{ title, pathname: match.pathname }] : []
   })
 
   return (
@@ -25,11 +26,17 @@ export function DashboardHeader() {
       <Separator orientation="vertical" className="mr-2 h-4!" />
       <Breadcrumb>
         <BreadcrumbList>
-          {crumbs.map((title, index) => (
-            <React.Fragment key={title}>
+          {crumbs.map((crumb, index) => (
+            <React.Fragment key={crumb.pathname}>
               {index > 0 && <BreadcrumbSeparator />}
               <BreadcrumbItem>
-                <BreadcrumbPage>{title}</BreadcrumbPage>
+                {index < crumbs.length - 1 ? (
+                  <BreadcrumbLink asChild>
+                    <Link to={crumb.pathname}>{crumb.title}</Link>
+                  </BreadcrumbLink>
+                ) : (
+                  <BreadcrumbPage>{crumb.title}</BreadcrumbPage>
+                )}
               </BreadcrumbItem>
             </React.Fragment>
           ))}
