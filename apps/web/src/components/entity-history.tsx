@@ -15,6 +15,19 @@ import {
 } from "@/components/ui/table"
 import { queryClient, trpc } from "@/utils/trpc"
 
+const fieldLabels: Record<string, string> = {
+  customerId: "Customer",
+  startsAt: "Starts At",
+  endsAt: "Ends At",
+  placedAt: "Placed At",
+  arrivedAt: "Arrived At",
+  weightReceived: "Weight Received",
+}
+
+function formatFieldName(fieldName: string): string {
+  return fieldLabels[fieldName] ?? fieldName.charAt(0).toUpperCase() + fieldName.slice(1)
+}
+
 function formatValue(value: string | null): string {
   if (!value) return "—"
   const date = new Date(value)
@@ -83,9 +96,9 @@ export function EntityHistory({
               <TableBody>
                 {history.data.map((entry) => (
                   <TableRow key={entry.id}>
-                    <TableCell className="font-medium">{entry.fieldName}</TableCell>
-                    <TableCell className="text-muted-foreground">{formatValue(entry.oldValue)}</TableCell>
-                    <TableCell>{formatValue(entry.newValue)}</TableCell>
+                    <TableCell className="font-medium">{formatFieldName(entry.fieldName)}</TableCell>
+                    <TableCell className="text-muted-foreground">{formatValue(entry.oldDisplayValue ?? entry.oldValue)}</TableCell>
+                    <TableCell>{formatValue(entry.newDisplayValue ?? entry.newValue)}</TableCell>
                     <TableCell>{entry.changedByName ?? "Unknown"}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {formatDistanceToNow(new Date(entry.changedAt), {

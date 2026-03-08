@@ -5,7 +5,7 @@ import { customer } from "@prive-admin/db/schema/customer"
 import { entityHistory } from "@prive-admin/db/schema/entity-history"
 import { hairOrder } from "@prive-admin/db/schema/hair-order"
 import { TRPCError } from "@trpc/server"
-import { desc, eq, and } from "drizzle-orm"
+import { desc, eq, and, inArray } from "drizzle-orm"
 import z from "zod"
 
 import { protectedProcedure, router } from "../index"
@@ -20,7 +20,7 @@ export const entityHistoryRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      return db
+      const rows = await db
         .select({
           id: entityHistory.id,
           entityType: entityHistory.entityType,
@@ -41,6 +41,33 @@ export const entityHistoryRouter = router({
           ),
         )
         .orderBy(desc(entityHistory.changedAt))
+
+      const customerIds = rows
+        .filter((r) => r.fieldName === "customerId")
+        .flatMap((r) => [r.oldValue, r.newValue])
+        .filter((v): v is string => v !== null)
+
+      const customerNames =
+        customerIds.length > 0
+          ? await db
+              .select({ id: customer.id, name: customer.name })
+              .from(customer)
+              .where(inArray(customer.id, customerIds))
+          : []
+
+      const nameMap = new Map(customerNames.map((c) => [c.id, c.name]))
+
+      return rows.map((r) => ({
+        ...r,
+        oldDisplayValue:
+          r.fieldName === "customerId"
+            ? (nameMap.get(r.oldValue!) ?? r.oldValue)
+            : null,
+        newDisplayValue:
+          r.fieldName === "customerId"
+            ? (nameMap.get(r.newValue!) ?? r.newValue)
+            : null,
+      }))
     }),
 
   revert: protectedProcedure
