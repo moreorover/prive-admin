@@ -163,25 +163,6 @@ export const customerRouter = router({
           userId: input.userId,
         })
         .onConflictDoNothing()
-
-      const [cust] = await db
-        .select({ email: customer.email })
-        .from(customer)
-        .where(eq(customer.id, input.customerId))
-
-      if (cust && !cust.email) {
-        const [assignedUser] = await db
-          .select({ email: user.email })
-          .from(user)
-          .where(eq(user.id, input.userId))
-
-        if (assignedUser?.email) {
-          await db
-            .update(customer)
-            .set({ email: assignedUser.email })
-            .where(eq(customer.id, input.customerId))
-        }
-      }
     }),
 
   unassignUser: protectedProcedure
