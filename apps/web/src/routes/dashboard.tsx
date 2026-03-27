@@ -30,7 +30,22 @@ import {
   ProgressValue,
 } from "@prive-admin-tanstack/ui/components/progress"
 import { Separator } from "@prive-admin-tanstack/ui/components/separator"
+import type { DashboardCapability, DashboardStat } from "@/functions/get-dashboard-data"
+import { getDashboardData } from "@/functions/get-dashboard-data"
 import { getUser } from "@/functions/get-user"
+
+const iconMap: Record<string, LucideIcon> = {
+  users: Users,
+  activity: Activity,
+  zap: Zap,
+  monitor: Monitor,
+  "user-cog": UserCog,
+  lock: Lock,
+  database: Database,
+  "trending-up": TrendingUp,
+  shield: Shield,
+  "file-text": FileText,
+}
 
 export const Route = createFileRoute("/dashboard")({
   component: RouteComponent,
@@ -44,85 +59,12 @@ export const Route = createFileRoute("/dashboard")({
         to: "/login",
       })
     }
+    const dashboardData = await getDashboardData()
+    return { dashboardData }
   },
 })
 
-const stats = [
-  { label: "Total Users", value: "1,284", change: "+12%", icon: Users },
-  { label: "Active Sessions", value: "342", change: "+8%", icon: Activity },
-  { label: "API Requests", value: "48.2k", change: "+23%", icon: Zap },
-  { label: "Uptime", value: "99.97%", change: "+0.02%", icon: Monitor },
-]
-
-interface Capability {
-  title: string
-  description: string
-  icon: LucideIcon
-  status: "active" | "beta" | "coming"
-  features: string[]
-}
-
-const capabilities: Capability[] = [
-  {
-    title: "User Management",
-    description: "Full lifecycle user administration with role-based access control",
-    icon: UserCog,
-    status: "active",
-    features: ["RBAC", "Invitations", "Audit log"],
-  },
-  {
-    title: "Authentication",
-    description: "Multi-provider auth with session management and MFA support",
-    icon: Lock,
-    status: "active",
-    features: ["Email/Password", "OAuth", "MFA"],
-  },
-  {
-    title: "Database Explorer",
-    description: "Visual schema browser with query builder and migration tools",
-    icon: Database,
-    status: "active",
-    features: ["Schema viewer", "Migrations", "Seeding"],
-  },
-  {
-    title: "Analytics & Reports",
-    description: "Real-time dashboards with custom report builder and export",
-    icon: TrendingUp,
-    status: "beta",
-    features: ["Real-time", "Custom reports", "CSV export"],
-  },
-  {
-    title: "API Monitoring",
-    description: "Endpoint health checks, latency tracking, and alerting",
-    icon: Shield,
-    status: "beta",
-    features: ["Health checks", "Latency P99", "Alerts"],
-  },
-  {
-    title: "Content Management",
-    description: "Structured content editor with versioning and publishing workflows",
-    icon: FileText,
-    status: "coming",
-    features: ["Rich editor", "Versioning", "Workflows"],
-  },
-]
-
-const systemHealth = [
-  { label: "CPU Usage", value: 42 },
-  { label: "Memory", value: 67 },
-  { label: "Storage", value: 31 },
-  { label: "Network I/O", value: 18 },
-]
-
-const recentActivity = [
-  { action: "User invited", detail: "team@example.com", time: "2m ago" },
-  { action: "Schema migrated", detail: "v0.45.2 applied", time: "18m ago" },
-  { action: "API key rotated", detail: "prod-service-key", time: "1h ago" },
-  { action: "Role updated", detail: "Editor permissions", time: "3h ago" },
-  { action: "Backup completed", detail: "Full snapshot", time: "6h ago" },
-]
-
-function StatusBadge({ status }: { status: Capability["status"] }) {
+function StatusBadge({ status }: { status: DashboardCapability["status"] }) {
   const variants = {
     active: "default",
     beta: "outline",
@@ -140,10 +82,10 @@ function StatCard({
   stat,
   index,
 }: {
-  stat: (typeof stats)[number]
+  stat: DashboardStat
   index: number
 }) {
-  const Icon = stat.icon
+  const Icon = iconMap[stat.icon] ?? Activity
   return (
     <Card
       className="group relative overflow-hidden transition-shadow hover:ring-2 hover:ring-primary/20"
@@ -167,8 +109,8 @@ function StatCard({
   )
 }
 
-function CapabilityCard({ capability }: { capability: Capability }) {
-  const Icon = capability.icon
+function CapabilityCard({ capability }: { capability: DashboardCapability }) {
+  const Icon = iconMap[capability.icon] ?? Activity
   const isActive = capability.status === "active"
 
   return (
@@ -215,6 +157,7 @@ function CapabilityCard({ capability }: { capability: Capability }) {
 
 function RouteComponent() {
   const { session } = Route.useRouteContext()
+  const { dashboardData } = Route.useLoaderData()
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
@@ -242,7 +185,7 @@ function RouteComponent() {
 
       {/* Stat cards */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, i) => (
+        {dashboardData.stats.map((stat, i) => (
           <StatCard key={stat.label} stat={stat} index={i} />
         ))}
       </section>
@@ -256,13 +199,13 @@ function RouteComponent() {
               Platform Capabilities
             </h2>
             <span className="text-[0.625rem] text-muted-foreground">
-              {capabilities.filter((c) => c.status === "active").length} active
-              &middot; {capabilities.filter((c) => c.status === "beta").length}{" "}
-              in beta
+              {dashboardData.capabilities.filter((c) => c.status === "active").length} active
+              &middot;{" "}
+              {dashboardData.capabilities.filter((c) => c.status === "beta").length} in beta
             </span>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {capabilities.map((cap) => (
+            {dashboardData.capabilities.map((cap) => (
               <CapabilityCard key={cap.title} capability={cap} />
             ))}
           </div>
@@ -280,7 +223,7 @@ function RouteComponent() {
               <CardDescription>Real-time resource utilization</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {systemHealth.map((metric) => (
+              {dashboardData.systemHealth.map((metric) => (
                 <Progress key={metric.label} value={metric.value}>
                   <ProgressLabel>{metric.label}</ProgressLabel>
                   <ProgressValue />
@@ -299,7 +242,7 @@ function RouteComponent() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {recentActivity.map((item, i) => (
+                {dashboardData.recentActivity.map((item, i) => (
                   <div key={i} className="flex items-start justify-between">
                     <div className="min-w-0 space-y-0.5">
                       <p className="truncate text-xs font-medium">
