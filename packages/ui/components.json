@@ -18,7 +18,8 @@
     "lib": "@prive-admin-tanstack/ui/lib",
     "ui": "@prive-admin-tanstack/ui/components"
   },
-  "menuColor": "default",
+  "menuColor": "default-translucent",
   "menuAccent": "subtle",
-  "registries": {}
+  "registries": {},
+  "rtl": false
 }
