@@ -19,6 +19,6 @@
   },
   "devDependencies": {
     "@prive-admin-tanstack/config": "workspace:*",
-    "typescript": "^5"
+    "typescript": "^6.0.2"
   }
 }
