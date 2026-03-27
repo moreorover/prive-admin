@@ -1,0 +1,54 @@
+{
+  "name": "prive-admin-tanstack",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.2.2",
+      "zod": "^4.1.13",
+      "@types/node": "^22.13.14",
+      "lucide-react": "^0.546.0",
+      "next-themes": "^0.4.6",
+      "react": "^19.2.3",
+      "react-dom": "^19.2.3",
+      "sonner": "^2.0.5",
+      "tailwindcss": "^4.1.18",
+      "better-auth": "1.5.5",
+      "@types/react": "^19.2.10",
+      "@types/react-dom": "^19.2.3"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:web": "turbo -F web dev",
+    "db:push": "turbo -F @prive-admin-tanstack/db db:push",
+    "db:studio": "turbo -F @prive-admin-tanstack/db db:studio",
+    "db:generate": "turbo -F @prive-admin-tanstack/db db:generate",
+    "db:migrate": "turbo -F @prive-admin-tanstack/db db:migrate",
+    "db:start": "turbo -F @prive-admin-tanstack/db db:start",
+    "db:watch": "turbo -F @prive-admin-tanstack/db db:watch",
+    "db:stop": "turbo -F @prive-admin-tanstack/db db:stop",
+    "db:down": "turbo -F @prive-admin-tanstack/db db:down",
+    "check": "oxlint && oxfmt --write"
+  },
+  "dependencies": {
+    "@prive-admin-tanstack/env": "workspace:*",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@prive-admin-tanstack/config": "workspace:*",
+    "@types/node": "catalog:",
+    "oxfmt": "^0.26.0",
+    "oxlint": "^1.41.0",
+    "turbo": "^2.8.12",
+    "typescript": "^5"
+  },
+  "packageManager": "bun@1.3.11"
+}
