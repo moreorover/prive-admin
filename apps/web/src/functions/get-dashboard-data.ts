@@ -38,6 +38,7 @@ export interface DashboardData {
 export const getDashboardData = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async (): Promise<DashboardData> => {
+    await new Promise((resolve) => setTimeout(resolve, 2000))
     // TODO: replace with real data sources
     const stats: DashboardStat[] = [
       { label: "Total Users", value: "1,284", change: "+12%", icon: "users" },

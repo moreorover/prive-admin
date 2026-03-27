@@ -1,3 +1,4 @@
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 import {
   Activity,
@@ -30,6 +31,7 @@ import {
   ProgressValue,
 } from "@prive-admin-tanstack/ui/components/progress"
 import { Separator } from "@prive-admin-tanstack/ui/components/separator"
+import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
 import type { DashboardCapability, DashboardStat } from "@/functions/get-dashboard-data"
 import { getDashboardData } from "@/functions/get-dashboard-data"
 import { getUser } from "@/functions/get-user"
@@ -47,6 +49,11 @@ const iconMap: Record<string, LucideIcon> = {
   "file-text": FileText,
 }
 
+const dashboardQueryOptions = queryOptions({
+  queryKey: ["dashboard"],
+  queryFn: () => getDashboardData(),
+})
+
 export const Route = createFileRoute("/dashboard")({
   component: RouteComponent,
   beforeLoad: async () => {
@@ -59,8 +66,7 @@ export const Route = createFileRoute("/dashboard")({
         to: "/login",
       })
     }
-    const dashboardData = await getDashboardData()
-    return { dashboardData }
+    context.queryClient.prefetchQuery(dashboardQueryOptions)
   },
 })
 
@@ -104,6 +110,21 @@ function StatCard({
         <div className="rounded-md bg-primary/10 p-2 text-primary">
           <Icon className="size-5" />
         </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function StatCardSkeleton() {
+  return (
+    <Card>
+      <CardContent className="flex items-start justify-between">
+        <div className="space-y-2">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-7 w-16" />
+          <Skeleton className="h-2.5 w-24" />
+        </div>
+        <Skeleton className="size-9 rounded-md" />
       </CardContent>
     </Card>
   )
@@ -155,9 +176,31 @@ function CapabilityCard({ capability }: { capability: DashboardCapability }) {
   )
 }
 
+function CapabilityCardSkeleton() {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <Skeleton className="size-9 rounded-md" />
+          <Skeleton className="h-5 w-14 rounded-full" />
+        </div>
+        <Skeleton className="mt-2 h-4 w-32" />
+        <Skeleton className="h-3 w-full" />
+      </CardHeader>
+      <CardContent>
+        <div className="flex gap-1.5">
+          <Skeleton className="h-4 w-12 rounded-sm" />
+          <Skeleton className="h-4 w-16 rounded-sm" />
+          <Skeleton className="h-4 w-14 rounded-sm" />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 function RouteComponent() {
   const { session } = Route.useRouteContext()
-  const { dashboardData } = Route.useLoaderData()
+  const { data: dashboardData, isLoading } = useQuery(dashboardQueryOptions)
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
@@ -185,9 +228,11 @@ function RouteComponent() {
 
       {/* Stat cards */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {dashboardData.stats.map((stat, i) => (
-          <StatCard key={stat.label} stat={stat} index={i} />
-        ))}
+        {isLoading
+          ? Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
+          : dashboardData?.stats.map((stat, i) => (
+              <StatCard key={stat.label} stat={stat} index={i} />
+            ))}
       </section>
 
       {/* Main content grid */}
@@ -198,16 +243,20 @@ function RouteComponent() {
             <h2 className="font-heading text-sm font-semibold tracking-tight">
               Platform Capabilities
             </h2>
-            <span className="text-[0.625rem] text-muted-foreground">
-              {dashboardData.capabilities.filter((c) => c.status === "active").length} active
-              &middot;{" "}
-              {dashboardData.capabilities.filter((c) => c.status === "beta").length} in beta
-            </span>
+            {dashboardData && (
+              <span className="text-[0.625rem] text-muted-foreground">
+                {dashboardData.capabilities.filter((c) => c.status === "active").length} active
+                &middot;{" "}
+                {dashboardData.capabilities.filter((c) => c.status === "beta").length} in beta
+              </span>
+            )}
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {dashboardData.capabilities.map((cap) => (
-              <CapabilityCard key={cap.title} capability={cap} />
-            ))}
+            {isLoading
+              ? Array.from({ length: 6 }).map((_, i) => <CapabilityCardSkeleton key={i} />)
+              : dashboardData?.capabilities.map((cap) => (
+                  <CapabilityCard key={cap.title} capability={cap} />
+                ))}
           </div>
         </section>
 
@@ -223,12 +272,22 @@ function RouteComponent() {
               <CardDescription>Real-time resource utilization</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {dashboardData.systemHealth.map((metric) => (
-                <Progress key={metric.label} value={metric.value}>
-                  <ProgressLabel>{metric.label}</ProgressLabel>
-                  <ProgressValue />
-                </Progress>
-              ))}
+              {isLoading
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <div className="flex justify-between">
+                        <Skeleton className="h-3 w-20" />
+                        <Skeleton className="h-3 w-8" />
+                      </div>
+                      <Skeleton className="h-1 w-full rounded-md" />
+                    </div>
+                  ))
+                : dashboardData?.systemHealth.map((metric) => (
+                    <Progress key={metric.label} value={metric.value}>
+                      <ProgressLabel>{metric.label}</ProgressLabel>
+                      <ProgressValue />
+                    </Progress>
+                  ))}
             </CardContent>
           </Card>
 
@@ -242,21 +301,31 @@ function RouteComponent() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {dashboardData.recentActivity.map((item, i) => (
-                  <div key={i} className="flex items-start justify-between">
-                    <div className="min-w-0 space-y-0.5">
-                      <p className="truncate text-xs font-medium">
-                        {item.action}
-                      </p>
-                      <p className="truncate text-[0.625rem] text-muted-foreground">
-                        {item.detail}
-                      </p>
-                    </div>
-                    <span className="shrink-0 pl-3 text-[0.625rem] text-muted-foreground">
-                      {item.time}
-                    </span>
-                  </div>
-                ))}
+                {isLoading
+                  ? Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <Skeleton className="h-3 w-24" />
+                          <Skeleton className="h-2.5 w-32" />
+                        </div>
+                        <Skeleton className="h-2.5 w-10" />
+                      </div>
+                    ))
+                  : dashboardData?.recentActivity.map((item, i) => (
+                      <div key={i} className="flex items-start justify-between">
+                        <div className="min-w-0 space-y-0.5">
+                          <p className="truncate text-xs font-medium">
+                            {item.action}
+                          </p>
+                          <p className="truncate text-[0.625rem] text-muted-foreground">
+                            {item.detail}
+                          </p>
+                        </div>
+                        <span className="shrink-0 pl-3 text-[0.625rem] text-muted-foreground">
+                          {item.time}
+                        </span>
+                      </div>
+                    ))}
               </div>
             </CardContent>
           </Card>

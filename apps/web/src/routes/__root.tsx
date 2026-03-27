@@ -5,7 +5,11 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import Header from "../components/header"
 import appCss from "../index.css?url"
 
-export interface RouterAppContext {}
+import type { QueryClient } from "@tanstack/react-query"
+
+export interface RouterAppContext {
+  queryClient: QueryClient
+}
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
   head: () => ({
