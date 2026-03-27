@@ -1,10 +1,9 @@
-import { Toaster } from "@prive-admin-tanstack/ui/components/sonner";
-import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { Toaster } from "@prive-admin-tanstack/ui/components/sonner"
+import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router"
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 
-import Header from "../components/header";
-
-import appCss from "../index.css?url";
+import Header from "../components/header"
+import appCss from "../index.css?url"
 
 export interface RouterAppContext {}
 
@@ -31,7 +30,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
   }),
 
   component: RootDocument,
-});
+})
 
 function RootDocument() {
   return (
@@ -49,5 +48,5 @@ function RootDocument() {
         <Scripts />
       </body>
     </html>
-  );
+  )
 }

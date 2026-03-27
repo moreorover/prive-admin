@@ -1,4 +1,4 @@
-import { Button } from "@prive-admin-tanstack/ui/components/button";
+import { Button } from "@prive-admin-tanstack/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,18 +7,18 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@prive-admin-tanstack/ui/components/dropdown-menu";
-import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton";
-import { Link, useNavigate } from "@tanstack/react-router";
+} from "@prive-admin-tanstack/ui/components/dropdown-menu"
+import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
+import { Link, useNavigate } from "@tanstack/react-router"
 
-import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client"
 
 export default function UserMenu() {
-  const navigate = useNavigate();
-  const { data: session, isPending } = authClient.useSession();
+  const navigate = useNavigate()
+  const { data: session, isPending } = authClient.useSession()
 
   if (isPending) {
-    return <Skeleton className="h-9 w-24" />;
+    return <Skeleton className="h-9 w-24" />
   }
 
   if (!session) {
@@ -26,7 +26,7 @@ export default function UserMenu() {
       <Link to="/login">
         <Button variant="outline">Sign In</Button>
       </Link>
-    );
+    )
   }
 
   return (
@@ -47,10 +47,10 @@ export default function UserMenu() {
                   onSuccess: () => {
                     navigate({
                       to: "/",
-                    });
+                    })
                   },
                 },
-              });
+              })
             }}
           >
             Sign Out
@@ -58,5 +58,5 @@ export default function UserMenu() {
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

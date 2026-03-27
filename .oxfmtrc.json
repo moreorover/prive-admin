@@ -12,7 +12,7 @@
     ]
   },
   "experimentalTailwindcss": {
-    "stylesheet": "./apps/web/src/styles.css",
+    "stylesheet": "./apps/web/src/index.css",
     "functions": ["clsx", "cn"],
     "preserveWhitespace": true
   },
