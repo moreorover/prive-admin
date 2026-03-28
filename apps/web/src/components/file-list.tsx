@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   Cloud,
   File,
@@ -61,13 +61,15 @@ function fileIcon(name: string) {
   return <File className="size-4 text-primary" />
 }
 
+export const filesQueryOptions = queryOptions({
+  queryKey: fileKeys.list(),
+  queryFn: () => listFiles(),
+})
+
 export function useFiles() {
   const queryClient = useQueryClient()
 
-  const { data: files, isLoading } = useQuery({
-    queryKey: fileKeys.list(),
-    queryFn: () => listFiles(),
-  })
+  const { data: files, isLoading } = useQuery(filesQueryOptions)
 
   const deleteMutation = useMutation({
     mutationFn: (key: string) => deleteFile({ data: { key } }),

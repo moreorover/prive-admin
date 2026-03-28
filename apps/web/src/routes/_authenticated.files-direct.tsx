@@ -12,12 +12,15 @@ import {
 } from "@prive-admin-tanstack/ui/components/card"
 import { Separator } from "@prive-admin-tanstack/ui/components/separator"
 import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
-import { FileListCard, formatBytes, useFiles } from "@/components/file-list"
+import { FileListCard, filesQueryOptions, formatBytes, useFiles } from "@/components/file-list"
 import { confirmUpload, getUploadUrl } from "@/functions/files"
 import { fileKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/files-direct")({
   component: FilesDirectPage,
+  loader: async ({ context }) => {
+    await context.queryClient.prefetchQuery(filesQueryOptions)
+  },
 })
 
 interface UploadProgress {
