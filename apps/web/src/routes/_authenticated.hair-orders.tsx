@@ -19,15 +19,15 @@ import {
   TableHeader,
   TableRow,
 } from "@prive-admin-tanstack/ui/components/table"
-import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query"
 import { useForm } from "@tanstack/react-form"
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { Plus, Scissors } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
-import { getHairOrders, createHairOrder } from "@/functions/hair-orders"
 import { getCustomers } from "@/functions/customers"
+import { getHairOrders, createHairOrder } from "@/functions/hair-orders"
 import { hairOrderKeys, customerKeys } from "@/lib/query-keys"
 
 const hairOrdersQueryOptions = queryOptions({

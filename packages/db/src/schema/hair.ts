@@ -2,8 +2,8 @@ import { createId } from "@paralleldrive/cuid2"
 import { pgTable, integer, serial, text, timestamp, date } from "drizzle-orm/pg-core"
 
 import { appointment } from "./appointment"
-import { customer } from "./customer"
 import { user } from "./auth"
+import { customer } from "./customer"
 
 export const hairOrder = pgTable("hair_orders", {
   id: text("id").primaryKey().$defaultFn(createId),

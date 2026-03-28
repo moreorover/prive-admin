@@ -2,9 +2,9 @@ import { createId } from "@paralleldrive/cuid2"
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
 
 import { appointment } from "./appointment"
+import { user } from "./auth"
 import { customer } from "./customer"
 import { hairOrder } from "./hair"
-import { user } from "./auth"
 
 export const note = pgTable("notes", {
   id: text("id").primaryKey().$defaultFn(createId),

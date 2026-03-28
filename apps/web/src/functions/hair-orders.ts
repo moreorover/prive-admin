@@ -4,8 +4,8 @@ import { createServerFn } from "@tanstack/react-start"
 import { eq } from "drizzle-orm"
 import { z } from "zod"
 
-import { requireAuthMiddleware } from "@/middleware/auth"
 import { hairOrderSchema } from "@/lib/schemas"
+import { requireAuthMiddleware } from "@/middleware/auth"
 
 export const getHairOrders = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
@@ -18,7 +18,7 @@ export const getHairOrders = createServerFn({ method: "GET" })
 
 export const getHairOrder = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .validator(z.object({ id: z.string() }))
+  .inputValidator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
     const result = await db.query.hairOrder.findFirst({
       where: eq(hairOrder.id, data.id),
@@ -37,7 +37,7 @@ export const getHairOrder = createServerFn({ method: "GET" })
 
 export const createHairOrder = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
-  .validator(hairOrderSchema)
+  .inputValidator(hairOrderSchema)
   .handler(async ({ data, context }) => {
     const [result] = await db
       .insert(hairOrder)
@@ -57,7 +57,7 @@ export const createHairOrder = createServerFn({ method: "POST" })
 
 export const updateHairOrder = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
-  .validator(hairOrderSchema.required({ id: true }))
+  .inputValidator(hairOrderSchema.required({ id: true }))
   .handler(async ({ data }) => {
     const [result] = await db
       .update(hairOrder)

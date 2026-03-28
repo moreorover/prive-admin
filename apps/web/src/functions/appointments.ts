@@ -4,12 +4,12 @@ import { createServerFn } from "@tanstack/react-start"
 import { and, eq, gte, lte } from "drizzle-orm"
 import { z } from "zod"
 
-import { requireAuthMiddleware } from "@/middleware/auth"
 import { appointmentSchema } from "@/lib/schemas"
+import { requireAuthMiddleware } from "@/middleware/auth"
 
 export const getAppointments = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .validator(
+  .inputValidator(
     z.object({
       startDate: z.string().optional(),
       endDate: z.string().optional(),
@@ -33,7 +33,7 @@ export const getAppointments = createServerFn({ method: "GET" })
 
 export const getAppointment = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .validator(z.object({ id: z.string() }))
+  .inputValidator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
     const result = await db.query.appointment.findFirst({
       where: eq(appointment.id, data.id),
@@ -51,7 +51,7 @@ export const getAppointment = createServerFn({ method: "GET" })
 
 export const createAppointment = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
-  .validator(appointmentSchema)
+  .inputValidator(appointmentSchema)
   .handler(async ({ data }) => {
     const [result] = await db
       .insert(appointment)
@@ -66,7 +66,7 @@ export const createAppointment = createServerFn({ method: "POST" })
 
 export const updateAppointment = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
-  .validator(appointmentSchema.required({ id: true }))
+  .inputValidator(appointmentSchema.required({ id: true }))
   .handler(async ({ data }) => {
     const [result] = await db
       .update(appointment)
@@ -81,7 +81,7 @@ export const updateAppointment = createServerFn({ method: "POST" })
 
 export const linkPersonnel = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
-  .validator(z.object({ appointmentId: z.string(), personnelIds: z.array(z.string()) }))
+  .inputValidator(z.object({ appointmentId: z.string(), personnelIds: z.array(z.string()) }))
   .handler(async ({ data }) => {
     const values = data.personnelIds.map((personnelId) => ({
       appointmentId: data.appointmentId,
@@ -92,7 +92,7 @@ export const linkPersonnel = createServerFn({ method: "POST" })
 
 export const getAppointmentsByCustomerId = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .validator(z.object({ customerId: z.string() }))
+  .inputValidator(z.object({ customerId: z.string() }))
   .handler(async ({ data }) => {
     return db.query.appointment.findMany({
       where: eq(appointment.clientId, data.customerId),

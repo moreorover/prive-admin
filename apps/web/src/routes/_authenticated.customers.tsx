@@ -18,17 +18,15 @@ import {
   TableHeader,
   TableRow,
 } from "@prive-admin-tanstack/ui/components/table"
-import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query"
 import { useForm } from "@tanstack/react-form"
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { Plus, Users } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
-import { z } from "zod"
 
 import { getCustomers, createCustomer } from "@/functions/customers"
 import { customerKeys } from "@/lib/query-keys"
-import { customerSchema } from "@/lib/schemas"
 
 const customersQueryOptions = queryOptions({
   queryKey: customerKeys.list(),
@@ -46,7 +44,7 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (data: z.infer<typeof customerSchema>) => createCustomer({ data }),
+    mutationFn: (data: { name: string; phoneNumber: string | null }) => createCustomer({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerKeys.all })
       onOpenChange(false)
@@ -65,7 +63,6 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
         phoneNumber: value.phoneNumber || null,
       })
     },
-    validators: { onSubmit: customerSchema },
   })
 
   return (
@@ -93,11 +90,6 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-sm text-destructive">
-                    {error?.message}
-                  </p>
-                ))}
               </div>
             )}
           </form.Field>
@@ -112,11 +104,6 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="+1234567890"
                 />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-sm text-destructive">
-                    {error?.message}
-                  </p>
-                ))}
               </div>
             )}
           </form.Field>
@@ -167,9 +154,15 @@ function CustomersPage() {
               {isLoading
                 ? Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
-                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-32" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-24" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-20" />
+                      </TableCell>
                     </TableRow>
                   ))
                 : customers?.map((c) => (

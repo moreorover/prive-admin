@@ -4,12 +4,12 @@ import { createServerFn } from "@tanstack/react-start"
 import { and, eq } from "drizzle-orm"
 import { z } from "zod"
 
-import { requireAuthMiddleware } from "@/middleware/auth"
 import { noteSchema } from "@/lib/schemas"
+import { requireAuthMiddleware } from "@/middleware/auth"
 
 export const getNotes = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .validator(
+  .inputValidator(
     z.object({
       customerId: z.string().optional(),
       appointmentId: z.string().optional(),
@@ -31,7 +31,7 @@ export const getNotes = createServerFn({ method: "GET" })
 
 export const createNote = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
-  .validator(noteSchema)
+  .inputValidator(noteSchema)
   .handler(async ({ data, context }) => {
     const [result] = await db
       .insert(note)
@@ -48,19 +48,15 @@ export const createNote = createServerFn({ method: "POST" })
 
 export const updateNote = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
-  .validator(noteSchema.required({ id: true }))
+  .inputValidator(noteSchema.required({ id: true }))
   .handler(async ({ data }) => {
-    const [result] = await db
-      .update(note)
-      .set({ note: data.note })
-      .where(eq(note.id, data.id!))
-      .returning()
+    const [result] = await db.update(note).set({ note: data.note }).where(eq(note.id, data.id!)).returning()
     return result
   })
 
 export const deleteNote = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
-  .validator(z.object({ id: z.string() }))
+  .inputValidator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
     await db.delete(note).where(eq(note.id, data.id))
   })

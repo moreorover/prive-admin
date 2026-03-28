@@ -4,8 +4,8 @@ import { createServerFn } from "@tanstack/react-start"
 import { eq } from "drizzle-orm"
 import { z } from "zod"
 
-import { requireAuthMiddleware } from "@/middleware/auth"
 import { customerSchema } from "@/lib/schemas"
+import { requireAuthMiddleware } from "@/middleware/auth"
 
 export const getCustomers = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
@@ -17,7 +17,7 @@ export const getCustomers = createServerFn({ method: "GET" })
 
 export const getCustomer = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .validator(z.object({ id: z.string() }))
+  .inputValidator(z.object({ id: z.string() }))
   .handler(async ({ data }) => {
     const result = await db.query.customer.findFirst({
       where: eq(customer.id, data.id),
@@ -30,18 +30,15 @@ export const getCustomer = createServerFn({ method: "GET" })
 
 export const createCustomer = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
-  .validator(customerSchema)
+  .inputValidator(customerSchema)
   .handler(async ({ data }) => {
-    const [result] = await db
-      .insert(customer)
-      .values({ name: data.name, phoneNumber: data.phoneNumber })
-      .returning()
+    const [result] = await db.insert(customer).values({ name: data.name, phoneNumber: data.phoneNumber }).returning()
     return result
   })
 
 export const updateCustomer = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
-  .validator(customerSchema.required({ id: true }))
+  .inputValidator(customerSchema.required({ id: true }))
   .handler(async ({ data }) => {
     const [result] = await db
       .update(customer)

@@ -2,10 +2,7 @@ import { z } from "zod"
 
 export const customerSchema = z.object({
   id: z.string().optional(),
-  name: z
-    .string()
-    .min(5, "Name must be at least 5 characters long")
-    .max(50, "Name cannot exceed 50 characters"),
+  name: z.string().min(5, "Name must be at least 5 characters long").max(50, "Name cannot exceed 50 characters"),
   phoneNumber: z
     .string()
     .min(10, "Phone number must be at least 10 characters long")

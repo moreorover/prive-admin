@@ -18,8 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "@prive-admin-tanstack/ui/components/table"
-import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query"
 import { useForm } from "@tanstack/react-form"
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { Calendar, Plus } from "lucide-react"
 import { useState } from "react"
@@ -28,7 +28,6 @@ import { toast } from "sonner"
 import { getAppointments, createAppointment } from "@/functions/appointments"
 import { getCustomers } from "@/functions/customers"
 import { appointmentKeys, customerKeys } from "@/lib/query-keys"
-import { appointmentSchema } from "@/lib/schemas"
 
 const appointmentsQueryOptions = queryOptions({
   queryKey: appointmentKeys.list(),
@@ -65,7 +64,6 @@ function CreateAppointmentDialog({ open, onOpenChange }: { open: boolean; onOpen
     onSubmit: async ({ value }) => {
       await mutation.mutateAsync(value)
     },
-    validators: { onSubmit: appointmentSchema },
   })
 
   return (
@@ -93,11 +91,6 @@ function CreateAppointmentDialog({ open, onOpenChange }: { open: boolean; onOpen
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-sm text-destructive">
-                    {error?.message}
-                  </p>
-                ))}
               </div>
             )}
           </form.Field>
@@ -112,11 +105,6 @@ function CreateAppointmentDialog({ open, onOpenChange }: { open: boolean; onOpen
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-sm text-destructive">
-                    {error?.message}
-                  </p>
-                ))}
               </div>
             )}
           </form.Field>
@@ -138,11 +126,6 @@ function CreateAppointmentDialog({ open, onOpenChange }: { open: boolean; onOpen
                     </option>
                   ))}
                 </select>
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-sm text-destructive">
-                    {error?.message}
-                  </p>
-                ))}
               </div>
             )}
           </form.Field>
@@ -216,9 +199,7 @@ function AppointmentsPage() {
                         </Link>
                       </TableCell>
                       <TableCell className="text-muted-foreground">{a.client?.name ?? "—"}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {new Date(a.startsAt).toLocaleString()}
-                      </TableCell>
+                      <TableCell className="text-muted-foreground">{new Date(a.startsAt).toLocaleString()}</TableCell>
                     </TableRow>
                   ))}
               {!isLoading && appointments?.length === 0 && (

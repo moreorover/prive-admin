@@ -19,18 +19,17 @@ import {
   TableHeader,
   TableRow,
 } from "@prive-admin-tanstack/ui/components/table"
-import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query"
 import { useForm } from "@tanstack/react-form"
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { ArrowLeft, Edit, Phone, Plus } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
-import { getCustomer, updateCustomer } from "@/functions/customers"
 import { getAppointmentsByCustomerId } from "@/functions/appointments"
+import { getCustomer, updateCustomer } from "@/functions/customers"
 import { getNotes, createNote, deleteNote } from "@/functions/notes"
 import { customerKeys, appointmentKeys, noteKeys } from "@/lib/query-keys"
-import { customerSchema } from "@/lib/schemas"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetailPage,
@@ -85,7 +84,6 @@ function EditCustomerDialog({
     onSubmit: async ({ value }) => {
       await mutation.mutateAsync({ id: customer.id, name: value.name, phoneNumber: value.phoneNumber || null })
     },
-    validators: { onSubmit: customerSchema },
   })
 
   return (
@@ -113,9 +111,6 @@ function EditCustomerDialog({
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                 />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-sm text-destructive">{error?.message}</p>
-                ))}
               </div>
             )}
           </form.Field>
@@ -130,9 +125,6 @@ function EditCustomerDialog({
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="+1234567890"
                 />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-sm text-destructive">{error?.message}</p>
-                ))}
               </div>
             )}
           </form.Field>
@@ -265,7 +257,10 @@ function CustomerDetailPage() {
     <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
-          <Link to="/customers" className="mb-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+          <Link
+            to="/customers"
+            className="mb-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="size-3" />
             Back to customers
           </Link>
