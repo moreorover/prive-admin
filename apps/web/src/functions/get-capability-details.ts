@@ -94,7 +94,7 @@ const detailsMap: Record<string, CapabilityDetails> = {
 
 export const getCapabilityDetails = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
-  .validator(z.object({ title: z.string().min(1) }))
+  .inputValidator(z.object({ title: z.string().min(1) }))
   .handler(async ({ data }): Promise<CapabilityDetails | null> => {
     await new Promise((resolve) => setTimeout(resolve, 800))
     return detailsMap[data.title] ?? null
