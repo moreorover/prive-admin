@@ -1,6 +1,9 @@
+import type { ErrorComponentProps } from "@tanstack/react-router"
+
+import { Button } from "@prive-admin-tanstack/ui/components/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@prive-admin-tanstack/ui/components/card"
 import { useQueryErrorResetBoundary } from "@tanstack/react-query"
 import { Link, Outlet, createFileRoute, redirect, useRouter, useRouterState } from "@tanstack/react-router"
-import type { ErrorComponentProps } from "@tanstack/react-router"
 import {
   AlertCircle,
   ChevronLeft,
@@ -17,16 +20,8 @@ import {
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@prive-admin-tanstack/ui/components/card"
-import { authClient } from "@/lib/auth-client"
 import { getUser } from "@/functions/get-user"
+import { authClient } from "@/lib/auth-client"
 
 const NAV_ITEMS = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -98,11 +93,7 @@ function AuthenticatedLayout() {
           }`}
           title={collapsed && !mobileOpen ? "Toggle theme" : undefined}
         >
-          {theme === "dark" ? (
-            <Sun className="size-4 shrink-0" />
-          ) : (
-            <Moon className="size-4 shrink-0" />
-          )}
+          {theme === "dark" ? <Sun className="size-4 shrink-0" /> : <Moon className="size-4 shrink-0" />}
           {(!collapsed || mobileOpen) && (
             <span className="tracking-wide">{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
           )}
@@ -110,7 +101,7 @@ function AuthenticatedLayout() {
 
         {/* User info */}
         {(!collapsed || mobileOpen) && (
-          <div className="mb-2 mt-2 truncate px-2 text-[10px] tracking-wide text-muted-foreground/50">
+          <div className="mt-2 mb-2 truncate px-2 text-[10px] tracking-wide text-muted-foreground/50">
             {session?.user.email}
           </div>
         )}
@@ -151,7 +142,7 @@ function AuthenticatedLayout() {
           <Menu className="size-4" />
         </button>
         <span className="font-display text-sm tracking-[0.15em] text-foreground/70">
-          Priv<span className="italic text-primary">e</span>
+          Priv<span className="text-primary italic">e</span>
         </span>
       </div>
 
@@ -172,7 +163,7 @@ function AuthenticatedLayout() {
       >
         <div className="flex h-14 items-center justify-between border-b border-border px-4">
           <span className="font-display text-sm tracking-[0.15em] text-foreground/70">
-            Priv<span className="italic text-primary">e</span>
+            Priv<span className="text-primary italic">e</span>
           </span>
           <button
             type="button"
@@ -187,7 +178,7 @@ function AuthenticatedLayout() {
 
       {/* Desktop sidebar */}
       <aside
-        className={`hidden md:flex relative flex-col border-r border-border bg-sidebar transition-all duration-300 ${
+        className={`relative hidden flex-col border-r border-border bg-sidebar transition-all duration-300 md:flex ${
           collapsed ? "w-16" : "w-60"
         }`}
       >
@@ -201,7 +192,7 @@ function AuthenticatedLayout() {
           </button>
           {!collapsed && (
             <span className="font-display text-sm tracking-[0.15em] text-foreground/70">
-              Priv<span className="italic text-primary">e</span>
+              Priv<span className="text-primary italic">e</span>
             </span>
           )}
         </div>
@@ -234,9 +225,7 @@ function AuthenticatedErrorComponent({ error, reset }: ErrorComponentProps) {
             <AlertCircle className="size-4 text-destructive" />
             Something went wrong
           </CardTitle>
-          <CardDescription>
-            {error.message || "An unexpected error occurred."}
-          </CardDescription>
+          <CardDescription>{error.message || "An unexpected error occurred."}</CardDescription>
         </CardHeader>
         <CardContent>
           <Button variant="outline" size="sm" onClick={handleRetry}>

@@ -86,9 +86,7 @@ const detailsMap: Record<string, CapabilityDetails> = {
     usageCount: 0,
     errorRate: "—",
     avgResponseTime: "—",
-    changelog: [
-      { version: "0.1.0", date: "2026-03-20", summary: "Initial alpha with rich text editor" },
-    ],
+    changelog: [{ version: "0.1.0", date: "2026-03-20", summary: "Initial alpha with rich text editor" }],
   },
 }
 

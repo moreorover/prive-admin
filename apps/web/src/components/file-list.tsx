@@ -1,23 +1,5 @@
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import {
-  Cloud,
-  File,
-  FileImage,
-  FileText,
-  Loader2,
-  Music,
-  Trash2,
-  Video,
-} from "lucide-react"
-
 import { Button } from "@prive-admin-tanstack/ui/components/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@prive-admin-tanstack/ui/components/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@prive-admin-tanstack/ui/components/card"
 import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
 import {
   Table,
@@ -27,7 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from "@prive-admin-tanstack/ui/components/table"
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { Cloud, File, FileImage, FileText, Loader2, Music, Trash2, Video } from "lucide-react"
+
 import type { FileItem } from "@/functions/files"
+
 import { deleteFile, listFiles } from "@/functions/files"
 import { fileKeys } from "@/lib/query-keys"
 
@@ -53,12 +39,9 @@ function fileIcon(name: string) {
   const ext = name.split(".").pop()?.toLowerCase() ?? ""
   if (["jpg", "jpeg", "png", "gif", "webp", "svg", "avif"].includes(ext))
     return <FileImage className="size-4 text-primary" />
-  if (["mp4", "webm", "mov", "avi"].includes(ext))
-    return <Video className="size-4 text-primary" />
-  if (["mp3", "wav", "ogg", "flac"].includes(ext))
-    return <Music className="size-4 text-primary" />
-  if (["pdf", "doc", "docx", "txt", "md"].includes(ext))
-    return <FileText className="size-4 text-primary" />
+  if (["mp4", "webm", "mov", "avi"].includes(ext)) return <Video className="size-4 text-primary" />
+  if (["mp3", "wav", "ogg", "flac"].includes(ext)) return <Music className="size-4 text-primary" />
+  if (["pdf", "doc", "docx", "txt", "md"].includes(ext)) return <FileText className="size-4 text-primary" />
   return <File className="size-4 text-primary" />
 }
 
@@ -133,10 +116,7 @@ export function FileListCard({
                   key={file.key}
                   file={file}
                   onDelete={() => deleteMutation.mutate(file.key)}
-                  isDeleting={
-                    deleteMutation.isPending &&
-                    deleteMutation.variables === file.key
-                  }
+                  isDeleting={deleteMutation.isPending && deleteMutation.variables === file.key}
                 />
               ))}
             </TableBody>
@@ -147,15 +127,7 @@ export function FileListCard({
   )
 }
 
-function FileRow({
-  file,
-  onDelete,
-  isDeleting,
-}: {
-  file: FileItem
-  onDelete: () => void
-  isDeleting: boolean
-}) {
+function FileRow({ file, onDelete, isDeleting }: { file: FileItem; onDelete: () => void; isDeleting: boolean }) {
   return (
     <TableRow>
       <TableCell>
@@ -164,9 +136,7 @@ function FileRow({
           <span className="truncate text-xs font-medium">{file.name}</span>
         </div>
       </TableCell>
-      <TableCell className="text-right text-[0.625rem] text-muted-foreground">
-        {formatBytes(file.size)}
-      </TableCell>
+      <TableCell className="text-right text-[0.625rem] text-muted-foreground">{formatBytes(file.size)}</TableCell>
       <TableCell className="text-right text-[0.625rem] text-muted-foreground">
         {formatDate(file.lastModified)}
       </TableCell>
@@ -178,11 +148,7 @@ function FileRow({
           disabled={isDeleting}
           className="text-muted-foreground hover:text-destructive"
         >
-          {isDeleting ? (
-            <Loader2 className="size-3 animate-spin" />
-          ) : (
-            <Trash2 className="size-3" />
-          )}
+          {isDeleting ? <Loader2 className="size-3 animate-spin" /> : <Trash2 className="size-3" />}
         </Button>
       </TableCell>
     </TableRow>

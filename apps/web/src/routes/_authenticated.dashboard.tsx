@@ -1,3 +1,16 @@
+import { Badge } from "@prive-admin-tanstack/ui/components/badge"
+import { Button } from "@prive-admin-tanstack/ui/components/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@prive-admin-tanstack/ui/components/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@prive-admin-tanstack/ui/components/dialog"
+import { Progress, ProgressLabel, ProgressValue } from "@prive-admin-tanstack/ui/components/progress"
+import { Separator } from "@prive-admin-tanstack/ui/components/separator"
+import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import {
@@ -18,32 +31,10 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 
-import { Badge } from "@prive-admin-tanstack/ui/components/badge"
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@prive-admin-tanstack/ui/components/card"
-import {
-  Progress,
-  ProgressLabel,
-  ProgressValue,
-} from "@prive-admin-tanstack/ui/components/progress"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@prive-admin-tanstack/ui/components/dialog"
-import { Separator } from "@prive-admin-tanstack/ui/components/separator"
-import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
 import type { CapabilityDetails } from "@/functions/get-capability-details"
-import { getCapabilityDetails } from "@/functions/get-capability-details"
 import type { DashboardCapability, DashboardStat } from "@/functions/get-dashboard-data"
+
+import { getCapabilityDetails } from "@/functions/get-capability-details"
 import { getDashboardData } from "@/functions/get-dashboard-data"
 import { dashboardKeys } from "@/lib/query-keys"
 
@@ -86,13 +77,7 @@ function StatusBadge({ status }: { status: DashboardCapability["status"] }) {
   return <Badge variant={variants[status]}>{labels[status]}</Badge>
 }
 
-function StatCard({
-  stat,
-  index,
-}: {
-  stat: DashboardStat
-  index: number
-}) {
+function StatCard({ stat, index }: { stat: DashboardStat; index: number }) {
   const Icon = iconMap[stat.icon] ?? Activity
   return (
     <Card
@@ -102,12 +87,8 @@ function StatCard({
       <CardContent className="flex items-start justify-between">
         <div className="space-y-1">
           <p className="text-muted-foreground">{stat.label}</p>
-          <p className="font-heading text-2xl font-bold tracking-tight">
-            {stat.value}
-          </p>
-          <p className="text-[0.625rem] font-medium text-primary">
-            {stat.change} from last month
-          </p>
+          <p className="font-heading text-2xl font-bold tracking-tight">{stat.value}</p>
+          <p className="text-[0.625rem] font-medium text-primary">{stat.change} from last month</p>
         </div>
         <div className="rounded-md bg-primary/10 p-2 text-primary">
           <Icon className="size-5" />
@@ -132,13 +113,7 @@ function StatCardSkeleton() {
   )
 }
 
-function CapabilityCard({
-  capability,
-  onClick,
-}: {
-  capability: DashboardCapability
-  onClick: () => void
-}) {
+function CapabilityCard({ capability, onClick }: { capability: DashboardCapability; onClick: () => void }) {
   const Icon = iconMap[capability.icon] ?? Activity
   const isActive = capability.status === "active"
 
@@ -156,18 +131,13 @@ function CapabilityCard({
           </div>
           <StatusBadge status={capability.status} />
         </div>
-        <CardTitle className="pt-2 text-sm font-semibold">
-          {capability.title}
-        </CardTitle>
+        <CardTitle className="pt-2 text-sm font-semibold">{capability.title}</CardTitle>
         <CardDescription>{capability.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-1.5">
           {capability.features.map((f) => (
-            <span
-              key={f}
-              className="rounded-sm bg-muted px-1.5 py-0.5 text-[0.625rem] text-muted-foreground"
-            >
+            <span key={f} className="rounded-sm bg-muted px-1.5 py-0.5 text-[0.625rem] text-muted-foreground">
               {f}
             </span>
           ))}
@@ -196,7 +166,9 @@ function CapabilityDetailsDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const Icon = details ? (iconMap[details.title.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-")] ?? Activity) : Activity
+  const Icon = details
+    ? (iconMap[details.title.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-")] ?? Activity)
+    : Activity
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -233,9 +205,7 @@ function CapabilityDetailsDialog({
             </div>
             <Separator />
             <div className="space-y-3">
-              <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Changelog
-              </h4>
+              <h4 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">Changelog</h4>
               {details.changelog.map((entry) => (
                 <div key={entry.version} className="space-y-0.5">
                   <div className="flex items-center gap-2">
@@ -250,9 +220,7 @@ function CapabilityDetailsDialog({
             </div>
           </>
         ) : (
-          <div className="py-8 text-center text-sm text-muted-foreground">
-            No details available.
-          </div>
+          <div className="py-8 text-center text-sm text-muted-foreground">No details available.</div>
         )}
       </DialogContent>
     </Dialog>
@@ -305,14 +273,12 @@ function RouteComponent() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-muted-foreground">
             <LayoutDashboard className="size-4" />
-            <span className="text-xs uppercase tracking-widest">Dashboard</span>
+            <span className="text-xs tracking-widest uppercase">Dashboard</span>
           </div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">
             Welcome back, {session?.user.name ?? "Admin"}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Overview of your platform capabilities and system health.
-          </p>
+          <p className="text-sm text-muted-foreground">Overview of your platform capabilities and system health.</p>
         </div>
         <Button variant="outline" size="sm">
           <Settings className="size-3" />
@@ -326,9 +292,7 @@ function RouteComponent() {
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {isLoading
           ? Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
-          : dashboardData?.stats.map((stat, i) => (
-              <StatCard key={stat.label} stat={stat} index={i} />
-            ))}
+          : dashboardData?.stats.map((stat, i) => <StatCard key={stat.label} stat={stat} index={i} />)}
       </section>
 
       {/* Main content grid */}
@@ -336,13 +300,10 @@ function RouteComponent() {
         {/* Capabilities — 2 cols */}
         <section className="space-y-4 lg:col-span-2">
           <div className="flex items-center justify-between">
-            <h2 className="font-heading text-sm font-semibold tracking-tight">
-              Platform Capabilities
-            </h2>
+            <h2 className="font-heading text-sm font-semibold tracking-tight">Platform Capabilities</h2>
             {dashboardData && (
               <span className="text-[0.625rem] text-muted-foreground">
-                {dashboardData.capabilities.filter((c) => c.status === "active").length} active
-                &middot;{" "}
+                {dashboardData.capabilities.filter((c) => c.status === "active").length} active &middot;{" "}
                 {dashboardData.capabilities.filter((c) => c.status === "beta").length} in beta
               </span>
             )}
@@ -351,11 +312,7 @@ function RouteComponent() {
             {isLoading
               ? Array.from({ length: 6 }).map((_, i) => <CapabilityCardSkeleton key={i} />)
               : dashboardData?.capabilities.map((cap) => (
-                  <CapabilityCard
-                    key={cap.title}
-                    capability={cap}
-                    onClick={() => handleCapabilityClick(cap.title)}
-                  />
+                  <CapabilityCard key={cap.title} capability={cap} onClick={() => handleCapabilityClick(cap.title)} />
                 ))}
           </div>
         </section>
@@ -414,16 +371,10 @@ function RouteComponent() {
                   : dashboardData?.recentActivity.map((item, i) => (
                       <div key={i} className="flex items-start justify-between">
                         <div className="min-w-0 space-y-0.5">
-                          <p className="truncate text-xs font-medium">
-                            {item.action}
-                          </p>
-                          <p className="truncate text-[0.625rem] text-muted-foreground">
-                            {item.detail}
-                          </p>
+                          <p className="truncate text-xs font-medium">{item.action}</p>
+                          <p className="truncate text-[0.625rem] text-muted-foreground">{item.detail}</p>
                         </div>
-                        <span className="shrink-0 pl-3 text-[0.625rem] text-muted-foreground">
-                          {item.time}
-                        </span>
+                        <span className="shrink-0 pl-3 text-[0.625rem] text-muted-foreground">{item.time}</span>
                       </div>
                     ))}
               </div>

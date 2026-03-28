@@ -1,9 +1,4 @@
-import {
-  DeleteObjectCommand,
-  HeadObjectCommand,
-  ListObjectsV2Command,
-  PutObjectCommand,
-} from "@aws-sdk/client-s3"
+import { DeleteObjectCommand, HeadObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
@@ -87,9 +82,7 @@ export const confirmUpload = createServerFn({ method: "POST" })
   .inputValidator(z.object({ key: z.string().min(1) }))
   .handler(async ({ data }): Promise<FileItem> => {
     try {
-      const head = await r2.send(
-        new HeadObjectCommand({ Bucket: bucketName, Key: data.key }),
-      )
+      const head = await r2.send(new HeadObjectCommand({ Bucket: bucketName, Key: data.key }))
 
       // TODO: record in database here
       // await db.insert(files).values({ key: data.key, ... })

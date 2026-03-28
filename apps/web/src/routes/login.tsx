@@ -1,8 +1,8 @@
 import { Link, createFileRoute, redirect } from "@tanstack/react-router"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
-import { z } from "zod"
 import { useState } from "react"
+import { z } from "zod"
 
 import SignInForm from "@/components/sign-in-form"
 import SignUpForm from "@/components/sign-up-form"
@@ -50,9 +50,7 @@ function RouteComponent() {
               Priv<span className="text-primary italic">e</span>
             </h1>
           </Link>
-          <p className="mt-2 text-[10px] tracking-[0.4em] text-muted-foreground/40 uppercase">
-            Member Access
-          </p>
+          <p className="mt-2 text-[10px] tracking-[0.4em] text-muted-foreground/40 uppercase">Member Access</p>
         </div>
 
         {showSignIn ? (

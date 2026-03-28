@@ -1,18 +1,13 @@
+import { Badge } from "@prive-admin-tanstack/ui/components/badge"
+import { Button } from "@prive-admin-tanstack/ui/components/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@prive-admin-tanstack/ui/components/card"
+import { Separator } from "@prive-admin-tanstack/ui/components/separator"
+import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { HardDrive, Server, Upload } from "lucide-react"
 import { useRef, useState } from "react"
 
-import { Badge } from "@prive-admin-tanstack/ui/components/badge"
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@prive-admin-tanstack/ui/components/card"
-import { Separator } from "@prive-admin-tanstack/ui/components/separator"
-import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
 import { FileListCard, filesQueryOptions, formatBytes, useFiles } from "@/components/file-list"
 import { fileKeys } from "@/lib/query-keys"
 
@@ -29,10 +24,7 @@ interface UploadProgress {
   status: "uploading" | "done" | "error"
 }
 
-function uploadFileViaProxy(
-  file: File,
-  onProgress: (pct: number) => void,
-): Promise<void> {
+function uploadFileViaProxy(file: File, onProgress: (pct: number) => void): Promise<void> {
   return new Promise((resolve, reject) => {
     const formData = new FormData()
     formData.append("file", file)
@@ -75,21 +67,11 @@ function FilesProxyPage() {
         fileList.map(async (file, i) => {
           try {
             await uploadFileViaProxy(file, (pct) => {
-              setUploads((prev) =>
-                prev.map((u, idx) => (idx === i ? { ...u, progress: pct } : u)),
-              )
+              setUploads((prev) => prev.map((u, idx) => (idx === i ? { ...u, progress: pct } : u)))
             })
-            setUploads((prev) =>
-              prev.map((u, idx) =>
-                idx === i ? { ...u, progress: 100, status: "done" } : u,
-              ),
-            )
+            setUploads((prev) => prev.map((u, idx) => (idx === i ? { ...u, progress: 100, status: "done" } : u)))
           } catch {
-            setUploads((prev) =>
-              prev.map((u, idx) =>
-                idx === i ? { ...u, status: "error" } : u,
-              ),
-            )
+            setUploads((prev) => prev.map((u, idx) => (idx === i ? { ...u, status: "error" } : u)))
           }
         }),
       )
@@ -118,16 +100,10 @@ function FilesProxyPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Server className="size-4" />
-            <span className="text-xs uppercase tracking-widest">
-              Files — Server Proxy
-            </span>
+            <span className="text-xs tracking-widest uppercase">Files — Server Proxy</span>
           </div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">
-            Server Proxy Upload
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Files are sent through the server to R2. No CORS needed.
-          </p>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">Server Proxy Upload</h1>
+          <p className="text-sm text-muted-foreground">Files are sent through the server to R2. No CORS needed.</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 text-[0.625rem] text-muted-foreground">
@@ -164,12 +140,18 @@ function FilesProxyPage() {
       {/* Drop zone */}
       <div
         onDrop={handleDrop}
-        onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
-        onDragLeave={(e) => { e.preventDefault(); setIsDragging(false) }}
+        onDragOver={(e) => {
+          e.preventDefault()
+          setIsDragging(true)
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault()
+          setIsDragging(false)
+        }}
         onClick={() => fileInputRef.current?.click()}
         className={`group relative cursor-pointer rounded-lg border-2 border-dashed transition-all ${
           isDragging
-            ? "border-primary bg-primary/5 scale-[1.01]"
+            ? "scale-[1.01] border-primary bg-primary/5"
             : "border-border hover:border-primary/40 hover:bg-muted/50"
         }`}
       >
@@ -182,26 +164,16 @@ function FilesProxyPage() {
             <Upload className="size-6" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium">
-              {isDragging ? "Drop files here" : "Drag & drop files here"}
-            </p>
-            <p className="text-[0.625rem] text-muted-foreground">
-              or click to browse &middot; proxied through server
-            </p>
+            <p className="text-sm font-medium">{isDragging ? "Drop files here" : "Drag & drop files here"}</p>
+            <p className="text-[0.625rem] text-muted-foreground">or click to browse &middot; proxied through server</p>
           </div>
         </div>
       </div>
 
       {/* Upload progress */}
-      {uploads.length > 0 && (
-        <UploadProgressCard uploads={uploads} />
-      )}
+      {uploads.length > 0 && <UploadProgressCard uploads={uploads} />}
 
-      <FileListCard
-        files={files}
-        isLoading={isLoading}
-        deleteMutation={deleteMutation}
-      />
+      <FileListCard files={files} isLoading={isLoading} deleteMutation={deleteMutation} />
     </div>
   )
 }
@@ -219,20 +191,10 @@ function UploadProgressCard({ uploads }: { uploads: UploadProgress[] }) {
               <div className="flex items-center justify-between">
                 <p className="truncate text-xs font-medium">{upload.fileName}</p>
                 <Badge
-                  variant={
-                    upload.status === "done"
-                      ? "default"
-                      : upload.status === "error"
-                        ? "destructive"
-                        : "outline"
-                  }
+                  variant={upload.status === "done" ? "default" : upload.status === "error" ? "destructive" : "outline"}
                   className="ml-2 shrink-0 text-[0.5rem]"
                 >
-                  {upload.status === "uploading"
-                    ? `${upload.progress}%`
-                    : upload.status === "done"
-                      ? "Done"
-                      : "Failed"}
+                  {upload.status === "uploading" ? `${upload.progress}%` : upload.status === "done" ? "Done" : "Failed"}
                 </Badge>
               </div>
               <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">

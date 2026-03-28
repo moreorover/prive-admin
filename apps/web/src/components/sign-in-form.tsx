@@ -10,7 +10,13 @@ import { authClient } from "@/lib/auth-client"
 
 import Loader from "./loader"
 
-export default function SignInForm({ onSwitchToSignUp, redirectTo }: { onSwitchToSignUp: () => void; redirectTo?: string }) {
+export default function SignInForm({
+  onSwitchToSignUp,
+  redirectTo,
+}: {
+  onSwitchToSignUp: () => void
+  redirectTo?: string
+}) {
   const navigate = useNavigate()
   const { isPending } = authClient.useSession()
 
@@ -108,9 +114,7 @@ export default function SignInForm({ onSwitchToSignUp, redirectTo }: { onSwitchT
           </form.Field>
         </div>
 
-        <form.Subscribe
-          selector={(state) => ({ canSubmit: state.canSubmit, isSubmitting: state.isSubmitting })}
-        >
+        <form.Subscribe selector={(state) => ({ canSubmit: state.canSubmit, isSubmitting: state.isSubmitting })}>
           {({ canSubmit, isSubmitting }) => (
             <Button type="submit" className="w-full" disabled={!canSubmit || isSubmitting}>
               {isSubmitting ? "Submitting..." : "Sign In"}
@@ -120,11 +124,7 @@ export default function SignInForm({ onSwitchToSignUp, redirectTo }: { onSwitchT
       </form>
 
       <div className="mt-4 text-center">
-        <Button
-          variant="link"
-          onClick={onSwitchToSignUp}
-          className="text-muted-foreground hover:text-foreground"
-        >
+        <Button variant="link" onClick={onSwitchToSignUp} className="text-muted-foreground hover:text-foreground">
           Need an account? Sign Up
         </Button>
       </div>

@@ -1,18 +1,13 @@
+import { Badge } from "@prive-admin-tanstack/ui/components/badge"
+import { Button } from "@prive-admin-tanstack/ui/components/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@prive-admin-tanstack/ui/components/card"
+import { Separator } from "@prive-admin-tanstack/ui/components/separator"
+import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { Cloud, HardDrive, Upload } from "lucide-react"
 import { useRef, useState } from "react"
 
-import { Badge } from "@prive-admin-tanstack/ui/components/badge"
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@prive-admin-tanstack/ui/components/card"
-import { Separator } from "@prive-admin-tanstack/ui/components/separator"
-import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
 import { FileListCard, filesQueryOptions, formatBytes, useFiles } from "@/components/file-list"
 import { confirmUpload, getUploadUrl } from "@/functions/files"
 import { fileKeys } from "@/lib/query-keys"
@@ -30,11 +25,7 @@ interface UploadProgress {
   status: "uploading" | "confirming" | "done" | "error"
 }
 
-function uploadToPresignedUrl(
-  file: File,
-  url: string,
-  onProgress: (pct: number) => void,
-): Promise<void> {
+function uploadToPresignedUrl(file: File, url: string, onProgress: (pct: number) => void): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open("PUT", url)
@@ -82,30 +73,16 @@ function FilesDirectPage() {
             })
 
             await uploadToPresignedUrl(file, url, (pct) => {
-              setUploads((prev) =>
-                prev.map((u, idx) => (idx === i ? { ...u, progress: pct } : u)),
-              )
+              setUploads((prev) => prev.map((u, idx) => (idx === i ? { ...u, progress: pct } : u)))
             })
 
-            setUploads((prev) =>
-              prev.map((u, idx) =>
-                idx === i ? { ...u, progress: 100, status: "confirming" } : u,
-              ),
-            )
+            setUploads((prev) => prev.map((u, idx) => (idx === i ? { ...u, progress: 100, status: "confirming" } : u)))
 
             await confirmUpload({ data: { key } })
 
-            setUploads((prev) =>
-              prev.map((u, idx) =>
-                idx === i ? { ...u, status: "done" } : u,
-              ),
-            )
+            setUploads((prev) => prev.map((u, idx) => (idx === i ? { ...u, status: "done" } : u)))
           } catch {
-            setUploads((prev) =>
-              prev.map((u, idx) =>
-                idx === i ? { ...u, status: "error" } : u,
-              ),
-            )
+            setUploads((prev) => prev.map((u, idx) => (idx === i ? { ...u, status: "error" } : u)))
           }
         }),
       )
@@ -134,13 +111,9 @@ function FilesDirectPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Cloud className="size-4" />
-            <span className="text-xs uppercase tracking-widest">
-              Files — Direct Upload
-            </span>
+            <span className="text-xs tracking-widest uppercase">Files — Direct Upload</span>
           </div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">
-            Presigned URL Upload
-          </h1>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">Presigned URL Upload</h1>
           <p className="text-sm text-muted-foreground">
             Files are uploaded directly to R2 via presigned URLs. Requires CORS on the bucket.
           </p>
@@ -180,12 +153,18 @@ function FilesDirectPage() {
       {/* Drop zone */}
       <div
         onDrop={handleDrop}
-        onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
-        onDragLeave={(e) => { e.preventDefault(); setIsDragging(false) }}
+        onDragOver={(e) => {
+          e.preventDefault()
+          setIsDragging(true)
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault()
+          setIsDragging(false)
+        }}
         onClick={() => fileInputRef.current?.click()}
         className={`group relative cursor-pointer rounded-lg border-2 border-dashed transition-all ${
           isDragging
-            ? "border-primary bg-primary/5 scale-[1.01]"
+            ? "scale-[1.01] border-primary bg-primary/5"
             : "border-border hover:border-primary/40 hover:bg-muted/50"
         }`}
       >
@@ -198,9 +177,7 @@ function FilesDirectPage() {
             <Upload className="size-6" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium">
-              {isDragging ? "Drop files here" : "Drag & drop files here"}
-            </p>
+            <p className="text-sm font-medium">{isDragging ? "Drop files here" : "Drag & drop files here"}</p>
             <p className="text-[0.625rem] text-muted-foreground">
               or click to browse &middot; direct to R2 with real progress
             </p>
@@ -219,16 +196,10 @@ function FilesDirectPage() {
               <div key={i} className="flex items-center gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
-                    <p className="truncate text-xs font-medium">
-                      {upload.fileName}
-                    </p>
+                    <p className="truncate text-xs font-medium">{upload.fileName}</p>
                     <Badge
                       variant={
-                        upload.status === "done"
-                          ? "default"
-                          : upload.status === "error"
-                            ? "destructive"
-                            : "outline"
+                        upload.status === "done" ? "default" : upload.status === "error" ? "destructive" : "outline"
                       }
                       className="ml-2 shrink-0 text-[0.5rem]"
                     >
@@ -256,11 +227,7 @@ function FilesDirectPage() {
         </Card>
       )}
 
-      <FileListCard
-        files={files}
-        isLoading={isLoading}
-        deleteMutation={deleteMutation}
-      />
+      <FileListCard files={files} isLoading={isLoading} deleteMutation={deleteMutation} />
     </div>
   )
 }

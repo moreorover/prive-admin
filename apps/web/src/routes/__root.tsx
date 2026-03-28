@@ -12,9 +12,9 @@ const TanStackRouterDevtools =
         })),
       )
 
-import appCss from "../index.css?url"
-
 import type { QueryClient } from "@tanstack/react-query"
+
+import appCss from "../index.css?url"
 
 export interface RouterAppContext {
   queryClient: QueryClient

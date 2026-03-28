@@ -24,9 +24,7 @@ function LandingPage() {
 
         {/* Top nav bar */}
         <nav className="absolute top-0 right-0 left-0 flex items-center justify-between px-8 py-6">
-          <span className="font-display text-sm tracking-[0.3em] text-primary/40 uppercase">
-            Est. 2024
-          </span>
+          <span className="font-display text-sm tracking-[0.3em] text-primary/40 uppercase">Est. 2024</span>
           <div className="flex items-center gap-8">
             <a
               href="#philosophy"
@@ -60,9 +58,7 @@ function LandingPage() {
         <div className="relative z-10 text-center">
           <div className="mb-6 flex items-center justify-center gap-4">
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-primary/40" />
-            <span className="text-[10px] tracking-[0.5em] text-primary/50 uppercase">
-              Exclusive Access
-            </span>
+            <span className="text-[10px] tracking-[0.5em] text-primary/50 uppercase">Exclusive Access</span>
             <div className="h-px w-12 bg-gradient-to-l from-transparent to-primary/40" />
           </div>
 
@@ -71,8 +67,8 @@ function LandingPage() {
           </h1>
 
           <p className="mx-auto mt-8 max-w-md font-body text-base leading-relaxed text-muted-foreground">
-            Where discretion meets distinction. A private platform for those who understand that
-            true luxury is invisible.
+            Where discretion meets distinction. A private platform for those who understand that true luxury is
+            invisible.
           </p>
 
           <div className="mt-12 flex items-center justify-center gap-6">
@@ -88,11 +84,7 @@ function LandingPage() {
                 stroke="currentColor"
                 strokeWidth={1.5}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
               </svg>
             </a>
           </div>
@@ -101,9 +93,7 @@ function LandingPage() {
         {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
           <div className="flex flex-col items-center gap-2">
-            <span className="text-[9px] tracking-[0.4em] text-muted-foreground/40 uppercase">
-              Scroll
-            </span>
+            <span className="text-[9px] tracking-[0.4em] text-muted-foreground/40 uppercase">Scroll</span>
             <div className="h-8 w-px bg-gradient-to-b from-muted-foreground/30 to-transparent" />
           </div>
         </div>
@@ -114,9 +104,7 @@ function LandingPage() {
         <div className="mx-auto max-w-4xl">
           <div className="grid gap-16 md:grid-cols-2 md:gap-24">
             <div>
-              <span className="text-[10px] tracking-[0.5em] text-primary/40 uppercase">
-                01 &mdash; Philosophy
-              </span>
+              <span className="text-[10px] tracking-[0.5em] text-primary/40 uppercase">01 &mdash; Philosophy</span>
               <h2 className="mt-4 font-display text-4xl font-light tracking-tight text-foreground/90">
                 Built for the
                 <br />
@@ -125,9 +113,9 @@ function LandingPage() {
             </div>
             <div className="flex flex-col justify-end">
               <p className="font-body text-sm leading-relaxed text-muted-foreground">
-                Not everything needs to be public. Some platforms are built for visibility; ours is
-                built for control. Every feature, every interaction is designed with intentional
-                restraint &mdash; because power doesn&rsquo;t need to announce itself.
+                Not everything needs to be public. Some platforms are built for visibility; ours is built for control.
+                Every feature, every interaction is designed with intentional restraint &mdash; because power
+                doesn&rsquo;t need to announce itself.
               </p>
               <div className="mt-8 h-px w-full bg-gradient-to-r from-border via-primary/10 to-transparent" />
             </div>
@@ -139,9 +127,7 @@ function LandingPage() {
       <section id="services" className="relative z-[2] px-6 py-32">
         <div className="mx-auto max-w-5xl">
           <div className="mb-20 text-center">
-            <span className="text-[10px] tracking-[0.5em] text-primary/40 uppercase">
-              02 &mdash; Services
-            </span>
+            <span className="text-[10px] tracking-[0.5em] text-primary/40 uppercase">02 &mdash; Services</span>
             <h2 className="mt-4 font-display text-4xl font-light tracking-tight text-foreground/90">
               Curated <span className="text-primary italic">capabilities</span>
             </h2>
@@ -152,35 +138,27 @@ function LandingPage() {
               {
                 number: "I",
                 title: "Secure Vault",
-                description:
-                  "End-to-end encrypted file management with granular access controls and audit trails.",
+                description: "End-to-end encrypted file management with granular access controls and audit trails.",
               },
               {
                 number: "II",
                 title: "Identity",
-                description:
-                  "Multi-layered authentication with biometric support and session intelligence.",
+                description: "Multi-layered authentication with biometric support and session intelligence.",
               },
               {
                 number: "III",
                 title: "Analytics",
-                description:
-                  "Real-time insights with privacy-first data processing. No external tracking.",
+                description: "Real-time insights with privacy-first data processing. No external tracking.",
               },
             ].map((service) => (
-              <div
-                key={service.number}
-                className="group relative bg-background p-10 transition-colors hover:bg-accent"
-              >
+              <div key={service.number} className="group relative bg-background p-10 transition-colors hover:bg-accent">
                 <span className="font-display text-5xl font-light text-primary/10 transition-colors group-hover:text-primary/20">
                   {service.number}
                 </span>
                 <h3 className="mt-6 font-display text-lg font-light tracking-tight text-foreground/80">
                   {service.title}
                 </h3>
-                <p className="mt-3 font-body text-xs leading-relaxed text-muted-foreground/60">
-                  {service.description}
-                </p>
+                <p className="mt-3 font-body text-xs leading-relaxed text-muted-foreground/60">{service.description}</p>
                 <div className="mt-8 h-px w-8 bg-primary/20 transition-all group-hover:w-16 group-hover:bg-primary/40" />
               </div>
             ))}
@@ -191,15 +169,13 @@ function LandingPage() {
       {/* Contact section */}
       <section id="contact" className="relative z-[2] px-6 py-32">
         <div className="mx-auto max-w-2xl text-center">
-          <span className="text-[10px] tracking-[0.5em] text-primary/40 uppercase">
-            03 &mdash; Contact
-          </span>
+          <span className="text-[10px] tracking-[0.5em] text-primary/40 uppercase">03 &mdash; Contact</span>
           <h2 className="mt-4 font-display text-4xl font-light tracking-tight text-foreground/90">
             By invitation <span className="text-primary italic">only</span>
           </h2>
           <p className="mt-6 font-body text-sm leading-relaxed text-muted-foreground/60">
-            Access is granted on a referral basis. If you&rsquo;ve been given credentials, you
-            already know how to proceed.
+            Access is granted on a referral basis. If you&rsquo;ve been given credentials, you already know how to
+            proceed.
           </p>
           <div className="mt-12">
             <Link
@@ -218,9 +194,7 @@ function LandingPage() {
           <span className="font-display text-xs tracking-[0.2em] text-muted-foreground/30">
             Priv<span className="italic">e</span> &copy; 2024
           </span>
-          <span className="text-[9px] tracking-[0.3em] text-muted-foreground/20 uppercase">
-            All rights reserved
-          </span>
+          <span className="text-[9px] tracking-[0.3em] text-muted-foreground/20 uppercase">All rights reserved</span>
         </div>
       </footer>
     </div>
