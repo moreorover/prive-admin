@@ -23,7 +23,6 @@ Convert all Prisma models to Drizzle ORM in `packages/db/src/schema/`. Table nam
 
 | File | Tables |
 |------|--------|
-| `enums.ts` | `orderType`, `orderStatus`, `transactionType`, `transactionStatus`, `hairOrderStatus` |
 | `customer.ts` | `customers` |
 | `product.ts` | `products`, `product_variants` |
 | `order.ts` | `orders`, `order_items` |
@@ -33,17 +32,9 @@ Convert all Prisma models to Drizzle ORM in `packages/db/src/schema/`. Table nam
 | `note.ts` | `notes` |
 | `auth.ts` | `user`, `session`, `account`, `verification` (existing, updated with business relations) |
 
-### Enums (`enums.ts`)
-
-```
-orderType: PURCHASE | SALE
-orderStatus: PENDING | COMPLETED | CANCELLED
-transactionType: BANK | CASH | PAYPAL
-transactionStatus: PENDING | COMPLETED
-hairOrderStatus: PENDING | COMPLETED
-```
-
 ### Key schema decisions
+
+- No Postgres enums — use plain `text` columns with TypeScript union types for enum-like fields (`OrderType`, `OrderStatus`, `TransactionType`, `TransactionStatus`, `HairOrderStatus`). Avoids migration pain when adding/removing values.
 
 - Auth table names must be updated to match Prisma's `@@map()` values: `user` → `users`, `session` → `sessions`, `account` → `accounts`, `verification` → `verifications`. Better Auth's Drizzle adapter supports custom table names.
 - IDs: `text` with `cuid2` default (matching Prisma `@default(cuid(2))`)
@@ -126,22 +117,9 @@ File-based routing under `_authenticated.*`. shadcn/ui components (tables, forms
 
 ### Navigation
 
-Update `_authenticated.tsx` sidebar: Customers, Appointments, Hair Orders (replacing demo Dashboard/Files links). Index redirects to `/customers`.
+Update `_authenticated.tsx` sidebar: add Customers, Appointments, Hair Orders links. Rename "Dashboard" to "Playground" (keeps demo pages accessible). Index redirects to `/customers`.
 
 ## 4. Removals & Changes
-
-### Removed
-
-| File | Reason |
-|------|--------|
-| `_authenticated.dashboard.tsx` | Replaced by real pages |
-| `_authenticated.files.tsx` | Demo feature |
-| `_authenticated.files-direct.tsx` | Demo feature |
-| `functions/get-dashboard-data.ts` | Mock data |
-| `functions/get-capability-details.ts` | Mock data |
-| `functions/files.ts` | R2 demo |
-| `lib/r2.ts` | R2 demo |
-| `components/file-list.tsx` | Demo component |
 
 ### Kept as-is
 
@@ -149,6 +127,7 @@ Update `_authenticated.tsx` sidebar: Customers, Appointments, Hair Orders (repla
 - Root layout, theme provider, toaster
 - Router config with React Query SSR integration
 - All packages (db, auth, env, ui, config)
+- Demo pages (dashboard → renamed to "Playground", files, files-direct) and their server functions
 
 ### Modified
 
@@ -156,7 +135,7 @@ Update `_authenticated.tsx` sidebar: Customers, Appointments, Hair Orders (repla
 |------|--------|
 | `packages/db/src/schema/` | Add business model files |
 | `packages/db/src/schema/auth.ts` | Rename tables to match Prisma (`users`, `sessions`, etc.), add user relations to business models |
-| `packages/env/src/server.ts` | Remove `R2_*` env vars |
 | `apps/web/src/lib/query-keys.ts` | Add keys for customers, appointments, hair orders, notes |
-| `_authenticated.tsx` | New sidebar nav links |
+| `_authenticated.tsx` | Add new nav links, rename Dashboard to Playground |
+| `_authenticated.dashboard.tsx` | Rename route to `_authenticated.playground.tsx` |
 | `index.tsx` | Redirect to `/customers` |
