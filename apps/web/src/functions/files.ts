@@ -39,7 +39,7 @@ export const listFiles = createServerFn({ method: "GET" })
       }))
   })
 
-export const deleteFile = createServerFn({ method: "GET" })
+export const deleteFile = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .inputValidator(z.object({ key: z.string().min(1) }))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
@@ -53,7 +53,7 @@ export const deleteFile = createServerFn({ method: "GET" })
 
 // ── Presigned URL upload ────────────────────────────────────────────
 
-export const getUploadUrl = createServerFn({ method: "GET" })
+export const getUploadUrl = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .inputValidator(z.object({ fileName: z.string().min(1), contentType: z.string().min(1) }))
   .handler(async ({ data }): Promise<{ url: string; key: string }> => {
@@ -67,7 +67,7 @@ export const getUploadUrl = createServerFn({ method: "GET" })
     return { url, key }
   })
 
-export const confirmUpload = createServerFn({ method: "GET" })
+export const confirmUpload = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .inputValidator(z.object({ key: z.string().min(1) }))
   .handler(async ({ data }): Promise<FileItem> => {
