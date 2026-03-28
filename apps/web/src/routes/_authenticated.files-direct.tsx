@@ -14,6 +14,7 @@ import { Separator } from "@prive-admin-tanstack/ui/components/separator"
 import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
 import { FileListCard, formatBytes, useFiles } from "@/components/file-list"
 import { confirmUpload, getUploadUrl } from "@/functions/files"
+import { fileKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/files-direct")({
   component: FilesDirectPage,
@@ -106,7 +107,7 @@ function FilesDirectPage() {
         }),
       )
 
-      queryClient.invalidateQueries({ queryKey: ["files"] })
+      queryClient.invalidateQueries({ queryKey: fileKeys.all })
       setTimeout(() => {
         setUploads((prev) => prev.filter((u) => u.status === "uploading"))
       }, 3000)

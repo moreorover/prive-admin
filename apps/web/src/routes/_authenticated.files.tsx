@@ -13,6 +13,7 @@ import {
 import { Separator } from "@prive-admin-tanstack/ui/components/separator"
 import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
 import { FileListCard, formatBytes, useFiles } from "@/components/file-list"
+import { fileKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/files")({
   component: FilesProxyPage,
@@ -90,7 +91,7 @@ function FilesProxyPage() {
         }),
       )
 
-      queryClient.invalidateQueries({ queryKey: ["files"] })
+      queryClient.invalidateQueries({ queryKey: fileKeys.all })
       setTimeout(() => {
         setUploads((prev) => prev.filter((u) => u.status === "uploading"))
       }, 3000)

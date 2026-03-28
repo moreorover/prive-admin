@@ -45,6 +45,7 @@ import type { CapabilityDetails } from "@/functions/get-capability-details"
 import { getCapabilityDetails } from "@/functions/get-capability-details"
 import type { DashboardCapability, DashboardStat } from "@/functions/get-dashboard-data"
 import { getDashboardData } from "@/functions/get-dashboard-data"
+import { dashboardKeys } from "@/lib/query-keys"
 
 const iconMap: Record<string, LucideIcon> = {
   users: Users,
@@ -60,7 +61,7 @@ const iconMap: Record<string, LucideIcon> = {
 }
 
 const dashboardQueryOptions = queryOptions({
-  queryKey: ["dashboard"],
+  queryKey: dashboardKeys.data(),
   queryFn: () => getDashboardData(),
 })
 
@@ -287,7 +288,7 @@ function RouteComponent() {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const { data: capabilityDetails, isLoading: isDetailsLoading } = useQuery({
-    queryKey: ["capability-details", selectedCapability],
+    queryKey: dashboardKeys.capabilityDetails(selectedCapability!),
     queryFn: () => getCapabilityDetails({ data: { title: selectedCapability! } }),
     enabled: !!selectedCapability && dialogOpen,
   })

@@ -29,6 +29,7 @@ import {
 } from "@prive-admin-tanstack/ui/components/table"
 import type { FileItem } from "@/functions/files"
 import { deleteFile, listFiles } from "@/functions/files"
+import { fileKeys } from "@/lib/query-keys"
 
 export function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B"
@@ -64,13 +65,13 @@ export function useFiles() {
   const queryClient = useQueryClient()
 
   const { data: files, isLoading } = useQuery({
-    queryKey: ["files"],
+    queryKey: fileKeys.list(),
     queryFn: () => listFiles(),
   })
 
   const deleteMutation = useMutation({
     mutationFn: (key: string) => deleteFile({ data: { key } }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["files"] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: fileKeys.all }),
   })
 
   const totalSize = files?.reduce((sum, f) => sum + f.size, 0) ?? 0
