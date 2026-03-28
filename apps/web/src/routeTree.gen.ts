@@ -10,11 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as FilesDirectRouteImport } from './routes/files-direct'
-import { Route as FilesRouteImport } from './routes/files'
-import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
+import { Route as AuthenticatedFilesDirectRouteImport } from './routes/_authenticated.files-direct'
+import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated.files'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const LoginRoute = LoginRouteImport.update({
@@ -22,19 +23,8 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FilesDirectRoute = FilesDirectRouteImport.update({
-  id: '/files-direct',
-  path: '/files-direct',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FilesRoute = FilesRouteImport.update({
-  id: '/files',
-  path: '/files',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -47,6 +37,22 @@ const ApiUploadRoute = ApiUploadRouteImport.update({
   path: '/api/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedFilesDirectRoute =
+  AuthenticatedFilesDirectRouteImport.update({
+    id: '/files-direct',
+    path: '/files-direct',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
+  id: '/files',
+  path: '/files',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -55,29 +61,30 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
-  '/files': typeof FilesRoute
-  '/files-direct': typeof FilesDirectRoute
   '/login': typeof LoginRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/files': typeof AuthenticatedFilesRoute
+  '/files-direct': typeof AuthenticatedFilesDirectRoute
   '/api/upload': typeof ApiUploadRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
-  '/files': typeof FilesRoute
-  '/files-direct': typeof FilesDirectRoute
   '/login': typeof LoginRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/files': typeof AuthenticatedFilesRoute
+  '/files-direct': typeof AuthenticatedFilesDirectRoute
   '/api/upload': typeof ApiUploadRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
-  '/files': typeof FilesRoute
-  '/files-direct': typeof FilesDirectRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/files': typeof AuthenticatedFilesRoute
+  '/_authenticated/files-direct': typeof AuthenticatedFilesDirectRoute
   '/api/upload': typeof ApiUploadRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
@@ -85,37 +92,36 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/login'
     | '/dashboard'
     | '/files'
     | '/files-direct'
-    | '/login'
     | '/api/upload'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
     | '/dashboard'
     | '/files'
     | '/files-direct'
-    | '/login'
     | '/api/upload'
     | '/api/auth/$'
   id:
     | '__root__'
     | '/'
-    | '/dashboard'
-    | '/files'
-    | '/files-direct'
+    | '/_authenticated'
     | '/login'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/files'
+    | '/_authenticated/files-direct'
     | '/api/upload'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRoute
-  FilesRoute: typeof FilesRoute
-  FilesDirectRoute: typeof FilesDirectRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   ApiUploadRoute: typeof ApiUploadRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -130,25 +136,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/files-direct': {
-      id: '/files-direct'
-      path: '/files-direct'
-      fullPath: '/files-direct'
-      preLoaderRoute: typeof FilesDirectRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/files': {
-      id: '/files'
-      path: '/files'
-      fullPath: '/files'
-      preLoaderRoute: typeof FilesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -165,6 +157,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/files-direct': {
+      id: '/_authenticated/files-direct'
+      path: '/files-direct'
+      fullPath: '/files-direct'
+      preLoaderRoute: typeof AuthenticatedFilesDirectRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/files': {
+      id: '/_authenticated/files'
+      path: '/files'
+      fullPath: '/files'
+      preLoaderRoute: typeof AuthenticatedFilesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -175,11 +188,25 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
+  AuthenticatedFilesDirectRoute: typeof AuthenticatedFilesDirectRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFilesRoute: AuthenticatedFilesRoute,
+  AuthenticatedFilesDirectRoute: AuthenticatedFilesDirectRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRoute,
-  FilesRoute: FilesRoute,
-  FilesDirectRoute: FilesDirectRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   ApiUploadRoute: ApiUploadRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

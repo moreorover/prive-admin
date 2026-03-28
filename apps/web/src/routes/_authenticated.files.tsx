@@ -1,5 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router"
-import { Cloud, HardDrive, Upload } from "lucide-react"
+import { createFileRoute } from "@tanstack/react-router"
+import { HardDrive, Server, Upload } from "lucide-react"
 import { useCallback, useRef, useState } from "react"
 
 import { Badge } from "@prive-admin-tanstack/ui/components/badge"
@@ -13,29 +13,18 @@ import {
 import { Separator } from "@prive-admin-tanstack/ui/components/separator"
 import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
 import { FileListCard, formatBytes, useFiles } from "@/components/file-list"
-import { confirmUpload, getUploadUrl } from "@/functions/files"
-import { getUser } from "@/functions/get-user"
 
-export const Route = createFileRoute("/files-direct")({
-  component: FilesDirectPage,
-  beforeLoad: async () => {
-    const session = await getUser()
-    return { session }
-  },
-  loader: async ({ context }) => {
-    if (!context.session) {
-      throw redirect({ to: "/login" })
-    }
-  },
+export const Route = createFileRoute("/_authenticated/files")({
+  component: FilesProxyPage,
 })
 
 interface UploadProgress {
   fileName: string
   progress: number
-  status: "uploading" | "confirming" | "done" | "error"
+  status: "uploading" | "done" | "error"
 }
 
-function FilesDirectPage() {
+function FilesProxyPage() {
   const { files, isLoading, totalSize, deleteMutation, queryClient } = useFiles()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -55,55 +44,40 @@ function FilesDirectPage() {
       await Promise.allSettled(
         filesToUpload.map(async (file, i) => {
           try {
-            // 1. Get presigned URL from server
-            const { url, key } = await getUploadUrl({
-              data: {
-                fileName: file.name,
-                contentType: file.type || "application/octet-stream",
-              },
-            })
+            const formData = new FormData()
+            formData.append("file", file)
 
-            // 2. Upload directly to R2
+            const xhr = new XMLHttpRequest()
+            xhr.open("POST", "/api/upload")
+
             await new Promise<void>((resolve, reject) => {
-              const xhr = new XMLHttpRequest()
-              xhr.open("PUT", url)
-              xhr.setRequestHeader(
-                "Content-Type",
-                file.type || "application/octet-stream",
-              )
-
               xhr.upload.onprogress = (e) => {
                 if (e.lengthComputable) {
                   const pct = Math.round((e.loaded / e.total) * 100)
                   setUploads((prev) =>
-                    prev.map((u, idx) =>
-                      idx === i ? { ...u, progress: pct } : u,
-                    ),
+                    prev.map((u, idx) => (idx === i ? { ...u, progress: pct } : u)),
                   )
                 }
               }
-
               xhr.onload = () => {
-                if (xhr.status >= 200 && xhr.status < 300) resolve()
-                else reject(new Error(`Upload failed: ${xhr.status}`))
+                if (xhr.status >= 200 && xhr.status < 300) {
+                  setUploads((prev) =>
+                    prev.map((u, idx) =>
+                      idx === i ? { ...u, progress: 100, status: "done" } : u,
+                    ),
+                  )
+                  resolve()
+                } else {
+                  reject(new Error(`Upload failed: ${xhr.status}`))
+                }
               }
-
               xhr.onerror = () => reject(new Error("Network error"))
-              xhr.send(file)
+              xhr.send(formData)
             })
 
-            // 3. Confirm upload with server (verify + record in DB)
             setUploads((prev) =>
               prev.map((u, idx) =>
-                idx === i ? { ...u, progress: 100, status: "confirming" } : u,
-              ),
-            )
-
-            await confirmUpload({ data: { key } })
-
-            setUploads((prev) =>
-              prev.map((u, idx) =>
-                idx === i ? { ...u, status: "done" } : u,
+                idx === i ? { ...u, progress: 100, status: "done" } : u,
               ),
             )
           } catch {
@@ -138,16 +112,16 @@ function FilesDirectPage() {
       <div className="flex items-end justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-muted-foreground">
-            <Cloud className="size-4" />
+            <Server className="size-4" />
             <span className="text-xs uppercase tracking-widest">
-              Files — Direct Upload
+              Files — Server Proxy
             </span>
           </div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">
-            Presigned URL Upload
+            Server Proxy Upload
           </h1>
           <p className="text-sm text-muted-foreground">
-            Files are uploaded directly to R2 via presigned URLs. Requires CORS on the bucket.
+            Files are sent through the server to R2. No CORS needed.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -207,7 +181,7 @@ function FilesDirectPage() {
               {isDragging ? "Drop files here" : "Drag & drop files here"}
             </p>
             <p className="text-[0.625rem] text-muted-foreground">
-              or click to browse &middot; direct to R2 with real progress
+              or click to browse &middot; proxied through server
             </p>
           </div>
         </div>
@@ -215,50 +189,7 @@ function FilesDirectPage() {
 
       {/* Upload progress */}
       {uploads.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Uploads</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {uploads.map((upload, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <p className="truncate text-xs font-medium">
-                      {upload.fileName}
-                    </p>
-                    <Badge
-                      variant={
-                        upload.status === "done"
-                          ? "default"
-                          : upload.status === "error"
-                            ? "destructive"
-                            : "outline"
-                      }
-                      className="ml-2 shrink-0 text-[0.5rem]"
-                    >
-                      {upload.status === "uploading"
-                        ? `${upload.progress}%`
-                        : upload.status === "confirming"
-                          ? "Confirming..."
-                          : upload.status === "done"
-                            ? "Done"
-                            : "Failed"}
-                    </Badge>
-                  </div>
-                  <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className={`h-full rounded-full transition-all duration-300 ${
-                        upload.status === "error" ? "bg-destructive" : "bg-primary"
-                      }`}
-                      style={{ width: `${upload.progress}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <UploadProgressCard uploads={uploads} />
       )}
 
       <FileListCard
@@ -267,5 +198,50 @@ function FilesDirectPage() {
         deleteMutation={deleteMutation}
       />
     </div>
+  )
+}
+
+function UploadProgressCard({ uploads }: { uploads: UploadProgress[] }) {
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm">Uploads</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {uploads.map((upload, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between">
+                <p className="truncate text-xs font-medium">{upload.fileName}</p>
+                <Badge
+                  variant={
+                    upload.status === "done"
+                      ? "default"
+                      : upload.status === "error"
+                        ? "destructive"
+                        : "outline"
+                  }
+                  className="ml-2 shrink-0 text-[0.5rem]"
+                >
+                  {upload.status === "uploading"
+                    ? `${upload.progress}%`
+                    : upload.status === "done"
+                      ? "Done"
+                      : "Failed"}
+                </Badge>
+              </div>
+              <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className={`h-full rounded-full transition-all duration-300 ${
+                    upload.status === "error" ? "bg-destructive" : "bg-primary"
+                  }`}
+                  style={{ width: `${upload.progress}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   )
 }

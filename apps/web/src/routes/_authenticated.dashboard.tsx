@@ -1,5 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query"
-import { createFileRoute, redirect } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 import {
   Activity,
   Database,
@@ -45,7 +45,6 @@ import type { CapabilityDetails } from "@/functions/get-capability-details"
 import { getCapabilityDetails } from "@/functions/get-capability-details"
 import type { DashboardCapability, DashboardStat } from "@/functions/get-dashboard-data"
 import { getDashboardData } from "@/functions/get-dashboard-data"
-import { getUser } from "@/functions/get-user"
 
 const iconMap: Record<string, LucideIcon> = {
   users: Users,
@@ -65,18 +64,9 @@ const dashboardQueryOptions = queryOptions({
   queryFn: () => getDashboardData(),
 })
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   component: RouteComponent,
-  beforeLoad: async () => {
-    const session = await getUser()
-    return { session }
-  },
   loader: async ({ context }) => {
-    if (!context.session) {
-      throw redirect({
-        to: "/login",
-      })
-    }
     await context.queryClient.prefetchQuery(dashboardQueryOptions)
   },
 })
