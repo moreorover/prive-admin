@@ -8,3 +8,27 @@ export const fileKeys = {
   all: ["files"] as const,
   list: () => [...fileKeys.all, "list"] as const,
 }
+
+export const customerKeys = {
+  all: ["customers"] as const,
+  list: () => [...customerKeys.all, "list"] as const,
+  detail: (id: string) => [...customerKeys.all, "detail", id] as const,
+}
+
+export const appointmentKeys = {
+  all: ["appointments"] as const,
+  list: () => [...appointmentKeys.all, "list"] as const,
+  detail: (id: string) => [...appointmentKeys.all, "detail", id] as const,
+  byCustomer: (customerId: string) => [...appointmentKeys.all, "by-customer", customerId] as const,
+}
+
+export const hairOrderKeys = {
+  all: ["hair-orders"] as const,
+  list: () => [...hairOrderKeys.all, "list"] as const,
+  detail: (id: string) => [...hairOrderKeys.all, "detail", id] as const,
+}
+
+export const noteKeys = {
+  all: ["notes"] as const,
+  list: (filter: Record<string, string | undefined>) => [...noteKeys.all, "list", filter] as const,
+}
