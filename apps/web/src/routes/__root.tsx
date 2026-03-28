@@ -1,6 +1,15 @@
 import { Toaster } from "@prive-admin-tanstack/ui/components/sonner"
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router"
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
+import { lazy } from "react"
+
+const TanStackRouterDevtools =
+  process.env.NODE_ENV === "production"
+    ? () => null
+    : lazy(() =>
+        import("@tanstack/react-router-devtools").then((mod) => ({
+          default: mod.TanStackRouterDevtools,
+        })),
+      )
 
 import Header from "../components/header"
 import appCss from "../index.css?url"
@@ -38,7 +47,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 
 function RootDocument() {
   return (
-    <html lang="en" className="light">
+    <html lang="en" className="light" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
