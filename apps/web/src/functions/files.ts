@@ -1,5 +1,9 @@
-import { DeleteObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3"
-import { PutObjectCommand } from "@aws-sdk/client-s3"
+import {
+  DeleteObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+} from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { createServerFn } from "@tanstack/react-start"
 
@@ -12,6 +16,8 @@ export interface FileItem {
   size: number
   lastModified: string
 }
+
+// ── Shared ──────────────────────────────────────────────────────────
 
 export const listFiles = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
@@ -32,6 +38,20 @@ export const listFiles = createServerFn({ method: "GET" })
       }))
   })
 
+export const deleteFile = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .inputValidator((data: { key: string }) => data)
+  .handler(async ({ data }): Promise<{ success: boolean }> => {
+    const command = new DeleteObjectCommand({
+      Bucket: bucketName,
+      Key: data.key,
+    })
+    await r2.send(command)
+    return { success: true }
+  })
+
+// ── Presigned URL upload ────────────────────────────────────────────
+
 export const getUploadUrl = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .inputValidator((data: { fileName: string; contentType: string }) => data)
@@ -46,14 +66,21 @@ export const getUploadUrl = createServerFn({ method: "GET" })
     return { url, key }
   })
 
-export const deleteFile = createServerFn({ method: "GET" })
+export const confirmUpload = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .inputValidator((data: { key: string }) => data)
-  .handler(async ({ data }): Promise<{ success: boolean }> => {
-    const command = new DeleteObjectCommand({
-      Bucket: bucketName,
-      Key: data.key,
-    })
-    await r2.send(command)
-    return { success: true }
+  .handler(async ({ data }): Promise<FileItem> => {
+    const head = await r2.send(
+      new HeadObjectCommand({ Bucket: bucketName, Key: data.key }),
+    )
+
+    // TODO: record in database here
+    // await db.insert(files).values({ key: data.key, ... })
+
+    return {
+      key: data.key,
+      name: data.key.replace("uploads/", ""),
+      size: head.ContentLength ?? 0,
+      lastModified: head.LastModified?.toISOString() ?? new Date().toISOString(),
+    }
   })
