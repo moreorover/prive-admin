@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start"
 
-import { authMiddleware } from "@/middleware/auth"
+import { requireAuthMiddleware } from "@/middleware/auth"
 
 export interface DashboardStat {
   label: string
@@ -36,7 +36,7 @@ export interface DashboardData {
 }
 
 export const getDashboardData = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
+  .middleware([requireAuthMiddleware])
   .handler(async (): Promise<DashboardData> => {
     await new Promise((resolve) => setTimeout(resolve, 2000))
     // TODO: replace with real data sources

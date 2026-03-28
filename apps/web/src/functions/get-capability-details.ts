@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
 
-import { authMiddleware } from "@/middleware/auth"
+import { requireAuthMiddleware } from "@/middleware/auth"
 
 export interface CapabilityDetails {
   title: string
@@ -93,7 +93,7 @@ const detailsMap: Record<string, CapabilityDetails> = {
 }
 
 export const getCapabilityDetails = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
+  .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ title: z.string().min(1) }))
   .handler(async ({ data }): Promise<CapabilityDetails | null> => {
     await new Promise((resolve) => setTimeout(resolve, 800))

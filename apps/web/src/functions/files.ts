@@ -9,7 +9,7 @@ import { createServerFn } from "@tanstack/react-start"
 import { z } from "zod"
 
 import { bucketName, r2 } from "@/lib/r2"
-import { authMiddleware } from "@/middleware/auth"
+import { requireAuthMiddleware } from "@/middleware/auth"
 
 export interface FileItem {
   key: string
@@ -21,7 +21,7 @@ export interface FileItem {
 // ── Shared ──────────────────────────────────────────────────────────
 
 export const listFiles = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
+  .middleware([requireAuthMiddleware])
   .handler(async (): Promise<FileItem[]> => {
     try {
       const command = new ListObjectsV2Command({
@@ -45,7 +45,7 @@ export const listFiles = createServerFn({ method: "GET" })
   })
 
 export const deleteFile = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
+  .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ key: z.string().min(1) }))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     try {
@@ -64,7 +64,7 @@ export const deleteFile = createServerFn({ method: "POST" })
 // ── Presigned URL upload ────────────────────────────────────────────
 
 export const getUploadUrl = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
+  .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ fileName: z.string().min(1), contentType: z.string().min(1) }))
   .handler(async ({ data }): Promise<{ url: string; key: string }> => {
     try {
@@ -83,7 +83,7 @@ export const getUploadUrl = createServerFn({ method: "POST" })
   })
 
 export const confirmUpload = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
+  .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ key: z.string().min(1) }))
   .handler(async ({ data }): Promise<FileItem> => {
     try {
