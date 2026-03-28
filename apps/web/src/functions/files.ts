@@ -6,6 +6,7 @@ import {
 } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { createServerFn } from "@tanstack/react-start"
+import { z } from "zod"
 
 import { bucketName, r2 } from "@/lib/r2"
 import { authMiddleware } from "@/middleware/auth"
@@ -40,7 +41,7 @@ export const listFiles = createServerFn({ method: "GET" })
 
 export const deleteFile = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
-  .inputValidator((data: { key: string }) => data)
+  .validator(z.object({ key: z.string().min(1) }))
   .handler(async ({ data }): Promise<{ success: boolean }> => {
     const command = new DeleteObjectCommand({
       Bucket: bucketName,
@@ -54,7 +55,7 @@ export const deleteFile = createServerFn({ method: "GET" })
 
 export const getUploadUrl = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
-  .inputValidator((data: { fileName: string; contentType: string }) => data)
+  .validator(z.object({ fileName: z.string().min(1), contentType: z.string().min(1) }))
   .handler(async ({ data }): Promise<{ url: string; key: string }> => {
     const key = `uploads/${Date.now()}-${data.fileName}`
     const command = new PutObjectCommand({
@@ -68,7 +69,7 @@ export const getUploadUrl = createServerFn({ method: "GET" })
 
 export const confirmUpload = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
-  .inputValidator((data: { key: string }) => data)
+  .validator(z.object({ key: z.string().min(1) }))
   .handler(async ({ data }): Promise<FileItem> => {
     const head = await r2.send(
       new HeadObjectCommand({ Bucket: bucketName, Key: data.key }),

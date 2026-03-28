@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
+import { z } from "zod"
 
 import { authMiddleware } from "@/middleware/auth"
 
@@ -93,7 +94,7 @@ const detailsMap: Record<string, CapabilityDetails> = {
 
 export const getCapabilityDetails = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
-  .inputValidator((data: { title: string }) => data)
+  .validator(z.object({ title: z.string().min(1) }))
   .handler(async ({ data }): Promise<CapabilityDetails | null> => {
     await new Promise((resolve) => setTimeout(resolve, 800))
     return detailsMap[data.title] ?? null
