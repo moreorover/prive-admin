@@ -56,7 +56,7 @@ const dashboardQueryOptions = queryOptions({
   queryFn: () => getDashboardData(),
 })
 
-export const Route = createFileRoute("/_authenticated/dashboard")({
+export const Route = createFileRoute("/_authenticated/playground")({
   component: RouteComponent,
   loader: async ({ context }) => {
     await context.queryClient.prefetchQuery(dashboardQueryOptions)
@@ -273,7 +273,7 @@ function RouteComponent() {
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-muted-foreground">
             <LayoutDashboard className="size-4" />
-            <span className="text-xs tracking-widest uppercase">Dashboard</span>
+            <span className="text-xs tracking-widest uppercase">Playground</span>
           </div>
           <h1 className="font-heading text-2xl font-bold tracking-tight">
             Welcome back, {session?.user.name ?? "Admin"}
