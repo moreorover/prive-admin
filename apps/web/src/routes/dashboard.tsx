@@ -77,7 +77,7 @@ export const Route = createFileRoute("/dashboard")({
         to: "/login",
       })
     }
-    context.queryClient.prefetchQuery(dashboardQueryOptions)
+    await context.queryClient.prefetchQuery(dashboardQueryOptions)
   },
 })
 
