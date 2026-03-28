@@ -4,10 +4,13 @@ import { getUser } from "@/functions/get-user"
 
 export const Route = createFileRoute("/_authenticated")({
   component: () => <Outlet />,
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     const session = await getUser()
     if (!session) {
-      throw redirect({ to: "/login" })
+      throw redirect({
+        to: "/login",
+        search: { redirect: location.href },
+      })
     }
     return { session }
   },
