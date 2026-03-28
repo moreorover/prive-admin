@@ -7,7 +7,14 @@ import "./index.css"
 import { routeTree } from "./routeTree.gen"
 
 export const getRouter = () => {
-  const queryClient = new QueryClient()
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60 * 1000,
+        gcTime: 10 * 60 * 1000,
+      },
+    },
+  })
 
   const router = createTanStackRouter({
     routeTree,
