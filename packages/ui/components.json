@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-lyra",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/styles/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@prive-admin-tanstack/ui/components",
+    "utils": "@prive-admin-tanstack/ui/lib/utils",
+    "hooks": "@prive-admin-tanstack/ui/hooks",
+    "lib": "@prive-admin-tanstack/ui/lib",
+    "ui": "@prive-admin-tanstack/ui/components"
+  },
+  "menuColor": "default-translucent",
+  "menuAccent": "subtle",
+  "registries": {},
+  "rtl": false
+}
