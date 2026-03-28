@@ -29,23 +29,31 @@ export const Route = createFileRoute("/api/upload")({
 
         console.log("[upload] file:", file.name, "size:", file.size, "type:", file.type)
 
-        const key = `uploads/${Date.now()}-${file.name}`
-        const arrayBuffer = await file.arrayBuffer()
+        try {
+          const key = `uploads/${Date.now()}-${file.name}`
+          const arrayBuffer = await file.arrayBuffer()
 
-        const command = new PutObjectCommand({
-          Bucket: bucketName,
-          Key: key,
-          Body: new Uint8Array(arrayBuffer),
-          ContentType: file.type || "application/octet-stream",
-        })
+          const command = new PutObjectCommand({
+            Bucket: bucketName,
+            Key: key,
+            Body: new Uint8Array(arrayBuffer),
+            ContentType: file.type || "application/octet-stream",
+          })
 
-        console.log("[upload] sending to R2, key:", key)
-        await r2.send(command)
-        console.log("[upload] complete")
+          console.log("[upload] sending to R2, key:", key)
+          await r2.send(command)
+          console.log("[upload] complete")
 
-        return new Response(JSON.stringify({ key }), {
-          headers: { "Content-Type": "application/json" },
-        })
+          return new Response(JSON.stringify({ key }), {
+            headers: { "Content-Type": "application/json" },
+          })
+        } catch (error) {
+          console.error("[upload]", error)
+          return new Response(JSON.stringify({ error: "Upload failed" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          })
+        }
       },
     },
   },
