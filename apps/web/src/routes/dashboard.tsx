@@ -5,6 +5,7 @@ import {
   Database,
   FileText,
   LayoutDashboard,
+  Loader2,
   Lock,
   type LucideIcon,
   Monitor,
@@ -15,6 +16,7 @@ import {
   Users,
   Zap,
 } from "lucide-react"
+import { useState } from "react"
 
 import { Badge } from "@prive-admin-tanstack/ui/components/badge"
 import { Button } from "@prive-admin-tanstack/ui/components/button"
@@ -30,8 +32,17 @@ import {
   ProgressLabel,
   ProgressValue,
 } from "@prive-admin-tanstack/ui/components/progress"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@prive-admin-tanstack/ui/components/dialog"
 import { Separator } from "@prive-admin-tanstack/ui/components/separator"
 import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
+import type { CapabilityDetails } from "@/functions/get-capability-details"
+import { getCapabilityDetails } from "@/functions/get-capability-details"
 import type { DashboardCapability, DashboardStat } from "@/functions/get-dashboard-data"
 import { getDashboardData } from "@/functions/get-dashboard-data"
 import { getUser } from "@/functions/get-user"
@@ -130,15 +141,22 @@ function StatCardSkeleton() {
   )
 }
 
-function CapabilityCard({ capability }: { capability: DashboardCapability }) {
+function CapabilityCard({
+  capability,
+  onClick,
+}: {
+  capability: DashboardCapability
+  onClick: () => void
+}) {
   const Icon = iconMap[capability.icon] ?? Activity
   const isActive = capability.status === "active"
 
   return (
     <Card
-      className={`group relative transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-primary/20 ${
+      className={`group relative cursor-pointer transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-primary/20 ${
         !isActive ? "opacity-80" : ""
       }`}
+      onClick={onClick}
     >
       <CardHeader>
         <div className="flex items-start justify-between">
@@ -168,11 +186,85 @@ function CapabilityCard({ capability }: { capability: DashboardCapability }) {
         <div className="px-4 pb-4">
           <Button variant="ghost" size="sm" className="w-full justify-center">
             <Settings className="size-3" />
-            Configure
+            View Details
           </Button>
         </div>
       )}
     </Card>
+  )
+}
+
+function CapabilityDetailsDialog({
+  details,
+  isLoading,
+  open,
+  onOpenChange,
+}: {
+  details: CapabilityDetails | null | undefined
+  isLoading: boolean
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
+  const Icon = details ? (iconMap[details.title.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-")] ?? Activity) : Activity
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        {isLoading ? (
+          <div className="flex flex-col items-center gap-3 py-8">
+            <Loader2 className="size-6 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Loading details...</p>
+          </div>
+        ) : details ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Icon className="size-4 text-primary" />
+                {details.title}
+              </DialogTitle>
+              <DialogDescription>
+                Version {details.version} &middot; Updated {details.lastUpdated}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid grid-cols-3 gap-3 pt-2">
+              <div className="rounded-md border p-3 text-center">
+                <p className="font-heading text-lg font-bold">{details.usageCount.toLocaleString()}</p>
+                <p className="text-[0.625rem] text-muted-foreground">Requests</p>
+              </div>
+              <div className="rounded-md border p-3 text-center">
+                <p className="font-heading text-lg font-bold">{details.errorRate}</p>
+                <p className="text-[0.625rem] text-muted-foreground">Error Rate</p>
+              </div>
+              <div className="rounded-md border p-3 text-center">
+                <p className="font-heading text-lg font-bold">{details.avgResponseTime}</p>
+                <p className="text-[0.625rem] text-muted-foreground">Avg Latency</p>
+              </div>
+            </div>
+            <Separator />
+            <div className="space-y-3">
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Changelog
+              </h4>
+              {details.changelog.map((entry) => (
+                <div key={entry.version} className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-[0.625rem]">
+                      v{entry.version}
+                    </Badge>
+                    <span className="text-[0.625rem] text-muted-foreground">{entry.date}</span>
+                  </div>
+                  <p className="text-xs">{entry.summary}</p>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="py-8 text-center text-sm text-muted-foreground">
+            No details available.
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -201,6 +293,19 @@ function CapabilityCardSkeleton() {
 function RouteComponent() {
   const { session } = Route.useRouteContext()
   const { data: dashboardData, isLoading } = useQuery(dashboardQueryOptions)
+  const [selectedCapability, setSelectedCapability] = useState<string | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
+
+  const { data: capabilityDetails, isLoading: isDetailsLoading } = useQuery({
+    queryKey: ["capability-details", selectedCapability],
+    queryFn: () => getCapabilityDetails({ data: { title: selectedCapability! } }),
+    enabled: !!selectedCapability && dialogOpen,
+  })
+
+  const handleCapabilityClick = (title: string) => {
+    setSelectedCapability(title)
+    setDialogOpen(true)
+  }
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
@@ -255,7 +360,11 @@ function RouteComponent() {
             {isLoading
               ? Array.from({ length: 6 }).map((_, i) => <CapabilityCardSkeleton key={i} />)
               : dashboardData?.capabilities.map((cap) => (
-                  <CapabilityCard key={cap.title} capability={cap} />
+                  <CapabilityCard
+                    key={cap.title}
+                    capability={cap}
+                    onClick={() => handleCapabilityClick(cap.title)}
+                  />
                 ))}
           </div>
         </section>
@@ -331,6 +440,13 @@ function RouteComponent() {
           </Card>
         </aside>
       </div>
+
+      <CapabilityDetailsDialog
+        details={capabilityDetails}
+        isLoading={isDetailsLoading}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
     </div>
   )
 }
