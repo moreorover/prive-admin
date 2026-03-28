@@ -20,5 +20,5 @@
   "experimentalSortPackageJson": {
     "sortScripts": false
   },
-  "ignorePatterns": ["**/*.html", "routeTree.gen.ts"]
+  "ignorePatterns": [".agents", "**/*.html", "routeTree.gen.ts"]
 }
