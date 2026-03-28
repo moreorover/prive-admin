@@ -1,6 +1,7 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { Cloud, HardDrive, Upload } from "lucide-react"
-import { useCallback, useRef, useState } from "react"
+import { useRef, useState } from "react"
 
 import { Badge } from "@prive-admin-tanstack/ui/components/badge"
 import { Button } from "@prive-admin-tanstack/ui/components/button"
@@ -29,17 +30,41 @@ interface UploadProgress {
   status: "uploading" | "confirming" | "done" | "error"
 }
 
+function uploadToPresignedUrl(
+  file: File,
+  url: string,
+  onProgress: (pct: number) => void,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open("PUT", url)
+    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream")
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) {
+        onProgress(Math.round((e.loaded / e.total) * 100))
+      }
+    }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve()
+      else reject(new Error(`Upload failed: ${xhr.status}`))
+    }
+    xhr.onerror = () => reject(new Error("Network error"))
+    xhr.send(file)
+  })
+}
+
 function FilesDirectPage() {
-  const { files, isLoading, totalSize, deleteMutation, queryClient } = useFiles()
+  const { files, isLoading, totalSize, deleteMutation } = useFiles()
+  const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [uploads, setUploads] = useState<UploadProgress[]>([])
 
-  const uploadFiles = useCallback(
-    async (fileList: FileList | File[]) => {
-      const filesToUpload = Array.from(fileList)
-
-      const newUploads: UploadProgress[] = filesToUpload.map((f) => ({
+  const uploadMutation = useMutation({
+    mutationKey: ["files", "upload-direct"],
+    mutationFn: async (fileList: File[]) => {
+      const newUploads: UploadProgress[] = fileList.map((f) => ({
         fileName: f.name,
         progress: 0,
         status: "uploading",
@@ -47,9 +72,8 @@ function FilesDirectPage() {
       setUploads((prev) => [...newUploads, ...prev])
 
       await Promise.allSettled(
-        filesToUpload.map(async (file, i) => {
+        fileList.map(async (file, i) => {
           try {
-            // 1. Get presigned URL from server
             const { url, key } = await getUploadUrl({
               data: {
                 fileName: file.name,
@@ -57,36 +81,12 @@ function FilesDirectPage() {
               },
             })
 
-            // 2. Upload directly to R2
-            await new Promise<void>((resolve, reject) => {
-              const xhr = new XMLHttpRequest()
-              xhr.open("PUT", url)
-              xhr.setRequestHeader(
-                "Content-Type",
-                file.type || "application/octet-stream",
+            await uploadToPresignedUrl(file, url, (pct) => {
+              setUploads((prev) =>
+                prev.map((u, idx) => (idx === i ? { ...u, progress: pct } : u)),
               )
-
-              xhr.upload.onprogress = (e) => {
-                if (e.lengthComputable) {
-                  const pct = Math.round((e.loaded / e.total) * 100)
-                  setUploads((prev) =>
-                    prev.map((u, idx) =>
-                      idx === i ? { ...u, progress: pct } : u,
-                    ),
-                  )
-                }
-              }
-
-              xhr.onload = () => {
-                if (xhr.status >= 200 && xhr.status < 300) resolve()
-                else reject(new Error(`Upload failed: ${xhr.status}`))
-              }
-
-              xhr.onerror = () => reject(new Error("Network error"))
-              xhr.send(file)
             })
 
-            // 3. Confirm upload with server (verify + record in DB)
             setUploads((prev) =>
               prev.map((u, idx) =>
                 idx === i ? { ...u, progress: 100, status: "confirming" } : u,
@@ -109,23 +109,24 @@ function FilesDirectPage() {
           }
         }),
       )
-
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: fileKeys.all })
       setTimeout(() => {
         setUploads((prev) => prev.filter((u) => u.status === "uploading"))
       }, 3000)
     },
-    [queryClient],
-  )
+  })
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault()
-      setIsDragging(false)
-      if (e.dataTransfer.files.length > 0) uploadFiles(e.dataTransfer.files)
-    },
-    [uploadFiles],
-  )
+  const uploadFiles = (fileList: FileList | File[]) => {
+    uploadMutation.mutate(Array.from(fileList))
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    if (e.dataTransfer.files.length > 0) uploadFiles(e.dataTransfer.files)
+  }
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 px-6 py-8">

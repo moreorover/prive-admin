@@ -79,7 +79,7 @@ export function useFiles() {
 
   const totalSize = files?.reduce((sum, f) => sum + f.size, 0) ?? 0
 
-  return { files, isLoading, totalSize, deleteMutation, queryClient }
+  return { files, isLoading, totalSize, deleteMutation }
 }
 
 export function FileListCard({
