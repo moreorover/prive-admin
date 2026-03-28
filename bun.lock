@@ -4,18 +4,16 @@
   "workspaces": {
     "": {
       "name": "prive-admin-tanstack",
-      "dependencies": {
-        "@prive-admin-tanstack/env": "workspace:*",
-        "dotenv": "catalog:",
-        "zod": "catalog:",
-      },
       "devDependencies": {
         "@prive-admin-tanstack/config": "workspace:*",
+        "@prive-admin-tanstack/env": "workspace:*",
         "@types/node": "catalog:",
+        "dotenv": "catalog:",
         "oxfmt": "^0.42.0",
         "oxlint": "^1.57.0",
         "turbo": "^2.8.20",
         "typescript": "^6.0.2",
+        "zod": "catalog:",
       },
     },
     "apps/web": {
