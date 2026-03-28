@@ -26,6 +26,12 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
+      - name: Lint
+        run: bunx oxlint
+
+      - name: Check Formatting
+        run: bunx oxfmt --check
+
       - name: Check Types
         run: bun run check-types
 
