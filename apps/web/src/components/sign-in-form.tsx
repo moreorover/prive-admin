@@ -123,7 +123,7 @@ export default function SignInForm({ onSwitchToSignUp, redirectTo }: { onSwitchT
         <Button
           variant="link"
           onClick={onSwitchToSignUp}
-          className="text-indigo-600 hover:text-indigo-800"
+          className="text-muted-foreground hover:text-foreground"
         >
           Need an account? Sign Up
         </Button>

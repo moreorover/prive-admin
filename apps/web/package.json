@@ -33,6 +33,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@fontsource-variable/dm-sans": "^5.2.8",
+    "@fontsource-variable/playfair-display": "^5.2.8",
     "@prive-admin-tanstack/config": "workspace:*",
     "@tanstack/react-router-devtools": "^1.166.11",
     "@testing-library/dom": "^10.4.1",

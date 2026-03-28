@@ -1,5 +1,6 @@
 import { Toaster } from "@prive-admin-tanstack/ui/components/sonner"
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router"
+import { ThemeProvider } from "next-themes"
 import { lazy } from "react"
 
 const TanStackRouterDevtools =
@@ -11,7 +12,6 @@ const TanStackRouterDevtools =
         })),
       )
 
-import Header from "../components/header"
 import appCss from "../index.css?url"
 
 import type { QueryClient } from "@tanstack/react-query"
@@ -31,7 +31,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "My App",
+        title: "Privé",
       },
     ],
     links: [
@@ -47,16 +47,15 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 
 function RootDocument() {
   return (
-    <html lang="en" className="light" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        <div className="grid h-svh grid-rows-[auto_1fr]">
-          <Header />
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <Outlet />
-        </div>
-        <Toaster richColors />
+          <Toaster richColors />
+        </ThemeProvider>
         <TanStackRouterDevtools position="bottom-left" />
         <Scripts />
       </body>
