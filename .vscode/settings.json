@@ -42,7 +42,9 @@
     "**/node_modules": true,
     "**/dist": true,
     "**/.turbo": true,
-    "**/routeTree.gen.ts": true
+    "**/routeTree.gen.ts": true,
+    "**/.agents": true,
+    "**/backups": true
   },
 
   // Files
