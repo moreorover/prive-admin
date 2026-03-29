@@ -1,19 +1,17 @@
 import { Badge } from "@prive-admin-tanstack/ui/components/badge"
+import { Button } from "@prive-admin-tanstack/ui/components/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@prive-admin-tanstack/ui/components/card"
 import { Separator } from "@prive-admin-tanstack/ui/components/separator"
 import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@prive-admin-tanstack/ui/components/table"
 import { useQuery, queryOptions } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { ArrowLeft, User } from "lucide-react"
+import { ArrowLeft, Plus, User } from "lucide-react"
+import { useState } from "react"
 
+import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
+import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
+import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
+import { HairAssignedTable } from "@/components/hair-assigned/hair-assigned-table"
 import { getHairOrder } from "@/functions/hair-orders"
 import { hairOrderKeys } from "@/lib/query-keys"
 
@@ -29,8 +27,21 @@ export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")
   },
 })
 
+type HairAssignedItem = {
+  id: string
+  weightInGrams: number
+  soldFor: number
+  profit: number
+  pricePerGram: number
+  client?: { id: string; name: string } | null
+  hairOrder?: { id: string; uid: number } | null
+}
+
 function HairOrderDetailPage() {
   const { hairOrderId } = Route.useParams()
+  const [createOpen, setCreateOpen] = useState(false)
+  const [editItem, setEditItem] = useState<HairAssignedItem | null>(null)
+  const [deleteItem, setDeleteItem] = useState<HairAssignedItem | null>(null)
 
   const { data: hairOrder, isLoading } = useQuery({
     queryKey: hairOrderKeys.detail(hairOrderId),
@@ -51,6 +62,10 @@ function HairOrderDetailPage() {
   }
 
   const formatCents = (cents: number) => `$${(cents / 100).toFixed(2)}`
+
+  const invalidateKeys = [
+    { queryKey: hairOrderKeys.detail(hairOrderId) },
+  ]
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
@@ -112,34 +127,19 @@ function HairOrderDetailPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-sm">Hair Assigned</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus className="size-3" />
+              Add
+            </Button>
           </CardHeader>
           <CardContent>
-            {hairOrder.hairAssigned && hairOrder.hairAssigned.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Weight</TableHead>
-                    <TableHead>Sold For</TableHead>
-                    <TableHead>Profit</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {hairOrder.hairAssigned.map((ha) => (
-                    <TableRow key={ha.id}>
-                      <TableCell>{ha.client?.name ?? "—"}</TableCell>
-                      <TableCell>{ha.weightInGrams}g</TableCell>
-                      <TableCell>{formatCents(ha.soldFor)}</TableCell>
-                      <TableCell>{formatCents(ha.profit)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <p className="text-sm text-muted-foreground">No hair assigned yet.</p>
-            )}
+            <HairAssignedTable
+              items={hairOrder.hairAssigned ?? []}
+              onEdit={setEditItem}
+              onDelete={setDeleteItem}
+            />
           </CardContent>
         </Card>
 
@@ -165,6 +165,31 @@ function HairOrderDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <CreateHairAssignedDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        clientId={hairOrder.customer.id}
+        invalidateKeys={invalidateKeys}
+      />
+
+      {editItem && (
+        <EditHairAssignedDialog
+          open={!!editItem}
+          onOpenChange={(open) => !open && setEditItem(null)}
+          hairAssigned={editItem}
+          invalidateKeys={invalidateKeys}
+        />
+      )}
+
+      {deleteItem && (
+        <DeleteHairAssignedDialog
+          open={!!deleteItem}
+          onOpenChange={(open) => !open && setDeleteItem(null)}
+          hairAssigned={deleteItem}
+          invalidateKeys={invalidateKeys}
+        />
+      )}
     </div>
   )
 }
