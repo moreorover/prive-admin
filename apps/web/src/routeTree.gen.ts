@@ -10,26 +10,29 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
-import { Route as AuthenticatedPlaygroundRouteImport } from './routes/_authenticated.playground'
-import { Route as AuthenticatedHairOrdersRouteImport } from './routes/_authenticated.hair-orders'
-import { Route as AuthenticatedFilesDirectRouteImport } from './routes/_authenticated.files-direct'
-import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated.files'
-import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated.customers'
-import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated.appointments'
+import { Route as AuthenticatedPlaygroundRouteImport } from './routes/_authenticated/playground'
+import { Route as AuthenticatedFilesDirectRouteImport } from './routes/_authenticated/files-direct'
+import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
+import { Route as AuthenticatedHairOrdersRouteRouteImport } from './routes/_authenticated/hair-orders/route'
+import { Route as AuthenticatedCustomersRouteRouteImport } from './routes/_authenticated/customers/route'
+import { Route as AuthenticatedAppointmentsRouteRouteImport } from './routes/_authenticated/appointments/route'
+import { Route as AuthenticatedHairOrdersIndexRouteImport } from './routes/_authenticated/hair-orders/index'
+import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
+import { Route as AuthenticatedAppointmentsIndexRouteImport } from './routes/_authenticated/appointments/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as AuthenticatedHairOrdersHairOrderIdRouteImport } from './routes/_authenticated.hair-orders.$hairOrderId'
-import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated.customers.$customerId'
-import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated.appointments.$appointmentId'
+import { Route as AuthenticatedHairOrdersHairOrderIdRouteImport } from './routes/_authenticated/hair-orders/$hairOrderId'
+import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
+import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments/$appointmentId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
@@ -46,34 +49,54 @@ const ApiUploadRoute = ApiUploadRouteImport.update({
 const AuthenticatedPlaygroundRoute = AuthenticatedPlaygroundRouteImport.update({
   id: '/playground',
   path: '/playground',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedHairOrdersRoute = AuthenticatedHairOrdersRouteImport.update({
-  id: '/hair-orders',
-  path: '/hair-orders',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFilesDirectRoute =
   AuthenticatedFilesDirectRouteImport.update({
     id: '/files-direct',
     path: '/files-direct',
-    getParentRoute: () => AuthenticatedRoute,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
   id: '/files',
   path: '/files',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedCustomersRoute = AuthenticatedCustomersRouteImport.update({
-  id: '/customers',
-  path: '/customers',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAppointmentsRoute =
-  AuthenticatedAppointmentsRouteImport.update({
+const AuthenticatedHairOrdersRouteRoute =
+  AuthenticatedHairOrdersRouteRouteImport.update({
+    id: '/hair-orders',
+    path: '/hair-orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCustomersRouteRoute =
+  AuthenticatedCustomersRouteRouteImport.update({
+    id: '/customers',
+    path: '/customers',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAppointmentsRouteRoute =
+  AuthenticatedAppointmentsRouteRouteImport.update({
     id: '/appointments',
     path: '/appointments',
-    getParentRoute: () => AuthenticatedRoute,
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHairOrdersIndexRoute =
+  AuthenticatedHairOrdersIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedHairOrdersRouteRoute,
+  } as any)
+const AuthenticatedCustomersIndexRoute =
+  AuthenticatedCustomersIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedCustomersRouteRoute,
+  } as any)
+const AuthenticatedAppointmentsIndexRoute =
+  AuthenticatedAppointmentsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAppointmentsRouteRoute,
   } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -84,67 +107,73 @@ const AuthenticatedHairOrdersHairOrderIdRoute =
   AuthenticatedHairOrdersHairOrderIdRouteImport.update({
     id: '/$hairOrderId',
     path: '/$hairOrderId',
-    getParentRoute: () => AuthenticatedHairOrdersRoute,
+    getParentRoute: () => AuthenticatedHairOrdersRouteRoute,
   } as any)
 const AuthenticatedCustomersCustomerIdRoute =
   AuthenticatedCustomersCustomerIdRouteImport.update({
     id: '/$customerId',
     path: '/$customerId',
-    getParentRoute: () => AuthenticatedCustomersRoute,
+    getParentRoute: () => AuthenticatedCustomersRouteRoute,
   } as any)
 const AuthenticatedAppointmentsAppointmentIdRoute =
   AuthenticatedAppointmentsAppointmentIdRouteImport.update({
     id: '/$appointmentId',
     path: '/$appointmentId',
-    getParentRoute: () => AuthenticatedAppointmentsRoute,
+    getParentRoute: () => AuthenticatedAppointmentsRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/appointments': typeof AuthenticatedAppointmentsRouteWithChildren
-  '/customers': typeof AuthenticatedCustomersRouteWithChildren
+  '/appointments': typeof AuthenticatedAppointmentsRouteRouteWithChildren
+  '/customers': typeof AuthenticatedCustomersRouteRouteWithChildren
+  '/hair-orders': typeof AuthenticatedHairOrdersRouteRouteWithChildren
   '/files': typeof AuthenticatedFilesRoute
   '/files-direct': typeof AuthenticatedFilesDirectRoute
-  '/hair-orders': typeof AuthenticatedHairOrdersRouteWithChildren
   '/playground': typeof AuthenticatedPlaygroundRoute
   '/api/upload': typeof ApiUploadRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/appointments/': typeof AuthenticatedAppointmentsIndexRoute
+  '/customers/': typeof AuthenticatedCustomersIndexRoute
+  '/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/appointments': typeof AuthenticatedAppointmentsRouteWithChildren
-  '/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/files': typeof AuthenticatedFilesRoute
   '/files-direct': typeof AuthenticatedFilesDirectRoute
-  '/hair-orders': typeof AuthenticatedHairOrdersRouteWithChildren
   '/playground': typeof AuthenticatedPlaygroundRoute
   '/api/upload': typeof ApiUploadRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/appointments': typeof AuthenticatedAppointmentsIndexRoute
+  '/customers': typeof AuthenticatedCustomersIndexRoute
+  '/hair-orders': typeof AuthenticatedHairOrdersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
-  '/_authenticated/appointments': typeof AuthenticatedAppointmentsRouteWithChildren
-  '/_authenticated/customers': typeof AuthenticatedCustomersRouteWithChildren
+  '/_authenticated/appointments': typeof AuthenticatedAppointmentsRouteRouteWithChildren
+  '/_authenticated/customers': typeof AuthenticatedCustomersRouteRouteWithChildren
+  '/_authenticated/hair-orders': typeof AuthenticatedHairOrdersRouteRouteWithChildren
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/files-direct': typeof AuthenticatedFilesDirectRoute
-  '/_authenticated/hair-orders': typeof AuthenticatedHairOrdersRouteWithChildren
   '/_authenticated/playground': typeof AuthenticatedPlaygroundRoute
   '/api/upload': typeof ApiUploadRoute
   '/_authenticated/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_authenticated/appointments/': typeof AuthenticatedAppointmentsIndexRoute
+  '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
+  '/_authenticated/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -153,30 +182,33 @@ export interface FileRouteTypes {
     | '/login'
     | '/appointments'
     | '/customers'
+    | '/hair-orders'
     | '/files'
     | '/files-direct'
-    | '/hair-orders'
     | '/playground'
     | '/api/upload'
     | '/appointments/$appointmentId'
     | '/customers/$customerId'
     | '/hair-orders/$hairOrderId'
     | '/api/auth/$'
+    | '/appointments/'
+    | '/customers/'
+    | '/hair-orders/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
-    | '/appointments'
-    | '/customers'
     | '/files'
     | '/files-direct'
-    | '/hair-orders'
     | '/playground'
     | '/api/upload'
     | '/appointments/$appointmentId'
     | '/customers/$customerId'
     | '/hair-orders/$hairOrderId'
     | '/api/auth/$'
+    | '/appointments'
+    | '/customers'
+    | '/hair-orders'
   id:
     | '__root__'
     | '/'
@@ -184,20 +216,23 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authenticated/appointments'
     | '/_authenticated/customers'
+    | '/_authenticated/hair-orders'
     | '/_authenticated/files'
     | '/_authenticated/files-direct'
-    | '/_authenticated/hair-orders'
     | '/_authenticated/playground'
     | '/api/upload'
     | '/_authenticated/appointments/$appointmentId'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/hair-orders/$hairOrderId'
     | '/api/auth/$'
+    | '/_authenticated/appointments/'
+    | '/_authenticated/customers/'
+    | '/_authenticated/hair-orders/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   ApiUploadRoute: typeof ApiUploadRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -216,7 +251,7 @@ declare module '@tanstack/react-router' {
       id: '/_authenticated'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteImport
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -238,42 +273,63 @@ declare module '@tanstack/react-router' {
       path: '/playground'
       fullPath: '/playground'
       preLoaderRoute: typeof AuthenticatedPlaygroundRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/hair-orders': {
-      id: '/_authenticated/hair-orders'
-      path: '/hair-orders'
-      fullPath: '/hair-orders'
-      preLoaderRoute: typeof AuthenticatedHairOrdersRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/files-direct': {
       id: '/_authenticated/files-direct'
       path: '/files-direct'
       fullPath: '/files-direct'
       preLoaderRoute: typeof AuthenticatedFilesDirectRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/files': {
       id: '/_authenticated/files'
       path: '/files'
       fullPath: '/files'
       preLoaderRoute: typeof AuthenticatedFilesRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hair-orders': {
+      id: '/_authenticated/hair-orders'
+      path: '/hair-orders'
+      fullPath: '/hair-orders'
+      preLoaderRoute: typeof AuthenticatedHairOrdersRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/customers': {
       id: '/_authenticated/customers'
       path: '/customers'
       fullPath: '/customers'
-      preLoaderRoute: typeof AuthenticatedCustomersRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      preLoaderRoute: typeof AuthenticatedCustomersRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/appointments': {
       id: '/_authenticated/appointments'
       path: '/appointments'
       fullPath: '/appointments'
-      preLoaderRoute: typeof AuthenticatedAppointmentsRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      preLoaderRoute: typeof AuthenticatedAppointmentsRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hair-orders/': {
+      id: '/_authenticated/hair-orders/'
+      path: '/'
+      fullPath: '/hair-orders/'
+      preLoaderRoute: typeof AuthenticatedHairOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedHairOrdersRouteRoute
+    }
+    '/_authenticated/customers/': {
+      id: '/_authenticated/customers/'
+      path: '/'
+      fullPath: '/customers/'
+      preLoaderRoute: typeof AuthenticatedCustomersIndexRouteImport
+      parentRoute: typeof AuthenticatedCustomersRouteRoute
+    }
+    '/_authenticated/appointments/': {
+      id: '/_authenticated/appointments/'
+      path: '/'
+      fullPath: '/appointments/'
+      preLoaderRoute: typeof AuthenticatedAppointmentsIndexRouteImport
+      parentRoute: typeof AuthenticatedAppointmentsRouteRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -287,95 +343,103 @@ declare module '@tanstack/react-router' {
       path: '/$hairOrderId'
       fullPath: '/hair-orders/$hairOrderId'
       preLoaderRoute: typeof AuthenticatedHairOrdersHairOrderIdRouteImport
-      parentRoute: typeof AuthenticatedHairOrdersRoute
+      parentRoute: typeof AuthenticatedHairOrdersRouteRoute
     }
     '/_authenticated/customers/$customerId': {
       id: '/_authenticated/customers/$customerId'
       path: '/$customerId'
       fullPath: '/customers/$customerId'
       preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
-      parentRoute: typeof AuthenticatedCustomersRoute
+      parentRoute: typeof AuthenticatedCustomersRouteRoute
     }
     '/_authenticated/appointments/$appointmentId': {
       id: '/_authenticated/appointments/$appointmentId'
       path: '/$appointmentId'
       fullPath: '/appointments/$appointmentId'
       preLoaderRoute: typeof AuthenticatedAppointmentsAppointmentIdRouteImport
-      parentRoute: typeof AuthenticatedAppointmentsRoute
+      parentRoute: typeof AuthenticatedAppointmentsRouteRoute
     }
   }
 }
 
-interface AuthenticatedAppointmentsRouteChildren {
+interface AuthenticatedAppointmentsRouteRouteChildren {
   AuthenticatedAppointmentsAppointmentIdRoute: typeof AuthenticatedAppointmentsAppointmentIdRoute
+  AuthenticatedAppointmentsIndexRoute: typeof AuthenticatedAppointmentsIndexRoute
 }
 
-const AuthenticatedAppointmentsRouteChildren: AuthenticatedAppointmentsRouteChildren =
+const AuthenticatedAppointmentsRouteRouteChildren: AuthenticatedAppointmentsRouteRouteChildren =
   {
     AuthenticatedAppointmentsAppointmentIdRoute:
       AuthenticatedAppointmentsAppointmentIdRoute,
+    AuthenticatedAppointmentsIndexRoute: AuthenticatedAppointmentsIndexRoute,
   }
 
-const AuthenticatedAppointmentsRouteWithChildren =
-  AuthenticatedAppointmentsRoute._addFileChildren(
-    AuthenticatedAppointmentsRouteChildren,
+const AuthenticatedAppointmentsRouteRouteWithChildren =
+  AuthenticatedAppointmentsRouteRoute._addFileChildren(
+    AuthenticatedAppointmentsRouteRouteChildren,
   )
 
-interface AuthenticatedCustomersRouteChildren {
+interface AuthenticatedCustomersRouteRouteChildren {
   AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
+  AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
 }
 
-const AuthenticatedCustomersRouteChildren: AuthenticatedCustomersRouteChildren =
+const AuthenticatedCustomersRouteRouteChildren: AuthenticatedCustomersRouteRouteChildren =
   {
     AuthenticatedCustomersCustomerIdRoute:
       AuthenticatedCustomersCustomerIdRoute,
+    AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
   }
 
-const AuthenticatedCustomersRouteWithChildren =
-  AuthenticatedCustomersRoute._addFileChildren(
-    AuthenticatedCustomersRouteChildren,
+const AuthenticatedCustomersRouteRouteWithChildren =
+  AuthenticatedCustomersRouteRoute._addFileChildren(
+    AuthenticatedCustomersRouteRouteChildren,
   )
 
-interface AuthenticatedHairOrdersRouteChildren {
+interface AuthenticatedHairOrdersRouteRouteChildren {
   AuthenticatedHairOrdersHairOrderIdRoute: typeof AuthenticatedHairOrdersHairOrderIdRoute
+  AuthenticatedHairOrdersIndexRoute: typeof AuthenticatedHairOrdersIndexRoute
 }
 
-const AuthenticatedHairOrdersRouteChildren: AuthenticatedHairOrdersRouteChildren =
+const AuthenticatedHairOrdersRouteRouteChildren: AuthenticatedHairOrdersRouteRouteChildren =
   {
     AuthenticatedHairOrdersHairOrderIdRoute:
       AuthenticatedHairOrdersHairOrderIdRoute,
+    AuthenticatedHairOrdersIndexRoute: AuthenticatedHairOrdersIndexRoute,
   }
 
-const AuthenticatedHairOrdersRouteWithChildren =
-  AuthenticatedHairOrdersRoute._addFileChildren(
-    AuthenticatedHairOrdersRouteChildren,
+const AuthenticatedHairOrdersRouteRouteWithChildren =
+  AuthenticatedHairOrdersRouteRoute._addFileChildren(
+    AuthenticatedHairOrdersRouteRouteChildren,
   )
 
-interface AuthenticatedRouteChildren {
-  AuthenticatedAppointmentsRoute: typeof AuthenticatedAppointmentsRouteWithChildren
-  AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRouteWithChildren
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAppointmentsRouteRoute: typeof AuthenticatedAppointmentsRouteRouteWithChildren
+  AuthenticatedCustomersRouteRoute: typeof AuthenticatedCustomersRouteRouteWithChildren
+  AuthenticatedHairOrdersRouteRoute: typeof AuthenticatedHairOrdersRouteRouteWithChildren
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedFilesDirectRoute: typeof AuthenticatedFilesDirectRoute
-  AuthenticatedHairOrdersRoute: typeof AuthenticatedHairOrdersRouteWithChildren
   AuthenticatedPlaygroundRoute: typeof AuthenticatedPlaygroundRoute
 }
 
-const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedAppointmentsRoute: AuthenticatedAppointmentsRouteWithChildren,
-  AuthenticatedCustomersRoute: AuthenticatedCustomersRouteWithChildren,
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAppointmentsRouteRoute:
+    AuthenticatedAppointmentsRouteRouteWithChildren,
+  AuthenticatedCustomersRouteRoute:
+    AuthenticatedCustomersRouteRouteWithChildren,
+  AuthenticatedHairOrdersRouteRoute:
+    AuthenticatedHairOrdersRouteRouteWithChildren,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedFilesDirectRoute: AuthenticatedFilesDirectRoute,
-  AuthenticatedHairOrdersRoute: AuthenticatedHairOrdersRouteWithChildren,
   AuthenticatedPlaygroundRoute: AuthenticatedPlaygroundRoute,
 }
 
-const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
-  AuthenticatedRouteChildren,
-)
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   ApiUploadRoute: ApiUploadRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
