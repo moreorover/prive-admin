@@ -19,6 +19,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import { createHairAssigned, getAvailableHairOrders } from "@/functions/hair-assigned"
+import { hairOrderKeys } from "@/lib/query-keys"
 
 type CreateHairAssignedDialogProps = {
   open: boolean
@@ -39,7 +40,7 @@ export function CreateHairAssignedDialog({
   const queryClient = useQueryClient()
 
   const { data: availableOrders, isLoading } = useQuery({
-    queryKey: ["hair-orders", "available"],
+    queryKey: [...hairOrderKeys.all, "available"],
     queryFn: () => getAvailableHairOrders(),
     enabled: open,
   })
@@ -53,6 +54,7 @@ export function CreateHairAssignedDialog({
       for (const key of invalidateKeys) {
         queryClient.invalidateQueries(key)
       }
+      queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
       onOpenChange(false)
       setSelectedOrderId(null)
       toast.success("Hair assigned created")

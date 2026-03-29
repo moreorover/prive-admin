@@ -10,7 +10,7 @@ import {
 import { Link } from "@tanstack/react-router"
 import { Edit, Trash2 } from "lucide-react"
 
-type HairAssignedRow = {
+export type HairAssignedRow = {
   id: string
   weightInGrams: number
   soldFor: number

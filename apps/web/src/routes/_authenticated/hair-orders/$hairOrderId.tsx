@@ -11,7 +11,7 @@ import { useState } from "react"
 import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
 import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
 import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
-import { HairAssignedTable } from "@/components/hair-assigned/hair-assigned-table"
+import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
 import { getHairOrder } from "@/functions/hair-orders"
 import { hairOrderKeys } from "@/lib/query-keys"
 
@@ -27,21 +27,11 @@ export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")
   },
 })
 
-type HairAssignedItem = {
-  id: string
-  weightInGrams: number
-  soldFor: number
-  profit: number
-  pricePerGram: number
-  client?: { id: string; name: string } | null
-  hairOrder?: { id: string; uid: number } | null
-}
-
 function HairOrderDetailPage() {
   const { hairOrderId } = Route.useParams()
   const [createOpen, setCreateOpen] = useState(false)
-  const [editItem, setEditItem] = useState<HairAssignedItem | null>(null)
-  const [deleteItem, setDeleteItem] = useState<HairAssignedItem | null>(null)
+  const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
+  const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
 
   const { data: hairOrder, isLoading } = useQuery({
     queryKey: hairOrderKeys.detail(hairOrderId),

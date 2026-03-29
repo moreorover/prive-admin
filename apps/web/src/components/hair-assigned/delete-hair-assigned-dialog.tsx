@@ -10,6 +10,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { deleteHairAssigned } from "@/functions/hair-assigned"
+import { hairOrderKeys } from "@/lib/query-keys"
 
 type DeleteHairAssignedDialogProps = {
   open: boolean
@@ -37,6 +38,7 @@ export function DeleteHairAssignedDialog({
       for (const key of invalidateKeys) {
         queryClient.invalidateQueries(key)
       }
+      queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
       onOpenChange(false)
       toast.success("Hair assigned deleted")
     },

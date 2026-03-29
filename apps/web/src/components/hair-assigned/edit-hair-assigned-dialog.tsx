@@ -13,6 +13,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
 import { updateHairAssigned } from "@/functions/hair-assigned"
+import { hairOrderKeys } from "@/lib/query-keys"
 
 type EditHairAssignedDialogProps = {
   open: boolean
@@ -40,6 +41,7 @@ export function EditHairAssignedDialog({
       for (const key of invalidateKeys) {
         queryClient.invalidateQueries(key)
       }
+      queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
       onOpenChange(false)
       toast.success("Hair assigned updated")
     },

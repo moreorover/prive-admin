@@ -45,13 +45,3 @@ export const noteSchema = z.object({
 
 export type NoteInput = z.infer<typeof noteSchema>
 
-export const hairAssignedSchema = z.object({
-  id: z.string().optional(),
-  hairOrderId: z.string().min(1, "Hair order is required"),
-  clientId: z.string().min(1, "Client is required"),
-  appointmentId: z.string().nullish(),
-  weightInGrams: z.number().min(0),
-  soldFor: z.number().min(0),
-})
-
-export type HairAssignedInput = z.infer<typeof hairAssignedSchema>
