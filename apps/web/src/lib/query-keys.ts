@@ -32,3 +32,9 @@ export const noteKeys = {
   all: ["notes"] as const,
   list: (filter: Record<string, string | undefined>) => [...noteKeys.all, "list", filter] as const,
 }
+
+export const hairAssignedKeys = {
+  all: ["hair-assigned"] as const,
+  byHairOrder: (id: string) => [...hairAssignedKeys.all, "by-hair-order", id] as const,
+  byAppointment: (id: string) => [...hairAssignedKeys.all, "by-appointment", id] as const,
+}
