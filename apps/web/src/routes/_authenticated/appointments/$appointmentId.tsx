@@ -1,31 +1,64 @@
+import { Button } from "@prive-admin-tanstack/ui/components/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@prive-admin-tanstack/ui/components/card"
 import { Separator } from "@prive-admin-tanstack/ui/components/separator"
 import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
 import { useQuery, queryOptions } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { ArrowLeft, Clock, User } from "lucide-react"
+import { ArrowLeft, Clock, Plus, User } from "lucide-react"
+import { useState } from "react"
 
+import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
+import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
+import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
+import { HairAssignedTable } from "@/components/hair-assigned/hair-assigned-table"
 import { getAppointment } from "@/functions/appointments"
-import { appointmentKeys } from "@/lib/query-keys"
+import { getHairAssignedByAppointment } from "@/functions/hair-assigned"
+import { appointmentKeys, hairAssignedKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
   loader: async ({ context, params }) => {
-    await context.queryClient.prefetchQuery(
-      queryOptions({
-        queryKey: appointmentKeys.detail(params.appointmentId),
-        queryFn: () => getAppointment({ data: { id: params.appointmentId } }),
-      }),
-    )
+    await Promise.all([
+      context.queryClient.prefetchQuery(
+        queryOptions({
+          queryKey: appointmentKeys.detail(params.appointmentId),
+          queryFn: () => getAppointment({ data: { id: params.appointmentId } }),
+        }),
+      ),
+      context.queryClient.prefetchQuery(
+        queryOptions({
+          queryKey: hairAssignedKeys.byAppointment(params.appointmentId),
+          queryFn: () => getHairAssignedByAppointment({ data: { appointmentId: params.appointmentId } }),
+        }),
+      ),
+    ])
   },
 })
 
+type HairAssignedItem = {
+  id: string
+  weightInGrams: number
+  soldFor: number
+  profit: number
+  pricePerGram: number
+  client?: { id: string; name: string } | null
+  hairOrder?: { id: string; uid: number } | null
+}
+
 function AppointmentDetailPage() {
   const { appointmentId } = Route.useParams()
+  const [createOpen, setCreateOpen] = useState(false)
+  const [editItem, setEditItem] = useState<HairAssignedItem | null>(null)
+  const [deleteItem, setDeleteItem] = useState<HairAssignedItem | null>(null)
 
   const { data: appointment, isLoading } = useQuery({
     queryKey: appointmentKeys.detail(appointmentId),
     queryFn: () => getAppointment({ data: { id: appointmentId } }),
+  })
+
+  const { data: hairAssigned } = useQuery({
+    queryKey: hairAssignedKeys.byAppointment(appointmentId),
+    queryFn: () => getHairAssignedByAppointment({ data: { appointmentId } }),
   })
 
   if (isLoading) {
@@ -40,6 +73,11 @@ function AppointmentDetailPage() {
   if (!appointment) {
     return <div className="px-6 py-8 text-muted-foreground">Appointment not found.</div>
   }
+
+  const invalidateKeys = [
+    { queryKey: appointmentKeys.detail(appointmentId) },
+    { queryKey: hairAssignedKeys.byAppointment(appointmentId) },
+  ]
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
@@ -94,6 +132,24 @@ function AppointmentDetailPage() {
         </Card>
 
         <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-sm">Hair Assigned</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus className="size-3" />
+              Add
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <HairAssignedTable
+              items={hairAssigned ?? []}
+              showHairOrderColumn
+              onEdit={setEditItem}
+              onDelete={setDeleteItem}
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-sm">Notes</CardTitle>
           </CardHeader>
@@ -115,6 +171,32 @@ function AppointmentDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <CreateHairAssignedDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        clientId={appointment.client.id}
+        appointmentId={appointmentId}
+        invalidateKeys={invalidateKeys}
+      />
+
+      {editItem && (
+        <EditHairAssignedDialog
+          open={!!editItem}
+          onOpenChange={(open) => !open && setEditItem(null)}
+          hairAssigned={editItem}
+          invalidateKeys={invalidateKeys}
+        />
+      )}
+
+      {deleteItem && (
+        <DeleteHairAssignedDialog
+          open={!!deleteItem}
+          onOpenChange={(open) => !open && setDeleteItem(null)}
+          hairAssigned={deleteItem}
+          invalidateKeys={invalidateKeys}
+        />
+      )}
     </div>
   )
 }
