@@ -5,7 +5,7 @@ import { appointment } from "./appointment"
 import { user } from "./auth"
 import { customer } from "./customer"
 
-export const hairOrder = pgTable("hair_orders", {
+export const hairOrder = pgTable("hair_order", {
   id: text("id").primaryKey().$defaultFn(createId),
   uid: serial("uid").notNull().unique(),
   placedAt: date("placed_at"),

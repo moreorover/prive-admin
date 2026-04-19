@@ -5,7 +5,7 @@ import { appointment } from "./appointment"
 import { customer } from "./customer"
 import { order } from "./order"
 
-export const transaction = pgTable("transactions", {
+export const transaction = pgTable("transaction", {
   id: text("id").primaryKey().$defaultFn(createId),
   name: text("name"),
   notes: text("notes"),

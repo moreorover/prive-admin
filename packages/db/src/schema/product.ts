@@ -1,7 +1,7 @@
 import { createId } from "@paralleldrive/cuid2"
 import { pgTable, integer, text, timestamp, unique } from "drizzle-orm/pg-core"
 
-export const product = pgTable("products", {
+export const product = pgTable("product", {
   id: text("id").primaryKey().$defaultFn(createId),
   name: text("name").notNull(),
   description: text("description"),
@@ -12,7 +12,7 @@ export const product = pgTable("products", {
 })
 
 export const productVariant = pgTable(
-  "product_variants",
+  "product_variant",
   {
     id: text("id").primaryKey().$defaultFn(createId),
     productId: text("product_id")

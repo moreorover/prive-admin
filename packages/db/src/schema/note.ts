@@ -6,7 +6,7 @@ import { user } from "./auth"
 import { customer } from "./customer"
 import { hairOrder } from "./hair"
 
-export const note = pgTable("notes", {
+export const note = pgTable("note", {
   id: text("id").primaryKey().$defaultFn(createId),
   note: text("note").notNull(),
   customerId: text("customer_id")

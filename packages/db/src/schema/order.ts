@@ -4,7 +4,7 @@ import { pgTable, integer, text, timestamp, date, unique } from "drizzle-orm/pg-
 import { customer } from "./customer"
 import { productVariant } from "./product"
 
-export const order = pgTable("orders", {
+export const order = pgTable("order", {
   id: text("id").primaryKey().$defaultFn(createId),
   customerId: text("customer_id")
     .notNull()
@@ -19,7 +19,7 @@ export const order = pgTable("orders", {
 })
 
 export const orderItem = pgTable(
-  "order_items",
+  "order_item",
   {
     id: text("id").primaryKey().$defaultFn(createId),
     orderId: text("order_id")

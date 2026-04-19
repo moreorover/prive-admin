@@ -3,7 +3,7 @@ import { pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core"
 
 import { customer } from "./customer"
 
-export const appointment = pgTable("appointments", {
+export const appointment = pgTable("appointment", {
   id: text("id").primaryKey().$defaultFn(createId),
   name: text("name").notNull(),
   startsAt: timestamp("starts_at").notNull(),
