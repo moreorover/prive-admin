@@ -46,6 +46,7 @@ coverage
 
 # Backups
 backups/*.sql
+backups/*.dump
 
 # Misc
 *.tgz
