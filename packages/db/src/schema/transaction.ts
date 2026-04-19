@@ -13,7 +13,7 @@ export const transaction = pgTable("transaction", {
   type: text("type").notNull().default("BANK"),
   status: text("status").notNull().default("PENDING"),
   completedDateBy: date("completed_date_by").defaultNow().notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   customerId: text("customer_id")
     .notNull()
     .references(() => customer.id, { onDelete: "cascade" }),

@@ -25,6 +25,7 @@ import { Calendar, Plus } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { ClientDate } from "@/components/client-date"
 import { getAppointments, createAppointment } from "@/functions/appointments"
 import { getCustomers } from "@/functions/customers"
 import { appointmentKeys, customerKeys } from "@/lib/query-keys"
@@ -199,7 +200,7 @@ function AppointmentsPage() {
                         </Link>
                       </TableCell>
                       <TableCell className="text-muted-foreground">{a.client?.name ?? "—"}</TableCell>
-                      <TableCell className="text-muted-foreground">{new Date(a.startsAt).toLocaleString()}</TableCell>
+                      <TableCell className="text-muted-foreground"><ClientDate date={a.startsAt} showTime /></TableCell>
                     </TableRow>
                   ))}
               {!isLoading && appointments?.length === 0 && (

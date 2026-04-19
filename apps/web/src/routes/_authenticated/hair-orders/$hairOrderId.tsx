@@ -8,6 +8,7 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 import { ArrowLeft, Plus, User } from "lucide-react"
 import { useState } from "react"
 
+import { ClientDate } from "@/components/client-date"
 import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
 import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
 import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
@@ -144,7 +145,7 @@ function HairOrderDetailPage() {
                   <div key={n.id} className="rounded-md border p-3">
                     <p className="text-sm">{n.note}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {n.createdBy?.name ?? "Unknown"} &middot; {new Date(n.createdAt).toLocaleDateString()}
+                      {n.createdBy?.name ?? "Unknown"} &middot; <ClientDate date={n.createdAt} />
                     </p>
                   </div>
                 ))}

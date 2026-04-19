@@ -25,6 +25,7 @@ import { Plus, Users } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { ClientDate } from "@/components/client-date"
 import { getCustomers, createCustomer } from "@/functions/customers"
 import { customerKeys } from "@/lib/query-keys"
 
@@ -178,7 +179,7 @@ function CustomersPage() {
                       </TableCell>
                       <TableCell className="text-muted-foreground">{c.phoneNumber ?? "—"}</TableCell>
                       <TableCell className="text-muted-foreground">
-                        {new Date(c.createdAt).toLocaleDateString()}
+                        <ClientDate date={c.createdAt} />
                       </TableCell>
                     </TableRow>
                   ))}

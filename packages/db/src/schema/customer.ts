@@ -5,6 +5,6 @@ export const customer = pgTable("customer", {
   id: text("id").primaryKey().$defaultFn(createId),
   name: text("name").notNull().unique(),
   phoneNumber: text("phone_number"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(() => new Date()),
 })

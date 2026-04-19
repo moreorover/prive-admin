@@ -6,12 +6,12 @@ import { customer } from "./customer"
 export const appointment = pgTable("appointment", {
   id: text("id").primaryKey().$defaultFn(createId),
   name: text("name").notNull(),
-  startsAt: timestamp("starts_at").notNull(),
+  startsAt: timestamp("starts_at", { withTimezone: true }).notNull(),
   clientId: text("client_id")
     .notNull()
     .references(() => customer.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .$onUpdate(() => new Date())
     .notNull(),
 })
@@ -25,7 +25,7 @@ export const personnelOnAppointments = pgTable(
     personnelId: text("personnel_id")
       .notNull()
       .references(() => customer.id, { onDelete: "cascade" }),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [primaryKey({ columns: [table.personnelId, table.appointmentId] })],
 )

@@ -26,6 +26,7 @@ import { Plus, Scissors } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { ClientDate } from "@/components/client-date"
 import { getCustomers } from "@/functions/customers"
 import { getHairOrders, createHairOrder } from "@/functions/hair-orders"
 import { hairOrderKeys, customerKeys } from "@/lib/query-keys"
@@ -251,7 +252,7 @@ function HairOrdersPage() {
                       </TableCell>
                       <TableCell className="text-muted-foreground">{ho.weightReceived}g</TableCell>
                       <TableCell className="text-muted-foreground">
-                        {ho.placedAt ? new Date(ho.placedAt).toLocaleDateString() : "—"}
+                        {ho.placedAt ? <ClientDate date={ho.placedAt} /> : "—"}
                       </TableCell>
                     </TableRow>
                   ))}

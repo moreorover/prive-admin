@@ -26,6 +26,7 @@ import { ArrowLeft, Edit, Phone, Plus } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { ClientDate } from "@/components/client-date"
 import { getAppointmentsByCustomerId } from "@/functions/appointments"
 import { getCustomer, updateCustomer } from "@/functions/customers"
 import { getNotes, createNote, deleteNote } from "@/functions/notes"
@@ -307,7 +308,7 @@ function CustomerDetailPage() {
                         </Link>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {new Date(a.startsAt).toLocaleDateString()}
+                        <ClientDate date={a.startsAt} />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -335,7 +336,7 @@ function CustomerDetailPage() {
                     <div className="space-y-1">
                       <p className="text-sm">{n.note}</p>
                       <p className="text-xs text-muted-foreground">
-                        {n.createdBy?.name ?? "Unknown"} &middot; {new Date(n.createdAt).toLocaleDateString()}
+                        {n.createdBy?.name ?? "Unknown"} &middot; <ClientDate date={n.createdAt} />
                       </p>
                     </div>
                     <Button

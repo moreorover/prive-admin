@@ -12,8 +12,8 @@ export const order = pgTable("order", {
   type: text("type").notNull().default("PURCHASE"),
   status: text("status").notNull().default("PENDING"),
   placedAt: date("placed_at").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .$onUpdate(() => new Date())
     .notNull(),
 })
@@ -31,8 +31,8 @@ export const orderItem = pgTable(
     quantity: integer("quantity").notNull(),
     unitPrice: integer("unit_price").notNull(),
     totalPrice: integer("total_price").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
       .$onUpdate(() => new Date())
       .notNull(),
   },
