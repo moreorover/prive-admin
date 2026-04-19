@@ -84,21 +84,34 @@ def rename_cols(cols_str):
 # Insert order respects FK dependencies (parents first)
 TABLE_ORDER = [
     "users",
-    "customers",
-    "products",
+    "customer",
+    "product",
     "accounts",
     "sessions",
     "verifications",
-    "appointments",
+    "appointment",
     "appointment_personnel",
-    "product_variants",
-    "orders",
-    "order_items",
-    "hair_orders",
+    "product_variant",
+    "order",
+    "order_item",
+    "hair_order",
     "hair_assigned",
-    "transactions",
-    "notes",
+    "transaction",
+    "note",
 ]
+
+# Prisma plural -> Drizzle singular table name mapping
+TABLE_RENAME = {
+    "customers": "customer",
+    "products": "product",
+    "appointments": "appointment",
+    "product_variants": "product_variant",
+    "orders": "order",
+    "order_items": "order_item",
+    "hair_orders": "hair_order",
+    "transactions": "transaction",
+    "notes": "note",
+}
 
 out = []
 out.append("-- Drizzle-compatible data restore")
@@ -110,9 +123,12 @@ out.append("SET standard_conforming_strings = on;")
 out.append("")
 
 for table in TABLE_ORDER:
-    if table not in blocks or not blocks[table]["data"]:
+    # Look up data using the old Prisma name if this table was renamed
+    old_name = next((k for k, v in TABLE_RENAME.items() if v == table), table)
+    source = old_name if old_name in blocks else table
+    if source not in blocks or not blocks[source]["data"]:
         continue
-    info = blocks[table]
+    info = blocks[source]
     new_cols = rename_cols(info["cols"])
     out.append(f"-- Data for: {table}")
     out.append(f"COPY public.{table} ({new_cols}) FROM stdin;")
@@ -121,14 +137,14 @@ for table in TABLE_ORDER:
     out.append("\\.")
     out.append("")
 
-# Reset hair_orders uid sequence
+# Reset hair_order uid sequence
 seq_match = re.search(
     r"SELECT pg_catalog\.setval\('public\.hair_orders_uid_seq',\s*(\d+),\s*(true|false)\);",
     content,
 )
 if seq_match:
     out.append(
-        f"SELECT pg_catalog.setval('public.hair_orders_uid_seq', {seq_match.group(1)}, {seq_match.group(2)});"
+        f"SELECT pg_catalog.setval('public.hair_order_uid_seq', {seq_match.group(1)}, {seq_match.group(2)});"
     )
     out.append("")
 
