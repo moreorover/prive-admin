@@ -93,7 +93,11 @@ function AppointmentDetailPage() {
             </Group>
             <Group gap={4}>
               <IconUser size={12} />
-              <Text component={Link} to="/customers/$customerId" params={{ customerId: appointment.client.id }} c="blue" size="sm">
+              <Text
+                renderRoot={(props) => <Link to="/customers/$customerId" params={{ customerId: appointment.client.id }} {...props} />}
+                c="blue"
+                size="sm"
+              >
                 {appointment.client.name}
               </Text>
             </Group>

@@ -147,7 +147,11 @@ function HairOrdersPage() {
               : hairOrders?.map((ho) => (
                   <Table.Tr key={ho.id}>
                     <Table.Td>
-                      <Text component={Link} to="/hair-orders/$hairOrderId" params={{ hairOrderId: ho.id }} c="blue" fw={500}>
+                      <Text
+                        renderRoot={(props) => <Link to="/hair-orders/$hairOrderId" params={{ hairOrderId: ho.id }} {...props} />}
+                        c="blue"
+                        fw={500}
+                      >
                         #{ho.uid}
                       </Text>
                     </Table.Td>

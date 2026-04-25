@@ -114,7 +114,11 @@ function AppointmentsPage() {
               : appointments?.map((a) => (
                   <Table.Tr key={a.id}>
                     <Table.Td>
-                      <Text component={Link} to="/appointments/$appointmentId" params={{ appointmentId: a.id }} c="blue" fw={500}>
+                      <Text
+                        renderRoot={(props) => <Link to="/appointments/$appointmentId" params={{ appointmentId: a.id }} {...props} />}
+                        c="blue"
+                        fw={500}
+                      >
                         {a.name}
                       </Text>
                     </Table.Td>

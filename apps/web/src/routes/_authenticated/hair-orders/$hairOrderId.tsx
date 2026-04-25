@@ -75,7 +75,11 @@ function HairOrderDetailPage() {
           <Group gap="md" c="dimmed">
             <Group gap={4}>
               <IconUser size={12} />
-              <Text component={Link} to="/customers/$customerId" params={{ customerId: hairOrder.customer.id }} c="blue" size="sm">
+              <Text
+                renderRoot={(props) => <Link to="/customers/$customerId" params={{ customerId: hairOrder.customer.id }} {...props} />}
+                c="blue"
+                size="sm"
+              >
                 {hairOrder.customer.name}
               </Text>
             </Group>

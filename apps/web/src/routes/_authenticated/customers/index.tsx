@@ -104,7 +104,11 @@ function CustomersPage() {
               : customers?.map((c) => (
                   <Table.Tr key={c.id}>
                     <Table.Td>
-                      <Text component={Link} to="/customers/$customerId" params={{ customerId: c.id }} c="blue" fw={500}>
+                      <Text
+                        renderRoot={(props) => <Link to="/customers/$customerId" params={{ customerId: c.id }} {...props} />}
+                        c="blue"
+                        fw={500}
+                      >
                         {c.name}
                       </Text>
                     </Table.Td>
