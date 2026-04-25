@@ -47,3 +47,35 @@ export const updateCustomer = createServerFn({ method: "POST" })
       .returning()
     return result
   })
+
+export const getCustomerSummary = createServerFn({ method: "GET" })
+  .middleware([requireAuthMiddleware])
+  .inputValidator(z.object({ id: z.string() }))
+  .handler(async ({ data }) => {
+    const result = await db.query.customer.findFirst({
+      where: eq(customer.id, data.id),
+      columns: { createdAt: true },
+      with: {
+        appointmentsAsCustomer: { columns: { id: true } },
+        transactions: { columns: { amount: true } },
+        hairAssigned: { columns: { profit: true, soldFor: true, weightInGrams: true } },
+        notes: { columns: { id: true } },
+      },
+    })
+    if (!result) {
+      throw new Error("Customer not found")
+    }
+    const transactionSumCents = result.transactions.reduce((acc, t) => acc + t.amount, 0)
+    const hairAssignedProfitSumCents = result.hairAssigned.reduce((acc, ha) => acc + ha.profit, 0)
+    const hairAssignedSoldForSumCents = result.hairAssigned.reduce((acc, ha) => acc + ha.soldFor, 0)
+    const hairAssignedWeightInGramsSum = result.hairAssigned.reduce((acc, ha) => acc + ha.weightInGrams, 0)
+    return {
+      appointmentCount: result.appointmentsAsCustomer.length,
+      transactionSum: transactionSumCents / 100,
+      hairAssignedProfitSum: hairAssignedProfitSumCents / 100,
+      hairAssignedSoldForSum: hairAssignedSoldForSumCents / 100,
+      hairAssignedWeightInGramsSum,
+      noteCount: result.notes.length,
+      customerCreatedAt: result.createdAt,
+    }
+  })

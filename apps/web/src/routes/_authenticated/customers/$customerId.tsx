@@ -7,6 +7,7 @@ import {
   Divider,
   Group,
   Modal,
+  SimpleGrid,
   Skeleton,
   Stack,
   Table,
@@ -24,7 +25,7 @@ import { useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
 import { getAppointmentsByCustomerId } from "@/functions/appointments"
-import { getCustomer, updateCustomer } from "@/functions/customers"
+import { getCustomer, getCustomerSummary, updateCustomer } from "@/functions/customers"
 import { createNote, deleteNote, getNotes } from "@/functions/notes"
 import { appointmentKeys, customerKeys, noteKeys } from "@/lib/query-keys"
 
@@ -36,6 +37,12 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
         queryOptions({
           queryKey: customerKeys.detail(params.customerId),
           queryFn: () => getCustomer({ data: { id: params.customerId } }),
+        }),
+      ),
+      context.queryClient.prefetchQuery(
+        queryOptions({
+          queryKey: customerKeys.summary(params.customerId),
+          queryFn: () => getCustomerSummary({ data: { id: params.customerId } }),
         }),
       ),
       context.queryClient.prefetchQuery(
@@ -53,6 +60,19 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
     ])
   },
 })
+
+function StatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <Card withBorder padding="md">
+      <Text size="xs" c="dimmed">
+        {label}
+      </Text>
+      <Title order={4}>{value}</Title>
+    </Card>
+  )
+}
+
+const formatCurrency = (n: number) => `$${n.toFixed(2)}`
 
 function EditCustomerDialog({
   customer,
@@ -113,6 +133,7 @@ function AddNoteDialog({
     mutationFn: (data: { note: string; customerId: string }) => createNote({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: noteKeys.all })
+      queryClient.invalidateQueries({ queryKey: customerKeys.summary(customerId) })
       onOpenChange(false)
       notifications.show({ color: "green", message: "Note added" })
     },
@@ -160,10 +181,16 @@ function CustomerDetailPage() {
     queryFn: () => getNotes({ data: { customerId } }),
   })
 
+  const { data: summary } = useQuery({
+    queryKey: customerKeys.summary(customerId),
+    queryFn: () => getCustomerSummary({ data: { id: customerId } }),
+  })
+
   const deleteNoteMutation = useMutation({
     mutationFn: (id: string) => deleteNote({ data: { id } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: noteKeys.all })
+      queryClient.invalidateQueries({ queryKey: customerKeys.summary(customerId) })
       notifications.show({ color: "green", message: "Note deleted" })
     },
   })
@@ -210,6 +237,31 @@ function CustomerDetailPage() {
             Edit
           </Button>
         </Group>
+
+        {summary ? (
+          <SimpleGrid cols={{ base: 2, sm: 3, lg: 4 }}>
+            <StatCard label="Appointments" value={String(summary.appointmentCount)} />
+            <StatCard label="Transactions" value={formatCurrency(summary.transactionSum)} />
+            <StatCard label="Hair Profit" value={formatCurrency(summary.hairAssignedProfitSum)} />
+            <StatCard label="Hair Sold For" value={formatCurrency(summary.hairAssignedSoldForSum)} />
+            <StatCard label="Hair Weight" value={`${summary.hairAssignedWeightInGramsSum}g`} />
+            <StatCard label="Notes" value={String(summary.noteCount)} />
+            <Card withBorder padding="md">
+              <Text size="xs" c="dimmed">
+                Joined
+              </Text>
+              <Title order={4}>
+                <ClientDate date={summary.customerCreatedAt} />
+              </Title>
+            </Card>
+          </SimpleGrid>
+        ) : (
+          <SimpleGrid cols={{ base: 2, sm: 3, lg: 4 }}>
+            {Array.from({ length: 7 }).map((_, i) => (
+              <Skeleton key={i} h={70} />
+            ))}
+          </SimpleGrid>
+        )}
 
         <Divider />
 
