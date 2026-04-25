@@ -233,9 +233,17 @@ function CustomerDetailPage() {
               </Group>
             )}
           </Stack>
-          <Button variant="default" leftSection={<IconPencil size={14} />} onClick={() => setEditOpen(true)}>
-            Edit
-          </Button>
+          <Group gap="xs">
+            <Button
+              variant="default"
+              renderRoot={(props) => <Link to="/customers/$customerId/hair-sales" params={{ customerId }} {...props} />}
+            >
+              Hair Sales
+            </Button>
+            <Button variant="default" leftSection={<IconPencil size={14} />} onClick={() => setEditOpen(true)}>
+              Edit
+            </Button>
+          </Group>
         </Group>
 
         {summary ? (

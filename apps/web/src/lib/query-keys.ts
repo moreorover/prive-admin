@@ -38,4 +38,5 @@ export const hairAssignedKeys = {
   all: ["hair-assigned"] as const,
   byHairOrder: (id: string) => [...hairAssignedKeys.all, "by-hair-order", id] as const,
   byAppointment: (id: string) => [...hairAssignedKeys.all, "by-appointment", id] as const,
+  byCustomer: (id: string) => [...hairAssignedKeys.all, "by-customer", id] as const,
 }
