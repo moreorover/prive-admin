@@ -1,34 +1,22 @@
-import { Badge } from "@prive-admin-tanstack/ui/components/badge"
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@prive-admin-tanstack/ui/components/card"
+import { Badge, Button, Card, Container, Divider, Group, Modal, Progress, SimpleGrid, Skeleton, Stack, Text, Title } from "@mantine/core"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@prive-admin-tanstack/ui/components/dialog"
-import { Progress, ProgressLabel, ProgressValue } from "@prive-admin-tanstack/ui/components/progress"
-import { Separator } from "@prive-admin-tanstack/ui/components/separator"
-import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
+  IconActivity,
+  IconDatabase,
+  IconFileText,
+  IconLayoutDashboard,
+  IconLoader2,
+  IconLock,
+  IconMonitor,
+  IconSettings,
+  IconShield,
+  IconTrendingUp,
+  IconUserCog,
+  IconUsers,
+  IconBolt,
+} from "@tabler/icons-react"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import {
-  Activity,
-  Database,
-  FileText,
-  LayoutDashboard,
-  Loader2,
-  Lock,
-  type LucideIcon,
-  Monitor,
-  Settings,
-  Shield,
-  TrendingUp,
-  UserCog,
-  Users,
-  Zap,
-} from "lucide-react"
+import type { Icon as TablerIcon } from "@tabler/icons-react"
 import { useState } from "react"
 
 import type { CapabilityDetails } from "@/functions/get-capability-details"
@@ -38,17 +26,17 @@ import { getCapabilityDetails } from "@/functions/get-capability-details"
 import { getDashboardData } from "@/functions/get-dashboard-data"
 import { dashboardKeys } from "@/lib/query-keys"
 
-const iconMap: Record<string, LucideIcon> = {
-  users: Users,
-  activity: Activity,
-  zap: Zap,
-  monitor: Monitor,
-  "user-cog": UserCog,
-  lock: Lock,
-  database: Database,
-  "trending-up": TrendingUp,
-  shield: Shield,
-  "file-text": FileText,
+const iconMap: Record<string, TablerIcon> = {
+  users: IconUsers,
+  activity: IconActivity,
+  zap: IconBolt,
+  monitor: IconMonitor,
+  "user-cog": IconUserCog,
+  lock: IconLock,
+  database: IconDatabase,
+  "trending-up": IconTrendingUp,
+  shield: IconShield,
+  "file-text": IconFileText,
 }
 
 const dashboardQueryOptions = queryOptions({
@@ -64,188 +52,174 @@ export const Route = createFileRoute("/_authenticated/playground")({
 })
 
 function StatusBadge({ status }: { status: DashboardCapability["status"] }) {
-  const variants = {
-    active: "default",
-    beta: "outline",
-    coming: "secondary",
-  } as const
-  const labels = {
-    active: "Active",
-    beta: "Beta",
-    coming: "Coming Soon",
+  const labels = { active: "Active", beta: "Beta", coming: "Coming Soon" }
+  const colors: Record<DashboardCapability["status"], string | undefined> = {
+    active: "green",
+    beta: undefined,
+    coming: "gray",
   }
-  return <Badge variant={variants[status]}>{labels[status]}</Badge>
+  return (
+    <Badge color={colors[status]} variant={status === "beta" ? "outline" : "light"}>
+      {labels[status]}
+    </Badge>
+  )
 }
 
-function StatCard({ stat, index }: { stat: DashboardStat; index: number }) {
-  const Icon = iconMap[stat.icon] ?? Activity
+function StatCard({ stat }: { stat: DashboardStat }) {
+  const Icon = iconMap[stat.icon] ?? IconActivity
   return (
-    <Card
-      className="group relative overflow-hidden transition-shadow hover:ring-2 hover:ring-primary/20"
-      style={{ animationDelay: `${index * 80}ms` }}
-    >
-      <CardContent className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-muted-foreground">{stat.label}</p>
-          <p className="font-heading text-2xl font-bold tracking-tight">{stat.value}</p>
-          <p className="text-[0.625rem] font-medium text-primary">{stat.change} from last month</p>
-        </div>
-        <div className="rounded-md bg-primary/10 p-2 text-primary">
-          <Icon className="size-5" />
-        </div>
-      </CardContent>
+    <Card withBorder padding="md">
+      <Group justify="space-between" align="flex-start">
+        <Stack gap={4}>
+          <Text size="xs" c="dimmed">
+            {stat.label}
+          </Text>
+          <Title order={3}>{stat.value}</Title>
+          <Text size="xs" c="green">
+            {stat.change} from last month
+          </Text>
+        </Stack>
+        <Icon size={20} />
+      </Group>
     </Card>
   )
 }
 
 function StatCardSkeleton() {
   return (
-    <Card>
-      <CardContent className="flex items-start justify-between">
-        <div className="space-y-2">
-          <Skeleton className="h-3 w-20" />
-          <Skeleton className="h-7 w-16" />
-          <Skeleton className="h-2.5 w-24" />
-        </div>
-        <Skeleton className="size-9 rounded-md" />
-      </CardContent>
+    <Card withBorder padding="md">
+      <Group justify="space-between" align="flex-start">
+        <Stack gap={4} style={{ flex: 1 }}>
+          <Skeleton h={10} w={80} />
+          <Skeleton h={20} w={60} />
+          <Skeleton h={8} w={100} />
+        </Stack>
+        <Skeleton h={20} w={20} />
+      </Group>
     </Card>
   )
 }
 
 function CapabilityCard({ capability, onClick }: { capability: DashboardCapability; onClick: () => void }) {
-  const Icon = iconMap[capability.icon] ?? Activity
+  const Icon = iconMap[capability.icon] ?? IconActivity
   const isActive = capability.status === "active"
 
   return (
-    <Card
-      className={`group relative cursor-pointer transition-all hover:-translate-y-0.5 hover:ring-2 hover:ring-primary/20 ${
-        !isActive ? "opacity-80" : ""
-      }`}
-      onClick={onClick}
-    >
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="rounded-md bg-primary/10 p-2 text-primary">
-            <Icon className="size-5" />
-          </div>
+    <Card withBorder padding="md" style={{ opacity: isActive ? 1 : 0.7, cursor: "pointer" }} onClick={onClick}>
+      <Stack gap="xs">
+        <Group justify="space-between">
+          <Icon size={20} />
           <StatusBadge status={capability.status} />
-        </div>
-        <CardTitle className="pt-2 text-sm font-semibold">{capability.title}</CardTitle>
-        <CardDescription>{capability.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-1.5">
+        </Group>
+        <Title order={5}>{capability.title}</Title>
+        <Text size="sm" c="dimmed">
+          {capability.description}
+        </Text>
+        <Group gap={4}>
           {capability.features.map((f) => (
-            <span key={f} className="rounded-sm bg-muted px-1.5 py-0.5 text-[0.625rem] text-muted-foreground">
+            <Badge key={f} size="xs" variant="light">
               {f}
-            </span>
+            </Badge>
           ))}
-        </div>
-      </CardContent>
-      {isActive && (
-        <div className="px-4 pb-4">
-          <Button variant="ghost" size="sm" className="w-full justify-center">
-            <Settings className="size-3" />
+        </Group>
+        {isActive && (
+          <Button variant="subtle" size="xs" leftSection={<IconSettings size={12} />}>
             View Details
           </Button>
-        </div>
-      )}
-    </Card>
-  )
-}
-
-function CapabilityDetailsDialog({
-  details,
-  isLoading,
-  open,
-  onOpenChange,
-}: {
-  details: CapabilityDetails | null | undefined
-  isLoading: boolean
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
-  const Icon = details
-    ? (iconMap[details.title.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-")] ?? Activity)
-    : Activity
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        {isLoading ? (
-          <div className="flex flex-col items-center gap-3 py-8">
-            <Loader2 className="size-6 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">Loading details...</p>
-          </div>
-        ) : details ? (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Icon className="size-4 text-primary" />
-                {details.title}
-              </DialogTitle>
-              <DialogDescription>
-                Version {details.version} &middot; Updated {details.lastUpdated}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid grid-cols-3 gap-3 pt-2">
-              <div className="rounded-md border p-3 text-center">
-                <p className="font-heading text-lg font-bold">{details.usageCount.toLocaleString()}</p>
-                <p className="text-[0.625rem] text-muted-foreground">Requests</p>
-              </div>
-              <div className="rounded-md border p-3 text-center">
-                <p className="font-heading text-lg font-bold">{details.errorRate}</p>
-                <p className="text-[0.625rem] text-muted-foreground">Error Rate</p>
-              </div>
-              <div className="rounded-md border p-3 text-center">
-                <p className="font-heading text-lg font-bold">{details.avgResponseTime}</p>
-                <p className="text-[0.625rem] text-muted-foreground">Avg Latency</p>
-              </div>
-            </div>
-            <Separator />
-            <div className="space-y-3">
-              <h4 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">Changelog</h4>
-              {details.changelog.map((entry) => (
-                <div key={entry.version} className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-[0.625rem]">
-                      v{entry.version}
-                    </Badge>
-                    <span className="text-[0.625rem] text-muted-foreground">{entry.date}</span>
-                  </div>
-                  <p className="text-xs">{entry.summary}</p>
-                </div>
-              ))}
-            </div>
-          </>
-        ) : (
-          <div className="py-8 text-center text-sm text-muted-foreground">No details available.</div>
         )}
-      </DialogContent>
-    </Dialog>
+      </Stack>
+    </Card>
   )
 }
 
 function CapabilityCardSkeleton() {
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <Skeleton className="size-9 rounded-md" />
-          <Skeleton className="h-5 w-14 rounded-full" />
-        </div>
-        <Skeleton className="mt-2 h-4 w-32" />
-        <Skeleton className="h-3 w-full" />
-      </CardHeader>
-      <CardContent>
-        <div className="flex gap-1.5">
-          <Skeleton className="h-4 w-12 rounded-sm" />
-          <Skeleton className="h-4 w-16 rounded-sm" />
-          <Skeleton className="h-4 w-14 rounded-sm" />
-        </div>
-      </CardContent>
+    <Card withBorder padding="md">
+      <Stack gap="xs">
+        <Group justify="space-between">
+          <Skeleton h={20} w={20} />
+          <Skeleton h={16} w={48} />
+        </Group>
+        <Skeleton h={16} w={120} />
+        <Skeleton h={10} w="100%" />
+        <Group gap={4}>
+          <Skeleton h={14} w={40} />
+          <Skeleton h={14} w={50} />
+        </Group>
+      </Stack>
     </Card>
+  )
+}
+
+function CapabilityDetailsModal({
+  details,
+  isLoading,
+  open,
+  onClose,
+}: {
+  details: CapabilityDetails | null | undefined
+  isLoading: boolean
+  open: boolean
+  onClose: () => void
+}) {
+  return (
+    <Modal opened={open} onClose={onClose} title={details?.title ?? "Loading…"} size="md">
+      {isLoading ? (
+        <Stack align="center" py="md" gap="xs">
+          <IconLoader2 />
+          <Text size="sm" c="dimmed">
+            Loading details…
+          </Text>
+        </Stack>
+      ) : details ? (
+        <Stack>
+          <Text size="sm" c="dimmed">
+            Version {details.version} · Updated {details.lastUpdated}
+          </Text>
+          <SimpleGrid cols={3}>
+            <Card withBorder padding="sm" ta="center">
+              <Title order={4}>{details.usageCount.toLocaleString()}</Title>
+              <Text size="xs" c="dimmed">
+                Requests
+              </Text>
+            </Card>
+            <Card withBorder padding="sm" ta="center">
+              <Title order={4}>{details.errorRate}</Title>
+              <Text size="xs" c="dimmed">
+                Error Rate
+              </Text>
+            </Card>
+            <Card withBorder padding="sm" ta="center">
+              <Title order={4}>{details.avgResponseTime}</Title>
+              <Text size="xs" c="dimmed">
+                Avg Latency
+              </Text>
+            </Card>
+          </SimpleGrid>
+          <Divider />
+          <Title order={6}>Changelog</Title>
+          <Stack gap="xs">
+            {details.changelog.map((entry) => (
+              <Stack key={entry.version} gap={2}>
+                <Group gap="xs">
+                  <Badge size="xs" variant="outline">
+                    v{entry.version}
+                  </Badge>
+                  <Text size="xs" c="dimmed">
+                    {entry.date}
+                  </Text>
+                </Group>
+                <Text size="sm">{entry.summary}</Text>
+              </Stack>
+            ))}
+          </Stack>
+        </Stack>
+      ) : (
+        <Text size="sm" c="dimmed" ta="center" py="md">
+          No details available.
+        </Text>
+      )}
+    </Modal>
   )
 }
 
@@ -267,128 +241,128 @@ function RouteComponent() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
-      {/* Page header */}
-      <div className="flex items-end justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <LayoutDashboard className="size-4" />
-            <span className="text-xs tracking-widest uppercase">Playground</span>
-          </div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">
-            Welcome back, {session?.user.name ?? "Admin"}
-          </h1>
-          <p className="text-sm text-muted-foreground">Overview of your platform capabilities and system health.</p>
-        </div>
-        <Button variant="outline" size="sm">
-          <Settings className="size-3" />
-          Settings
-        </Button>
-      </div>
+    <Container size="lg">
+      <Stack gap="lg">
+        <Group justify="space-between" align="flex-end">
+          <Stack gap={4}>
+            <Group gap="xs" c="dimmed">
+              <IconLayoutDashboard size={16} />
+              <Text size="xs" tt="uppercase">
+                Playground
+              </Text>
+            </Group>
+            <Title order={2}>Welcome back, {session?.user.name ?? "Admin"}</Title>
+            <Text size="sm" c="dimmed">
+              Overview of your platform capabilities and system health.
+            </Text>
+          </Stack>
+          <Button variant="default" leftSection={<IconSettings size={14} />}>
+            Settings
+          </Button>
+        </Group>
 
-      <Separator />
+        <Divider />
 
-      {/* Stat cards */}
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {isLoading
-          ? Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
-          : dashboardData?.stats.map((stat, i) => <StatCard key={stat.label} stat={stat} index={i} />)}
-      </section>
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
+            : dashboardData?.stats.map((stat) => <StatCard key={stat.label} stat={stat} />)}
+        </SimpleGrid>
 
-      {/* Main content grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Capabilities — 2 cols */}
-        <section className="space-y-4 lg:col-span-2">
-          <div className="flex items-center justify-between">
-            <h2 className="font-heading text-sm font-semibold tracking-tight">Platform Capabilities</h2>
-            {dashboardData && (
-              <span className="text-[0.625rem] text-muted-foreground">
-                {dashboardData.capabilities.filter((c) => c.status === "active").length} active &middot;{" "}
-                {dashboardData.capabilities.filter((c) => c.status === "beta").length} in beta
-              </span>
-            )}
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {isLoading
-              ? Array.from({ length: 6 }).map((_, i) => <CapabilityCardSkeleton key={i} />)
-              : dashboardData?.capabilities.map((cap) => (
-                  <CapabilityCard key={cap.title} capability={cap} onClick={() => handleCapabilityClick(cap.title)} />
-                ))}
-          </div>
-        </section>
-
-        {/* Sidebar — system health + activity */}
-        <aside className="space-y-6">
-          {/* System Health */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="size-3.5 text-primary" />
-                System Health
-              </CardTitle>
-              <CardDescription>Real-time resource utilization</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        <SimpleGrid cols={{ base: 1, lg: 3 }}>
+          <Stack style={{ gridColumn: "span 2" }}>
+            <Group justify="space-between">
+              <Title order={5}>Platform Capabilities</Title>
+              {dashboardData && (
+                <Text size="xs" c="dimmed">
+                  {dashboardData.capabilities.filter((c) => c.status === "active").length} active ·{" "}
+                  {dashboardData.capabilities.filter((c) => c.status === "beta").length} in beta
+                </Text>
+              )}
+            </Group>
+            <SimpleGrid cols={{ base: 1, sm: 2 }}>
               {isLoading
-                ? Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="space-y-2">
-                      <div className="flex justify-between">
-                        <Skeleton className="h-3 w-20" />
-                        <Skeleton className="h-3 w-8" />
-                      </div>
-                      <Skeleton className="h-1 w-full rounded-md" />
-                    </div>
-                  ))
-                : dashboardData?.systemHealth.map((metric) => (
-                    <Progress key={metric.label} value={metric.value}>
-                      <ProgressLabel>{metric.label}</ProgressLabel>
-                      <ProgressValue />
-                    </Progress>
+                ? Array.from({ length: 6 }).map((_, i) => <CapabilityCardSkeleton key={i} />)
+                : dashboardData?.capabilities.map((cap) => (
+                    <CapabilityCard key={cap.title} capability={cap} onClick={() => handleCapabilityClick(cap.title)} />
                   ))}
-            </CardContent>
-          </Card>
+            </SimpleGrid>
+          </Stack>
 
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="size-3.5 text-primary" />
-                Recent Activity
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+          <Stack>
+            <Card withBorder>
+              <Group gap="xs" mb="xs">
+                <IconActivity size={14} />
+                <Title order={6}>System Health</Title>
+              </Group>
+              <Text size="xs" c="dimmed" mb="md">
+                Real-time resource utilization
+              </Text>
+              <Stack gap="xs">
+                {isLoading
+                  ? Array.from({ length: 4 }).map((_, i) => (
+                      <Stack key={i} gap={4}>
+                        <Skeleton h={10} />
+                        <Skeleton h={4} />
+                      </Stack>
+                    ))
+                  : dashboardData?.systemHealth.map((metric) => (
+                      <Stack key={metric.label} gap={4}>
+                        <Group justify="space-between">
+                          <Text size="xs" c="dimmed">
+                            {metric.label}
+                          </Text>
+                          <Text size="xs">{metric.value}%</Text>
+                        </Group>
+                        <Progress value={metric.value} size="xs" />
+                      </Stack>
+                    ))}
+              </Stack>
+            </Card>
+
+            <Card withBorder>
+              <Group gap="xs" mb="md">
+                <IconFileText size={14} />
+                <Title order={6}>Recent Activity</Title>
+              </Group>
+              <Stack gap="xs">
                 {isLoading
                   ? Array.from({ length: 5 }).map((_, i) => (
-                      <div key={i} className="flex items-start justify-between">
-                        <div className="space-y-1">
-                          <Skeleton className="h-3 w-24" />
-                          <Skeleton className="h-2.5 w-32" />
-                        </div>
-                        <Skeleton className="h-2.5 w-10" />
-                      </div>
+                      <Group key={i} justify="space-between">
+                        <Stack gap={2} style={{ flex: 1 }}>
+                          <Skeleton h={10} w="60%" />
+                          <Skeleton h={8} w="80%" />
+                        </Stack>
+                        <Skeleton h={8} w={40} />
+                      </Group>
                     ))
                   : dashboardData?.recentActivity.map((item, i) => (
-                      <div key={i} className="flex items-start justify-between">
-                        <div className="min-w-0 space-y-0.5">
-                          <p className="truncate text-xs font-medium">{item.action}</p>
-                          <p className="truncate text-[0.625rem] text-muted-foreground">{item.detail}</p>
-                        </div>
-                        <span className="shrink-0 pl-3 text-[0.625rem] text-muted-foreground">{item.time}</span>
-                      </div>
+                      <Group key={i} justify="space-between" wrap="nowrap">
+                        <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
+                          <Text size="xs" truncate>
+                            {item.action}
+                          </Text>
+                          <Text size="xs" c="dimmed" truncate>
+                            {item.detail}
+                          </Text>
+                        </Stack>
+                        <Text size="xs" c="dimmed">
+                          {item.time}
+                        </Text>
+                      </Group>
                     ))}
-              </div>
-            </CardContent>
-          </Card>
-        </aside>
-      </div>
+              </Stack>
+            </Card>
+          </Stack>
+        </SimpleGrid>
 
-      <CapabilityDetailsDialog
-        details={capabilityDetails}
-        isLoading={isDetailsLoading}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-      />
-    </div>
+        <CapabilityDetailsModal
+          details={capabilityDetails}
+          isLoading={isDetailsLoading}
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+        />
+      </Stack>
+    </Container>
   )
 }
