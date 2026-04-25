@@ -18,6 +18,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPlaygroundRouteImport } from './routes/_authenticated/playground'
 import { Route as AuthenticatedFilesDirectRouteImport } from './routes/_authenticated/files-direct'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
+import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedHairOrdersRouteRouteImport } from './routes/_authenticated/hair-orders/route'
 import { Route as AuthenticatedCustomersRouteRouteImport } from './routes/_authenticated/customers/route'
 import { Route as AuthenticatedAppointmentsRouteRouteImport } from './routes/_authenticated/appointments/route'
@@ -72,6 +73,11 @@ const AuthenticatedFilesDirectRoute =
 const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
   id: '/files',
   path: '/files',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHairOrdersRouteRoute =
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/appointments': typeof AuthenticatedAppointmentsRouteRouteWithChildren
   '/customers': typeof AuthenticatedCustomersRouteRouteWithChildren
   '/hair-orders': typeof AuthenticatedHairOrdersRouteRouteWithChildren
+  '/calendar': typeof AuthenticatedCalendarRoute
   '/files': typeof AuthenticatedFilesRoute
   '/files-direct': typeof AuthenticatedFilesDirectRoute
   '/playground': typeof AuthenticatedPlaygroundRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/calendar': typeof AuthenticatedCalendarRoute
   '/files': typeof AuthenticatedFilesRoute
   '/files-direct': typeof AuthenticatedFilesDirectRoute
   '/playground': typeof AuthenticatedPlaygroundRoute
@@ -179,6 +187,7 @@ export interface FileRoutesById {
   '/_authenticated/appointments': typeof AuthenticatedAppointmentsRouteRouteWithChildren
   '/_authenticated/customers': typeof AuthenticatedCustomersRouteRouteWithChildren
   '/_authenticated/hair-orders': typeof AuthenticatedHairOrdersRouteRouteWithChildren
+  '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/files-direct': typeof AuthenticatedFilesDirectRoute
   '/_authenticated/playground': typeof AuthenticatedPlaygroundRoute
@@ -201,6 +210,7 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/customers'
     | '/hair-orders'
+    | '/calendar'
     | '/files'
     | '/files-direct'
     | '/playground'
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/calendar'
     | '/files'
     | '/files-direct'
     | '/playground'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/_authenticated/appointments'
     | '/_authenticated/customers'
     | '/_authenticated/hair-orders'
+    | '/_authenticated/calendar'
     | '/_authenticated/files'
     | '/_authenticated/files-direct'
     | '/_authenticated/playground'
@@ -325,6 +337,13 @@ declare module '@tanstack/react-router' {
       path: '/files'
       fullPath: '/files'
       preLoaderRoute: typeof AuthenticatedFilesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/calendar': {
+      id: '/_authenticated/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AuthenticatedCalendarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hair-orders': {
@@ -455,6 +474,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAppointmentsRouteRoute: typeof AuthenticatedAppointmentsRouteRouteWithChildren
   AuthenticatedCustomersRouteRoute: typeof AuthenticatedCustomersRouteRouteWithChildren
   AuthenticatedHairOrdersRouteRoute: typeof AuthenticatedHairOrdersRouteRouteWithChildren
+  AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedFilesDirectRoute: typeof AuthenticatedFilesDirectRoute
   AuthenticatedPlaygroundRoute: typeof AuthenticatedPlaygroundRoute
@@ -469,6 +489,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedCustomersRouteRouteWithChildren,
   AuthenticatedHairOrdersRouteRoute:
     AuthenticatedHairOrdersRouteRouteWithChildren,
+  AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedFilesDirectRoute: AuthenticatedFilesDirectRoute,
   AuthenticatedPlaygroundRoute: AuthenticatedPlaygroundRoute,
