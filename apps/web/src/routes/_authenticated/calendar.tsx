@@ -3,7 +3,7 @@ import { Schedule, type ScheduleEventData, type ScheduleViewLevel } from "@manti
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { getAppointments } from "@/functions/appointments"
 import { appointmentKeys } from "@/lib/query-keys"
@@ -40,6 +40,13 @@ function CalendarPage() {
     })
   }, [appointments])
 
+  const goToAppointment = useCallback(
+    (id: string | number) => {
+      navigate({ to: "/appointments/$appointmentId", params: { appointmentId: String(id) } })
+    },
+    [navigate],
+  )
+
   return (
     <Container size="xl">
       <Stack>
@@ -50,9 +57,26 @@ function CalendarPage() {
           onViewChange={setView}
           date={date}
           onDateChange={setDate}
-          onEventClick={(event) => {
-            navigate({ to: "/appointments/$appointmentId", params: { appointmentId: String(event.id) } })
-          }}
+          onEventClick={(event) => goToAppointment(event.id)}
+          renderEventBody={(event) => (
+            <span
+              role="button"
+              tabIndex={0}
+              style={{ cursor: "pointer", display: "block", width: "100%", height: "100%" }}
+              onClick={(e) => {
+                e.stopPropagation()
+                goToAppointment(event.id)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  goToAppointment(event.id)
+                }
+              }}
+            >
+              {event.title}
+            </span>
+          )}
         />
       </Stack>
     </Container>
