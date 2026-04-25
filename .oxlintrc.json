@@ -35,5 +35,5 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": [".agents"]
+  "ignorePatterns": [".agents", "docs"]
 }

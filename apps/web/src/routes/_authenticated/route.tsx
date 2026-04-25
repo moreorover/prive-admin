@@ -6,6 +6,7 @@ import { useQueryErrorResetBoundary } from "@tanstack/react-query"
 import { Link, Outlet, createFileRoute, redirect, useRouter, useRouterState } from "@tanstack/react-router"
 import {
   AlertCircle,
+  Calendar,
   ChevronLeft,
   FolderOpen,
   HardDrive,
@@ -14,7 +15,9 @@ import {
   Menu,
   Moon,
   RefreshCw,
+  Scissors,
   Sun,
+  Users,
   X,
 } from "lucide-react"
 import { useTheme } from "next-themes"
@@ -24,7 +27,10 @@ import { getUser } from "@/functions/get-user"
 import { authClient } from "@/lib/auth-client"
 
 const NAV_ITEMS = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/customers", label: "Customers", icon: Users },
+  { to: "/appointments", label: "Appointments", icon: Calendar },
+  { to: "/hair-orders", label: "Hair Orders", icon: Scissors },
+  { to: "/playground", label: "Playground", icon: LayoutDashboard },
   { to: "/files", label: "Files (Proxy)", icon: FolderOpen },
   { to: "/files-direct", label: "Files (Direct)", icon: HardDrive },
 ] as const

@@ -1,7 +1,10 @@
 import { Toaster } from "@prive-admin-tanstack/ui/components/sonner"
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router"
 import { ThemeProvider } from "next-themes"
-import { lazy } from "react"
+import { lazy, useEffect } from "react"
+
+import { getLocale } from "@/functions/get-locale"
+import { LocaleProvider } from "@/lib/locale-context"
 
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"
@@ -21,6 +24,10 @@ export interface RouterAppContext {
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
+  beforeLoad: async () => {
+    const { locale, timeZone } = await getLocale()
+    return { locale, timeZone }
+  },
   head: () => ({
     meta: [
       {
@@ -46,16 +53,26 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 })
 
 function RootDocument() {
+  const { locale, timeZone } = Route.useRouteContext()
+
+  // Set timezone cookie so the server can use it on subsequent requests
+  useEffect(() => {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    document.cookie = `tz=${tz};path=/;max-age=31536000`
+  }, [])
+
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang={locale} className="dark" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          <Outlet />
-          <Toaster richColors />
-        </ThemeProvider>
+        <LocaleProvider value={{ locale, timeZone }}>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+            <Outlet />
+            <Toaster richColors />
+          </ThemeProvider>
+        </LocaleProvider>
         <TanStackRouterDevtools position="bottom-left" />
         <Scripts />
       </body>

@@ -16,7 +16,7 @@ export const Route = createFileRoute("/login")({
   beforeLoad: async () => {
     const session = await getUser()
     if (session) {
-      throw redirect({ to: "/dashboard" })
+      throw redirect({ to: "/customers" })
     }
   },
 })
