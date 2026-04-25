@@ -1,35 +1,15 @@
-import { Badge } from "@prive-admin-tanstack/ui/components/badge"
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import { Card, CardContent } from "@prive-admin-tanstack/ui/components/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@prive-admin-tanstack/ui/components/dialog"
-import { Input } from "@prive-admin-tanstack/ui/components/input"
-import { Label } from "@prive-admin-tanstack/ui/components/label"
-import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@prive-admin-tanstack/ui/components/table"
-import { useForm } from "@tanstack/react-form"
-import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query"
+import { Badge, Button, Container, Group, Modal, NativeSelect, NumberInput, Skeleton, Stack, Table, Text, TextInput, Title } from "@mantine/core"
+import { useForm } from "@mantine/form"
+import { notifications } from "@mantine/notifications"
+import { IconPlus, IconScissors } from "@tabler/icons-react"
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { Plus, Scissors } from "lucide-react"
 import { useState } from "react"
-import { toast } from "sonner"
 
 import { ClientDate } from "@/components/client-date"
 import { getCustomers } from "@/functions/customers"
-import { getHairOrders, createHairOrder } from "@/functions/hair-orders"
-import { hairOrderKeys, customerKeys } from "@/lib/query-keys"
+import { createHairOrder, getHairOrders } from "@/functions/hair-orders"
+import { customerKeys, hairOrderKeys } from "@/lib/query-keys"
 
 const hairOrdersQueryOptions = queryOptions({
   queryKey: hairOrderKeys.list(),
@@ -64,121 +44,50 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
       onOpenChange(false)
-      toast.success("Hair order created")
+      notifications.show({ color: "green", message: "Hair order created" })
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
   const form = useForm({
-    defaultValues: {
-      customerId: "",
-      placedAt: "",
-      weightReceived: 0,
-      total: 0,
-    },
-    onSubmit: async ({ value }) => {
-      await mutation.mutateAsync({
-        customerId: value.customerId,
-        placedAt: value.placedAt || null,
-        arrivedAt: null,
-        status: "PENDING",
-        weightReceived: value.weightReceived,
-        weightUsed: 0,
-        total: value.total,
-      })
-    },
+    initialValues: { customerId: "", placedAt: "", weightReceived: 0, total: 0 },
   })
 
+  const handleSubmit = async (values: { customerId: string; placedAt: string; weightReceived: number; total: number }) => {
+    await mutation.mutateAsync({
+      customerId: values.customerId,
+      placedAt: values.placedAt || null,
+      arrivedAt: null,
+      status: "PENDING",
+      weightReceived: values.weightReceived,
+      weightUsed: 0,
+      total: values.total,
+    })
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>New Hair Order</DialogTitle>
-          <DialogDescription>Create a new hair order.</DialogDescription>
-        </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            form.handleSubmit()
-          }}
-          className="space-y-4"
-        >
-          <form.Field name="customerId">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Customer</Label>
-                <select
-                  id={field.name}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
-                >
-                  <option value="">Select a customer...</option>
-                  {customers?.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </form.Field>
-          <form.Field name="placedAt">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Placed At</Label>
-                <Input
-                  id={field.name}
-                  type="date"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-              </div>
-            )}
-          </form.Field>
-          <div className="grid grid-cols-2 gap-4">
-            <form.Field name="weightReceived">
-              {(field) => (
-                <div className="space-y-2">
-                  <Label htmlFor={field.name}>Weight (g)</Label>
-                  <Input
-                    id={field.name}
-                    type="number"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(Number(e.target.value))}
-                  />
-                </div>
-              )}
-            </form.Field>
-            <form.Field name="total">
-              {(field) => (
-                <div className="space-y-2">
-                  <Label htmlFor={field.name}>Total (cents)</Label>
-                  <Input
-                    id={field.name}
-                    type="number"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(Number(e.target.value))}
-                  />
-                </div>
-              )}
-            </form.Field>
-          </div>
-          <form.Subscribe selector={(state) => ({ canSubmit: state.canSubmit, isSubmitting: state.isSubmitting })}>
-            {({ canSubmit, isSubmitting }) => (
-              <Button type="submit" className="w-full" disabled={!canSubmit || isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Hair Order"}
-              </Button>
-            )}
-          </form.Subscribe>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="New Hair Order">
+      <form onSubmit={form.onSubmit(handleSubmit)}>
+        <Stack>
+          <NativeSelect
+            label="Customer"
+            data={[
+              { value: "", label: "Select a customer…" },
+              ...(customers?.map((c) => ({ value: c.id, label: c.name })) ?? []),
+            ]}
+            {...form.getInputProps("customerId")}
+          />
+          <TextInput label="Placed At" type="date" {...form.getInputProps("placedAt")} />
+          <Group grow>
+            <NumberInput label="Weight (g)" min={0} {...form.getInputProps("weightReceived")} />
+            <NumberInput label="Total (cents)" min={0} {...form.getInputProps("total")} />
+          </Group>
+          <Button type="submit" loading={mutation.isPending}>
+            Create Hair Order
+          </Button>
+        </Stack>
+      </form>
+    </Modal>
   )
 }
 
@@ -187,88 +96,81 @@ function HairOrdersPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
-      <div className="flex items-end justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Scissors className="size-4" />
-            <span className="text-xs tracking-widest uppercase">Hair Orders</span>
-          </div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Hair Orders</h1>
-        </div>
-        <Button size="sm" onClick={() => setDialogOpen(true)}>
-          <Plus className="size-3" />
-          New Order
-        </Button>
-      </div>
+    <Container size="lg">
+      <Stack>
+        <Group justify="space-between" align="flex-end">
+          <Stack gap={4}>
+            <Group gap="xs" c="dimmed">
+              <IconScissors size={16} />
+              <Text size="xs" tt="uppercase">
+                Hair Orders
+              </Text>
+            </Group>
+            <Title order={2}>Hair Orders</Title>
+          </Stack>
+          <Button leftSection={<IconPlus size={14} />} onClick={() => setDialogOpen(true)}>
+            New Order
+          </Button>
+        </Group>
 
-      <Card>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>#</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Weight (g)</TableHead>
-                <TableHead>Placed</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading
-                ? Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-8" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-24" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-16" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-12" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-20" />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                : hairOrders?.map((ho) => (
-                    <TableRow key={ho.id}>
-                      <TableCell>
-                        <Link
-                          to="/hair-orders/$hairOrderId"
-                          params={{ hairOrderId: ho.id }}
-                          className="font-medium text-primary hover:underline"
-                        >
-                          #{ho.uid}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{ho.customer?.name ?? "—"}</TableCell>
-                      <TableCell>
-                        <Badge variant={ho.status === "COMPLETED" ? "default" : "outline"}>{ho.status}</Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{ho.weightReceived}g</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {ho.placedAt ? <ClientDate date={ho.placedAt} /> : "—"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              {!isLoading && hairOrders?.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    No hair orders yet.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+        <Table>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>#</Table.Th>
+              <Table.Th>Customer</Table.Th>
+              <Table.Th>Status</Table.Th>
+              <Table.Th>Weight (g)</Table.Th>
+              <Table.Th>Placed</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {isLoading
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <Table.Tr key={i}>
+                    <Table.Td>
+                      <Skeleton h={14} w={30} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton h={14} w={90} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton h={14} w={60} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton h={14} w={50} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton h={14} w={70} />
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+              : hairOrders?.map((ho) => (
+                  <Table.Tr key={ho.id}>
+                    <Table.Td>
+                      <Text component={Link} to="/hair-orders/$hairOrderId" params={{ hairOrderId: ho.id }} c="blue" fw={500}>
+                        #{ho.uid}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td c="dimmed">{ho.customer?.name ?? "—"}</Table.Td>
+                    <Table.Td>
+                      <Badge variant={ho.status === "COMPLETED" ? "light" : "outline"}>{ho.status}</Badge>
+                    </Table.Td>
+                    <Table.Td c="dimmed">{ho.weightReceived}g</Table.Td>
+                    <Table.Td c="dimmed">{ho.placedAt ? <ClientDate date={ho.placedAt} /> : "—"}</Table.Td>
+                  </Table.Tr>
+                ))}
+            {!isLoading && hairOrders?.length === 0 && (
+              <Table.Tr>
+                <Table.Td colSpan={5} ta="center" c="dimmed">
+                  No hair orders yet.
+                </Table.Td>
+              </Table.Tr>
+            )}
+          </Table.Tbody>
+        </Table>
 
-      <CreateHairOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-    </div>
+        <CreateHairOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      </Stack>
+    </Container>
   )
 }
