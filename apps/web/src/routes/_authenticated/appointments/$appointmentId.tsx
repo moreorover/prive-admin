@@ -1,10 +1,7 @@
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@prive-admin-tanstack/ui/components/card"
-import { Separator } from "@prive-admin-tanstack/ui/components/separator"
-import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
-import { useQuery, queryOptions } from "@tanstack/react-query"
+import { Anchor, Button, Card, Container, Divider, Group, Skeleton, Stack, Text, Title } from "@mantine/core"
+import { IconArrowLeft, IconClock, IconPlus, IconUser } from "@tabler/icons-react"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { ArrowLeft, Clock, Plus, User } from "lucide-react"
 import { useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
@@ -54,15 +51,21 @@ function AppointmentDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32 w-full" />
-      </div>
+      <Container size="lg">
+        <Stack>
+          <Skeleton h={24} w={200} />
+          <Skeleton h={120} />
+        </Stack>
+      </Container>
     )
   }
 
   if (!appointment) {
-    return <div className="px-6 py-8 text-muted-foreground">Appointment not found.</div>
+    return (
+      <Container size="lg">
+        <Text c="dimmed">Appointment not found.</Text>
+      </Container>
+    )
   }
 
   const invalidateKeys = [
@@ -71,123 +74,119 @@ function AppointmentDetailPage() {
   ]
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
-      <div className="space-y-1">
-        <Link
-          to="/appointments"
-          className="mb-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-3" />
-          Back to appointments
-        </Link>
-        <h1 className="font-heading text-2xl font-bold tracking-tight">{appointment.name}</h1>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Clock className="size-3" />
-            <ClientDate date={appointment.startsAt} showTime />
-          </span>
-          <span className="flex items-center gap-1">
-            <User className="size-3" />
-            <Link
-              to="/customers/$customerId"
-              params={{ customerId: appointment.client.id }}
-              className="text-primary hover:underline"
-            >
-              {appointment.client.name}
-            </Link>
-          </span>
-        </div>
-      </div>
+    <Container size="lg">
+      <Stack>
+        <Stack gap="xs">
+          <Anchor component={Link} to="/appointments" size="xs" c="dimmed">
+            <Group gap={4}>
+              <IconArrowLeft size={12} />
+              Back to appointments
+            </Group>
+          </Anchor>
+          <Title order={2}>{appointment.name}</Title>
+          <Group gap="md" c="dimmed">
+            <Group gap={4}>
+              <IconClock size={12} />
+              <Text size="sm">
+                <ClientDate date={appointment.startsAt} showTime />
+              </Text>
+            </Group>
+            <Group gap={4}>
+              <IconUser size={12} />
+              <Text component={Link} to="/customers/$customerId" params={{ customerId: appointment.client.id }} c="blue" size="sm">
+                {appointment.client.name}
+              </Text>
+            </Group>
+          </Group>
+        </Stack>
 
-      <Separator />
+        <Divider />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Personnel</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Group grow align="flex-start">
+          <Card withBorder>
+            <Title order={5} mb="sm">
+              Personnel
+            </Title>
             {appointment.personnel && appointment.personnel.length > 0 ? (
-              <div className="space-y-2">
+              <Stack gap="xs">
                 {appointment.personnel.map((p) => (
-                  <div key={p.personnelId} className="flex items-center gap-2 rounded-md border p-2">
-                    <User className="size-3 text-muted-foreground" />
-                    <span className="text-sm">{p.personnel.name}</span>
-                  </div>
+                  <Card key={p.personnelId} withBorder padding="xs">
+                    <Group gap="xs">
+                      <IconUser size={12} />
+                      <Text size="sm">{p.personnel.name}</Text>
+                    </Group>
+                  </Card>
                 ))}
-              </div>
+              </Stack>
             ) : (
-              <p className="text-sm text-muted-foreground">No personnel assigned.</p>
+              <Text size="sm" c="dimmed">
+                No personnel assigned.
+              </Text>
             )}
-          </CardContent>
-        </Card>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-sm">Hair Assigned</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => setCreateOpen(true)}>
-              <Plus className="size-3" />
-              Add
-            </Button>
-          </CardHeader>
-          <CardContent>
+          <Card withBorder>
+            <Group justify="space-between" mb="sm">
+              <Title order={5}>Hair Assigned</Title>
+              <Button variant="subtle" size="xs" leftSection={<IconPlus size={12} />} onClick={() => setCreateOpen(true)}>
+                Add
+              </Button>
+            </Group>
             <HairAssignedTable
               items={hairAssigned ?? []}
               showHairOrderColumn
               onEdit={setEditItem}
               onDelete={setDeleteItem}
             />
-          </CardContent>
+          </Card>
+        </Group>
+
+        <Card withBorder>
+          <Title order={5} mb="sm">
+            Notes
+          </Title>
+          {appointment.notes && appointment.notes.length > 0 ? (
+            <Stack gap="xs">
+              {appointment.notes.map((n) => (
+                <Card key={n.id} withBorder padding="sm">
+                  <Text size="sm">{n.note}</Text>
+                  <Text size="xs" c="dimmed" mt={4}>
+                    {n.createdBy?.name ?? "Unknown"} · <ClientDate date={n.createdAt} />
+                  </Text>
+                </Card>
+              ))}
+            </Stack>
+          ) : (
+            <Text size="sm" c="dimmed">
+              No notes.
+            </Text>
+          )}
         </Card>
 
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-sm">Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {appointment.notes && appointment.notes.length > 0 ? (
-              <div className="space-y-3">
-                {appointment.notes.map((n) => (
-                  <div key={n.id} className="rounded-md border p-3">
-                    <p className="text-sm">{n.note}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {n.createdBy?.name ?? "Unknown"} &middot; <ClientDate date={n.createdAt} />
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No notes.</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <CreateHairAssignedDialog
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        clientId={appointment.client.id}
-        appointmentId={appointmentId}
-        invalidateKeys={invalidateKeys}
-      />
-
-      {editItem && (
-        <EditHairAssignedDialog
-          open={!!editItem}
-          onOpenChange={(open) => !open && setEditItem(null)}
-          hairAssigned={editItem}
+        <CreateHairAssignedDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          clientId={appointment.client.id}
+          appointmentId={appointmentId}
           invalidateKeys={invalidateKeys}
         />
-      )}
-
-      {deleteItem && (
-        <DeleteHairAssignedDialog
-          open={!!deleteItem}
-          onOpenChange={(open) => !open && setDeleteItem(null)}
-          hairAssigned={deleteItem}
-          invalidateKeys={invalidateKeys}
-        />
-      )}
-    </div>
+        {editItem && (
+          <EditHairAssignedDialog
+            open={!!editItem}
+            onOpenChange={(open) => !open && setEditItem(null)}
+            hairAssigned={editItem}
+            invalidateKeys={invalidateKeys}
+          />
+        )}
+        {deleteItem && (
+          <DeleteHairAssignedDialog
+            open={!!deleteItem}
+            onOpenChange={(open) => !open && setDeleteItem(null)}
+            hairAssigned={deleteItem}
+            invalidateKeys={invalidateKeys}
+          />
+        )}
+      </Stack>
+    </Container>
   )
 }
