@@ -42,11 +42,11 @@ import { authClient } from "@/lib/auth-client"
 import classes from "./route.module.css"
 
 const tabs = [
+  { value: "/dashboard", label: "Dashboard" },
   { value: "/customers", label: "Customers" },
   { value: "/appointments", label: "Appointments" },
   { value: "/calendar", label: "Calendar" },
   { value: "/hair-orders", label: "Hair Orders" },
-  { value: "/playground", label: "Playground" },
   { value: "/files", label: "Files (Proxy)" },
   { value: "/files-direct", label: "Files (Direct)" },
 ] as const

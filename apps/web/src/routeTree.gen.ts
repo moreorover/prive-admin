@@ -15,9 +15,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
-import { Route as AuthenticatedPlaygroundRouteImport } from './routes/_authenticated/playground'
 import { Route as AuthenticatedFilesDirectRouteImport } from './routes/_authenticated/files-direct'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedHairOrdersRouteRouteImport } from './routes/_authenticated/hair-orders/route'
 import { Route as AuthenticatedCustomersRouteRouteImport } from './routes/_authenticated/customers/route'
@@ -59,11 +59,6 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedPlaygroundRoute = AuthenticatedPlaygroundRouteImport.update({
-  id: '/playground',
-  path: '/playground',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedFilesDirectRoute =
   AuthenticatedFilesDirectRouteImport.update({
     id: '/files-direct',
@@ -73,6 +68,11 @@ const AuthenticatedFilesDirectRoute =
 const AuthenticatedFilesRoute = AuthenticatedFilesRouteImport.update({
   id: '/files',
   path: '/files',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
@@ -147,9 +147,9 @@ export interface FileRoutesByFullPath {
   '/customers': typeof AuthenticatedCustomersRouteRouteWithChildren
   '/hair-orders': typeof AuthenticatedHairOrdersRouteRouteWithChildren
   '/calendar': typeof AuthenticatedCalendarRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/files': typeof AuthenticatedFilesRoute
   '/files-direct': typeof AuthenticatedFilesDirectRoute
-  '/playground': typeof AuthenticatedPlaygroundRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/upload': typeof ApiUploadRoute
@@ -165,9 +165,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/calendar': typeof AuthenticatedCalendarRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/files': typeof AuthenticatedFilesRoute
   '/files-direct': typeof AuthenticatedFilesDirectRoute
-  '/playground': typeof AuthenticatedPlaygroundRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/upload': typeof ApiUploadRoute
@@ -188,9 +188,9 @@ export interface FileRoutesById {
   '/_authenticated/customers': typeof AuthenticatedCustomersRouteRouteWithChildren
   '/_authenticated/hair-orders': typeof AuthenticatedHairOrdersRouteRouteWithChildren
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/files-direct': typeof AuthenticatedFilesDirectRoute
-  '/_authenticated/playground': typeof AuthenticatedPlaygroundRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/api/upload': typeof ApiUploadRoute
@@ -211,9 +211,9 @@ export interface FileRouteTypes {
     | '/customers'
     | '/hair-orders'
     | '/calendar'
+    | '/dashboard'
     | '/files'
     | '/files-direct'
-    | '/playground'
     | '/profile'
     | '/settings'
     | '/api/upload'
@@ -229,9 +229,9 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/calendar'
+    | '/dashboard'
     | '/files'
     | '/files-direct'
-    | '/playground'
     | '/profile'
     | '/settings'
     | '/api/upload'
@@ -251,9 +251,9 @@ export interface FileRouteTypes {
     | '/_authenticated/customers'
     | '/_authenticated/hair-orders'
     | '/_authenticated/calendar'
+    | '/_authenticated/dashboard'
     | '/_authenticated/files'
     | '/_authenticated/files-direct'
-    | '/_authenticated/playground'
     | '/_authenticated/profile'
     | '/_authenticated/settings'
     | '/api/upload'
@@ -318,13 +318,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/playground': {
-      id: '/_authenticated/playground'
-      path: '/playground'
-      fullPath: '/playground'
-      preLoaderRoute: typeof AuthenticatedPlaygroundRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/files-direct': {
       id: '/_authenticated/files-direct'
       path: '/files-direct'
@@ -337,6 +330,13 @@ declare module '@tanstack/react-router' {
       path: '/files'
       fullPath: '/files'
       preLoaderRoute: typeof AuthenticatedFilesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/calendar': {
@@ -475,9 +475,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCustomersRouteRoute: typeof AuthenticatedCustomersRouteRouteWithChildren
   AuthenticatedHairOrdersRouteRoute: typeof AuthenticatedHairOrdersRouteRouteWithChildren
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedFilesDirectRoute: typeof AuthenticatedFilesDirectRoute
-  AuthenticatedPlaygroundRoute: typeof AuthenticatedPlaygroundRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
 }
@@ -490,9 +490,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHairOrdersRouteRoute:
     AuthenticatedHairOrdersRouteRouteWithChildren,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedFilesDirectRoute: AuthenticatedFilesDirectRoute,
-  AuthenticatedPlaygroundRoute: AuthenticatedPlaygroundRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
 }
