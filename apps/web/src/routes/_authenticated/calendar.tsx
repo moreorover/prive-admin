@@ -47,6 +47,9 @@ function CalendarPage() {
     [navigate],
   )
 
+  // Mantine Schedule v9.1.0 doesn't forward onClick to events rendered inside the
+  // "+N more" overflow popover (see node_modules/@mantine/schedule/.../MoreEvents.mjs:33).
+  // Document-level delegation on data-event-id catches those popover clicks too.
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null
@@ -66,7 +69,15 @@ function CalendarPage() {
     <Container size="xl">
       <Stack>
         <Title order={2}>Calendar</Title>
-        <Schedule events={events} view={view} onViewChange={setView} date={date} onDateChange={setDate} />
+        <Schedule
+          events={events}
+          view={view}
+          onViewChange={setView}
+          date={date}
+          onDateChange={setDate}
+          layout="responsive"
+          onEventClick={(event) => goToAppointment(String(event.id))}
+        />
       </Stack>
     </Container>
   )
