@@ -30,10 +30,7 @@ export const getAvailableHairOrders = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
   .handler(async () => {
     return db.query.hairOrder.findMany({
-      where: gt(
-        sql`${hairOrder.weightReceived} - ${hairOrder.weightUsed}`,
-        0,
-      ),
+      where: gt(sql`${hairOrder.weightReceived} - ${hairOrder.weightUsed}`, 0),
       with: { customer: true },
       orderBy: (hairOrder, { asc }) => [asc(hairOrder.uid)],
     })
@@ -78,20 +75,13 @@ export const updateHairAssigned = createServerFn({ method: "POST" })
     if (!existing) throw new Error("Hair assigned not found")
 
     const parentOrder = existing.hairOrder
-    const availableWeight =
-      parentOrder.weightReceived - parentOrder.weightUsed + existing.weightInGrams
+    const availableWeight = parentOrder.weightReceived - parentOrder.weightUsed + existing.weightInGrams
     if (data.weightInGrams > availableWeight) {
-      throw new Error(
-        `Weight exceeds available stock (${availableWeight}g available)`,
-      )
+      throw new Error(`Weight exceeds available stock (${availableWeight}g available)`)
     }
 
-    const pricePerGram =
-      data.weightInGrams > 0
-        ? Math.round(data.soldFor / data.weightInGrams)
-        : 0
-    const profit =
-      data.soldFor - data.weightInGrams * parentOrder.pricePerGram
+    const pricePerGram = data.weightInGrams > 0 ? Math.round(data.soldFor / data.weightInGrams) : 0
+    const profit = data.soldFor - data.weightInGrams * parentOrder.pricePerGram
 
     return await db.transaction(async (tx) => {
       const [updated] = await tx

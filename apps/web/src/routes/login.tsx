@@ -1,5 +1,4 @@
-import { ActionIcon, Box, Center, Stack, Title } from "@mantine/core"
-import { useMantineColorScheme } from "@mantine/core"
+import { ActionIcon, Box, Center, Stack, Title, useMantineColorScheme } from "@mantine/core"
 import { IconDeviceDesktop, IconMoon, IconSun } from "@tabler/icons-react"
 import { Link, createFileRoute, redirect } from "@tanstack/react-router"
 import { useState } from "react"

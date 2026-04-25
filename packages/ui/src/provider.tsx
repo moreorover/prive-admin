@@ -1,7 +1,8 @@
+import type { ReactNode } from "react"
+
 import { MantineProvider } from "@mantine/core"
 import { ModalsProvider } from "@mantine/modals"
 import { Notifications } from "@mantine/notifications"
-import type { ReactNode } from "react"
 
 import { theme } from "./theme"
 

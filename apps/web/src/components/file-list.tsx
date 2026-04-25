@@ -1,13 +1,5 @@
 import { ActionIcon, Card, Center, Group, Loader, Skeleton, Stack, Table, Text, Title } from "@mantine/core"
-import {
-  IconCloud,
-  IconFile,
-  IconFileText,
-  IconMusic,
-  IconPhoto,
-  IconTrash,
-  IconVideo,
-} from "@tabler/icons-react"
+import { IconCloud, IconFile, IconFileText, IconMusic, IconPhoto, IconTrash, IconVideo } from "@tabler/icons-react"
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import type { FileItem } from "@/functions/files"

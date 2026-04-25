@@ -13,7 +13,12 @@ type EditHairAssignedDialogProps = {
   invalidateKeys: { queryKey: readonly unknown[] }[]
 }
 
-export function EditHairAssignedDialog({ open, onOpenChange, hairAssigned, invalidateKeys }: EditHairAssignedDialogProps) {
+export function EditHairAssignedDialog({
+  open,
+  onOpenChange,
+  hairAssigned,
+  invalidateKeys,
+}: EditHairAssignedDialogProps) {
   const queryClient = useQueryClient()
 
   const mutation = useMutation({

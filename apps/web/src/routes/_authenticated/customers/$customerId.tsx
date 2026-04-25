@@ -231,7 +231,9 @@ function CustomerDetailPage() {
                     <Table.Tr key={a.id}>
                       <Table.Td>
                         <Text
-                          renderRoot={(props) => <Link to="/appointments/$appointmentId" params={{ appointmentId: a.id }} {...props} />}
+                          renderRoot={(props) => (
+                            <Link to="/appointments/$appointmentId" params={{ appointmentId: a.id }} {...props} />
+                          )}
                           c="blue"
                         >
                           {a.name}

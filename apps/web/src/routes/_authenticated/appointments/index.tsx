@@ -1,4 +1,16 @@
-import { Button, Container, Group, Modal, NativeSelect, Skeleton, Stack, Table, Text, TextInput, Title } from "@mantine/core"
+import {
+  Button,
+  Container,
+  Group,
+  Modal,
+  NativeSelect,
+  Skeleton,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconCalendar, IconPlus } from "@tabler/icons-react"
@@ -115,7 +127,9 @@ function AppointmentsPage() {
                   <Table.Tr key={a.id}>
                     <Table.Td>
                       <Text
-                        renderRoot={(props) => <Link to="/appointments/$appointmentId" params={{ appointmentId: a.id }} {...props} />}
+                        renderRoot={(props) => (
+                          <Link to="/appointments/$appointmentId" params={{ appointmentId: a.id }} {...props} />
+                        )}
                         c="blue"
                         fw={500}
                       >

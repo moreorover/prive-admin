@@ -105,7 +105,9 @@ function CustomersPage() {
                   <Table.Tr key={c.id}>
                     <Table.Td>
                       <Text
-                        renderRoot={(props) => <Link to="/customers/$customerId" params={{ customerId: c.id }} {...props} />}
+                        renderRoot={(props) => (
+                          <Link to="/customers/$customerId" params={{ customerId: c.id }} {...props} />
+                        )}
                         c="blue"
                         fw={500}
                       >

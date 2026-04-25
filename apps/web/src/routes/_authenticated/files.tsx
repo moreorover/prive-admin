@@ -1,4 +1,17 @@
-import { Badge, Box, Button, Card, Container, Divider, Group, Progress, Skeleton, Stack, Text, Title } from "@mantine/core"
+import {
+  Badge,
+  Box,
+  Button,
+  Card,
+  Container,
+  Divider,
+  Group,
+  Progress,
+  Skeleton,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core"
 import { IconCloud, IconUpload } from "@tabler/icons-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -56,9 +69,7 @@ function FilesProxyPage() {
             await uploadFileViaProxy(file, (pct) => {
               setUploads((prev) => prev.map((u, idx) => (idx === i ? { ...u, progress: pct } : u)))
             })
-            setUploads((prev) =>
-              prev.map((u, idx) => (idx === i ? { ...u, progress: 100, status: "done" } : u)),
-            )
+            setUploads((prev) => prev.map((u, idx) => (idx === i ? { ...u, progress: 100, status: "done" } : u)))
           } catch {
             setUploads((prev) => prev.map((u, idx) => (idx === i ? { ...u, status: "error" } : u)))
           }
@@ -100,11 +111,7 @@ function FilesProxyPage() {
             <Text size="xs" c="dimmed">
               {isLoading ? <Skeleton h={12} w={80} /> : `${files?.length ?? 0} files · ${formatBytes(totalSize)}`}
             </Text>
-            <Button
-              size="sm"
-              leftSection={<IconUpload size={14} />}
-              onClick={() => fileInputRef.current?.click()}
-            >
+            <Button size="sm" leftSection={<IconUpload size={14} />} onClick={() => fileInputRef.current?.click()}>
               Upload
             </Button>
             <input
@@ -177,11 +184,7 @@ function FilesProxyPage() {
                           : "Failed"}
                     </Badge>
                   </Group>
-                  <Progress
-                    value={upload.progress}
-                    color={upload.status === "error" ? "red" : undefined}
-                    size="xs"
-                  />
+                  <Progress value={upload.progress} color={upload.status === "error" ? "red" : undefined} size="xs" />
                 </Stack>
               ))}
             </Stack>

@@ -50,7 +50,12 @@ export function HairAssignedTable({ items, showHairOrderColumn = false, onEdit, 
             <Table.Tr key={ha.id} bg={needsAttention ? "var(--mantine-color-red-0)" : undefined}>
               <Table.Td>
                 {ha.client ? (
-                  <Text renderRoot={(props) => <Link to="/customers/$customerId" params={{ customerId: ha.client!.id }} {...props} />} c="blue">
+                  <Text
+                    renderRoot={(props) => (
+                      <Link to="/customers/$customerId" params={{ customerId: ha.client!.id }} {...props} />
+                    )}
+                    c="blue"
+                  >
                     {ha.client.name}
                   </Text>
                 ) : (
@@ -61,7 +66,9 @@ export function HairAssignedTable({ items, showHairOrderColumn = false, onEdit, 
                 <Table.Td>
                   {ha.hairOrder ? (
                     <Text
-                      renderRoot={(props) => <Link to="/hair-orders/$hairOrderId" params={{ hairOrderId: ha.hairOrder!.id }} {...props} />}
+                      renderRoot={(props) => (
+                        <Link to="/hair-orders/$hairOrderId" params={{ hairOrderId: ha.hairOrder!.id }} {...props} />
+                      )}
                       c="blue"
                     >
                       #{ha.hairOrder.uid}

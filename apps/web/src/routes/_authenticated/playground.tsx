@@ -1,4 +1,20 @@
-import { Badge, Button, Card, Container, Divider, Group, Modal, Progress, SimpleGrid, Skeleton, Stack, Text, Title } from "@mantine/core"
+import type { Icon as TablerIcon } from "@tabler/icons-react"
+
+import {
+  Badge,
+  Button,
+  Card,
+  Container,
+  Divider,
+  Group,
+  Modal,
+  Progress,
+  SimpleGrid,
+  Skeleton,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core"
 import {
   IconActivity,
   IconDatabase,
@@ -16,7 +32,6 @@ import {
 } from "@tabler/icons-react"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import type { Icon as TablerIcon } from "@tabler/icons-react"
 import { useState } from "react"
 
 import type { CapabilityDetails } from "@/functions/get-capability-details"

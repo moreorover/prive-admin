@@ -94,7 +94,9 @@ function AppointmentDetailPage() {
             <Group gap={4}>
               <IconUser size={12} />
               <Text
-                renderRoot={(props) => <Link to="/customers/$customerId" params={{ customerId: appointment.client.id }} {...props} />}
+                renderRoot={(props) => (
+                  <Link to="/customers/$customerId" params={{ customerId: appointment.client.id }} {...props} />
+                )}
                 c="blue"
                 size="sm"
               >
@@ -132,7 +134,12 @@ function AppointmentDetailPage() {
           <Card withBorder>
             <Group justify="space-between" mb="sm">
               <Title order={5}>Hair Assigned</Title>
-              <Button variant="subtle" size="xs" leftSection={<IconPlus size={12} />} onClick={() => setCreateOpen(true)}>
+              <Button
+                variant="subtle"
+                size="xs"
+                leftSection={<IconPlus size={12} />}
+                onClick={() => setCreateOpen(true)}
+              >
                 Add
               </Button>
             </Group>

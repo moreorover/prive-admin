@@ -1,4 +1,17 @@
-import { Anchor, Badge, Button, Card, Container, Divider, Group, SimpleGrid, Skeleton, Stack, Text, Title } from "@mantine/core"
+import {
+  Anchor,
+  Badge,
+  Button,
+  Card,
+  Container,
+  Divider,
+  Group,
+  SimpleGrid,
+  Skeleton,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core"
 import { IconArrowLeft, IconPlus, IconUser } from "@tabler/icons-react"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
@@ -76,7 +89,9 @@ function HairOrderDetailPage() {
             <Group gap={4}>
               <IconUser size={12} />
               <Text
-                renderRoot={(props) => <Link to="/customers/$customerId" params={{ customerId: hairOrder.customer.id }} {...props} />}
+                renderRoot={(props) => (
+                  <Link to="/customers/$customerId" params={{ customerId: hairOrder.customer.id }} {...props} />
+                )}
                 c="blue"
                 size="sm"
               >
@@ -120,7 +135,12 @@ function HairOrderDetailPage() {
           <Card withBorder>
             <Group justify="space-between" mb="sm">
               <Title order={5}>Hair Assigned</Title>
-              <Button variant="subtle" size="xs" leftSection={<IconPlus size={12} />} onClick={() => setCreateOpen(true)}>
+              <Button
+                variant="subtle"
+                size="xs"
+                leftSection={<IconPlus size={12} />}
+                onClick={() => setCreateOpen(true)}
+              >
                 Add
               </Button>
             </Group>

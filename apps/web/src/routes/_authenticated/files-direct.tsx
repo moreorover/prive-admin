@@ -1,4 +1,17 @@
-import { Badge, Box, Button, Card, Container, Divider, Group, Progress, Skeleton, Stack, Text, Title } from "@mantine/core"
+import {
+  Badge,
+  Box,
+  Button,
+  Card,
+  Container,
+  Divider,
+  Group,
+  Progress,
+  Skeleton,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core"
 import { IconCloud, IconUpload } from "@tabler/icons-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -59,9 +72,7 @@ function FilesDirectPage() {
             await uploadToPresignedUrl(file, url, (pct) => {
               setUploads((prev) => prev.map((u, idx) => (idx === i ? { ...u, progress: pct } : u)))
             })
-            setUploads((prev) =>
-              prev.map((u, idx) => (idx === i ? { ...u, progress: 100, status: "confirming" } : u)),
-            )
+            setUploads((prev) => prev.map((u, idx) => (idx === i ? { ...u, progress: 100, status: "confirming" } : u)))
             await confirmUpload({ data: { key } })
             setUploads((prev) => prev.map((u, idx) => (idx === i ? { ...u, status: "done" } : u)))
           } catch {
@@ -105,11 +116,7 @@ function FilesDirectPage() {
             <Text size="xs" c="dimmed">
               {isLoading ? <Skeleton h={12} w={80} /> : `${files?.length ?? 0} files · ${formatBytes(totalSize)}`}
             </Text>
-            <Button
-              size="sm"
-              leftSection={<IconUpload size={14} />}
-              onClick={() => fileInputRef.current?.click()}
-            >
+            <Button size="sm" leftSection={<IconUpload size={14} />} onClick={() => fileInputRef.current?.click()}>
               Upload
             </Button>
             <input
@@ -172,13 +179,7 @@ function FilesDirectPage() {
                     </Text>
                     <Badge
                       size="sm"
-                      color={
-                        upload.status === "done"
-                          ? "green"
-                          : upload.status === "error"
-                            ? "red"
-                            : undefined
-                      }
+                      color={upload.status === "done" ? "green" : upload.status === "error" ? "red" : undefined}
                       variant={upload.status === "uploading" ? "outline" : "light"}
                     >
                       {upload.status === "uploading"
@@ -190,11 +191,7 @@ function FilesDirectPage() {
                             : "Failed"}
                     </Badge>
                   </Group>
-                  <Progress
-                    value={upload.progress}
-                    color={upload.status === "error" ? "red" : undefined}
-                    size="xs"
-                  />
+                  <Progress value={upload.progress} color={upload.status === "error" ? "red" : undefined} size="xs" />
                 </Stack>
               ))}
             </Stack>

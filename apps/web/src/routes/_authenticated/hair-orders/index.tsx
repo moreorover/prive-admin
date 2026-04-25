@@ -1,4 +1,18 @@
-import { Badge, Button, Container, Group, Modal, NativeSelect, NumberInput, Skeleton, Stack, Table, Text, TextInput, Title } from "@mantine/core"
+import {
+  Badge,
+  Button,
+  Container,
+  Group,
+  Modal,
+  NativeSelect,
+  NumberInput,
+  Skeleton,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconPlus, IconScissors } from "@tabler/icons-react"
@@ -53,7 +67,12 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     initialValues: { customerId: "", placedAt: "", weightReceived: 0, total: 0 },
   })
 
-  const handleSubmit = async (values: { customerId: string; placedAt: string; weightReceived: number; total: number }) => {
+  const handleSubmit = async (values: {
+    customerId: string
+    placedAt: string
+    weightReceived: number
+    total: number
+  }) => {
     await mutation.mutateAsync({
       customerId: values.customerId,
       placedAt: values.placedAt || null,
@@ -148,7 +167,9 @@ function HairOrdersPage() {
                   <Table.Tr key={ho.id}>
                     <Table.Td>
                       <Text
-                        renderRoot={(props) => <Link to="/hair-orders/$hairOrderId" params={{ hairOrderId: ho.id }} {...props} />}
+                        renderRoot={(props) => (
+                          <Link to="/hair-orders/$hairOrderId" params={{ hairOrderId: ho.id }} {...props} />
+                        )}
                         c="blue"
                         fw={500}
                       >

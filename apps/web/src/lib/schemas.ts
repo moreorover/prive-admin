@@ -44,4 +44,3 @@ export const noteSchema = z.object({
 })
 
 export type NoteInput = z.infer<typeof noteSchema>
-
