@@ -6,14 +6,20 @@ import {
   Container,
   Divider,
   Group,
+  Modal,
+  NativeSelect,
+  NumberInput,
   SimpleGrid,
   Skeleton,
   Stack,
   Text,
+  TextInput,
   Title,
 } from "@mantine/core"
-import { IconArrowLeft, IconPlus, IconUser } from "@tabler/icons-react"
-import { queryOptions, useQuery } from "@tanstack/react-query"
+import { useForm } from "@mantine/form"
+import { notifications } from "@mantine/notifications"
+import { IconArrowLeft, IconCalculator, IconPencil, IconPlus, IconUser } from "@tabler/icons-react"
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -22,7 +28,7 @@ import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair
 import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
 import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
-import { getHairOrder } from "@/functions/hair-orders"
+import { getHairOrder, recalculateHairOrderPrices, updateHairOrder } from "@/functions/hair-orders"
 import { hairOrderKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")({
@@ -41,13 +47,24 @@ const formatCents = (cents: number) => `$${(cents / 100).toFixed(2)}`
 
 function HairOrderDetailPage() {
   const { hairOrderId } = Route.useParams()
+  const queryClient = useQueryClient()
   const [createOpen, setCreateOpen] = useState(false)
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
+  const [editOrderOpen, setEditOrderOpen] = useState(false)
 
   const { data: hairOrder, isLoading } = useQuery({
     queryKey: hairOrderKeys.detail(hairOrderId),
     queryFn: () => getHairOrder({ data: { id: hairOrderId } }),
+  })
+
+  const recalcMutation = useMutation({
+    mutationFn: () => recalculateHairOrderPrices({ data: { hairOrderId } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
+      notifications.show({ color: "green", message: "Prices recalculated" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
   if (isLoading) {
@@ -74,33 +91,52 @@ function HairOrderDetailPage() {
   return (
     <Container size="lg">
       <Stack>
-        <Stack gap="xs">
-          <Anchor component={Link} to="/hair-orders" size="xs" c="dimmed">
-            <Group gap={4}>
-              <IconArrowLeft size={12} />
-              Back to hair orders
+        <Group justify="space-between" align="flex-start">
+          <Stack gap="xs">
+            <Anchor component={Link} to="/hair-orders" size="xs" c="dimmed">
+              <Group gap={4}>
+                <IconArrowLeft size={12} />
+                Back to hair orders
+              </Group>
+            </Anchor>
+            <Group gap="md">
+              <Title order={2}>Hair Order #{hairOrder.uid}</Title>
+              <Badge variant={hairOrder.status === "COMPLETED" ? "light" : "outline"}>{hairOrder.status}</Badge>
             </Group>
-          </Anchor>
-          <Group gap="md">
-            <Title order={2}>Hair Order #{hairOrder.uid}</Title>
-            <Badge variant={hairOrder.status === "COMPLETED" ? "light" : "outline"}>{hairOrder.status}</Badge>
-          </Group>
-          <Group gap="md" c="dimmed">
-            <Group gap={4}>
-              <IconUser size={12} />
-              <Text
-                renderRoot={(props) => (
-                  <Link to="/customers/$customerId" params={{ customerId: hairOrder.customer.id }} {...props} />
-                )}
-                c="blue"
-                size="sm"
-              >
-                {hairOrder.customer.name}
-              </Text>
+            <Group gap="md" c="dimmed">
+              <Group gap={4}>
+                <IconUser size={12} />
+                <Text
+                  renderRoot={(props) => (
+                    <Link to="/customers/$customerId" params={{ customerId: hairOrder.customer.id }} {...props} />
+                  )}
+                  c="blue"
+                  size="sm"
+                >
+                  {hairOrder.customer.name}
+                </Text>
+              </Group>
+              <Text size="sm">Created by {hairOrder.createdBy?.name ?? "Unknown"}</Text>
             </Group>
-            <Text size="sm">Created by {hairOrder.createdBy?.name ?? "Unknown"}</Text>
+            <Group gap="md" c="dimmed">
+              <Text size="sm">Placed: {hairOrder.placedAt ? <ClientDate date={hairOrder.placedAt} /> : "—"}</Text>
+              <Text size="sm">Arrived: {hairOrder.arrivedAt ? <ClientDate date={hairOrder.arrivedAt} /> : "—"}</Text>
+            </Group>
+          </Stack>
+          <Group gap="xs">
+            <Button
+              variant="default"
+              leftSection={<IconCalculator size={14} />}
+              loading={recalcMutation.isPending}
+              onClick={() => recalcMutation.mutate()}
+            >
+              Recalculate
+            </Button>
+            <Button variant="default" leftSection={<IconPencil size={14} />} onClick={() => setEditOrderOpen(true)}>
+              Edit
+            </Button>
           </Group>
-        </Stack>
+        </Group>
 
         <Divider />
 
@@ -192,7 +228,91 @@ function HairOrderDetailPage() {
             invalidateKeys={invalidateKeys}
           />
         )}
+        <EditHairOrderModal open={editOrderOpen} onOpenChange={setEditOrderOpen} hairOrder={hairOrder} />
       </Stack>
     </Container>
+  )
+}
+
+type EditHairOrderModalProps = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  hairOrder: {
+    id: string
+    placedAt: string | null
+    arrivedAt: string | null
+    status: string
+    weightReceived: number
+    weightUsed: number
+    total: number
+    customerId: string
+  }
+}
+
+function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModalProps) {
+  const queryClient = useQueryClient()
+
+  const mutation = useMutation({
+    mutationFn: (values: {
+      placedAt: string
+      arrivedAt: string
+      status: "PENDING" | "COMPLETED"
+      weightReceived: number
+      total: number
+    }) =>
+      updateHairOrder({
+        data: {
+          id: hairOrder.id,
+          placedAt: values.placedAt || null,
+          arrivedAt: values.arrivedAt || null,
+          status: values.status,
+          customerId: hairOrder.customerId,
+          weightReceived: values.weightReceived,
+          weightUsed: hairOrder.weightUsed,
+          total: values.total,
+        },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
+      onOpenChange(false)
+      notifications.show({ color: "green", message: "Hair order updated" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+
+  const form = useForm({
+    initialValues: {
+      placedAt: hairOrder.placedAt ?? "",
+      arrivedAt: hairOrder.arrivedAt ?? "",
+      status: (hairOrder.status === "COMPLETED" ? "COMPLETED" : "PENDING") as "PENDING" | "COMPLETED",
+      weightReceived: hairOrder.weightReceived,
+      total: hairOrder.total,
+    },
+  })
+
+  return (
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Hair Order">
+      <form onSubmit={form.onSubmit((values) => mutation.mutate(values))}>
+        <Stack>
+          <TextInput label="Placed At" type="date" {...form.getInputProps("placedAt")} />
+          <TextInput label="Arrived At" type="date" {...form.getInputProps("arrivedAt")} />
+          <NativeSelect
+            label="Status"
+            data={[
+              { value: "PENDING", label: "Pending" },
+              { value: "COMPLETED", label: "Completed" },
+            ]}
+            {...form.getInputProps("status")}
+          />
+          <Group grow>
+            <NumberInput label="Weight Received (g)" min={0} {...form.getInputProps("weightReceived")} />
+            <NumberInput label="Total (cents)" min={0} {...form.getInputProps("total")} />
+          </Group>
+          <Button type="submit" loading={mutation.isPending}>
+            Save Changes
+          </Button>
+        </Stack>
+      </form>
+    </Modal>
   )
 }
