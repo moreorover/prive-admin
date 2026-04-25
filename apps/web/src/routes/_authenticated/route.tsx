@@ -2,45 +2,52 @@ import type { ErrorComponentProps } from "@tanstack/react-router"
 
 import {
   ActionIcon,
-  AppShell,
+  Avatar,
+  Box,
   Burger,
   Button,
   Card,
+  Container,
+  Divider,
+  Drawer,
   Group,
-  NavLink,
-  Stack,
+  Menu,
+  ScrollArea,
+  Skeleton,
+  Tabs,
   Text,
   Title,
+  UnstyledButton,
   useMantineColorScheme,
+  useMantineTheme,
 } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
 import {
   IconAlertCircle,
-  IconCalendar,
+  IconChevronDown,
   IconDeviceDesktop,
-  IconFolderOpen,
-  IconLayoutDashboard,
   IconLogout,
   IconMoon,
   IconRefresh,
-  IconScissors,
-  IconServer,
   IconSun,
-  IconUsers,
+  IconUserCircle,
 } from "@tabler/icons-react"
 import { useQueryErrorResetBoundary } from "@tanstack/react-query"
-import { Link, Outlet, createFileRoute, redirect, useRouter, useRouterState } from "@tanstack/react-router"
+import { Link, Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouter } from "@tanstack/react-router"
+import { useState } from "react"
 
 import { getUser } from "@/functions/get-user"
 import { authClient } from "@/lib/auth-client"
 
-const NAV_ITEMS = [
-  { to: "/customers", label: "Customers", icon: IconUsers },
-  { to: "/appointments", label: "Appointments", icon: IconCalendar },
-  { to: "/hair-orders", label: "Hair Orders", icon: IconScissors },
-  { to: "/playground", label: "Playground", icon: IconLayoutDashboard },
-  { to: "/files", label: "Files (Proxy)", icon: IconFolderOpen },
-  { to: "/files-direct", label: "Files (Direct)", icon: IconServer },
+import classes from "./route.module.css"
+
+const tabs = [
+  { value: "/customers", label: "Customers" },
+  { value: "/appointments", label: "Appointments" },
+  { value: "/hair-orders", label: "Hair Orders" },
+  { value: "/playground", label: "Playground" },
+  { value: "/files", label: "Files (Proxy)" },
+  { value: "/files-direct", label: "Files (Direct)" },
 ] as const
 
 export const Route = createFileRoute("/_authenticated")({
@@ -59,79 +66,162 @@ export const Route = createFileRoute("/_authenticated")({
 })
 
 function AuthenticatedLayout() {
-  const [opened, { toggle }] = useDisclosure()
-  const { session } = Route.useRouteContext()
-  const router = useRouter()
-  const routerState = useRouterState()
-  const currentPath = routerState.location.pathname
+  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false)
+  const location = useLocation()
+
+  const activeTab =
+    tabs.find((t) => location.pathname === t.value || location.pathname.startsWith(`${t.value}/`))?.value ?? null
+
+  return (
+    <Box>
+      <div className={classes.header}>
+        <Container className={classes.mainSection} size="lg">
+          <Group justify="space-between">
+            <Title order={3} fw={700}>
+              Privé
+            </Title>
+
+            <Burger
+              opened={drawerOpened}
+              onClick={toggleDrawer}
+              hiddenFrom="xs"
+              size="sm"
+              aria-label="Toggle navigation"
+            />
+
+            <Group gap="xs" visibleFrom="xs" wrap="nowrap">
+              <ColorSchemeToggle />
+              <UserSection />
+            </Group>
+          </Group>
+        </Container>
+
+        <Container size="lg">
+          <Tabs
+            value={activeTab}
+            variant="outline"
+            visibleFrom="xs"
+            classNames={{
+              list: classes.tabsList,
+              tab: classes.tab,
+            }}
+          >
+            <Tabs.List>
+              {tabs.map((tab) => (
+                <Tabs.Tab key={tab.value} value={tab.value} renderRoot={(props) => <Link to={tab.value} {...props} />}>
+                  {tab.label}
+                </Tabs.Tab>
+              ))}
+            </Tabs.List>
+          </Tabs>
+        </Container>
+      </div>
+
+      <Drawer
+        opened={drawerOpened}
+        onClose={closeDrawer}
+        size="100%"
+        padding="md"
+        title="Navigation"
+        hiddenFrom="xs"
+        zIndex={1000000}
+      >
+        <ScrollArea h="calc(100vh - 80px)" mx="-md">
+          <Divider my="sm" />
+          {tabs.map((tab) => (
+            <Link key={tab.value} to={tab.value} className={classes.drawerLink} onClick={closeDrawer}>
+              {tab.label}
+            </Link>
+          ))}
+          <Divider my="sm" />
+          <Group p="md">
+            <ColorSchemeToggle />
+            <UserSection />
+          </Group>
+        </ScrollArea>
+      </Drawer>
+
+      <Box py="md">
+        <Outlet />
+      </Box>
+    </Box>
+  )
+}
+
+function ColorSchemeToggle() {
   const { colorScheme, setColorScheme } = useMantineColorScheme()
   const next = colorScheme === "light" ? "dark" : colorScheme === "dark" ? "auto" : "light"
   const Icon = colorScheme === "light" ? IconSun : colorScheme === "dark" ? IconMoon : IconDeviceDesktop
 
   return (
-    <AppShell
-      header={{ height: 56 }}
-      navbar={{ width: 240, breakpoint: "sm", collapsed: { mobile: !opened } }}
-      padding="md"
+    <ActionIcon
+      variant="default"
+      size="lg"
+      aria-label={`Color scheme: ${colorScheme}. Click to switch to ${next}.`}
+      onClick={() => setColorScheme(next)}
     >
-      <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group>
-            <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <Title order={4} fw={300}>
-              Privé
-            </Title>
+      <Icon size={18} />
+    </ActionIcon>
+  )
+}
+
+function UserSection() {
+  const navigate = useNavigate()
+  const theme = useMantineTheme()
+  const { session } = Route.useRouteContext()
+  const [menuOpened, setMenuOpened] = useState(false)
+
+  if (!session) {
+    return <Skeleton height={28} width={140} />
+  }
+
+  const user = session.user
+  const triggerClass = `${classes.user}${menuOpened ? ` ${classes.userActive}` : ""}`
+
+  return (
+    <Menu
+      width={260}
+      position="bottom-end"
+      transitionProps={{ transition: "pop-top-right" }}
+      onOpen={() => setMenuOpened(true)}
+      onClose={() => setMenuOpened(false)}
+      withinPortal
+    >
+      <Menu.Target>
+        <UnstyledButton className={triggerClass}>
+          <Group gap={7} wrap="nowrap">
+            <Avatar radius="xl" size={20} color="initials" name={user.name} />
+            <Text fw={500} size="sm" lh={1} mr={3}>
+              {user.name}
+            </Text>
+            <IconChevronDown size={12} stroke={1.5} />
           </Group>
-          <ActionIcon variant="default" onClick={() => setColorScheme(next)} aria-label="Toggle color scheme">
-            <Icon size={16} />
-          </ActionIcon>
-        </Group>
-      </AppShell.Header>
+        </UnstyledButton>
+      </Menu.Target>
 
-      <AppShell.Navbar p="sm">
-        <Stack gap="xs" style={{ flex: 1 }}>
-          {NAV_ITEMS.map(({ to, label, icon: ItemIcon }) => {
-            const active = currentPath === to || currentPath.startsWith(`${to}/`)
-            return (
-              <NavLink
-                key={to}
-                component={Link}
-                to={to}
-                label={label}
-                leftSection={<ItemIcon size={16} />}
-                active={active}
-              />
-            )
-          })}
-        </Stack>
-        <Stack gap="xs" mt="md">
-          <Text size="xs" c="dimmed" truncate>
-            {session?.user.email}
-          </Text>
-          <Button
-            variant="subtle"
-            color="red"
-            leftSection={<IconLogout size={16} />}
-            onClick={() =>
-              authClient.signOut({
-                fetchOptions: {
-                  onSuccess: () => {
-                    router.navigate({ to: "/" })
-                  },
+      <Menu.Dropdown>
+        <Menu.Label>My account</Menu.Label>
+        <Menu.Item disabled leftSection={<IconUserCircle size={16} color={theme.colors.blue[6]} stroke={1.5} />}>
+          {user.email}
+        </Menu.Item>
+        <Menu.Divider />
+        <Menu.Item
+          color="red"
+          leftSection={<IconLogout size={16} stroke={1.5} />}
+          onClick={() =>
+            authClient.signOut({
+              fetchOptions: {
+                onSuccess: () => {
+                  navigate({ to: "/" })
                 },
-              })
-            }
-            justify="flex-start"
-          >
-            Sign Out
-          </Button>
-        </Stack>
-      </AppShell.Navbar>
-
-      <AppShell.Main>
-        <Outlet />
-      </AppShell.Main>
-    </AppShell>
+              },
+            })
+          }
+        >
+          Sign out
+        </Menu.Item>
+      </Menu.Dropdown>
+    </Menu>
   )
 }
 
