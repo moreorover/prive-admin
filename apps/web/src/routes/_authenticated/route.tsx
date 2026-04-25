@@ -204,6 +204,12 @@ function UserSection() {
         <Menu.Item disabled leftSection={<IconUserCircle size={16} color={theme.colors.blue[6]} stroke={1.5} />}>
           {user.email}
         </Menu.Item>
+        <Menu.Item
+          renderRoot={(props) => <Link to="/profile" {...props} />}
+          leftSection={<IconUserCircle size={16} stroke={1.5} />}
+        >
+          Profile settings
+        </Menu.Item>
         <Menu.Divider />
         <Menu.Item
           color="red"

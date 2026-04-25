@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPlaygroundRouteImport } from './routes/_authenticated/playground'
 import { Route as AuthenticatedFilesDirectRouteImport } from './routes/_authenticated/files-direct'
 import { Route as AuthenticatedFilesRouteImport } from './routes/_authenticated/files'
@@ -27,6 +28,7 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthenticatedHairOrdersHairOrderIdRouteImport } from './routes/_authenticated/hair-orders/$hairOrderId'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments/$appointmentId'
+import { Route as AuthenticatedCustomersCustomerIdHairSalesRouteImport } from './routes/_authenticated/customers/$customerId.hair-sales'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -50,6 +52,11 @@ const ApiUploadRoute = ApiUploadRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPlaygroundRoute = AuthenticatedPlaygroundRouteImport.update({
@@ -127,6 +134,12 @@ const AuthenticatedAppointmentsAppointmentIdRoute =
     path: '/$appointmentId',
     getParentRoute: () => AuthenticatedAppointmentsRouteRoute,
   } as any)
+const AuthenticatedCustomersCustomerIdHairSalesRoute =
+  AuthenticatedCustomersCustomerIdHairSalesRouteImport.update({
+    id: '/hair-sales',
+    path: '/hair-sales',
+    getParentRoute: () => AuthenticatedCustomersCustomerIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -137,15 +150,17 @@ export interface FileRoutesByFullPath {
   '/files': typeof AuthenticatedFilesRoute
   '/files-direct': typeof AuthenticatedFilesDirectRoute
   '/playground': typeof AuthenticatedPlaygroundRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/upload': typeof ApiUploadRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
-  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/appointments/': typeof AuthenticatedAppointmentsIndexRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
+  '/customers/$customerId/hair-sales': typeof AuthenticatedCustomersCustomerIdHairSalesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -153,15 +168,17 @@ export interface FileRoutesByTo {
   '/files': typeof AuthenticatedFilesRoute
   '/files-direct': typeof AuthenticatedFilesDirectRoute
   '/playground': typeof AuthenticatedPlaygroundRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/upload': typeof ApiUploadRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
-  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/appointments': typeof AuthenticatedAppointmentsIndexRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders': typeof AuthenticatedHairOrdersIndexRoute
+  '/customers/$customerId/hair-sales': typeof AuthenticatedCustomersCustomerIdHairSalesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -174,15 +191,17 @@ export interface FileRoutesById {
   '/_authenticated/files': typeof AuthenticatedFilesRoute
   '/_authenticated/files-direct': typeof AuthenticatedFilesDirectRoute
   '/_authenticated/playground': typeof AuthenticatedPlaygroundRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/api/upload': typeof ApiUploadRoute
   '/_authenticated/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
-  '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
+  '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   '/_authenticated/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authenticated/appointments/': typeof AuthenticatedAppointmentsIndexRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
+  '/_authenticated/customers/$customerId/hair-sales': typeof AuthenticatedCustomersCustomerIdHairSalesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -195,6 +214,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/files-direct'
     | '/playground'
+    | '/profile'
     | '/settings'
     | '/api/upload'
     | '/appointments/$appointmentId'
@@ -204,6 +224,7 @@ export interface FileRouteTypes {
     | '/appointments/'
     | '/customers/'
     | '/hair-orders/'
+    | '/customers/$customerId/hair-sales'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -211,6 +232,7 @@ export interface FileRouteTypes {
     | '/files'
     | '/files-direct'
     | '/playground'
+    | '/profile'
     | '/settings'
     | '/api/upload'
     | '/appointments/$appointmentId'
@@ -220,6 +242,7 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/customers'
     | '/hair-orders'
+    | '/customers/$customerId/hair-sales'
   id:
     | '__root__'
     | '/'
@@ -231,6 +254,7 @@ export interface FileRouteTypes {
     | '/_authenticated/files'
     | '/_authenticated/files-direct'
     | '/_authenticated/playground'
+    | '/_authenticated/profile'
     | '/_authenticated/settings'
     | '/api/upload'
     | '/_authenticated/appointments/$appointmentId'
@@ -240,6 +264,7 @@ export interface FileRouteTypes {
     | '/_authenticated/appointments/'
     | '/_authenticated/customers/'
     | '/_authenticated/hair-orders/'
+    | '/_authenticated/customers/$customerId/hair-sales'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -285,6 +310,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/playground': {
@@ -378,6 +410,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppointmentsAppointmentIdRouteImport
       parentRoute: typeof AuthenticatedAppointmentsRouteRoute
     }
+    '/_authenticated/customers/$customerId/hair-sales': {
+      id: '/_authenticated/customers/$customerId/hair-sales'
+      path: '/hair-sales'
+      fullPath: '/customers/$customerId/hair-sales'
+      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdHairSalesRouteImport
+      parentRoute: typeof AuthenticatedCustomersCustomerIdRoute
+    }
   }
 }
 
@@ -398,15 +437,30 @@ const AuthenticatedAppointmentsRouteRouteWithChildren =
     AuthenticatedAppointmentsRouteRouteChildren,
   )
 
+interface AuthenticatedCustomersCustomerIdRouteChildren {
+  AuthenticatedCustomersCustomerIdHairSalesRoute: typeof AuthenticatedCustomersCustomerIdHairSalesRoute
+}
+
+const AuthenticatedCustomersCustomerIdRouteChildren: AuthenticatedCustomersCustomerIdRouteChildren =
+  {
+    AuthenticatedCustomersCustomerIdHairSalesRoute:
+      AuthenticatedCustomersCustomerIdHairSalesRoute,
+  }
+
+const AuthenticatedCustomersCustomerIdRouteWithChildren =
+  AuthenticatedCustomersCustomerIdRoute._addFileChildren(
+    AuthenticatedCustomersCustomerIdRouteChildren,
+  )
+
 interface AuthenticatedCustomersRouteRouteChildren {
-  AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
+  AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRouteWithChildren
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
 }
 
 const AuthenticatedCustomersRouteRouteChildren: AuthenticatedCustomersRouteRouteChildren =
   {
     AuthenticatedCustomersCustomerIdRoute:
-      AuthenticatedCustomersCustomerIdRoute,
+      AuthenticatedCustomersCustomerIdRouteWithChildren,
     AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
   }
 
@@ -439,6 +493,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFilesRoute: typeof AuthenticatedFilesRoute
   AuthenticatedFilesDirectRoute: typeof AuthenticatedFilesDirectRoute
   AuthenticatedPlaygroundRoute: typeof AuthenticatedPlaygroundRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
 }
 
@@ -452,6 +507,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFilesRoute: AuthenticatedFilesRoute,
   AuthenticatedFilesDirectRoute: AuthenticatedFilesDirectRoute,
   AuthenticatedPlaygroundRoute: AuthenticatedPlaygroundRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
 }
 
