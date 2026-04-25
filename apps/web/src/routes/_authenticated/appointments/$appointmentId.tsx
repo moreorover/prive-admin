@@ -1,17 +1,35 @@
-import { Anchor, Button, Card, Container, Divider, Group, Skeleton, Stack, Text, Title } from "@mantine/core"
-import { IconArrowLeft, IconClock, IconPlus, IconUser } from "@tabler/icons-react"
-import { queryOptions, useQuery } from "@tanstack/react-query"
+import {
+  Anchor,
+  Button,
+  Card,
+  Checkbox,
+  Container,
+  Divider,
+  Group,
+  Modal,
+  ScrollArea,
+  Skeleton,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core"
+import { notifications } from "@mantine/notifications"
+import { IconArrowLeft, IconClock, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
 import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
 import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
 import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
-import { getAppointment } from "@/functions/appointments"
+import { getAppointment, linkPersonnel } from "@/functions/appointments"
+import { getCustomers } from "@/functions/customers"
 import { getHairAssignedByAppointment } from "@/functions/hair-assigned"
-import { appointmentKeys, hairAssignedKeys } from "@/lib/query-keys"
+import { appointmentKeys, customerKeys, hairAssignedKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
@@ -38,6 +56,7 @@ function AppointmentDetailPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
+  const [pickPersonnelOpen, setPickPersonnelOpen] = useState(false)
 
   const { data: appointment, isLoading } = useQuery({
     queryKey: appointmentKeys.detail(appointmentId),
@@ -110,9 +129,17 @@ function AppointmentDetailPage() {
 
         <Group grow align="flex-start">
           <Card withBorder>
-            <Title order={5} mb="sm">
-              Personnel
-            </Title>
+            <Group justify="space-between" mb="sm">
+              <Title order={5}>Personnel</Title>
+              <Button
+                variant="subtle"
+                size="xs"
+                leftSection={<IconUsers size={12} />}
+                onClick={() => setPickPersonnelOpen(true)}
+              >
+                Pick
+              </Button>
+            </Group>
             {appointment.personnel && appointment.personnel.length > 0 ? (
               <Stack gap="xs">
                 {appointment.personnel.map((p) => (
@@ -197,7 +224,126 @@ function AppointmentDetailPage() {
             invalidateKeys={invalidateKeys}
           />
         )}
+        <PickPersonnelModal
+          open={pickPersonnelOpen}
+          onOpenChange={setPickPersonnelOpen}
+          appointmentId={appointmentId}
+          assignedPersonnelIds={appointment.personnel?.map((p) => p.personnelId) ?? []}
+        />
       </Stack>
     </Container>
+  )
+}
+
+type PickPersonnelModalProps = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  appointmentId: string
+  assignedPersonnelIds: string[]
+}
+
+function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonnelIds }: PickPersonnelModalProps) {
+  const queryClient = useQueryClient()
+  const [selected, setSelected] = useState<string[]>([])
+  const [search, setSearch] = useState("")
+
+  const { data: customers } = useQuery({
+    queryKey: customerKeys.list(),
+    queryFn: () => getCustomers(),
+    enabled: open,
+  })
+
+  const available = useMemo(() => {
+    const assigned = new Set(assignedPersonnelIds)
+    const term = search.trim().toLowerCase()
+    return (customers ?? [])
+      .filter((c) => !assigned.has(c.id))
+      .filter((c) => (term ? c.name.toLowerCase().includes(term) : true))
+  }, [customers, assignedPersonnelIds, search])
+
+  const mutation = useMutation({
+    mutationFn: (personnelIds: string[]) => linkPersonnel({ data: { appointmentId, personnelIds } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.detail(appointmentId) })
+      handleClose()
+      notifications.show({ color: "green", message: "Personnel picked." })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+
+  const toggle = (id: string) =>
+    setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+
+  const handleClose = () => {
+    setSelected([])
+    setSearch("")
+    onOpenChange(false)
+  }
+
+  return (
+    <Modal opened={open} onClose={handleClose} title="Pick personnel" size="lg">
+      <Stack>
+        <TextInput
+          label="Search"
+          description="Search by personnel name"
+          placeholder="Search…"
+          value={search}
+          onChange={(e) => setSearch(e.currentTarget.value)}
+        />
+        <ScrollArea h={300}>
+          <Table highlightOnHover>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th w={40} />
+                <Table.Th>Name</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {available.length > 0 ? (
+                available.map((c) => {
+                  const checked = selected.includes(c.id)
+                  return (
+                    <Table.Tr
+                      key={c.id}
+                      style={{ cursor: "pointer" }}
+                      bg={checked ? "var(--mantine-color-blue-light)" : undefined}
+                      onClick={() => toggle(c.id)}
+                    >
+                      <Table.Td>
+                        <Checkbox
+                          checked={checked}
+                          aria-label={`Select ${c.name}`}
+                          onChange={() => toggle(c.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </Table.Td>
+                      <Table.Td>{c.name}</Table.Td>
+                    </Table.Tr>
+                  )
+                })
+              ) : (
+                <Table.Tr>
+                  <Table.Td colSpan={2} ta="center" c="dimmed">
+                    No match found.
+                  </Table.Td>
+                </Table.Tr>
+              )}
+            </Table.Tbody>
+          </Table>
+        </ScrollArea>
+        <Group justify="flex-end" gap="xs">
+          <Button variant="default" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button
+            disabled={selected.length === 0}
+            loading={mutation.isPending}
+            onClick={() => mutation.mutate(selected)}
+          >
+            Confirm
+          </Button>
+        </Group>
+      </Stack>
+    </Modal>
   )
 }
