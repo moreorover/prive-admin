@@ -1,32 +1,13 @@
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import { Card, CardContent } from "@prive-admin-tanstack/ui/components/card"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@prive-admin-tanstack/ui/components/dialog"
-import { Input } from "@prive-admin-tanstack/ui/components/input"
-import { Label } from "@prive-admin-tanstack/ui/components/label"
-import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@prive-admin-tanstack/ui/components/table"
-import { useForm } from "@tanstack/react-form"
-import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/react-query"
+import { Button, Container, Group, Modal, Skeleton, Stack, Table, Text, TextInput, Title } from "@mantine/core"
+import { useForm } from "@mantine/form"
+import { notifications } from "@mantine/notifications"
+import { IconPlus, IconUsers } from "@tabler/icons-react"
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { Plus, Users } from "lucide-react"
 import { useState } from "react"
-import { toast } from "sonner"
 
 import { ClientDate } from "@/components/client-date"
-import { getCustomers, createCustomer } from "@/functions/customers"
+import { createCustomer, getCustomers } from "@/functions/customers"
 import { customerKeys } from "@/lib/query-keys"
 
 const customersQueryOptions = queryOptions({
@@ -49,75 +30,29 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerKeys.all })
       onOpenChange(false)
-      toast.success("Customer created")
+      notifications.show({ color: "green", message: "Customer created" })
     },
-    onError: (error) => {
-      toast.error(error.message)
-    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
-  const form = useForm({
-    defaultValues: { name: "", phoneNumber: "" },
-    onSubmit: async ({ value }) => {
-      await mutation.mutateAsync({
-        name: value.name,
-        phoneNumber: value.phoneNumber || null,
-      })
-    },
-  })
+  const form = useForm({ initialValues: { name: "", phoneNumber: "" } })
+
+  const handleSubmit = async (values: { name: string; phoneNumber: string }) => {
+    await mutation.mutateAsync({ name: values.name, phoneNumber: values.phoneNumber || null })
+  }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>New Customer</DialogTitle>
-          <DialogDescription>Add a new customer to the system.</DialogDescription>
-        </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            form.handleSubmit()
-          }}
-          className="space-y-4"
-        >
-          <form.Field name="name">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Name</Label>
-                <Input
-                  id={field.name}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-              </div>
-            )}
-          </form.Field>
-          <form.Field name="phoneNumber">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Phone Number</Label>
-                <Input
-                  id={field.name}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="+1234567890"
-                />
-              </div>
-            )}
-          </form.Field>
-          <form.Subscribe selector={(state) => ({ canSubmit: state.canSubmit, isSubmitting: state.isSubmitting })}>
-            {({ canSubmit, isSubmitting }) => (
-              <Button type="submit" className="w-full" disabled={!canSubmit || isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Customer"}
-              </Button>
-            )}
-          </form.Subscribe>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="New Customer">
+      <form onSubmit={form.onSubmit(handleSubmit)}>
+        <Stack>
+          <TextInput label="Name" {...form.getInputProps("name")} />
+          <TextInput label="Phone Number" placeholder="+1234567890" {...form.getInputProps("phoneNumber")} />
+          <Button type="submit" loading={mutation.isPending}>
+            Create Customer
+          </Button>
+        </Stack>
+      </form>
+    </Modal>
   )
 }
 
@@ -126,76 +61,71 @@ function CustomersPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
-      <div className="flex items-end justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Users className="size-4" />
-            <span className="text-xs tracking-widest uppercase">Customers</span>
-          </div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Customers</h1>
-        </div>
-        <Button size="sm" onClick={() => setDialogOpen(true)}>
-          <Plus className="size-3" />
-          New Customer
-        </Button>
-      </div>
+    <Container size="lg">
+      <Stack>
+        <Group justify="space-between" align="flex-end">
+          <Stack gap={4}>
+            <Group gap="xs" c="dimmed">
+              <IconUsers size={16} />
+              <Text size="xs" tt="uppercase">
+                Customers
+              </Text>
+            </Group>
+            <Title order={2}>Customers</Title>
+          </Stack>
+          <Button leftSection={<IconPlus size={14} />} onClick={() => setDialogOpen(true)}>
+            New Customer
+          </Button>
+        </Group>
 
-      <Card>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading
-                ? Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell>
-                        <Skeleton className="h-4 w-32" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-24" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-4 w-20" />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                : customers?.map((c) => (
-                    <TableRow key={c.id}>
-                      <TableCell>
-                        <Link
-                          to="/customers/$customerId"
-                          params={{ customerId: c.id }}
-                          className="font-medium text-primary hover:underline"
-                        >
-                          {c.name}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{c.phoneNumber ?? "—"}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        <ClientDate date={c.createdAt} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              {!isLoading && customers?.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center text-muted-foreground">
-                    No customers yet. Create your first one.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+        <Table>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Name</Table.Th>
+              <Table.Th>Phone</Table.Th>
+              <Table.Th>Created</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {isLoading
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <Table.Tr key={i}>
+                    <Table.Td>
+                      <Skeleton h={14} w={120} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton h={14} w={90} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton h={14} w={70} />
+                    </Table.Td>
+                  </Table.Tr>
+                ))
+              : customers?.map((c) => (
+                  <Table.Tr key={c.id}>
+                    <Table.Td>
+                      <Text component={Link} to="/customers/$customerId" params={{ customerId: c.id }} c="blue" fw={500}>
+                        {c.name}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td c="dimmed">{c.phoneNumber ?? "—"}</Table.Td>
+                    <Table.Td c="dimmed">
+                      <ClientDate date={c.createdAt} />
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+            {!isLoading && customers?.length === 0 && (
+              <Table.Tr>
+                <Table.Td colSpan={3} ta="center" c="dimmed">
+                  No customers yet. Create your first one.
+                </Table.Td>
+              </Table.Tr>
+            )}
+          </Table.Tbody>
+        </Table>
 
-      <CustomerFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-    </div>
+        <CustomerFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      </Stack>
+    </Container>
   )
 }
