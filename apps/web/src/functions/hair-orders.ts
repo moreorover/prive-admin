@@ -1,5 +1,5 @@
 import { db } from "@prive-admin-tanstack/db"
-import { hairOrder } from "@prive-admin-tanstack/db/schema/hair"
+import { hairAssigned, hairOrder } from "@prive-admin-tanstack/db/schema/hair"
 import { createServerFn } from "@tanstack/react-start"
 import { eq } from "drizzle-orm"
 import { z } from "zod"
@@ -72,4 +72,34 @@ export const updateHairOrder = createServerFn({ method: "POST" })
       .where(eq(hairOrder.id, data.id!))
       .returning()
     return result
+  })
+
+export const recalculateHairOrderPrices = createServerFn({ method: "POST" })
+  .middleware([requireAuthMiddleware])
+  .inputValidator(z.object({ hairOrderId: z.string() }))
+  .handler(async ({ data }) => {
+    const order = await db.query.hairOrder.findFirst({
+      where: eq(hairOrder.id, data.hairOrderId),
+      with: { hairAssigned: true },
+    })
+    if (!order) {
+      throw new Error("Hair order not found")
+    }
+
+    const pricePerGram =
+      order.total === 0 || order.weightReceived === 0 ? 0 : Math.abs(Math.round(order.total / order.weightReceived))
+
+    if (order.pricePerGram !== pricePerGram) {
+      await db.update(hairOrder).set({ pricePerGram }).where(eq(hairOrder.id, data.hairOrderId))
+    }
+
+    for (const ha of order.hairAssigned) {
+      const total = pricePerGram === 0 ? 0 : Math.round(pricePerGram * ha.weightInGrams)
+      const profit = ha.soldFor - total
+      if (ha.profit !== profit) {
+        await db.update(hairAssigned).set({ profit }).where(eq(hairAssigned.id, ha.id))
+      }
+    }
+
+    return { pricePerGram }
   })

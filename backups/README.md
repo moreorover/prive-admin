@@ -33,9 +33,9 @@ psql "$DATABASE_URL" < backups/postgres_backup_drizzle.sql
 
 ## What the conversion does
 
-| Prisma backup | Drizzle schema |
-|---|---|
-| camelCase columns (`"userId"`) | snake_case (`user_id`) |
-| PG enums (`HairOrderStatus`, etc.) | Plain `text` |
-| `_prisma_migrations` table | Skipped |
-| Schema + data | Data only |
+| Prisma backup                      | Drizzle schema         |
+| ---------------------------------- | ---------------------- |
+| camelCase columns (`"userId"`)     | snake_case (`user_id`) |
+| PG enums (`HairOrderStatus`, etc.) | Plain `text`           |
+| `_prisma_migrations` table         | Skipped                |
+| Schema + data                      | Data only              |

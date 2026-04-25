@@ -1,14 +1,6 @@
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@prive-admin-tanstack/ui/components/table"
+import { ActionIcon, Group, Table, Text } from "@mantine/core"
+import { IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
-import { Edit, Trash2 } from "lucide-react"
 
 export type HairAssignedRow = {
   id: string
@@ -29,95 +21,81 @@ type HairAssignedTableProps = {
 
 const formatCents = (cents: number) => `$${(cents / 100).toFixed(2)}`
 
-export function HairAssignedTable({
-  items,
-  showHairOrderColumn = false,
-  onEdit,
-  onDelete,
-}: HairAssignedTableProps) {
+export function HairAssignedTable({ items, showHairOrderColumn = false, onEdit, onDelete }: HairAssignedTableProps) {
+  if (items.length === 0) {
+    return (
+      <Text size="sm" c="dimmed">
+        No hair assigned yet.
+      </Text>
+    )
+  }
+
   return (
-    <>
-      {items.length > 0 ? (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Client</TableHead>
-              {showHairOrderColumn && <TableHead>Hair Order</TableHead>}
-              <TableHead>Weight</TableHead>
-              <TableHead>Sold For</TableHead>
-              <TableHead>Profit</TableHead>
-              <TableHead>$/g</TableHead>
-              <TableHead className="w-[80px]" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items.map((ha) => {
-              const needsAttention = ha.weightInGrams === 0 || ha.soldFor === 0
-              return (
-                <TableRow
-                  key={ha.id}
-                  className={needsAttention ? "bg-destructive/10" : undefined}
-                >
-                  <TableCell>
-                    {ha.client ? (
-                      <Link
-                        to="/customers/$customerId"
-                        params={{ customerId: ha.client.id }}
-                        className="text-primary hover:underline"
-                      >
-                        {ha.client.name}
-                      </Link>
-                    ) : (
-                      "—"
+    <Table>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>Client</Table.Th>
+          {showHairOrderColumn && <Table.Th>Hair Order</Table.Th>}
+          <Table.Th>Weight</Table.Th>
+          <Table.Th>Sold For</Table.Th>
+          <Table.Th>Profit</Table.Th>
+          <Table.Th>$/g</Table.Th>
+          <Table.Th />
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>
+        {items.map((ha) => {
+          const needsAttention = ha.weightInGrams === 0 || ha.soldFor === 0
+          return (
+            <Table.Tr key={ha.id} bg={needsAttention ? "var(--mantine-color-red-0)" : undefined}>
+              <Table.Td>
+                {ha.client ? (
+                  <Text
+                    renderRoot={(props) => (
+                      <Link to="/customers/$customerId" params={{ customerId: ha.client!.id }} {...props} />
                     )}
-                  </TableCell>
-                  {showHairOrderColumn && (
-                    <TableCell>
-                      {ha.hairOrder ? (
-                        <Link
-                          to="/hair-orders/$hairOrderId"
-                          params={{ hairOrderId: ha.hairOrder.id }}
-                          className="text-primary hover:underline"
-                        >
-                          #{ha.hairOrder.uid}
-                        </Link>
-                      ) : (
-                        "—"
+                    c="blue"
+                  >
+                    {ha.client.name}
+                  </Text>
+                ) : (
+                  "—"
+                )}
+              </Table.Td>
+              {showHairOrderColumn && (
+                <Table.Td>
+                  {ha.hairOrder ? (
+                    <Text
+                      renderRoot={(props) => (
+                        <Link to="/hair-orders/$hairOrderId" params={{ hairOrderId: ha.hairOrder!.id }} {...props} />
                       )}
-                    </TableCell>
+                      c="blue"
+                    >
+                      #{ha.hairOrder.uid}
+                    </Text>
+                  ) : (
+                    "—"
                   )}
-                  <TableCell>{ha.weightInGrams}g</TableCell>
-                  <TableCell>{formatCents(ha.soldFor)}</TableCell>
-                  <TableCell>{formatCents(ha.profit)}</TableCell>
-                  <TableCell>{formatCents(ha.pricePerGram)}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7"
-                        onClick={() => onEdit(ha)}
-                      >
-                        <Edit className="size-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 text-destructive hover:text-destructive"
-                        onClick={() => onDelete(ha)}
-                      >
-                        <Trash2 className="size-3" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      ) : (
-        <p className="text-sm text-muted-foreground">No hair assigned yet.</p>
-      )}
-    </>
+                </Table.Td>
+              )}
+              <Table.Td>{ha.weightInGrams}g</Table.Td>
+              <Table.Td>{formatCents(ha.soldFor)}</Table.Td>
+              <Table.Td>{formatCents(ha.profit)}</Table.Td>
+              <Table.Td>{formatCents(ha.pricePerGram)}</Table.Td>
+              <Table.Td>
+                <Group gap={4}>
+                  <ActionIcon variant="subtle" size="sm" onClick={() => onEdit(ha)} aria-label="Edit">
+                    <IconPencil size={14} />
+                  </ActionIcon>
+                  <ActionIcon variant="subtle" size="sm" color="red" onClick={() => onDelete(ha)} aria-label="Delete">
+                    <IconTrash size={14} />
+                  </ActionIcon>
+                </Group>
+              </Table.Td>
+            </Table.Tr>
+          )
+        })}
+      </Table.Tbody>
+    </Table>
   )
 }

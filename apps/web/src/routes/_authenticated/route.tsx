@@ -1,38 +1,54 @@
 import type { ErrorComponentProps } from "@tanstack/react-router"
 
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@prive-admin-tanstack/ui/components/card"
-import { useQueryErrorResetBoundary } from "@tanstack/react-query"
-import { Link, Outlet, createFileRoute, redirect, useRouter, useRouterState } from "@tanstack/react-router"
 import {
-  AlertCircle,
-  Calendar,
-  ChevronLeft,
-  FolderOpen,
-  HardDrive,
-  LayoutDashboard,
-  LogOut,
+  ActionIcon,
+  Avatar,
+  Box,
+  Burger,
+  Button,
+  Card,
+  Container,
+  Divider,
+  Drawer,
+  Group,
   Menu,
-  Moon,
-  RefreshCw,
-  Scissors,
-  Sun,
-  Users,
-  X,
-} from "lucide-react"
-import { useTheme } from "next-themes"
-import { useEffect, useState } from "react"
+  ScrollArea,
+  Skeleton,
+  Tabs,
+  Text,
+  Title,
+  UnstyledButton,
+  useMantineColorScheme,
+  useMantineTheme,
+} from "@mantine/core"
+import { useDisclosure } from "@mantine/hooks"
+import {
+  IconAlertCircle,
+  IconChevronDown,
+  IconDeviceDesktop,
+  IconLogout,
+  IconMoon,
+  IconRefresh,
+  IconSun,
+  IconUserCircle,
+} from "@tabler/icons-react"
+import { useQueryErrorResetBoundary } from "@tanstack/react-query"
+import { Link, Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouter } from "@tanstack/react-router"
+import { useState } from "react"
 
 import { getUser } from "@/functions/get-user"
 import { authClient } from "@/lib/auth-client"
 
-const NAV_ITEMS = [
-  { to: "/customers", label: "Customers", icon: Users },
-  { to: "/appointments", label: "Appointments", icon: Calendar },
-  { to: "/hair-orders", label: "Hair Orders", icon: Scissors },
-  { to: "/playground", label: "Playground", icon: LayoutDashboard },
-  { to: "/files", label: "Files (Proxy)", icon: FolderOpen },
-  { to: "/files-direct", label: "Files (Direct)", icon: HardDrive },
+import classes from "./route.module.css"
+
+const tabs = [
+  { value: "/dashboard", label: "Dashboard" },
+  { value: "/customers", label: "Customers" },
+  { value: "/appointments", label: "Appointments" },
+  { value: "/calendar", label: "Calendar" },
+  { value: "/hair-orders", label: "Hair Orders" },
+  { value: "/files", label: "Files (Proxy)" },
+  { value: "/files-direct", label: "Files (Direct)" },
 ] as const
 
 export const Route = createFileRoute("/_authenticated")({
@@ -51,165 +67,168 @@ export const Route = createFileRoute("/_authenticated")({
 })
 
 function AuthenticatedLayout() {
-  const [collapsed, setCollapsed] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const { session } = Route.useRouteContext()
-  const router = useRouter()
-  const routerState = useRouterState()
-  const currentPath = routerState.location.pathname
-  const { theme, setTheme } = useTheme()
+  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false)
+  const location = useLocation()
 
-  // Close mobile sidebar on route change
-  useEffect(() => {
-    setMobileOpen(false)
-  }, [currentPath])
+  const activeTab =
+    tabs.find((t) => location.pathname === t.value || location.pathname.startsWith(`${t.value}/`))?.value ?? null
 
-  const sidebarContent = (
-    <>
-      {/* Nav items */}
-      <nav className="flex-1 space-y-1 p-2 pt-4">
-        {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
-          const isActive = currentPath === to || currentPath.startsWith(`${to}/`)
-          return (
-            <Link
-              key={to}
-              to={to}
-              className={`flex items-center gap-3 rounded-md px-3 py-2 text-xs transition-all ${
-                isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              } ${collapsed && !mobileOpen ? "justify-center" : ""}`}
-              title={collapsed && !mobileOpen ? label : undefined}
-            >
-              <Icon className="size-4 shrink-0" />
-              {(!collapsed || mobileOpen) && <span className="tracking-wide">{label}</span>}
+  return (
+    <Box>
+      <div className={classes.header}>
+        <Container className={classes.mainSection} size="lg">
+          <Group justify="space-between">
+            <Title order={3} fw={700}>
+              Privé
+            </Title>
+
+            <Burger
+              opened={drawerOpened}
+              onClick={toggleDrawer}
+              hiddenFrom="xs"
+              size="sm"
+              aria-label="Toggle navigation"
+            />
+
+            <Group gap="xs" visibleFrom="xs" wrap="nowrap">
+              <ColorSchemeToggle />
+              <UserSection />
+            </Group>
+          </Group>
+        </Container>
+
+        <Container size="lg">
+          <Tabs
+            value={activeTab}
+            variant="outline"
+            visibleFrom="xs"
+            classNames={{
+              list: classes.tabsList,
+              tab: classes.tab,
+            }}
+          >
+            <Tabs.List>
+              {tabs.map((tab) => (
+                <Tabs.Tab key={tab.value} value={tab.value} renderRoot={(props) => <Link to={tab.value} {...props} />}>
+                  {tab.label}
+                </Tabs.Tab>
+              ))}
+            </Tabs.List>
+          </Tabs>
+        </Container>
+      </div>
+
+      <Drawer
+        opened={drawerOpened}
+        onClose={closeDrawer}
+        size="100%"
+        padding="md"
+        title="Navigation"
+        hiddenFrom="xs"
+        zIndex={1000000}
+      >
+        <ScrollArea h="calc(100vh - 80px)" mx="-md">
+          <Divider my="sm" />
+          {tabs.map((tab) => (
+            <Link key={tab.value} to={tab.value} className={classes.drawerLink} onClick={closeDrawer}>
+              {tab.label}
             </Link>
-          )
-        })}
-      </nav>
+          ))}
+          <Divider my="sm" />
+          <Group p="md">
+            <ColorSchemeToggle />
+            <UserSection />
+          </Group>
+        </ScrollArea>
+      </Drawer>
 
-      {/* Bottom section */}
-      <div className="border-t border-border p-3">
-        {/* Theme toggle */}
-        <button
-          type="button"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground ${
-            collapsed && !mobileOpen ? "justify-center" : ""
-          }`}
-          title={collapsed && !mobileOpen ? "Toggle theme" : undefined}
+      <Box py="md">
+        <Outlet />
+      </Box>
+    </Box>
+  )
+}
+
+function ColorSchemeToggle() {
+  const { colorScheme, setColorScheme } = useMantineColorScheme()
+  const next = colorScheme === "light" ? "dark" : colorScheme === "dark" ? "auto" : "light"
+  const Icon = colorScheme === "light" ? IconSun : colorScheme === "dark" ? IconMoon : IconDeviceDesktop
+
+  return (
+    <ActionIcon
+      variant="default"
+      size="lg"
+      aria-label={`Color scheme: ${colorScheme}. Click to switch to ${next}.`}
+      onClick={() => setColorScheme(next)}
+    >
+      <Icon size={18} />
+    </ActionIcon>
+  )
+}
+
+function UserSection() {
+  const navigate = useNavigate()
+  const theme = useMantineTheme()
+  const { session } = Route.useRouteContext()
+  const [menuOpened, setMenuOpened] = useState(false)
+
+  if (!session) {
+    return <Skeleton height={28} width={140} />
+  }
+
+  const user = session.user
+  const triggerClass = `${classes.user}${menuOpened ? ` ${classes.userActive}` : ""}`
+
+  return (
+    <Menu
+      width={260}
+      position="bottom-end"
+      transitionProps={{ transition: "pop-top-right" }}
+      onOpen={() => setMenuOpened(true)}
+      onClose={() => setMenuOpened(false)}
+      withinPortal
+    >
+      <Menu.Target>
+        <UnstyledButton className={triggerClass}>
+          <Group gap={7} wrap="nowrap">
+            <Avatar radius="xl" size={20} color="initials" name={user.name} />
+            <Text fw={500} size="sm" lh={1} mr={3}>
+              {user.name}
+            </Text>
+            <IconChevronDown size={12} stroke={1.5} />
+          </Group>
+        </UnstyledButton>
+      </Menu.Target>
+
+      <Menu.Dropdown>
+        <Menu.Label>My account</Menu.Label>
+        <Menu.Item disabled leftSection={<IconUserCircle size={16} color={theme.colors.blue[6]} stroke={1.5} />}>
+          {user.email}
+        </Menu.Item>
+        <Menu.Item
+          renderRoot={(props) => <Link to="/profile" {...props} />}
+          leftSection={<IconUserCircle size={16} stroke={1.5} />}
         >
-          {theme === "dark" ? <Sun className="size-4 shrink-0" /> : <Moon className="size-4 shrink-0" />}
-          {(!collapsed || mobileOpen) && (
-            <span className="tracking-wide">{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
-          )}
-        </button>
-
-        {/* User info */}
-        {(!collapsed || mobileOpen) && (
-          <div className="mt-2 mb-2 truncate px-2 text-[10px] tracking-wide text-muted-foreground/50">
-            {session?.user.email}
-          </div>
-        )}
-
-        {/* Sign out */}
-        <button
-          type="button"
-          onClick={() => {
+          Profile settings
+        </Menu.Item>
+        <Menu.Divider />
+        <Menu.Item
+          color="red"
+          leftSection={<IconLogout size={16} stroke={1.5} />}
+          onClick={() =>
             authClient.signOut({
               fetchOptions: {
                 onSuccess: () => {
-                  router.navigate({ to: "/" })
+                  navigate({ to: "/" })
                 },
               },
             })
-          }}
-          className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-destructive ${
-            collapsed && !mobileOpen ? "justify-center" : ""
-          }`}
-          title={collapsed && !mobileOpen ? "Sign out" : undefined}
+          }
         >
-          <LogOut className="size-4 shrink-0" />
-          {(!collapsed || mobileOpen) && <span className="tracking-wide">Sign Out</span>}
-        </button>
-      </div>
-    </>
-  )
-
-  return (
-    <div className="admin-layout flex h-svh overflow-hidden bg-background">
-      {/* Mobile top bar */}
-      <div className="fixed top-0 right-0 left-0 z-40 flex h-14 items-center gap-3 border-b border-border bg-background px-4 md:hidden">
-        <button
-          type="button"
-          onClick={() => setMobileOpen(true)}
-          className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-        >
-          <Menu className="size-4" />
-        </button>
-        <span className="font-display text-sm tracking-[0.15em] text-foreground/70">
-          Priv<span className="text-primary italic">e</span>
-        </span>
-      </div>
-
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
-          onClick={() => setMobileOpen(false)}
-          onKeyDown={() => {}}
-        />
-      )}
-
-      {/* Mobile sidebar (slide-over) */}
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-sidebar transition-transform duration-300 md:hidden ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex h-14 items-center justify-between border-b border-border px-4">
-          <span className="font-display text-sm tracking-[0.15em] text-foreground/70">
-            Priv<span className="text-primary italic">e</span>
-          </span>
-          <button
-            type="button"
-            onClick={() => setMobileOpen(false)}
-            className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-        {sidebarContent}
-      </aside>
-
-      {/* Desktop sidebar */}
-      <aside
-        className={`relative hidden flex-col border-r border-border bg-sidebar transition-all duration-300 md:flex ${
-          collapsed ? "w-16" : "w-60"
-        }`}
-      >
-        <div className="flex h-14 items-center gap-3 border-b border-border px-4">
-          <button
-            type="button"
-            onClick={() => setCollapsed(!collapsed)}
-            className="flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            {collapsed ? <Menu className="size-4" /> : <ChevronLeft className="size-4" />}
-          </button>
-          {!collapsed && (
-            <span className="font-display text-sm tracking-[0.15em] text-foreground/70">
-              Priv<span className="text-primary italic">e</span>
-            </span>
-          )}
-        </div>
-        {sidebarContent}
-      </aside>
-
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto pt-14 md:pt-0">
-        <Outlet />
-      </main>
-    </div>
+          Sign out
+        </Menu.Item>
+      </Menu.Dropdown>
+    </Menu>
   )
 }
 
@@ -224,22 +243,17 @@ function AuthenticatedErrorComponent({ error, reset }: ErrorComponentProps) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md items-center justify-center px-6 py-24">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <AlertCircle className="size-4 text-destructive" />
-            Something went wrong
-          </CardTitle>
-          <CardDescription>{error.message || "An unexpected error occurred."}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button variant="outline" size="sm" onClick={handleRetry}>
-            <RefreshCw className="size-3" />
-            Try again
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+    <Card withBorder maw={420} mx="auto" mt="xl" p="lg">
+      <Group gap="xs" mb="xs">
+        <IconAlertCircle size={16} color="var(--mantine-color-red-6)" />
+        <Text fw={500}>Something went wrong</Text>
+      </Group>
+      <Text size="sm" c="dimmed" mb="md">
+        {error.message || "An unexpected error occurred."}
+      </Text>
+      <Button variant="default" size="sm" leftSection={<IconRefresh size={14} />} onClick={handleRetry}>
+        Try again
+      </Button>
+    </Card>
   )
 }

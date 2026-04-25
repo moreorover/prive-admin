@@ -2,6 +2,9 @@ export const dashboardKeys = {
   all: ["dashboard"] as const,
   data: () => [...dashboardKeys.all, "data"] as const,
   capabilityDetails: (title: string) => [...dashboardKeys.all, "capability-details", title] as const,
+  transactionStats: (date: string) => [...dashboardKeys.all, "transaction-stats", date] as const,
+  hairAssignedStats: (date: string) => [...dashboardKeys.all, "hair-assigned-stats", date] as const,
+  hairSaleStats: (date: string) => [...dashboardKeys.all, "hair-sale-stats", date] as const,
 }
 
 export const fileKeys = {
@@ -13,6 +16,7 @@ export const customerKeys = {
   all: ["customers"] as const,
   list: () => [...customerKeys.all, "list"] as const,
   detail: (id: string) => [...customerKeys.all, "detail", id] as const,
+  summary: (id: string) => [...customerKeys.all, "summary", id] as const,
 }
 
 export const appointmentKeys = {
@@ -37,4 +41,5 @@ export const hairAssignedKeys = {
   all: ["hair-assigned"] as const,
   byHairOrder: (id: string) => [...hairAssignedKeys.all, "by-hair-order", id] as const,
   byAppointment: (id: string) => [...hairAssignedKeys.all, "by-appointment", id] as const,
+  byCustomer: (id: string) => [...hairAssignedKeys.all, "by-customer", id] as const,
 }

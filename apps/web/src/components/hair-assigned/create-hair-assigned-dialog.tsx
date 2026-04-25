@@ -1,22 +1,7 @@
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@prive-admin-tanstack/ui/components/dialog"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@prive-admin-tanstack/ui/components/table"
+import { Button, Group, Modal, Radio, Stack, Table, Text } from "@mantine/core"
+import { notifications } from "@mantine/notifications"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
-import { toast } from "sonner"
 
 import { createHairAssigned, getAvailableHairOrders } from "@/functions/hair-assigned"
 import { hairOrderKeys } from "@/lib/query-keys"
@@ -47,101 +32,77 @@ export function CreateHairAssignedDialog({
 
   const mutation = useMutation({
     mutationFn: (hairOrderId: string) =>
-      createHairAssigned({
-        data: { hairOrderId, clientId, appointmentId: appointmentId ?? null },
-      }),
+      createHairAssigned({ data: { hairOrderId, clientId, appointmentId: appointmentId ?? null } }),
     onSuccess: () => {
-      for (const key of invalidateKeys) {
-        queryClient.invalidateQueries(key)
-      }
+      for (const key of invalidateKeys) queryClient.invalidateQueries(key)
       queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
       onOpenChange(false)
       setSelectedOrderId(null)
-      toast.success("Hair assigned created")
+      notifications.show({ color: "green", message: "Hair assigned created" })
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
-  const handleCreate = () => {
-    if (!selectedOrderId) return
-    mutation.mutate(selectedOrderId)
-  }
-
-  const handleOpenChange = (value: boolean) => {
-    if (!value) setSelectedOrderId(null)
-    onOpenChange(value)
+  const handleClose = () => {
+    setSelectedOrderId(null)
+    onOpenChange(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Assign Hair</DialogTitle>
-          <DialogDescription>
-            Select a hair order with available stock.
-          </DialogDescription>
-        </DialogHeader>
-
+    <Modal opened={open} onClose={handleClose} title="Assign Hair" size="lg">
+      <Stack>
+        <Text size="sm" c="dimmed">
+          Select a hair order with available stock.
+        </Text>
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <Text size="sm" c="dimmed">
+            Loading…
+          </Text>
         ) : availableOrders && availableOrders.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[40px]" />
-                <TableHead>UID</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Received</TableHead>
-                <TableHead>Remaining</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {availableOrders.map((order) => (
-                <TableRow
-                  key={order.id}
-                  className={
-                    selectedOrderId === order.id
-                      ? "bg-accent"
-                      : "cursor-pointer"
-                  }
-                  onClick={() => setSelectedOrderId(order.id)}
-                >
-                  <TableCell>
-                    <input
-                      type="radio"
-                      name="hairOrder"
-                      checked={selectedOrderId === order.id}
-                      onChange={() => setSelectedOrderId(order.id)}
-                    />
-                  </TableCell>
-                  <TableCell>#{order.uid}</TableCell>
-                  <TableCell>{order.customer.name}</TableCell>
-                  <TableCell>{order.weightReceived}g</TableCell>
-                  <TableCell>
-                    {order.weightReceived - order.weightUsed}g
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <Radio.Group value={selectedOrderId} onChange={setSelectedOrderId}>
+            <Table>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th />
+                  <Table.Th>UID</Table.Th>
+                  <Table.Th>Customer</Table.Th>
+                  <Table.Th>Received</Table.Th>
+                  <Table.Th>Remaining</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {availableOrders.map((order) => (
+                  <Table.Tr key={order.id} onClick={() => setSelectedOrderId(order.id)} style={{ cursor: "pointer" }}>
+                    <Table.Td>
+                      <Radio value={order.id} />
+                    </Table.Td>
+                    <Table.Td>#{order.uid}</Table.Td>
+                    <Table.Td>{order.customer.name}</Table.Td>
+                    <Table.Td>{order.weightReceived}g</Table.Td>
+                    <Table.Td>{order.weightReceived - order.weightUsed}g</Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </Radio.Group>
         ) : (
-          <p className="text-sm text-muted-foreground">
+          <Text size="sm" c="dimmed">
             No hair orders with available stock.
-          </p>
+          </Text>
         )}
-
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => handleOpenChange(false)}>
+        <Group justify="flex-end" gap="xs">
+          <Button variant="default" onClick={handleClose}>
             Cancel
           </Button>
           <Button
-            onClick={handleCreate}
-            disabled={!selectedOrderId || mutation.isPending}
+            disabled={!selectedOrderId}
+            loading={mutation.isPending}
+            onClick={() => selectedOrderId && mutation.mutate(selectedOrderId)}
           >
-            {mutation.isPending ? "Creating..." : "Assign"}
+            Assign
           </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </Group>
+      </Stack>
+    </Modal>
   )
 }

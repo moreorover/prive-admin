@@ -1,11 +1,26 @@
-import { Badge } from "@prive-admin-tanstack/ui/components/badge"
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@prive-admin-tanstack/ui/components/card"
-import { Separator } from "@prive-admin-tanstack/ui/components/separator"
-import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
-import { useQuery, queryOptions } from "@tanstack/react-query"
+import {
+  Anchor,
+  Badge,
+  Button,
+  Card,
+  Container,
+  Divider,
+  Group,
+  Modal,
+  NativeSelect,
+  NumberInput,
+  SimpleGrid,
+  Skeleton,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core"
+import { useForm } from "@mantine/form"
+import { notifications } from "@mantine/notifications"
+import { IconArrowLeft, IconCalculator, IconPencil, IconPlus, IconUser } from "@tabler/icons-react"
+import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { ArrowLeft, Plus, User } from "lucide-react"
 import { useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
@@ -13,7 +28,7 @@ import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair
 import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
 import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
-import { getHairOrder } from "@/functions/hair-orders"
+import { getHairOrder, recalculateHairOrderPrices, updateHairOrder } from "@/functions/hair-orders"
 import { hairOrderKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")({
@@ -28,159 +43,276 @@ export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")
   },
 })
 
+const formatCents = (cents: number) => `$${(cents / 100).toFixed(2)}`
+
 function HairOrderDetailPage() {
   const { hairOrderId } = Route.useParams()
+  const queryClient = useQueryClient()
   const [createOpen, setCreateOpen] = useState(false)
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
+  const [editOrderOpen, setEditOrderOpen] = useState(false)
 
   const { data: hairOrder, isLoading } = useQuery({
     queryKey: hairOrderKeys.detail(hairOrderId),
     queryFn: () => getHairOrder({ data: { id: hairOrderId } }),
   })
 
+  const recalcMutation = useMutation({
+    mutationFn: () => recalculateHairOrderPrices({ data: { hairOrderId } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
+      notifications.show({ color: "green", message: "Prices recalculated" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+
   if (isLoading) {
     return (
-      <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32 w-full" />
-      </div>
+      <Container size="lg">
+        <Stack>
+          <Skeleton h={24} w={200} />
+          <Skeleton h={120} />
+        </Stack>
+      </Container>
     )
   }
 
   if (!hairOrder) {
-    return <div className="px-6 py-8 text-muted-foreground">Hair order not found.</div>
+    return (
+      <Container size="lg">
+        <Text c="dimmed">Hair order not found.</Text>
+      </Container>
+    )
   }
 
-  const formatCents = (cents: number) => `$${(cents / 100).toFixed(2)}`
-
-  const invalidateKeys = [
-    { queryKey: hairOrderKeys.detail(hairOrderId) },
-  ]
+  const invalidateKeys = [{ queryKey: hairOrderKeys.detail(hairOrderId) }]
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
-      <div className="space-y-1">
-        <Link
-          to="/hair-orders"
-          className="mb-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-3" />
-          Back to hair orders
-        </Link>
-        <div className="flex items-center gap-3">
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Hair Order #{hairOrder.uid}</h1>
-          <Badge variant={hairOrder.status === "COMPLETED" ? "default" : "outline"}>{hairOrder.status}</Badge>
-        </div>
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <User className="size-3" />
-            <Link
-              to="/customers/$customerId"
-              params={{ customerId: hairOrder.customer.id }}
-              className="text-primary hover:underline"
+    <Container size="lg">
+      <Stack>
+        <Group justify="space-between" align="flex-start">
+          <Stack gap="xs">
+            <Anchor component={Link} to="/hair-orders" size="xs" c="dimmed">
+              <Group gap={4}>
+                <IconArrowLeft size={12} />
+                Back to hair orders
+              </Group>
+            </Anchor>
+            <Group gap="md">
+              <Title order={2}>Hair Order #{hairOrder.uid}</Title>
+              <Badge variant={hairOrder.status === "COMPLETED" ? "light" : "outline"}>{hairOrder.status}</Badge>
+            </Group>
+            <Group gap="md" c="dimmed">
+              <Group gap={4}>
+                <IconUser size={12} />
+                <Text
+                  renderRoot={(props) => (
+                    <Link to="/customers/$customerId" params={{ customerId: hairOrder.customer.id }} {...props} />
+                  )}
+                  c="blue"
+                  size="sm"
+                >
+                  {hairOrder.customer.name}
+                </Text>
+              </Group>
+              <Text size="sm">Created by {hairOrder.createdBy?.name ?? "Unknown"}</Text>
+            </Group>
+            <Group gap="md" c="dimmed">
+              <Text size="sm">Placed: {hairOrder.placedAt ? <ClientDate date={hairOrder.placedAt} /> : "—"}</Text>
+              <Text size="sm">Arrived: {hairOrder.arrivedAt ? <ClientDate date={hairOrder.arrivedAt} /> : "—"}</Text>
+            </Group>
+          </Stack>
+          <Group gap="xs">
+            <Button
+              variant="default"
+              leftSection={<IconCalculator size={14} />}
+              loading={recalcMutation.isPending}
+              onClick={() => recalcMutation.mutate()}
             >
-              {hairOrder.customer.name}
-            </Link>
-          </span>
-          <span>Created by {hairOrder.createdBy?.name ?? "Unknown"}</span>
-        </div>
-      </div>
-
-      <Separator />
-
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground">Weight Received</p>
-            <p className="text-lg font-bold">{hairOrder.weightReceived}g</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground">Weight Used</p>
-            <p className="text-lg font-bold">{hairOrder.weightUsed}g</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground">Price/Gram</p>
-            <p className="text-lg font-bold">{formatCents(hairOrder.pricePerGram)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground">Total</p>
-            <p className="text-lg font-bold">{formatCents(hairOrder.total)}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-sm">Hair Assigned</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => setCreateOpen(true)}>
-              <Plus className="size-3" />
-              Add
+              Recalculate
             </Button>
-          </CardHeader>
-          <CardContent>
-            <HairAssignedTable
-              items={hairOrder.hairAssigned ?? []}
-              onEdit={setEditItem}
-              onDelete={setDeleteItem}
-            />
-          </CardContent>
-        </Card>
+            <Button variant="default" leftSection={<IconPencil size={14} />} onClick={() => setEditOrderOpen(true)}>
+              Edit
+            </Button>
+          </Group>
+        </Group>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Divider />
+
+        <SimpleGrid cols={{ base: 2, md: 4 }}>
+          <Card withBorder padding="md">
+            <Text size="xs" c="dimmed">
+              Weight Received
+            </Text>
+            <Title order={4}>{hairOrder.weightReceived}g</Title>
+          </Card>
+          <Card withBorder padding="md">
+            <Text size="xs" c="dimmed">
+              Weight Used
+            </Text>
+            <Title order={4}>{hairOrder.weightUsed}g</Title>
+          </Card>
+          <Card withBorder padding="md">
+            <Text size="xs" c="dimmed">
+              Price/Gram
+            </Text>
+            <Title order={4}>{formatCents(hairOrder.pricePerGram)}</Title>
+          </Card>
+          <Card withBorder padding="md">
+            <Text size="xs" c="dimmed">
+              Total
+            </Text>
+            <Title order={4}>{formatCents(hairOrder.total)}</Title>
+          </Card>
+        </SimpleGrid>
+
+        <Group grow align="flex-start">
+          <Card withBorder>
+            <Group justify="space-between" mb="sm">
+              <Title order={5}>Hair Assigned</Title>
+              <Button
+                variant="subtle"
+                size="xs"
+                leftSection={<IconPlus size={12} />}
+                onClick={() => setCreateOpen(true)}
+              >
+                Add
+              </Button>
+            </Group>
+            <HairAssignedTable items={hairOrder.hairAssigned ?? []} onEdit={setEditItem} onDelete={setDeleteItem} />
+          </Card>
+
+          <Card withBorder>
+            <Title order={5} mb="sm">
+              Notes
+            </Title>
             {hairOrder.notes && hairOrder.notes.length > 0 ? (
-              <div className="space-y-3">
+              <Stack gap="xs">
                 {hairOrder.notes.map((n) => (
-                  <div key={n.id} className="rounded-md border p-3">
-                    <p className="text-sm">{n.note}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {n.createdBy?.name ?? "Unknown"} &middot; <ClientDate date={n.createdAt} />
-                    </p>
-                  </div>
+                  <Card key={n.id} withBorder padding="sm">
+                    <Text size="sm">{n.note}</Text>
+                    <Text size="xs" c="dimmed" mt={4}>
+                      {n.createdBy?.name ?? "Unknown"} · <ClientDate date={n.createdAt} />
+                    </Text>
+                  </Card>
                 ))}
-              </div>
+              </Stack>
             ) : (
-              <p className="text-sm text-muted-foreground">No notes.</p>
+              <Text size="sm" c="dimmed">
+                No notes.
+              </Text>
             )}
-          </CardContent>
-        </Card>
-      </div>
+          </Card>
+        </Group>
 
-      <CreateHairAssignedDialog
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        clientId={hairOrder.customer.id}
-        invalidateKeys={invalidateKeys}
-      />
-
-      {editItem && (
-        <EditHairAssignedDialog
-          open={!!editItem}
-          onOpenChange={(open) => !open && setEditItem(null)}
-          hairAssigned={editItem}
+        <CreateHairAssignedDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          clientId={hairOrder.customer.id}
           invalidateKeys={invalidateKeys}
         />
-      )}
+        {editItem && (
+          <EditHairAssignedDialog
+            open={!!editItem}
+            onOpenChange={(open) => !open && setEditItem(null)}
+            hairAssigned={editItem}
+            invalidateKeys={invalidateKeys}
+          />
+        )}
+        {deleteItem && (
+          <DeleteHairAssignedDialog
+            open={!!deleteItem}
+            onOpenChange={(open) => !open && setDeleteItem(null)}
+            hairAssigned={deleteItem}
+            invalidateKeys={invalidateKeys}
+          />
+        )}
+        <EditHairOrderModal open={editOrderOpen} onOpenChange={setEditOrderOpen} hairOrder={hairOrder} />
+      </Stack>
+    </Container>
+  )
+}
 
-      {deleteItem && (
-        <DeleteHairAssignedDialog
-          open={!!deleteItem}
-          onOpenChange={(open) => !open && setDeleteItem(null)}
-          hairAssigned={deleteItem}
-          invalidateKeys={invalidateKeys}
-        />
-      )}
-    </div>
+type EditHairOrderModalProps = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  hairOrder: {
+    id: string
+    placedAt: string | null
+    arrivedAt: string | null
+    status: string
+    weightReceived: number
+    weightUsed: number
+    total: number
+    customerId: string
+  }
+}
+
+function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModalProps) {
+  const queryClient = useQueryClient()
+
+  const mutation = useMutation({
+    mutationFn: (values: {
+      placedAt: string
+      arrivedAt: string
+      status: "PENDING" | "COMPLETED"
+      weightReceived: number
+      total: number
+    }) =>
+      updateHairOrder({
+        data: {
+          id: hairOrder.id,
+          placedAt: values.placedAt || null,
+          arrivedAt: values.arrivedAt || null,
+          status: values.status,
+          customerId: hairOrder.customerId,
+          weightReceived: values.weightReceived,
+          weightUsed: hairOrder.weightUsed,
+          total: values.total,
+        },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
+      onOpenChange(false)
+      notifications.show({ color: "green", message: "Hair order updated" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+
+  const form = useForm({
+    initialValues: {
+      placedAt: hairOrder.placedAt ?? "",
+      arrivedAt: hairOrder.arrivedAt ?? "",
+      status: (hairOrder.status === "COMPLETED" ? "COMPLETED" : "PENDING") as "PENDING" | "COMPLETED",
+      weightReceived: hairOrder.weightReceived,
+      total: hairOrder.total,
+    },
+  })
+
+  return (
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Hair Order">
+      <form onSubmit={form.onSubmit((values) => mutation.mutate(values))}>
+        <Stack>
+          <TextInput label="Placed At" type="date" {...form.getInputProps("placedAt")} />
+          <TextInput label="Arrived At" type="date" {...form.getInputProps("arrivedAt")} />
+          <NativeSelect
+            label="Status"
+            data={[
+              { value: "PENDING", label: "Pending" },
+              { value: "COMPLETED", label: "Completed" },
+            ]}
+            {...form.getInputProps("status")}
+          />
+          <Group grow>
+            <NumberInput label="Weight Received (g)" min={0} {...form.getInputProps("weightReceived")} />
+            <NumberInput label="Total (cents)" min={0} {...form.getInputProps("total")} />
+          </Group>
+          <Button type="submit" loading={mutation.isPending}>
+            Save Changes
+          </Button>
+        </Stack>
+      </form>
+    </Modal>
   )
 }

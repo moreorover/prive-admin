@@ -1,13 +1,6 @@
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@prive-admin-tanstack/ui/components/dialog"
+import { Button, Group, Modal, Stack, Text } from "@mantine/core"
+import { notifications } from "@mantine/notifications"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
 
 import { deleteHairAssigned } from "@/functions/hair-assigned"
 import { hairOrderKeys } from "@/lib/query-keys"
@@ -35,43 +28,31 @@ export function DeleteHairAssignedDialog({
   const mutation = useMutation({
     mutationFn: () => deleteHairAssigned({ data: { id: hairAssigned.id } }),
     onSuccess: () => {
-      for (const key of invalidateKeys) {
-        queryClient.invalidateQueries(key)
-      }
+      for (const key of invalidateKeys) queryClient.invalidateQueries(key)
       queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
       onOpenChange(false)
-      toast.success("Hair assigned deleted")
+      notifications.show({ color: "green", message: "Hair assigned deleted" })
     },
-    onError: (error) => toast.error(error.message),
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Hair Assigned</DialogTitle>
-          <DialogDescription>
-            This will remove the assignment of {hairAssigned.weightInGrams}g
-            {hairAssigned.client ? ` for ${hairAssigned.client.name}` : ""}
-            {hairAssigned.hairOrder
-              ? ` from order #${hairAssigned.hairOrder.uid}`
-              : ""}
-            . This action cannot be undone.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="Delete Hair Assigned">
+      <Stack>
+        <Text size="sm">
+          This will remove the assignment of {hairAssigned.weightInGrams}g
+          {hairAssigned.client ? ` for ${hairAssigned.client.name}` : ""}
+          {hairAssigned.hairOrder ? ` from order #${hairAssigned.hairOrder.uid}` : ""}. This action cannot be undone.
+        </Text>
+        <Group justify="flex-end" gap="xs">
+          <Button variant="default" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => mutation.mutate()}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending ? "Deleting..." : "Delete"}
+          <Button color="red" loading={mutation.isPending} onClick={() => mutation.mutate()}>
+            Delete
           </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </Group>
+      </Stack>
+    </Modal>
   )
 }

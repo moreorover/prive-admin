@@ -1,16 +1,6 @@
-import { Button } from "@prive-admin-tanstack/ui/components/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@prive-admin-tanstack/ui/components/card"
-import { Skeleton } from "@prive-admin-tanstack/ui/components/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@prive-admin-tanstack/ui/components/table"
+import { ActionIcon, Card, Center, Group, Loader, Skeleton, Stack, Table, Text, Title } from "@mantine/core"
+import { IconCloud, IconFile, IconFileText, IconMusic, IconPhoto, IconTrash, IconVideo } from "@tabler/icons-react"
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Cloud, File, FileImage, FileText, Loader2, Music, Trash2, Video } from "lucide-react"
 
 import type { FileItem } from "@/functions/files"
 
@@ -37,12 +27,11 @@ function formatDate(iso: string): string {
 
 function fileIcon(name: string) {
   const ext = name.split(".").pop()?.toLowerCase() ?? ""
-  if (["jpg", "jpeg", "png", "gif", "webp", "svg", "avif"].includes(ext))
-    return <FileImage className="size-4 text-primary" />
-  if (["mp4", "webm", "mov", "avi"].includes(ext)) return <Video className="size-4 text-primary" />
-  if (["mp3", "wav", "ogg", "flac"].includes(ext)) return <Music className="size-4 text-primary" />
-  if (["pdf", "doc", "docx", "txt", "md"].includes(ext)) return <FileText className="size-4 text-primary" />
-  return <File className="size-4 text-primary" />
+  if (["jpg", "jpeg", "png", "gif", "webp", "svg", "avif"].includes(ext)) return <IconPhoto size={16} />
+  if (["mp4", "webm", "mov", "avi"].includes(ext)) return <IconVideo size={16} />
+  if (["mp3", "wav", "ogg", "flac"].includes(ext)) return <IconMusic size={16} />
+  if (["pdf", "doc", "docx", "txt", "md"].includes(ext)) return <IconFileText size={16} />
+  return <IconFile size={16} />
 }
 
 export const filesQueryOptions = queryOptions({
@@ -52,7 +41,6 @@ export const filesQueryOptions = queryOptions({
 
 export function useFiles() {
   const queryClient = useQueryClient()
-
   const { data: files, isLoading } = useQuery(filesQueryOptions)
 
   const deleteMutation = useMutation({
@@ -75,82 +63,74 @@ export function FileListCard({
   deleteMutation: ReturnType<typeof useFiles>["deleteMutation"]
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-sm">
-          <FileText className="size-3.5 text-primary" />
-          Stored Files
-        </CardTitle>
-        <CardDescription>Files in the uploads directory</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <Skeleton className="size-4 rounded" />
-                <Skeleton className="h-3 w-48" />
-                <Skeleton className="ml-auto h-3 w-16" />
-                <Skeleton className="h-3 w-24" />
-              </div>
+    <Card withBorder>
+      <Title order={4} mb="sm">
+        Stored Files
+      </Title>
+      <Text size="xs" c="dimmed" mb="md">
+        Files in the uploads directory
+      </Text>
+      {isLoading ? (
+        <Stack gap="xs">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} h={20} />
+          ))}
+        </Stack>
+      ) : !files?.length ? (
+        <Center py="xl">
+          <Stack align="center" gap="xs">
+            <IconCloud size={32} />
+            <Text size="sm" c="dimmed">
+              No files uploaded yet
+            </Text>
+          </Stack>
+        </Center>
+      ) : (
+        <Table>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>Name</Table.Th>
+              <Table.Th ta="right">Size</Table.Th>
+              <Table.Th ta="right">Modified</Table.Th>
+              <Table.Th />
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {files.map((file) => (
+              <FileRow
+                key={file.key}
+                file={file}
+                onDelete={() => deleteMutation.mutate(file.key)}
+                isDeleting={deleteMutation.isPending && deleteMutation.variables === file.key}
+              />
             ))}
-          </div>
-        ) : !files?.length ? (
-          <div className="flex flex-col items-center gap-2 py-12 text-muted-foreground">
-            <Cloud className="size-8 opacity-40" />
-            <p className="text-sm">No files uploaded yet</p>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead className="w-24 text-right">Size</TableHead>
-                <TableHead className="w-36 text-right">Modified</TableHead>
-                <TableHead className="w-12" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {files.map((file) => (
-                <FileRow
-                  key={file.key}
-                  file={file}
-                  onDelete={() => deleteMutation.mutate(file.key)}
-                  isDeleting={deleteMutation.isPending && deleteMutation.variables === file.key}
-                />
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
+          </Table.Tbody>
+        </Table>
+      )}
     </Card>
   )
 }
 
 function FileRow({ file, onDelete, isDeleting }: { file: FileItem; onDelete: () => void; isDeleting: boolean }) {
   return (
-    <TableRow>
-      <TableCell>
-        <div className="flex items-center gap-2">
+    <Table.Tr>
+      <Table.Td>
+        <Group gap="xs">
           {fileIcon(file.name)}
-          <span className="truncate text-xs font-medium">{file.name}</span>
-        </div>
-      </TableCell>
-      <TableCell className="text-right text-[0.625rem] text-muted-foreground">{formatBytes(file.size)}</TableCell>
-      <TableCell className="text-right text-[0.625rem] text-muted-foreground">
-        {formatDate(file.lastModified)}
-      </TableCell>
-      <TableCell>
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          onClick={onDelete}
-          disabled={isDeleting}
-          className="text-muted-foreground hover:text-destructive"
-        >
-          {isDeleting ? <Loader2 className="size-3 animate-spin" /> : <Trash2 className="size-3" />}
-        </Button>
-      </TableCell>
-    </TableRow>
+          <Text size="sm">{file.name}</Text>
+        </Group>
+      </Table.Td>
+      <Table.Td ta="right" c="dimmed">
+        <Text size="xs">{formatBytes(file.size)}</Text>
+      </Table.Td>
+      <Table.Td ta="right" c="dimmed">
+        <Text size="xs">{formatDate(file.lastModified)}</Text>
+      </Table.Td>
+      <Table.Td>
+        <ActionIcon variant="subtle" color="red" onClick={onDelete} disabled={isDeleting} aria-label="Delete file">
+          {isDeleting ? <Loader size={12} /> : <IconTrash size={14} />}
+        </ActionIcon>
+      </Table.Td>
+    </Table.Tr>
   )
 }

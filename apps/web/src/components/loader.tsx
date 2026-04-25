@@ -1,9 +1,9 @@
-import { Loader2 } from "lucide-react"
+import { Center, Loader as MantineLoader } from "@mantine/core"
 
 export default function Loader() {
   return (
-    <div className="flex h-full items-center justify-center pt-8">
-      <Loader2 className="animate-spin" />
-    </div>
+    <Center pt="md" h="100%">
+      <MantineLoader />
+    </Center>
   )
 }
