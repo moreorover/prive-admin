@@ -3,7 +3,7 @@ import { Schedule, type ScheduleEventData, type ScheduleViewLevel } from "@manti
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { getAppointments } from "@/functions/appointments"
 import { appointmentKeys } from "@/lib/query-keys"
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/calendar")({
 function CalendarPage() {
   const { data: appointments } = useQuery(appointmentsQueryOptions)
   const navigate = useNavigate()
-  const [view, setView] = useState<ScheduleViewLevel>("week")
+  const [view, setView] = useState<ScheduleViewLevel>("month")
   const [date, setDate] = useState<string>(dayjs().format("YYYY-MM-DD"))
 
   const events = useMemo<ScheduleEventData[]>(() => {
@@ -41,43 +41,32 @@ function CalendarPage() {
   }, [appointments])
 
   const goToAppointment = useCallback(
-    (id: string | number) => {
-      navigate({ to: "/appointments/$appointmentId", params: { appointmentId: String(id) } })
+    (id: string) => {
+      navigate({ to: "/appointments/$appointmentId", params: { appointmentId: id } })
     },
     [navigate],
   )
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null
+      const node = target?.closest("[data-event-id]")
+      if (!node) return
+      const id = node.getAttribute("data-event-id")
+      if (id) {
+        e.preventDefault()
+        goToAppointment(id)
+      }
+    }
+    document.addEventListener("click", handler)
+    return () => document.removeEventListener("click", handler)
+  }, [goToAppointment])
 
   return (
     <Container size="xl">
       <Stack>
         <Title order={2}>Calendar</Title>
-        <Schedule
-          events={events}
-          view={view}
-          onViewChange={setView}
-          date={date}
-          onDateChange={setDate}
-          onEventClick={(event) => goToAppointment(event.id)}
-          renderEventBody={(event) => (
-            <span
-              role="button"
-              tabIndex={0}
-              style={{ cursor: "pointer", display: "block", width: "100%", height: "100%" }}
-              onClick={(e) => {
-                e.stopPropagation()
-                goToAppointment(event.id)
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault()
-                  goToAppointment(event.id)
-                }
-              }}
-            >
-              {event.title}
-            </span>
-          )}
-        />
+        <Schedule events={events} view={view} onViewChange={setView} date={date} onDateChange={setDate} />
       </Stack>
     </Container>
   )
