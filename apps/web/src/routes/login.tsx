@@ -1,6 +1,7 @@
+import { ActionIcon, Box, Center, Stack, Title } from "@mantine/core"
+import { useMantineColorScheme } from "@mantine/core"
+import { IconDeviceDesktop, IconMoon, IconSun } from "@tabler/icons-react"
 import { Link, createFileRoute, redirect } from "@tanstack/react-router"
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
 import { useState } from "react"
 import { z } from "zod"
 
@@ -24,41 +25,39 @@ export const Route = createFileRoute("/login")({
 function RouteComponent() {
   const { redirect } = Route.useSearch()
   const [showSignIn, setShowSignIn] = useState(false)
-  const { theme, setTheme } = useTheme()
+  const { colorScheme, setColorScheme } = useMantineColorScheme()
+
+  const next = colorScheme === "light" ? "dark" : colorScheme === "dark" ? "auto" : "light"
+  const Icon = colorScheme === "light" ? IconSun : colorScheme === "dark" ? IconMoon : IconDeviceDesktop
 
   return (
-    <div className="relative flex min-h-svh items-center justify-center bg-background">
-      {/* Theme toggle */}
-      <button
-        type="button"
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        className="absolute top-6 right-6 z-10 flex size-8 items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:text-foreground/60"
+    <Box mih="100vh" pos="relative">
+      <ActionIcon
+        variant="default"
+        size="lg"
+        pos="absolute"
+        top={16}
+        right={16}
+        aria-label={`Color scheme: ${colorScheme}.`}
+        onClick={() => setColorScheme(next)}
       >
-        {theme === "dark" ? <Sun className="size-3.5" /> : <Moon className="size-3.5" />}
-      </button>
+        <Icon size={18} />
+      </ActionIcon>
 
-      {/* Ambient glow */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/3 left-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/6 blur-[120px]" />
-      </div>
-
-      <div className="relative z-10 w-full max-w-sm px-6">
-        {/* Logo */}
-        <div className="mb-10 text-center">
+      <Center mih="100vh">
+        <Stack align="center" w="100%" maw={420} px="md">
           <Link to="/">
-            <h1 className="font-display text-3xl font-light tracking-tight text-foreground/80">
-              Priv<span className="text-primary italic">e</span>
-            </h1>
+            <Title order={2} fw={300}>
+              Privé
+            </Title>
           </Link>
-          <p className="mt-2 text-[10px] tracking-[0.4em] text-muted-foreground/40 uppercase">Member Access</p>
-        </div>
-
-        {showSignIn ? (
-          <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} redirectTo={redirect} />
-        ) : (
-          <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} redirectTo={redirect} />
-        )}
-      </div>
-    </div>
+          {showSignIn ? (
+            <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} redirectTo={redirect} />
+          ) : (
+            <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} redirectTo={redirect} />
+          )}
+        </Stack>
+      </Center>
+    </Box>
   )
 }
