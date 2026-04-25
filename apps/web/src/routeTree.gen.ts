@@ -28,7 +28,6 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthenticatedHairOrdersHairOrderIdRouteImport } from './routes/_authenticated/hair-orders/$hairOrderId'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments/$appointmentId'
-import { Route as AuthenticatedCustomersCustomerIdHairSalesRouteImport } from './routes/_authenticated/customers/$customerId.hair-sales'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -134,12 +133,6 @@ const AuthenticatedAppointmentsAppointmentIdRoute =
     path: '/$appointmentId',
     getParentRoute: () => AuthenticatedAppointmentsRouteRoute,
   } as any)
-const AuthenticatedCustomersCustomerIdHairSalesRoute =
-  AuthenticatedCustomersCustomerIdHairSalesRouteImport.update({
-    id: '/hair-sales',
-    path: '/hair-sales',
-    getParentRoute: () => AuthenticatedCustomersCustomerIdRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -154,13 +147,12 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/upload': typeof ApiUploadRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
-  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/appointments/': typeof AuthenticatedAppointmentsIndexRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
-  '/customers/$customerId/hair-sales': typeof AuthenticatedCustomersCustomerIdHairSalesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -172,13 +164,12 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/upload': typeof ApiUploadRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
-  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/appointments': typeof AuthenticatedAppointmentsIndexRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders': typeof AuthenticatedHairOrdersIndexRoute
-  '/customers/$customerId/hair-sales': typeof AuthenticatedCustomersCustomerIdHairSalesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -195,13 +186,12 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/api/upload': typeof ApiUploadRoute
   '/_authenticated/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
-  '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteWithChildren
+  '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authenticated/appointments/': typeof AuthenticatedAppointmentsIndexRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
-  '/_authenticated/customers/$customerId/hair-sales': typeof AuthenticatedCustomersCustomerIdHairSalesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -224,7 +214,6 @@ export interface FileRouteTypes {
     | '/appointments/'
     | '/customers/'
     | '/hair-orders/'
-    | '/customers/$customerId/hair-sales'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -242,7 +231,6 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/customers'
     | '/hair-orders'
-    | '/customers/$customerId/hair-sales'
   id:
     | '__root__'
     | '/'
@@ -264,7 +252,6 @@ export interface FileRouteTypes {
     | '/_authenticated/appointments/'
     | '/_authenticated/customers/'
     | '/_authenticated/hair-orders/'
-    | '/_authenticated/customers/$customerId/hair-sales'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -410,13 +397,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppointmentsAppointmentIdRouteImport
       parentRoute: typeof AuthenticatedAppointmentsRouteRoute
     }
-    '/_authenticated/customers/$customerId/hair-sales': {
-      id: '/_authenticated/customers/$customerId/hair-sales'
-      path: '/hair-sales'
-      fullPath: '/customers/$customerId/hair-sales'
-      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdHairSalesRouteImport
-      parentRoute: typeof AuthenticatedCustomersCustomerIdRoute
-    }
   }
 }
 
@@ -437,30 +417,15 @@ const AuthenticatedAppointmentsRouteRouteWithChildren =
     AuthenticatedAppointmentsRouteRouteChildren,
   )
 
-interface AuthenticatedCustomersCustomerIdRouteChildren {
-  AuthenticatedCustomersCustomerIdHairSalesRoute: typeof AuthenticatedCustomersCustomerIdHairSalesRoute
-}
-
-const AuthenticatedCustomersCustomerIdRouteChildren: AuthenticatedCustomersCustomerIdRouteChildren =
-  {
-    AuthenticatedCustomersCustomerIdHairSalesRoute:
-      AuthenticatedCustomersCustomerIdHairSalesRoute,
-  }
-
-const AuthenticatedCustomersCustomerIdRouteWithChildren =
-  AuthenticatedCustomersCustomerIdRoute._addFileChildren(
-    AuthenticatedCustomersCustomerIdRouteChildren,
-  )
-
 interface AuthenticatedCustomersRouteRouteChildren {
-  AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRouteWithChildren
+  AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
 }
 
 const AuthenticatedCustomersRouteRouteChildren: AuthenticatedCustomersRouteRouteChildren =
   {
     AuthenticatedCustomersCustomerIdRoute:
-      AuthenticatedCustomersCustomerIdRouteWithChildren,
+      AuthenticatedCustomersCustomerIdRoute,
     AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
   }
 
