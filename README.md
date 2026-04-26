@@ -96,3 +96,20 @@ prive-admin-tanstack/
 - `bun run db:migrate`: Run database migrations
 - `bun run db:studio`: Open database studio UI
 - `bun run check`: Run Oxlint and Oxfmt
+
+## Deployment
+
+The production stack runs on VPS `prive` via Docker Compose. The
+authoritative deploy doc is [`docs/deploy/vps-setup.md`](docs/deploy/vps-setup.md).
+
+- Pushes to `main` build and publish `ghcr.io/<repo>:{latest,sha}` and
+  deploy to the VPS automatically (`.github/workflows/release.yml`).
+- All runtime secrets live in the 1Password vault
+  `5gq2basjdplfjk5v55wexp2y7i`, item `prive-admin-prod`. The workflow
+  pulls them at deploy time using a service-account token
+  (`OP_SERVICE_ACCOUNT_TOKEN`).
+- Rollback to a previous image:
+
+  ```bash
+  ssh cicd@prive 'cd ~/prive-admin && IMAGE_TAG=<old-sha> docker compose up -d web'
+  ```
