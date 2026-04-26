@@ -123,7 +123,7 @@ Caddy uses HTTP-01 challenge on port 80 to issue a certificate for `{$DOMAIN_NAM
 
 ## 1Password Vault Layout
 
-Vault: `5gq2basjdplfjk5v55wexp2y7i`
+Vault: `prive-admin` (UUID `5gq2basjdplfjk5v55wexp2y7i`)
 Item: `prive-admin-prod` (type: Server)
 
 | Section | Field | Notes |
@@ -142,7 +142,7 @@ Item: `prive-admin-prod` (type: Server)
 | infra | `DOMAIN_NAME` | `prive.salon` |
 | infra | `ACME_EMAIL` | Let's Encrypt contact |
 
-A new 1Password service account scoped read-only to this vault provides the `OP_SERVICE_ACCOUNT_TOKEN` GitHub Actions secret. References use the vault UUID directly: `op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/<section>/<field>`. Using the UUID avoids breakage if the vault is renamed.
+A new 1Password service account scoped read-only to this vault provides the `OP_SERVICE_ACCOUNT_TOKEN` GitHub Actions secret. References use the vault display name: `op://prive-admin/prive-admin-prod/<section>/<field>`. The vault UUID `5gq2basjdplfjk5v55wexp2y7i` is the stable alternative if the vault is ever renamed.
 
 GitHub repository secrets that remain outside 1Password (chicken-and-egg or auto-provided):
 

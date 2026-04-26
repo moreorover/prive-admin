@@ -105,7 +105,7 @@ authoritative deploy doc is [`docs/deploy/vps-setup.md`](docs/deploy/vps-setup.m
 - Pushes to `main` build and publish `ghcr.io/<repo>:{latest,sha}` and
   deploy to the VPS automatically (`.github/workflows/release.yml`).
 - All runtime secrets live in the 1Password vault
-  `5gq2basjdplfjk5v55wexp2y7i`, item `prive-admin-prod`. The workflow
+  `prive-admin`, item `prive-admin-prod`. The workflow
   pulls them at deploy time using a service-account token
   (`OP_SERVICE_ACCOUNT_TOKEN`).
 - Rollback to a previous image:

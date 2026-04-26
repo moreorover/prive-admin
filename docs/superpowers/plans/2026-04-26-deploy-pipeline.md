@@ -293,14 +293,14 @@ Run on the operator's machine:
 ```bash
 op vault list
 ```
-Expected: vault `5gq2basjdplfjk5v55wexp2y7i` (or its display name) appears in output. If not, sign into the correct 1Password account.
+Expected: vault `prive-admin` (UUID `5gq2basjdplfjk5v55wexp2y7i`) appears in output. If not, sign into the correct 1Password account.
 
 - [ ] **Step 2: Create item `prive-admin-prod` (Server type) with all fields**
 
 Run:
 ```bash
 op item create \
-  --vault 5gq2basjdplfjk5v55wexp2y7i \
+  --vault prive-admin \
   --category server \
   --title prive-admin-prod \
   'postgres.POSTGRES_DB[text]=prive_admin' \
@@ -323,9 +323,9 @@ Expected: item created. Note: `op item create` shell-escapes `[concealed]` marke
 
 Read the password back, then update the URL:
 ```bash
-PG_PASS=$(op read 'op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/postgres/POSTGRES_PASSWORD')
+PG_PASS=$(op read 'op://prive-admin/prive-admin-prod/postgres/POSTGRES_PASSWORD')
 op item edit prive-admin-prod \
-  --vault 5gq2basjdplfjk5v55wexp2y7i \
+  --vault prive-admin \
   "app.DATABASE_URL=postgres://prive_admin:${PG_PASS}@postgres:5432/prive_admin"
 ```
 Expected: item updated. Verify in GUI.
@@ -334,7 +334,7 @@ Expected: item updated. Verify in GUI.
 
 Run for each:
 ```bash
-op item edit prive-admin-prod --vault 5gq2basjdplfjk5v55wexp2y7i \
+op item edit prive-admin-prod --vault prive-admin \
   "r2.R2_ACCOUNT_ID=<value>" \
   "r2.R2_ACCESS_KEY_ID=<value>" \
   "r2.R2_SECRET_ACCESS_KEY=<value>" \
@@ -348,10 +348,10 @@ CLI path (preferred — `--raw` is required, otherwise stdout is descriptive pro
 
 ```bash
 SA_TOKEN="$(op service-account create prive-admin-github-actions \
-  --vault '5gq2basjdplfjk5v55wexp2y7i:read_items' --raw)"
+  --vault 'prive-admin:read_items' --raw)"
 ```
 
-Web UI fallback: 1Password admin → Integrations → Directory → Service Accounts → Create. Read-only access to vault `5gq2basjdplfjk5v55wexp2y7i`. Copy the token shown once.
+Web UI fallback: 1Password admin → Integrations → Directory → Service Accounts → Create. Read-only access to vault `prive-admin`. Copy the token shown once.
 
 - [ ] **Step 6: Add token as GitHub Actions secret**
 
@@ -367,7 +367,7 @@ Expected: `✓ Set Actions secret OP_SERVICE_ACCOUNT_TOKEN for <repo>`.
 Run locally with the token exported:
 ```bash
 OP_SERVICE_ACCOUNT_TOKEN="<token>" \
-  op read 'op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/app/BETTER_AUTH_URL'
+  op read 'op://prive-admin/prive-admin-prod/app/BETTER_AUTH_URL'
 ```
 Expected: prints `https://prive.salon`. If fails: regenerate token, re-check vault scope.
 
@@ -674,19 +674,19 @@ jobs:
           export-env: true
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          POSTGRES_DB: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/postgres/POSTGRES_DB
-          POSTGRES_USER: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/postgres/POSTGRES_USER
-          POSTGRES_PASSWORD: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/postgres/POSTGRES_PASSWORD
-          DATABASE_URL: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/app/DATABASE_URL
-          BETTER_AUTH_SECRET: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/app/BETTER_AUTH_SECRET
-          BETTER_AUTH_URL: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/app/BETTER_AUTH_URL
-          CORS_ORIGIN: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/app/CORS_ORIGIN
-          R2_ACCOUNT_ID: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/r2/R2_ACCOUNT_ID
-          R2_ACCESS_KEY_ID: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/r2/R2_ACCESS_KEY_ID
-          R2_SECRET_ACCESS_KEY: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/r2/R2_SECRET_ACCESS_KEY
-          R2_BUCKET_NAME: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/r2/R2_BUCKET_NAME
-          DOMAIN_NAME: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/infra/DOMAIN_NAME
-          ACME_EMAIL: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/infra/ACME_EMAIL
+          POSTGRES_DB: op://prive-admin/prive-admin-prod/postgres/POSTGRES_DB
+          POSTGRES_USER: op://prive-admin/prive-admin-prod/postgres/POSTGRES_USER
+          POSTGRES_PASSWORD: op://prive-admin/prive-admin-prod/postgres/POSTGRES_PASSWORD
+          DATABASE_URL: op://prive-admin/prive-admin-prod/app/DATABASE_URL
+          BETTER_AUTH_SECRET: op://prive-admin/prive-admin-prod/app/BETTER_AUTH_SECRET
+          BETTER_AUTH_URL: op://prive-admin/prive-admin-prod/app/BETTER_AUTH_URL
+          CORS_ORIGIN: op://prive-admin/prive-admin-prod/app/CORS_ORIGIN
+          R2_ACCOUNT_ID: op://prive-admin/prive-admin-prod/r2/R2_ACCOUNT_ID
+          R2_ACCESS_KEY_ID: op://prive-admin/prive-admin-prod/r2/R2_ACCESS_KEY_ID
+          R2_SECRET_ACCESS_KEY: op://prive-admin/prive-admin-prod/r2/R2_SECRET_ACCESS_KEY
+          R2_BUCKET_NAME: op://prive-admin/prive-admin-prod/r2/R2_BUCKET_NAME
+          DOMAIN_NAME: op://prive-admin/prive-admin-prod/infra/DOMAIN_NAME
+          ACME_EMAIL: op://prive-admin/prive-admin-prod/infra/ACME_EMAIL
 
       - name: Render .env
         run: |
@@ -866,12 +866,12 @@ jobs:
           export-env: true
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          POSTGRES_DB: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/postgres/POSTGRES_DB
-          POSTGRES_USER: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/postgres/POSTGRES_USER
-          R2_ACCOUNT_ID: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/r2/R2_ACCOUNT_ID
-          R2_ACCESS_KEY_ID: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/r2/R2_ACCESS_KEY_ID
-          R2_SECRET_ACCESS_KEY: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/r2/R2_SECRET_ACCESS_KEY
-          R2_BUCKET_NAME: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/r2/R2_BUCKET_NAME
+          POSTGRES_DB: op://prive-admin/prive-admin-prod/postgres/POSTGRES_DB
+          POSTGRES_USER: op://prive-admin/prive-admin-prod/postgres/POSTGRES_USER
+          R2_ACCOUNT_ID: op://prive-admin/prive-admin-prod/r2/R2_ACCOUNT_ID
+          R2_ACCESS_KEY_ID: op://prive-admin/prive-admin-prod/r2/R2_ACCESS_KEY_ID
+          R2_SECRET_ACCESS_KEY: op://prive-admin/prive-admin-prod/r2/R2_SECRET_ACCESS_KEY
+          R2_BUCKET_NAME: op://prive-admin/prive-admin-prod/r2/R2_BUCKET_NAME
 
       - name: Tailscale up
         uses: tailscale/github-action@v3
@@ -982,7 +982,7 @@ authoritative deploy doc is [`docs/deploy/vps-setup.md`](docs/deploy/vps-setup.m
 - Pushes to `main` build and publish `ghcr.io/<repo>:{latest,sha}` and
   deploy to the VPS automatically (`.github/workflows/release.yml`).
 - All runtime secrets live in the 1Password vault
-  `5gq2basjdplfjk5v55wexp2y7i`, item `prive-admin-prod`. The workflow
+  `prive-admin`, item `prive-admin-prod`. The workflow
   pulls them at deploy time using a service-account token
   (`OP_SERVICE_ACCOUNT_TOKEN`).
 - Rollback to a previous image:
@@ -1013,7 +1013,7 @@ gh pr create --base main --title "Compose-based deploy pipeline with 1Password s
 - Replaces Docker Swarm deploy with a Compose stack (`caddy`, `web`, `postgres`) on the VPS.
 - Adds Caddy reverse proxy with automatic Let's Encrypt TLS.
 - Builds and pushes `ghcr.io/<repo>:{latest,sha}` on every push to `main`.
-- Sources all runtime secrets from 1Password vault `5gq2basjdplfjk5v55wexp2y7i` via a service-account token.
+- Sources all runtime secrets from 1Password vault `prive-admin` via a service-account token.
 - PR check now also runs a no-push container build to catch Dockerfile breaks.
 - Migrates the daily Postgres backup workflow to read secrets from the same vault and `pg_dump` via `docker compose exec`.
 
