@@ -45,3 +45,107 @@ jobs:
             ${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to prive
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://prive.salon
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load secrets from 1Password
+        uses: 1password/load-secrets-action@v2
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          POSTGRES_DB: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/postgres/POSTGRES_DB
+          POSTGRES_USER: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/postgres/POSTGRES_USER
+          POSTGRES_PASSWORD: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/postgres/POSTGRES_PASSWORD
+          DATABASE_URL: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/app/DATABASE_URL
+          BETTER_AUTH_SECRET: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/app/BETTER_AUTH_SECRET
+          BETTER_AUTH_URL: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/app/BETTER_AUTH_URL
+          CORS_ORIGIN: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/app/CORS_ORIGIN
+          R2_ACCOUNT_ID: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/r2/R2_ACCOUNT_ID
+          R2_ACCESS_KEY_ID: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/r2/R2_ACCESS_KEY_ID
+          R2_SECRET_ACCESS_KEY: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/r2/R2_SECRET_ACCESS_KEY
+          R2_BUCKET_NAME: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/r2/R2_BUCKET_NAME
+          DOMAIN_NAME: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/infra/DOMAIN_NAME
+          ACME_EMAIL: op://5gq2basjdplfjk5v55wexp2y7i/prive-admin-prod/infra/ACME_EMAIL
+
+      - name: Render .env
+        run: |
+          umask 077
+          cat > .env <<EOF
+          IMAGE_TAG=${GITHUB_SHA}
+          GITHUB_REPOSITORY=${GITHUB_REPOSITORY}
+          NODE_ENV=production
+          POSTGRES_DB=${POSTGRES_DB}
+          POSTGRES_USER=${POSTGRES_USER}
+          POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+          DATABASE_URL=${DATABASE_URL}
+          BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+          BETTER_AUTH_URL=${BETTER_AUTH_URL}
+          CORS_ORIGIN=${CORS_ORIGIN}
+          R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+          R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+          R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+          R2_BUCKET_NAME=${R2_BUCKET_NAME}
+          DOMAIN_NAME=${DOMAIN_NAME}
+          ACME_EMAIL=${ACME_EMAIL}
+          EOF
+          chmod 600 .env
+
+      - name: Tailscale up
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:prod-ci
+
+      - name: Prepare SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 0700 ~/.ssh
+          ssh-keyscan -H prive >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Verify SSH connection
+        run: ssh -o ConnectTimeout=30 cicd@prive 'echo ok'
+
+      - name: Stage files on VPS
+        run: |
+          ssh cicd@prive 'mkdir -p ~/prive-admin'
+          scp docker-compose.yml Caddyfile .env cicd@prive:~/prive-admin/
+
+      - name: Deploy stack
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_ACTOR: ${{ github.actor }}
+        run: |
+          ssh cicd@prive \
+            "cd ~/prive-admin && \
+             echo '${GH_TOKEN}' | docker login ghcr.io -u '${GH_ACTOR}' --password-stdin && \
+             docker compose pull && \
+             docker compose up -d --remove-orphans && \
+             docker image prune -f"
+
+      - name: Smoke check
+        run: |
+          for i in 1 2 3 4 5; do
+            if curl -fsS --max-time 10 https://prive.salon/ > /dev/null; then
+              echo "smoke check ok"
+              exit 0
+            fi
+            echo "attempt $i failed, retrying in 10s"
+            sleep 10
+          done
+          echo "smoke check failed after 5 attempts"
+          exit 1
