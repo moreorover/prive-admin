@@ -24,7 +24,7 @@ GitHub Actions runner
   └── master → checkout → docker buildx build+push → ghcr.io/<repo>:latest, :<sha>
                        → 1Password CLI: read secrets → render .env
                        → Tailscale up (tag:prod-ci)
-                       → scp docker-compose.yml + Caddyfile + .env → cicd@prive:~/prive-admin/
+                       → scp docker-compose.yml + Caddyfile + .env → root@prive:~/prive-admin/
                        → ssh: docker compose pull && docker compose up -d --remove-orphans
                        → curl smoke check
 
@@ -92,7 +92,7 @@ services:
         condition: service_healthy
 
   postgres:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
@@ -174,9 +174,9 @@ Two sequential jobs.
 3. Render `.env` from masked env vars plus `IMAGE_TAG=${{ github.sha }}` and `GITHUB_REPOSITORY=${{ github.repository }}`. `chmod 600 .env`.
 4. `tailscale/github-action@v3` (`tags: tag:prod-ci`).
 5. `ssh-keyscan -H prive >> ~/.ssh/known_hosts`.
-6. `ssh cicd@prive "mkdir -p ~/prive-admin"`.
-7. `scp docker-compose.yml Caddyfile .env cicd@prive:~/prive-admin/`.
-8. `ssh cicd@prive` runs:
+6. `ssh root@prive "mkdir -p ~/prive-admin"`.
+7. `scp docker-compose.yml Caddyfile .env root@prive:~/prive-admin/`.
+8. `ssh root@prive` runs:
    ```
    cd ~/prive-admin && \
    echo "$GH_TOKEN" | docker login ghcr.io -u "$GH_ACTOR" --password-stdin && \
@@ -213,14 +213,14 @@ Variable-name reconciliation: the existing backup script reads `PG_DATABASE` (se
 
 These are not automated by this design — they are documented as setup prerequisites:
 
-1. User `cicd` with docker group membership and SSH key (already provisioned).
+1. SSH access as `root` with the GitHub Actions Tailscale identity's public key in `/root/.ssh/authorized_keys`.
 2. Tailscale installed and tagged `tag:prod` (already provisioned).
 3. Docker Engine + `docker compose` plugin installed.
 4. Host directories with correct ownership:
    ```
    sudo mkdir -p /var/lib/prive-admin/{pg,caddy/data,caddy/config}
    sudo chown -R 70:70 /var/lib/prive-admin/pg
-   sudo chown -R cicd:cicd /var/lib/prive-admin/caddy /home/cicd/prive-admin
+   sudo mkdir -p /root/prive-admin
    ```
 5. Firewall: 80/443 open from public internet; 22 reachable only via Tailscale.
 6. DNS: `prive.salon` A/AAAA record → VPS public IP.
@@ -239,7 +239,7 @@ These are not automated by this design — they are documented as setup prerequi
 | Caddy TLS issuance fails | Smoke check fails | Read `docker compose logs caddy`, verify DNS + 80/443 reachability |
 | Postgres data corruption | Manual report | Restore from latest R2 backup |
 
-**Rollback:** `ssh cicd@prive 'cd ~/prive-admin && IMAGE_TAG=<old-sha> docker compose up -d web'`. GHCR retains old image tags by default. Documented in README.
+**Rollback:** `ssh root@prive 'cd ~/prive-admin && IMAGE_TAG=<old-sha> docker compose up -d web'`. GHCR retains old image tags by default. Documented in README.
 
 ## Testing
 

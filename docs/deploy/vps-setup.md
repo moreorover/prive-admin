@@ -7,33 +7,21 @@ the stack; this document is for first-time provisioning and recovery.
 ## Requirements
 
 - Linux host (Ubuntu 22.04 or later assumed) with public IPv4.
-- SSH user `cicd` with Docker group membership and an authorized SSH
-  key matching the GitHub Actions Tailscale identity.
+- SSH access as `root` (the GitHub Actions Tailscale identity's public
+  key in `/root/.ssh/authorized_keys`).
 - Tailscale installed, logged in, with ACL tag `tag:prod` so the
   `tag:prod-ci` runners can reach it.
 
-## Bootstrap the cicd user
+## SSH key
 
-The deploy and backup workflows SSH into the host as `cicd`. On a
-fresh VPS this user does not yet exist. Create it before installing
-Docker:
+Install the deploy identity's public key for the `root` user:
 
 ```bash
-sudo adduser --disabled-password --gecos '' cicd
-sudo install -d -o cicd -g cicd -m 0700 /home/cicd/.ssh
-sudo install -o cicd -g cicd -m 0600 /dev/stdin /home/cicd/.ssh/authorized_keys <<'KEY'
+sudo install -d -m 0700 /root/.ssh
+sudo install -m 0600 /dev/stdin /root/.ssh/authorized_keys <<'KEY'
 <paste the public key matching the GitHub Actions Tailscale identity>
 KEY
 ```
-
-After Docker is installed in the next section, add `cicd` to the
-`docker` group:
-
-```bash
-sudo usermod -aG docker cicd
-```
-
-The group change only applies to new shell sessions for `cicd`.
 
 ## Install
 
@@ -58,18 +46,20 @@ must:
 - Allow `tag:prod-ci` to reach `tag:prod` on TCP `22`.
 - Have MagicDNS enabled in the tailnet, and the VPS machine renamed
   to `prive` (admin console → Machines → rename), so that
-  `ssh cicd@prive` resolves.
+  `ssh root@prive` resolves.
 
 ## Host directories
 
 ```bash
 sudo mkdir -p /var/lib/prive-admin/{pg,caddy/data,caddy/config}
 sudo chown -R 70:70 /var/lib/prive-admin/pg
-sudo chown -R cicd:cicd /var/lib/prive-admin/caddy
-sudo -u cicd mkdir -p /home/cicd/prive-admin
+sudo mkdir -p /root/prive-admin
 ```
 
-The `70:70` ownership matches the `postgres` user inside the official `postgres:17-alpine` image.
+The `70:70` ownership matches the `postgres` user inside the official
+`postgres:18-alpine` image. Caddy runs as root in `caddy:2-alpine`, so
+its bind-mount paths under `/var/lib/prive-admin/caddy/` need no
+special chown — root inside the container can write to them.
 
 ## Firewall
 
@@ -93,7 +83,7 @@ resolves.
 
 ## GHCR pulls
 
-The deploy workflow logs `cicd` into `ghcr.io` on every run using the
+The deploy workflow logs into `ghcr.io` on every run using the
 ephemeral `GITHUB_TOKEN`. No manual login is required.
 
 ## First deploy
@@ -105,7 +95,7 @@ Push (or merge) to `main` and watch the `Release` workflow run. The
 ## Rollback
 
 ```bash
-ssh cicd@prive 'cd ~/prive-admin && IMAGE_TAG=<old-sha> docker compose up -d web'
+ssh root@prive 'cd ~/prive-admin && IMAGE_TAG=<old-sha> docker compose up -d web'
 ```
 
 GHCR retains older `:<sha>` tags by default. Pick a known-good sha
@@ -113,6 +103,6 @@ from the GitHub Actions history.
 
 ## Routine operations
 
-- View logs: `ssh cicd@prive 'cd ~/prive-admin && docker compose logs -f <service>'`
-- Restart web: `ssh cicd@prive 'cd ~/prive-admin && docker compose restart web'`
-- Database shell: `ssh cicd@prive 'cd ~/prive-admin && docker compose exec postgres sh -c '\''psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'\'''`
+- View logs: `ssh root@prive 'cd ~/prive-admin && docker compose logs -f <service>'`
+- Restart web: `ssh root@prive 'cd ~/prive-admin && docker compose restart web'`
+- Database shell: `ssh root@prive 'cd ~/prive-admin && docker compose exec postgres sh -c '\''psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'\'''`

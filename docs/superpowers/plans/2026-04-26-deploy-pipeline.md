@@ -4,7 +4,7 @@
 
 **Goal:** Stand up a Docker Compose deployment to VPS `prive` with Caddy auto-TLS, GHCR-built images on master push, and 1Password-sourced runtime secrets, replacing the existing Docker Swarm flow.
 
-**Architecture:** GitHub Actions runner builds and pushes `ghcr.io/<repo>:{latest,sha}` on master, then over Tailscale SSH copies `docker-compose.yml`, `Caddyfile`, and a freshly-rendered `.env` (from 1Password) to `cicd@prive:~/prive-admin/`, then runs `docker compose pull && up -d`. Caddy fronts the web container on 80/443 with auto-TLS. Postgres runs in the same compose stack with a host bind-mount.
+**Architecture:** GitHub Actions runner builds and pushes `ghcr.io/<repo>:{latest,sha}` on master, then over Tailscale SSH copies `docker-compose.yml`, `Caddyfile`, and a freshly-rendered `.env` (from 1Password) to `root@prive:~/prive-admin/`, then runs `docker compose pull && up -d`. Caddy fronts the web container on 80/443 with auto-TLS. Postgres runs in the same compose stack with a host bind-mount.
 
 **Tech Stack:** Docker Compose, Caddy 2, Postgres 17, GitHub Actions, 1Password service account + `load-secrets-action@v2`, Tailscale OAuth, GHCR.
 
@@ -153,7 +153,7 @@ services:
         condition: service_healthy
 
   postgres:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
@@ -394,33 +394,19 @@ the stack; this document is for first-time provisioning and recovery.
 ## Requirements
 
 - Linux host (Ubuntu 22.04 or later assumed) with public IPv4.
-- SSH user `cicd` with Docker group membership and an authorized SSH
-  key matching the GitHub Actions Tailscale identity.
+- SSH access as `root` with the GitHub Actions Tailscale identity's
+  public key in `/root/.ssh/authorized_keys`.
 - Tailscale installed, logged in, with ACL tag `tag:prod` so the
   `tag:prod-ci` runners can reach it.
 
-## Bootstrap the cicd user
-
-The deploy and backup workflows SSH into the host as `cicd`. On a
-fresh VPS this user does not yet exist. Create it before installing
-Docker:
+## SSH key
 
 ```bash
-sudo adduser --disabled-password --gecos '' cicd
-sudo install -d -o cicd -g cicd -m 0700 /home/cicd/.ssh
-sudo install -o cicd -g cicd -m 0600 /dev/stdin /home/cicd/.ssh/authorized_keys <<'KEY'
+sudo install -d -m 0700 /root/.ssh
+sudo install -m 0600 /dev/stdin /root/.ssh/authorized_keys <<'KEY'
 <paste the public key matching the GitHub Actions Tailscale identity>
 KEY
 ```
-
-After Docker is installed in the next section, add `cicd` to the
-`docker` group:
-
-```bash
-sudo usermod -aG docker cicd
-```
-
-The group change only applies to new shell sessions for `cicd`.
 
 ## Install
 
@@ -445,18 +431,17 @@ must:
 - Allow `tag:prod-ci` to reach `tag:prod` on TCP `22`.
 - Have MagicDNS enabled in the tailnet, and the VPS machine renamed
   to `prive` (admin console → Machines → rename), so that
-  `ssh cicd@prive` resolves.
+  `ssh root@prive` resolves.
 
 ## Host directories
 
 ```bash
 sudo mkdir -p /var/lib/prive-admin/{pg,caddy/data,caddy/config}
 sudo chown -R 70:70 /var/lib/prive-admin/pg
-sudo chown -R cicd:cicd /var/lib/prive-admin/caddy
-sudo -u cicd mkdir -p /home/cicd/prive-admin
+sudo mkdir -p /root/prive-admin
 ```
 
-The `70:70` ownership matches the `postgres` user inside the official `postgres:17-alpine` image.
+The `70:70` ownership matches the `postgres` user inside the official `postgres:18-alpine` image.
 
 ## Firewall
 
@@ -480,7 +465,7 @@ resolves.
 
 ## GHCR pulls
 
-The deploy workflow logs `cicd` into `ghcr.io` on every run using the
+The deploy workflow logs into `ghcr.io` on every run using the
 ephemeral `GITHUB_TOKEN`. No manual login is required.
 
 ## First deploy
@@ -492,7 +477,7 @@ Push (or merge) to `main` and watch the `Release` workflow run. The
 ## Rollback
 
 ```bash
-ssh cicd@prive 'cd ~/prive-admin && IMAGE_TAG=<old-sha> docker compose up -d web'
+ssh root@prive 'cd ~/prive-admin && IMAGE_TAG=<old-sha> docker compose up -d web'
 ```
 
 GHCR retains older `:<sha>` tags by default. Pick a known-good sha
@@ -500,9 +485,9 @@ from the GitHub Actions history.
 
 ## Routine operations
 
-- View logs: `ssh cicd@prive 'cd ~/prive-admin && docker compose logs -f <service>'`
-- Restart web: `ssh cicd@prive 'cd ~/prive-admin && docker compose restart web'`
-- Database shell: `ssh cicd@prive 'cd ~/prive-admin && docker compose exec postgres sh -c '\''psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'\'''`
+- View logs: `ssh root@prive 'cd ~/prive-admin && docker compose logs -f <service>'`
+- Restart web: `ssh root@prive 'cd ~/prive-admin && docker compose restart web'`
+- Database shell: `ssh root@prive 'cd ~/prive-admin && docker compose exec postgres sh -c '\''psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'\'''`
 ```
 
 - [ ] **Step 2: Commit**
@@ -681,10 +666,10 @@ jobs:
           BETTER_AUTH_SECRET: op://prive-admin/prive-admin-prod/app/BETTER_AUTH_SECRET
           BETTER_AUTH_URL: op://prive-admin/prive-admin-prod/app/BETTER_AUTH_URL
           CORS_ORIGIN: op://prive-admin/prive-admin-prod/app/CORS_ORIGIN
-          R2_ACCOUNT_ID: op://prive-admin/prive-admin-prod/r2/R2_ACCOUNT_ID
-          R2_ACCESS_KEY_ID: op://prive-admin/prive-admin-prod/r2/R2_ACCESS_KEY_ID
-          R2_SECRET_ACCESS_KEY: op://prive-admin/prive-admin-prod/r2/R2_SECRET_ACCESS_KEY
-          R2_BUCKET_NAME: op://prive-admin/prive-admin-prod/r2/R2_BUCKET_NAME
+          R2_ACCOUNT_ID: op://prive-admin/Cloudflare R2/account-id
+          R2_ACCESS_KEY_ID: op://prive-admin/Cloudflare R2/access-key-id
+          R2_SECRET_ACCESS_KEY: op://prive-admin/Cloudflare R2/secret-access-key
+          R2_BUCKET_NAME: op://prive-admin/Cloudflare R2/bucket-name
           DOMAIN_NAME: op://prive-admin/prive-admin-prod/infra/DOMAIN_NAME
           ACME_EMAIL: op://prive-admin/prive-admin-prod/infra/ACME_EMAIL
 
@@ -726,19 +711,19 @@ jobs:
           chmod 644 ~/.ssh/known_hosts
 
       - name: Verify SSH connection
-        run: ssh -o ConnectTimeout=30 cicd@prive 'echo ok'
+        run: ssh -o ConnectTimeout=30 root@prive 'echo ok'
 
       - name: Stage files on VPS
         run: |
-          ssh cicd@prive 'mkdir -p ~/prive-admin'
-          scp docker-compose.yml Caddyfile .env cicd@prive:~/prive-admin/
+          ssh root@prive 'mkdir -p ~/prive-admin'
+          scp docker-compose.yml Caddyfile .env root@prive:~/prive-admin/
 
       - name: Deploy stack
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_ACTOR: ${{ github.actor }}
         run: |
-          ssh cicd@prive \
+          ssh root@prive \
             "cd ~/prive-admin && \
              echo '${GH_TOKEN}' | docker login ghcr.io -u '${GH_ACTOR}' --password-stdin && \
              docker compose pull && \
@@ -868,10 +853,10 @@ jobs:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
           POSTGRES_DB: op://prive-admin/prive-admin-prod/postgres/POSTGRES_DB
           POSTGRES_USER: op://prive-admin/prive-admin-prod/postgres/POSTGRES_USER
-          R2_ACCOUNT_ID: op://prive-admin/prive-admin-prod/r2/R2_ACCOUNT_ID
-          R2_ACCESS_KEY_ID: op://prive-admin/prive-admin-prod/r2/R2_ACCESS_KEY_ID
-          R2_SECRET_ACCESS_KEY: op://prive-admin/prive-admin-prod/r2/R2_SECRET_ACCESS_KEY
-          R2_BUCKET_NAME: op://prive-admin/prive-admin-prod/r2/R2_BUCKET_NAME
+          R2_ACCOUNT_ID: op://prive-admin/Cloudflare R2/account-id
+          R2_ACCESS_KEY_ID: op://prive-admin/Cloudflare R2/access-key-id
+          R2_SECRET_ACCESS_KEY: op://prive-admin/Cloudflare R2/secret-access-key
+          R2_BUCKET_NAME: op://prive-admin/Cloudflare R2/bucket-name
 
       - name: Tailscale up
         uses: tailscale/github-action@v3
@@ -888,11 +873,11 @@ jobs:
           chmod 644 ~/.ssh/known_hosts
 
       - name: Copy backup script to VPS
-        run: scp scripts/backup_postgres.sh cicd@prive:~/backup_postgres.sh
+        run: scp scripts/backup_postgres.sh root@prive:~/backup_postgres.sh
 
       - name: Run backup script on VPS
         run: |
-          ssh cicd@prive "
+          ssh root@prive "
             chmod +x ~/backup_postgres.sh && \
             PG_USER='${POSTGRES_USER}' \
             PG_DATABASE='${POSTGRES_DB}' \
@@ -906,8 +891,8 @@ jobs:
       - name: Upload backup to Cloudflare R2
         run: |
           set -e
-          FILE_NAME=$(ssh cicd@prive 'ls -t ~/db_backups/ | head -n1')
-          ssh cicd@prive "cat ~/db_backups/${FILE_NAME}" > "${FILE_NAME}"
+          FILE_NAME=$(ssh root@prive 'ls -t ~/db_backups/ | head -n1')
+          ssh root@prive "cat ~/db_backups/${FILE_NAME}" > "${FILE_NAME}"
           cat > ~/.s3cfg <<EOF
           [default]
           access_key = ${R2_ACCESS_KEY_ID}
@@ -988,7 +973,7 @@ authoritative deploy doc is [`docs/deploy/vps-setup.md`](docs/deploy/vps-setup.m
 - Rollback to a previous image:
 
   ```bash
-  ssh cicd@prive 'cd ~/prive-admin && IMAGE_TAG=<old-sha> docker compose up -d web'
+  ssh root@prive 'cd ~/prive-admin && IMAGE_TAG=<old-sha> docker compose up -d web'
   ```
 ```
 
