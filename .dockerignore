@@ -1,0 +1,16 @@
+**/node_modules
+**/.next
+**/.output
+**/.turbo
+**/dist
+**/out
+**/.cache
+**/.env
+**/.env.*
+!**/.env.example
+.git
+.github
+.vscode
+.idea
+**/*.log
+**/coverage
