@@ -1,16 +1,28 @@
 #!/bin/bash
-set -e
+set -euo pipefail
+umask 077
 
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
-BACKUP_DIR="$HOME/db_backups"
-mkdir -p "$BACKUP_DIR"
-find "$BACKUP_DIR" -name "*.sql*" -type f -mtime +14 -exec rm {} \;
+BACKUP_DIR="${HOME}/db_backups"
+COMPOSE_DIR="${COMPOSE_DIR:-${HOME}/prive-admin}"
 
-PGPASSWORD="${PG_PASSWORD}" pg_dump -h 127.0.0.1 -p 5432 -U "${PG_USER}" --clean --create "${PG_DATABASE}" \
-  > "$BACKUP_DIR/postgres_backup_${TIMESTAMP}.sql"
+mkdir -p "${BACKUP_DIR}"
 
-echo "✅ Backup completed and stored at $BACKUP_DIR/postgres_backup_${TIMESTAMP}.sql"
+# Prune backups older than 14 days
+find "${BACKUP_DIR}" -name "postgres_backup_*.sql" -type f -mtime +14 -delete
 
-#To restore
-#
-#PGPASSWORD=admin psql -U admin -h localhost -p 5433 -d postgres -f ./postgres_backup_2025-06-14_13-24-52.sql
+OUT="${BACKUP_DIR}/postgres_backup_${TIMESTAMP}.sql"
+TMP="${OUT}.partial"
+trap 'rm -f "${TMP}"' ERR
+
+# Run pg_dump inside the postgres container — avoids exposing 5432 on the host.
+# PG_USER / PG_DATABASE come from the workflow env. Password is read from the
+# container's own POSTGRES_PASSWORD via `printenv` to avoid leaking into the
+# host process table.
+docker compose --project-directory "${COMPOSE_DIR}" exec -T postgres \
+  bash -c 'PGPASSWORD="$(printenv POSTGRES_PASSWORD)" pg_dump \
+            -U "'"${PG_USER}"'" --clean --create "'"${PG_DATABASE}"'"' \
+  > "${TMP}"
+
+mv "${TMP}" "${OUT}"
+echo "Backup written: ${OUT}"

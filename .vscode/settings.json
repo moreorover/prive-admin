@@ -1,9 +1,54 @@
 {
-  "cssVariables.lookupFiles": [
-    "**/*.css",
-    "**/*.scss",
-    "**/*.sass",
-    "**/*.less",
-    "node_modules/@mantine/core/styles.css"
-  ]
+  // Formatting
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "oxc.lint.enable": true,
+  "oxc.configPath": ".oxlintrc.json",
+  "oxc.format.enable": true,
+
+  // TypeScript
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.suggest.autoImports": true,
+  "editor.codeActionsOnSave": {
+    "source.removeUnusedImports": "always"
+  },
+
+  // Editor
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.stickyScroll.enabled": true,
+  "editor.linkedEditing": true,
+
+  // Search
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.turbo": true,
+    "**/routeTree.gen.ts": true,
+    "**/.agents": true,
+    "**/backups": true
+  },
+
+  // Files
+  "files.exclude": {
+    "**/.turbo": true
+  }
 }

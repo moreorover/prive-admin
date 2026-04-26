@@ -4,49 +4,59 @@ on:
   pull_request:
     branches:
       - main
+      - tanstack-rewrite
 
 jobs:
   build:
-    name: Build and Validate PR
+    name: Source Build
     runs-on: ubuntu-latest
 
     permissions:
-      # Required to checkout the code
       contents: read
-      # Required to put a comment into the pull-request
       pull-requests: write
 
     steps:
-      # Checkout the code from the PR
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Biome Linting
-      - name: Setup Biome
-        uses: biomejs/setup-biome@v2
-        with:
-          version: latest
-      - name: Run Biome
-        run: biome ci src
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 22
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install Dependencies
-        run: npm install
+        run: bun install --frozen-lockfile
 
-      - name: Test
-        run: npx vitest --coverage.enabled true
-      - name: Report Coverage
-        # Set if: always() to also generate the report if tests are failing
-        # Only works if you set `reportOnFailure: true` in your vite config as specified above
-        if: always()
-        uses: davelosert/vitest-coverage-report-action@v2
+      - name: Lint
+        run: bunx oxlint
 
-      - name: Generate Prisma
-        run: npx prisma generate
+      - name: Check Formatting
+        run: bunx oxfmt --check
+
+      - name: Check Types
+        run: bun run check-types
 
       - name: Run Build
-        run: npm run build
+        run: bun run build
+
+  docker-build:
+    name: Docker Image Build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build (no push)
+        uses: docker/build-push-action@v6
+        with:
+          file: apps/web/Dockerfile
+          context: .
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
