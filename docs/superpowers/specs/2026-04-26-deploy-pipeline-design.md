@@ -219,7 +219,7 @@ These are not automated by this design — they are documented as setup prerequi
 4. Host directories with correct ownership:
    ```
    sudo mkdir -p /var/lib/prive-admin/{pg,caddy/data,caddy/config}
-   sudo chown -R 999:999 /var/lib/prive-admin/pg
+   sudo chown -R 70:70 /var/lib/prive-admin/pg
    sudo chown -R cicd:cicd /var/lib/prive-admin/caddy /home/cicd/prive-admin
    ```
 5. Firewall: 80/443 open from public internet; 22 reachable only via Tailscale.
