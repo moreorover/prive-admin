@@ -24,11 +24,13 @@ ENV NODE_ENV=production
 ENV PORT=8081
 
 # Copy nitro output (server + static assets bundled together)
-COPY --from=installer /app/apps/web/.output ./.output
+COPY --from=installer --chown=bun:bun /app/apps/web/.output ./.output
 
 # Copy bundled migration script and migration files
-COPY --from=installer /app/packages/db/migrate.js ./migrate.js
-COPY --from=installer /app/packages/db/src/migrations ./migrations
+COPY --from=installer --chown=bun:bun /app/packages/db/migrate.js ./migrate.js
+COPY --from=installer --chown=bun:bun /app/packages/db/src/migrations ./migrations
+
+USER bun
 
 EXPOSE 8081
 
