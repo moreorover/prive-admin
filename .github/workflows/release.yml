@@ -139,13 +139,13 @@ jobs:
 
       - name: Smoke check
         run: |
-          for i in 1 2 3 4 5; do
+          for i in $(seq 1 10); do
             if curl -fsS --max-time 10 https://prive.salon/ > /dev/null; then
               echo "smoke check ok"
               exit 0
             fi
-            echo "attempt $i failed, retrying in 10s"
-            sleep 10
+            echo "attempt $i failed, retrying in 15s"
+            sleep 15
           done
-          echo "smoke check failed after 5 attempts"
+          echo "smoke check failed after 10 attempts"
           exit 1

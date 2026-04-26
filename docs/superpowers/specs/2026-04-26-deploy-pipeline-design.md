@@ -34,7 +34,7 @@ VPS `prive` (Tailscale-attached, public 80/443)
         Caddyfile               (in repo, scp'd each deploy)
         .env                    (rendered each deploy, gitignored, chmod 600)
   └── /var/lib/prive-admin/
-        pg/                     (postgres data, bind-mount, uid 999)
+        pg/                     (postgres data, bind-mount, uid 70)
         caddy/data/             (TLS certs, ACME state)
         caddy/config/           (Caddy autosave)
 

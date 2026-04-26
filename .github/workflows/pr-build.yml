@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - tanstack-rewrite
 
 jobs:
   build:
