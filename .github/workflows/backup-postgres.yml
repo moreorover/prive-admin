@@ -26,16 +26,18 @@ jobs:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
           POSTGRES_DB: op://prive-admin/prive-admin-prod/postgres/POSTGRES_DB
           POSTGRES_USER: op://prive-admin/prive-admin-prod/postgres/POSTGRES_USER
-          R2_ACCOUNT_ID: op://prive-admin/prive-admin-prod/r2/R2_ACCOUNT_ID
-          R2_ACCESS_KEY_ID: op://prive-admin/prive-admin-prod/r2/R2_ACCESS_KEY_ID
-          R2_SECRET_ACCESS_KEY: op://prive-admin/prive-admin-prod/r2/R2_SECRET_ACCESS_KEY
-          R2_BUCKET_NAME: op://prive-admin/prive-admin-prod/r2/R2_BUCKET_NAME
+          R2_ACCOUNT_ID: op://prive-admin/Cloudflare R2/account-id
+          R2_ACCESS_KEY_ID: op://prive-admin/Cloudflare R2/access-key-id
+          R2_SECRET_ACCESS_KEY: op://prive-admin/Cloudflare R2/secret-access-key
+          R2_BUCKET_NAME: op://prive-admin/Cloudflare R2/bucket-name
+          TS_OAUTH_CLIENT_ID: op://prive-admin/tailscale-oauth/add more/client-id
+          TS_OAUTH_CLIENT_SECRET: op://prive-admin/tailscale-oauth/add more/client-secret
 
       - name: Tailscale up
         uses: tailscale/github-action@v3
         with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ env.TS_OAUTH_CLIENT_SECRET }}
           tags: tag:prod-ci
 
       - name: Prepare SSH
