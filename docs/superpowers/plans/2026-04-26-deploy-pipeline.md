@@ -344,17 +344,21 @@ op item edit prive-admin-prod --vault 5gq2basjdplfjk5v55wexp2y7i \
 
 - [ ] **Step 5: Create service account, scoped to this vault, generate token**
 
-In the 1Password web UI:
-1. Settings → Developer → Service accounts → Create.
-2. Name: `prive-admin-github-actions`.
-3. Vaults: read-only access to `5gq2basjdplfjk5v55wexp2y7i`.
-4. Copy generated token.
+CLI path (preferred — `--raw` is required, otherwise stdout is descriptive prose and the token is unrecoverable; the CLI also allows duplicate-name creation, so a missing `--raw` will create an orphan account that is hard to delete):
+
+```bash
+SA_TOKEN="$(op service-account create prive-admin-github-actions \
+  --vault '5gq2basjdplfjk5v55wexp2y7i:read_items' --raw)"
+```
+
+Web UI fallback: 1Password admin → Integrations → Directory → Service Accounts → Create. Read-only access to vault `5gq2basjdplfjk5v55wexp2y7i`. Copy the token shown once.
 
 - [ ] **Step 6: Add token as GitHub Actions secret**
 
-Run:
+Have the operator run (so the token never enters logs or chat):
 ```bash
-gh secret set OP_SERVICE_ACCOUNT_TOKEN --body "<paste-token>"
+gh secret set OP_SERVICE_ACCOUNT_TOKEN
+# paste token at prompt
 ```
 Expected: `✓ Set Actions secret OP_SERVICE_ACCOUNT_TOKEN for <repo>`.
 
