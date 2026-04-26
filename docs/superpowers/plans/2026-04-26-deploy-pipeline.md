@@ -399,29 +399,64 @@ the stack; this document is for first-time provisioning and recovery.
 - Tailscale installed, logged in, with ACL tag `tag:prod` so the
   `tag:prod-ci` runners can reach it.
 
+## Bootstrap the cicd user
+
+The deploy and backup workflows SSH into the host as `cicd`. On a
+fresh VPS this user does not yet exist. Create it before installing
+Docker:
+
+```bash
+sudo adduser --disabled-password --gecos '' cicd
+sudo install -d -o cicd -g cicd -m 0700 /home/cicd/.ssh
+sudo install -o cicd -g cicd -m 0600 /dev/stdin /home/cicd/.ssh/authorized_keys <<'KEY'
+<paste the public key matching the GitHub Actions Tailscale identity>
+KEY
+```
+
+After Docker is installed in the next section, add `cicd` to the
+`docker` group:
+
+```bash
+sudo usermod -aG docker cicd
+```
+
+The group change only applies to new shell sessions for `cicd`.
+
 ## Install
 
 ```bash
 # Docker Engine + compose plugin
 curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker cicd
 
 # Tailscale
 curl -fsSL https://tailscale.com/install.sh | sh
 sudo tailscale up --advertise-tags=tag:prod
 ```
 
+## Tailscale ACL
+
+The deploy and backup workflows authenticate as `tag:prod-ci` and
+SSH the VPS by its short tailnet name `prive`. The tailnet ACL
+must:
+
+- List your operator identity under `tagOwners` for both `tag:prod`
+  and `tag:prod-ci`, otherwise `tailscale up --advertise-tags=tag:prod`
+  and the GitHub Actions OAuth tags will be rejected.
+- Allow `tag:prod-ci` to reach `tag:prod` on TCP `22`.
+- Have MagicDNS enabled in the tailnet, and the VPS machine renamed
+  to `prive` (admin console → Machines → rename), so that
+  `ssh cicd@prive` resolves.
+
 ## Host directories
 
 ```bash
 sudo mkdir -p /var/lib/prive-admin/{pg,caddy/data,caddy/config}
-sudo chown -R 999:999 /var/lib/prive-admin/pg
+sudo chown -R 70:70 /var/lib/prive-admin/pg
 sudo chown -R cicd:cicd /var/lib/prive-admin/caddy
 sudo -u cicd mkdir -p /home/cicd/prive-admin
 ```
 
-The `999:999` ownership matches the `postgres` user inside the
-official `postgres:17-alpine` image.
+The `70:70` ownership matches the `postgres` user inside the official `postgres:17-alpine` image.
 
 ## Firewall
 
@@ -467,7 +502,7 @@ from the GitHub Actions history.
 
 - View logs: `ssh cicd@prive 'cd ~/prive-admin && docker compose logs -f <service>'`
 - Restart web: `ssh cicd@prive 'cd ~/prive-admin && docker compose restart web'`
-- Database shell: `ssh cicd@prive 'cd ~/prive-admin && docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'`
+- Database shell: `ssh cicd@prive 'cd ~/prive-admin && docker compose exec postgres sh -c '\''psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'\'''`
 ```
 
 - [ ] **Step 2: Commit**
