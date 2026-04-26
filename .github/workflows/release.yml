@@ -110,7 +110,7 @@ jobs:
         with:
           oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ env.TS_OAUTH_CLIENT_SECRET }}
-          tags: tag:prod-ci
+          tags: tag:prod-server
 
       - name: Prepare SSH
         run: |
