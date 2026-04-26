@@ -130,9 +130,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_ACTOR: ${{ github.actor }}
         run: |
-          ssh cicd@prive \
+          printf '%s' "${GH_TOKEN}" | ssh cicd@prive \
             "cd ~/prive-admin && \
-             echo '${GH_TOKEN}' | docker login ghcr.io -u '${GH_ACTOR}' --password-stdin && \
+             docker login ghcr.io -u '${GH_ACTOR}' --password-stdin && \
              docker compose pull && \
              docker compose up -d --remove-orphans && \
              docker image prune -f"
