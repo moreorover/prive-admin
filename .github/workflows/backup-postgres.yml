@@ -64,7 +64,9 @@ jobs:
       - name: Upload backup to Cloudflare R2
         run: |
           set -e
+          umask 077
           FILE_NAME=$(ssh cicd@prive 'ls -t ~/db_backups/ | head -n1')
+          [ -n "${FILE_NAME}" ] || { echo "no backup file produced on VPS"; exit 1; }
           ssh cicd@prive "cat ~/db_backups/${FILE_NAME}" > "${FILE_NAME}"
           cat > ~/.s3cfg <<EOF
           [default]
@@ -76,5 +78,5 @@ jobs:
           use_https = True
           EOF
           s3cmd put "${FILE_NAME}" "s3://${R2_BUCKET_NAME}/${FILE_NAME}"
-          s3cmd info "s3://${R2_BUCKET_NAME}"
+          s3cmd info "s3://${R2_BUCKET_NAME}" || true
           echo "Uploaded ${FILE_NAME} to r2://${R2_BUCKET_NAME}"
