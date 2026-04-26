@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+umask 077
 
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 BACKUP_DIR="${HOME}/db_backups"
@@ -11,6 +12,8 @@ mkdir -p "${BACKUP_DIR}"
 find "${BACKUP_DIR}" -name "postgres_backup_*.sql" -type f -mtime +14 -delete
 
 OUT="${BACKUP_DIR}/postgres_backup_${TIMESTAMP}.sql"
+TMP="${OUT}.partial"
+trap 'rm -f "${TMP}"' ERR
 
 # Run pg_dump inside the postgres container — avoids exposing 5432 on the host.
 # PG_USER / PG_DATABASE come from the workflow env. Password is read from the
@@ -19,6 +22,7 @@ OUT="${BACKUP_DIR}/postgres_backup_${TIMESTAMP}.sql"
 docker compose --project-directory "${COMPOSE_DIR}" exec -T postgres \
   bash -c 'PGPASSWORD="$(printenv POSTGRES_PASSWORD)" pg_dump \
             -U "'"${PG_USER}"'" --clean --create "'"${PG_DATABASE}"'"' \
-  > "${OUT}"
+  > "${TMP}"
 
+mv "${TMP}" "${OUT}"
 echo "Backup written: ${OUT}"
