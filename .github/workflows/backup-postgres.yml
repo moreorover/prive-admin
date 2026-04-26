@@ -30,8 +30,8 @@ jobs:
           R2_ACCESS_KEY_ID: op://prive-admin/Cloudflare R2/access-key-id
           R2_SECRET_ACCESS_KEY: op://prive-admin/Cloudflare R2/secret-access-key
           R2_BUCKET_NAME: op://prive-admin/Cloudflare R2/bucket-name
-          TS_OAUTH_CLIENT_ID: op://prive-admin/tailscale-oauth/add more/client-id
-          TS_OAUTH_CLIENT_SECRET: op://prive-admin/tailscale-oauth/add more/client-secret
+          TS_OAUTH_CLIENT_ID: op://prive-admin/tailscale-oauth/client-id
+          TS_OAUTH_CLIENT_SECRET: op://prive-admin/tailscale-oauth/client-secret
 
       - name: Tailscale up
         uses: tailscale/github-action@v3

@@ -79,8 +79,8 @@ jobs:
           R2_BUCKET_NAME: op://prive-admin/Cloudflare R2/bucket-name
           DOMAIN_NAME: op://prive-admin/prive-admin-prod/infra/DOMAIN_NAME
           ACME_EMAIL: op://prive-admin/prive-admin-prod/infra/ACME_EMAIL
-          TS_OAUTH_CLIENT_ID: op://prive-admin/tailscale-oauth/add more/client-id
-          TS_OAUTH_CLIENT_SECRET: op://prive-admin/tailscale-oauth/add more/client-secret
+          TS_OAUTH_CLIENT_ID: op://prive-admin/tailscale-oauth/client-id
+          TS_OAUTH_CLIENT_SECRET: op://prive-admin/tailscale-oauth/client-secret
 
       - name: Render .env
         run: |
