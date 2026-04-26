@@ -118,19 +118,19 @@ jobs:
           chmod 644 ~/.ssh/known_hosts
 
       - name: Verify SSH connection
-        run: ssh -o ConnectTimeout=30 cicd@prive 'echo ok'
+        run: ssh -o ConnectTimeout=30 root@prive 'echo ok'
 
       - name: Stage files on VPS
         run: |
-          ssh cicd@prive 'mkdir -p ~/prive-admin'
-          scp docker-compose.yml Caddyfile .env cicd@prive:~/prive-admin/
+          ssh root@prive 'mkdir -p ~/prive-admin'
+          scp docker-compose.yml Caddyfile .env root@prive:~/prive-admin/
 
       - name: Deploy stack
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_ACTOR: ${{ github.actor }}
         run: |
-          printf '%s' "${GH_TOKEN}" | ssh cicd@prive \
+          printf '%s' "${GH_TOKEN}" | ssh root@prive \
             "cd ~/prive-admin && \
              docker login ghcr.io -u '${GH_ACTOR}' --password-stdin && \
              docker compose pull && \
