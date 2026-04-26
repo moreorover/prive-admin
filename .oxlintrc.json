@@ -35,5 +35,5 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": [".agents", "docs"]
+  "ignorePatterns": [".agents", "docs", "packages/db/src/migrations"]
 }
