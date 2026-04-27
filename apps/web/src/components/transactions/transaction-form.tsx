@@ -1,7 +1,7 @@
 import { Button, Group, NativeSelect, NumberInput, Stack, Textarea, TextInput } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
-import { useMemo } from "react"
+import { useState } from "react"
 
 export type TransactionFormValues = {
   name: string
@@ -38,11 +38,8 @@ export function TransactionForm({ initialValues, submitLabel, onSubmit, loading 
     },
   })
 
-  const dateLabel = useMemo(
-    () => (form.getValues().status === "COMPLETED" ? "When was it completed?" : "When should it be completed by?"),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [form.getValues().status],
-  )
+  const [status, setStatus] = useState<TransactionFormValues["status"]>(initialValues.status)
+  const dateLabel = status === "COMPLETED" ? "When was it completed?" : "When should it be completed by?"
 
   return (
     <form
@@ -78,6 +75,11 @@ export function TransactionForm({ initialValues, submitLabel, onSubmit, loading 
               { value: "COMPLETED", label: "Completed" },
             ]}
             {...form.getInputProps("status")}
+            onChange={(event) => {
+              const next = event.currentTarget.value as TransactionFormValues["status"]
+              form.setFieldValue("status", next)
+              setStatus(next)
+            }}
           />
         </Group>
         <DateInput label={dateLabel} valueFormat="DD MMM YYYY" required {...form.getInputProps("completedDateBy")} />
