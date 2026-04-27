@@ -37,6 +37,8 @@ import { getHairAssignedByAppointment } from "@/functions/hair-assigned"
 import { getTransactionsByAppointmentId } from "@/functions/transactions"
 import { appointmentKeys, customerKeys, hairAssignedKeys, transactionKeys } from "@/lib/query-keys"
 
+const formatCents = (cents: number) => `£${(cents / 100).toFixed(2)}`
+
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
   loader: async ({ context, params }) => {
@@ -97,7 +99,6 @@ function AppointmentDetailPage() {
     { name: "Completed", value: Math.abs(completedSum), color: "green.4" },
     { name: "Pending", value: Math.abs(pendingSum), color: "pink.6" },
   ]
-  const formatCents = (cents: number) => `£${(cents / 100).toFixed(2)}`
 
   if (isLoading) {
     return (
@@ -226,7 +227,7 @@ function AppointmentDetailPage() {
               </Group>
             </Title>
           </Group>
-          {totalSum === 0 ? (
+          {txList.length === 0 ? (
             <Text size="sm" c="dimmed">
               No transactions yet.
             </Text>
