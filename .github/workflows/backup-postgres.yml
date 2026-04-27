@@ -26,10 +26,6 @@ jobs:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
           POSTGRES_DB: op://prive-admin/prive-admin-prod/postgres/POSTGRES_DB
           POSTGRES_USER: op://prive-admin/prive-admin-prod/postgres/POSTGRES_USER
-          # TODO: add RESTIC_PASSWORD item to 1Password and uncomment.
-          # Generate with `openssl rand -base64 32`. Losing it makes the
-          # restic repo permanently unreadable — store securely.
-          # RESTIC_PASSWORD: op://prive-admin/prive-admin-prod/backup/RESTIC_PASSWORD
           R2_ACCOUNT_ID: op://prive-admin/Cloudflare R2/account-id
           R2_ACCESS_KEY_ID: op://prive-admin/Cloudflare R2/access-key-id
           R2_SECRET_ACCESS_KEY: op://prive-admin/Cloudflare R2/secret-access-key
@@ -58,7 +54,6 @@ jobs:
         run: |
           umask 077
           cat > restic.env <<EOF
-          RESTIC_PASSWORD=${RESTIC_PASSWORD}
           RESTIC_REPOSITORY=s3:https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${R2_BUCKET_NAME}
           AWS_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
           AWS_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
@@ -80,29 +75,36 @@ jobs:
             apt-get update -y
             apt-get install -y restic
           fi
+          # `--insecure-no-password` requires restic >= 0.17 (Debian/Ubuntu
+          # apt is older); upgrade to the latest from GitHub.
+          restic self-update >/dev/null 2>&1 || true
 
           set -a
           . /root/.restic/env
           set +a
 
+          # No restic encryption — R2 bucket is private, blob-at-rest
+          # encryption is handled by Cloudflare. See `--insecure-no-password`.
+          NOPW="--insecure-no-password"
+
           # Init repo on first run (idempotent)
-          restic snapshots >/dev/null 2>&1 || restic init
+          restic $NOPW snapshots >/dev/null 2>&1 || restic $NOPW init
 
           # Stream pg_dump straight into restic — no temp file on disk
           STAMP=$(date -u +%Y%m%dT%H%M%SZ)
           docker compose --project-directory /root/prive-admin exec -T postgres \
             pg_dump -U "${POSTGRES_USER}" --clean --create "${POSTGRES_DB}" \
-            | restic backup \
+            | restic $NOPW backup \
                 --stdin \
                 --stdin-filename "${POSTGRES_DB}-${STAMP}.sql" \
                 --tag postgres \
                 --tag daily
 
           # Retention: 7 daily, 4 weekly, 6 monthly
-          restic forget --tag postgres \
+          restic $NOPW forget --tag postgres \
             --keep-daily 7 --keep-weekly 4 --keep-monthly 6 \
             --prune
 
           # Integrity check (subset, fast)
-          restic check --read-data-subset=5%
+          restic $NOPW check --read-data-subset=5%
           REMOTE
