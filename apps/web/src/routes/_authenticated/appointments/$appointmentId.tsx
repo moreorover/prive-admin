@@ -1,5 +1,6 @@
 import { DonutChart } from "@mantine/charts"
 import {
+  ActionIcon,
   Anchor,
   Button,
   Card,
@@ -7,6 +8,7 @@ import {
   Container,
   Divider,
   Group,
+  Menu,
   Modal,
   ScrollArea,
   Skeleton,
@@ -17,7 +19,7 @@ import {
   Title,
 } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
-import { IconArrowLeft, IconCash, IconClock, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
+import { IconArrowLeft, IconCash, IconClock, IconDots, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
@@ -183,9 +185,23 @@ function AppointmentDetailPage() {
               <Stack gap="xs">
                 {appointment.personnel.map((p) => (
                   <Card key={p.personnelId} withBorder padding="xs">
-                    <Group gap="xs">
-                      <IconUser size={12} />
-                      <Text size="sm">{p.personnel.name}</Text>
+                    <Group justify="space-between" gap="xs">
+                      <Group gap="xs">
+                        <IconUser size={12} />
+                        <Text size="sm">{p.personnel.name}</Text>
+                      </Group>
+                      <Menu shadow="md" width={180} position="bottom-end">
+                        <Menu.Target>
+                          <ActionIcon variant="subtle" size="sm" aria-label="Personnel actions">
+                            <IconDots size={14} />
+                          </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          <Menu.Item leftSection={<IconCash size={14} />} onClick={() => openCreateTx(p.personnelId)}>
+                            New transaction
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
                     </Group>
                   </Card>
                 ))}
