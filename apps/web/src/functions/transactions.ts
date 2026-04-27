@@ -2,7 +2,7 @@ import { db } from "@prive-admin-tanstack/db"
 import { personnelOnAppointments } from "@prive-admin-tanstack/db/schema/appointment"
 import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
 import { createServerFn } from "@tanstack/react-start"
-import { asc, eq } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 import { z } from "zod"
 
 import { requireAuthMiddleware } from "@/middleware/auth"
@@ -27,7 +27,7 @@ export const getTransactionsByAppointmentId = createServerFn({ method: "GET" })
     return db.query.transaction.findMany({
       where: eq(transaction.appointmentId, data.appointmentId),
       with: { customer: { columns: { id: true, name: true } } },
-      orderBy: [asc(transaction.completedDateBy)],
+      orderBy: (tx, { asc }) => [asc(tx.completedDateBy)],
     })
   })
 
@@ -40,40 +40,42 @@ export const createTransaction = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data }) => {
-    const allowedCustomerIds = new Set<string>()
-    const appointmentRow = await db.query.appointment.findFirst({
-      where: (a, { eq }) => eq(a.id, data.appointmentId),
-      columns: { clientId: true },
-    })
-    if (!appointmentRow) {
-      throw new Error("Appointment not found")
-    }
-    allowedCustomerIds.add(appointmentRow.clientId)
-    const personnelRows = await db
-      .select({ personnelId: personnelOnAppointments.personnelId })
-      .from(personnelOnAppointments)
-      .where(eq(personnelOnAppointments.appointmentId, data.appointmentId))
-    for (const row of personnelRows) {
-      allowedCustomerIds.add(row.personnelId)
-    }
-    if (!allowedCustomerIds.has(data.customerId)) {
-      throw new Error("Customer is not the appointment client or assigned personnel")
-    }
-
-    const [result] = await db
-      .insert(transaction)
-      .values({
-        appointmentId: data.appointmentId,
-        customerId: data.customerId,
-        name: data.name ?? null,
-        notes: data.notes ?? null,
-        amount: data.amount,
-        type: data.type,
-        status: data.status,
-        completedDateBy: data.completedDateBy,
+    return await db.transaction(async (tx) => {
+      const allowedCustomerIds = new Set<string>()
+      const appointmentRow = await tx.query.appointment.findFirst({
+        where: (a, { eq }) => eq(a.id, data.appointmentId),
+        columns: { clientId: true },
       })
-      .returning()
-    return result
+      if (!appointmentRow) {
+        throw new Error("Appointment not found")
+      }
+      allowedCustomerIds.add(appointmentRow.clientId)
+      const personnelRows = await tx
+        .select({ personnelId: personnelOnAppointments.personnelId })
+        .from(personnelOnAppointments)
+        .where(eq(personnelOnAppointments.appointmentId, data.appointmentId))
+      for (const row of personnelRows) {
+        allowedCustomerIds.add(row.personnelId)
+      }
+      if (!allowedCustomerIds.has(data.customerId)) {
+        throw new Error("Customer is not the appointment client or assigned personnel")
+      }
+
+      const [result] = await tx
+        .insert(transaction)
+        .values({
+          appointmentId: data.appointmentId,
+          customerId: data.customerId,
+          name: data.name ?? null,
+          notes: data.notes ?? null,
+          amount: data.amount,
+          type: data.type,
+          status: data.status,
+          completedDateBy: data.completedDateBy,
+        })
+        .returning()
+      return result
+    })
   })
 
 export const updateTransaction = createServerFn({ method: "POST" })
