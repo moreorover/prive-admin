@@ -26,10 +26,15 @@ import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair
 import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
 import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
+import { CreateTransactionDialog } from "@/components/transactions/create-transaction-dialog"
+import { DeleteTransactionDialog } from "@/components/transactions/delete-transaction-dialog"
+import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
+import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
 import { getAppointment, linkPersonnel } from "@/functions/appointments"
 import { getCustomers } from "@/functions/customers"
 import { getHairAssignedByAppointment } from "@/functions/hair-assigned"
-import { appointmentKeys, customerKeys, hairAssignedKeys } from "@/lib/query-keys"
+import { getTransactionsByAppointmentId } from "@/functions/transactions"
+import { appointmentKeys, customerKeys, hairAssignedKeys, transactionKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
@@ -47,6 +52,12 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
           queryFn: () => getHairAssignedByAppointment({ data: { appointmentId: params.appointmentId } }),
         }),
       ),
+      context.queryClient.prefetchQuery(
+        queryOptions({
+          queryKey: transactionKeys.byAppointment(params.appointmentId),
+          queryFn: () => getTransactionsByAppointmentId({ data: { appointmentId: params.appointmentId } }),
+        }),
+      ),
     ])
   },
 })
@@ -57,6 +68,10 @@ function AppointmentDetailPage() {
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
   const [pickPersonnelOpen, setPickPersonnelOpen] = useState(false)
+  const [createTxOpen, setCreateTxOpen] = useState(false)
+  const [createTxCustomerId, setCreateTxCustomerId] = useState<string | null>(null)
+  const [editTx, setEditTx] = useState<TransactionRow | null>(null)
+  const [deleteTx, setDeleteTx] = useState<TransactionRow | null>(null)
 
   const { data: appointment, isLoading } = useQuery({
     queryKey: appointmentKeys.detail(appointmentId),
@@ -66,6 +81,11 @@ function AppointmentDetailPage() {
   const { data: hairAssigned } = useQuery({
     queryKey: hairAssignedKeys.byAppointment(appointmentId),
     queryFn: () => getHairAssignedByAppointment({ data: { appointmentId } }),
+  })
+
+  const { data: transactions } = useQuery({
+    queryKey: transactionKeys.byAppointment(appointmentId),
+    queryFn: () => getTransactionsByAppointmentId({ data: { appointmentId } }),
   })
 
   if (isLoading) {
@@ -91,6 +111,13 @@ function AppointmentDetailPage() {
     { queryKey: appointmentKeys.detail(appointmentId) },
     { queryKey: hairAssignedKeys.byAppointment(appointmentId) },
   ]
+
+  const txInvalidateKeys = [{ queryKey: transactionKeys.byAppointment(appointmentId) }]
+
+  const openCreateTx = (customerId: string) => {
+    setCreateTxCustomerId(customerId)
+    setCreateTxOpen(true)
+  }
 
   return (
     <Container size="lg">
@@ -180,6 +207,21 @@ function AppointmentDetailPage() {
         </Group>
 
         <Card withBorder>
+          <Group justify="space-between" mb="sm">
+            <Title order={5}>Transactions</Title>
+            <Button
+              variant="subtle"
+              size="xs"
+              leftSection={<IconPlus size={12} />}
+              onClick={() => openCreateTx(appointment.client.id)}
+            >
+              New
+            </Button>
+          </Group>
+          <TransactionsTable items={transactions ?? []} onEdit={setEditTx} onDelete={setDeleteTx} />
+        </Card>
+
+        <Card withBorder>
           <Title order={5} mb="sm">
             Notes
           </Title>
@@ -230,6 +272,32 @@ function AppointmentDetailPage() {
           appointmentId={appointmentId}
           assignedPersonnelIds={appointment.personnel?.map((p) => p.personnelId) ?? []}
         />
+        <CreateTransactionDialog
+          open={createTxOpen}
+          onOpenChange={(open) => {
+            setCreateTxOpen(open)
+            if (!open) setCreateTxCustomerId(null)
+          }}
+          appointmentId={appointmentId}
+          customerId={createTxCustomerId ?? appointment.client.id}
+          invalidateKeys={txInvalidateKeys}
+        />
+        {editTx && (
+          <EditTransactionDialog
+            open={!!editTx}
+            onOpenChange={(open) => !open && setEditTx(null)}
+            transaction={editTx}
+            invalidateKeys={txInvalidateKeys}
+          />
+        )}
+        {deleteTx && (
+          <DeleteTransactionDialog
+            open={!!deleteTx}
+            onOpenChange={(open) => !open && setDeleteTx(null)}
+            transaction={deleteTx}
+            invalidateKeys={txInvalidateKeys}
+          />
+        )}
       </Stack>
     </Container>
   )
