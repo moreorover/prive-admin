@@ -45,8 +45,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    expose:
-      - "5432"
+    ports:
+      - "${TAILSCALE_IP}:5432:5432"
     volumes:
       - /var/lib/prive-admin/pg:/var/lib/postgresql
     healthcheck:
