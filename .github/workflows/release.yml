@@ -136,13 +136,13 @@ jobs:
             "cd ~/prive-admin && \
              docker login ghcr.io -u '${GH_ACTOR}' --password-stdin && \
              docker compose pull && \
-             docker compose up -d --remove-orphans && \
+             docker compose up -d --remove-orphans --wait --wait-timeout 120 && \
              docker image prune -f"
 
       - name: Smoke check
         run: |
           for i in $(seq 1 10); do
-            if curl -fsS --max-time 10 https://prive.salon/ > /dev/null; then
+            if curl -fsS --max-time 10 "https://${DOMAIN_NAME}/" > /dev/null; then
               echo "smoke check ok"
               exit 0
             fi
