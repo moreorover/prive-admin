@@ -15,17 +15,22 @@ services:
       DOMAIN_NAME: ${DOMAIN_NAME}
       ACME_EMAIL: ${ACME_EMAIL}
     depends_on:
-      - web
+      web:
+        condition: service_healthy
 
   web:
     image: ghcr.io/${GITHUB_REPOSITORY}:${IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file: .env
-    expose:
-      - "8081"
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:8081/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   postgres:
     image: postgres:18-alpine
@@ -34,6 +39,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    expose:
+      - "5432"
     volumes:
       - /var/lib/prive-admin/pg:/var/lib/postgresql
     healthcheck:
