@@ -126,6 +126,7 @@ jobs:
         run: |
           ssh root@prive 'mkdir -p ~/prive-admin'
           scp docker-compose.yml Caddyfile .env root@prive:~/prive-admin/
+          ssh root@prive 'set -e; ts_ip=$(tailscale ip -4 | head -n1); [ -n "$ts_ip" ] || { echo "tailscale ip unavailable"; exit 1; }; printf "TAILSCALE_IP=%s\n" "$ts_ip" >> ~/prive-admin/.env'
 
       - name: Deploy stack
         env:
