@@ -1,3 +1,4 @@
+import { DonutChart } from "@mantine/charts"
 import {
   Anchor,
   Button,
@@ -16,7 +17,7 @@ import {
   Title,
 } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
-import { IconArrowLeft, IconClock, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
+import { IconArrowLeft, IconCash, IconClock, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
@@ -87,6 +88,16 @@ function AppointmentDetailPage() {
     queryKey: transactionKeys.byAppointment(appointmentId),
     queryFn: () => getTransactionsByAppointmentId({ data: { appointmentId } }),
   })
+
+  const txList = transactions ?? []
+  const completedSum = txList.filter((t) => t.status === "COMPLETED").reduce((acc, t) => acc + t.amount, 0)
+  const pendingSum = txList.filter((t) => t.status === "PENDING").reduce((acc, t) => acc + t.amount, 0)
+  const totalSum = txList.reduce((acc, t) => acc + t.amount, 0)
+  const chartData = [
+    { name: "Completed", value: Math.abs(completedSum), color: "green.4" },
+    { name: "Pending", value: Math.abs(pendingSum), color: "pink.6" },
+  ]
+  const formatCents = (cents: number) => `£${(cents / 100).toFixed(2)}`
 
   if (isLoading) {
     return (
@@ -205,6 +216,37 @@ function AppointmentDetailPage() {
             />
           </Card>
         </Group>
+
+        <Card withBorder>
+          <Group justify="space-between" mb="sm">
+            <Title order={5}>
+              <Group gap={6}>
+                <IconCash size={14} />
+                Transactions Summary
+              </Group>
+            </Title>
+          </Group>
+          {totalSum === 0 ? (
+            <Text size="sm" c="dimmed">
+              No transactions yet.
+            </Text>
+          ) : (
+            <Group align="center" gap="xl">
+              <DonutChart size={124} thickness={15} data={chartData} withLabels={false} />
+              <Stack gap={2}>
+                <Text size="sm">
+                  Completed: <b>{formatCents(completedSum)}</b>
+                </Text>
+                <Text size="sm">
+                  Pending: <b>{formatCents(pendingSum)}</b>
+                </Text>
+                <Text size="sm">
+                  Total: <b>{formatCents(totalSum)}</b>
+                </Text>
+              </Stack>
+            </Group>
+          )}
+        </Card>
 
         <Card withBorder>
           <Group justify="space-between" mb="sm">
