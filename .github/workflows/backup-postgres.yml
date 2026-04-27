@@ -1,9 +1,8 @@
 name: Daily Postgres Backup
 
 on:
-  # TODO: re-enable the daily schedule once RESTIC_PASSWORD is added to 1Password.
-  # schedule:
-  #   - cron: "0 0 * * *"
+  schedule:
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 jobs:
