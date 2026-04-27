@@ -91,7 +91,9 @@ export function TransactionsTable({ items, onEdit, onDelete }: TransactionsTable
                   </Text>
                   {isOverdue && (
                     <Tooltip label="Pending transaction is overdue" withArrow>
-                      <IconAlertTriangle size={14} color="red" />
+                      <span style={{ display: "inline-flex" }} tabIndex={0} aria-label="Overdue">
+                        <IconAlertTriangle size={14} color="red" />
+                      </span>
                     </Tooltip>
                   )}
                 </Group>
