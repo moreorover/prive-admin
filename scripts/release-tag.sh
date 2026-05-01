@@ -10,4 +10,5 @@ if git rev-parse "${tag}" >/dev/null 2>&1; then
 fi
 
 git tag "${tag}"
+git push origin "${tag}"
 echo "🦋  New tag: ${tag}"
