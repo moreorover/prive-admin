@@ -11,4 +11,21 @@ fi
 
 git tag "${tag}"
 git push origin "${tag}"
+
+if [[ -f apps/web/CHANGELOG.md ]]; then
+  notes=$(awk -v ver="${version}" '
+    $0 ~ "^## "ver"$" {flag=1; next}
+    /^## / {flag=0}
+    flag
+  ' apps/web/CHANGELOG.md)
+else
+  notes=""
+fi
+
+if [[ -z "${notes}" ]]; then
+  notes="Release ${tag}"
+fi
+
+gh release create "${tag}" --title "${tag}" --notes "${notes}"
+
 echo "🦋  New tag: ${tag}"
