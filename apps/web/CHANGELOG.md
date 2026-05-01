@@ -1,5 +1,15 @@
 # web
 
+## 0.0.4
+
+### Patch Changes
+
+- 5b42b57: chore: end-to-end validation of changeset → version PR → auto-pushed v\* tag → release with version-tagged Docker image
+  - @prive-admin-tanstack/auth@0.0.4
+  - @prive-admin-tanstack/db@0.0.4
+  - @prive-admin-tanstack/env@0.0.4
+  - @prive-admin-tanstack/ui@0.0.4
+
 ## 0.0.3
 
 ### Patch Changes
