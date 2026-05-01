@@ -34,10 +34,11 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
-      - name: Create Release Pull Request
+      - name: Create Release Pull Request or Tag
         uses: changesets/action@v1
         with:
           version: bunx changeset version
+          publish: bunx changeset tag
           title: "chore(release): version packages"
           commit: "chore(release): version packages"
         env:

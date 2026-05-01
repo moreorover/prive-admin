@@ -2,8 +2,8 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "web@*"
   workflow_dispatch:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
