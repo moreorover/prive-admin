@@ -1,0 +1,51 @@
+name: Nightly Dependency Updates
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  taze:
+    name: Run taze major
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Load PAT from 1Password
+        uses: 1password/load-secrets-action@v2
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          DEPS_PAT: op://prive-admin/github-pat/token
+
+      - name: Run taze major
+        run: bunx taze major -r -w
+
+      - name: Update Lockfile
+        run: bun install
+
+      - name: Create or Update Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ env.DEPS_PAT }}
+          branch: chore/auto-dep-updates
+          base: main
+          commit-message: "chore(deps): bump dependencies via taze major"
+          title: "chore(deps): nightly dependency updates"
+          body: |
+            Automated nightly run of `bunx taze major -r -w` followed by `bun install`.
+
+            This PR is updated each night with any newly outdated packages until merged or closed.
+          labels: dependencies
+          delete-branch: true
