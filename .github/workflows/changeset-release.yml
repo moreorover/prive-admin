@@ -37,8 +37,9 @@ jobs:
       - name: Create Release Pull Request or Tag
         uses: changesets/action@v1
         with:
-          version: bunx changeset version
-          publish: bunx changeset tag
+          version: bash scripts/release-version.sh
+          publish: bash scripts/release-tag.sh
+          createGithubReleases: false
           title: "chore(release): version packages"
           commit: "chore(release): version packages"
         env:
