@@ -84,7 +84,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
   )
 }
 
-const formatCurrency = (n: number) => `$${n.toFixed(2)}`
+const formatCurrency = (n: number) => `£${n.toFixed(2)}`
 
 function EditCustomerDialog({
   customer,
