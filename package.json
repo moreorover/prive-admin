@@ -34,6 +34,7 @@
     "check": "oxlint && oxfmt --write"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "@prive-admin-tanstack/config": "workspace:*",
     "@prive-admin-tanstack/env": "workspace:*",
     "@types/node": "catalog:",
