@@ -38,7 +38,8 @@ jobs:
         uses: changesets/action@v1
         with:
           version: bunx changeset version
-          publish: bunx changeset tag
+          publish: bash scripts/release-tag.sh
+          createGithubReleases: false
           title: "chore(release): version packages"
           commit: "chore(release): version packages"
         env:
