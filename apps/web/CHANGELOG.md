@@ -1,5 +1,15 @@
 # web
 
+## 0.0.3
+
+### Patch Changes
+
+- 2aff777: chore: validate auto-pushed v\* tag fires release pipeline
+  - @prive-admin-tanstack/auth@0.0.3
+  - @prive-admin-tanstack/db@0.0.3
+  - @prive-admin-tanstack/env@0.0.3
+  - @prive-admin-tanstack/ui@0.0.3
+
 ## 0.0.2
 
 ### Patch Changes
