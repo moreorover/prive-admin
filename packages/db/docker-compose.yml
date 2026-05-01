@@ -5,7 +5,7 @@ services:
     image: postgres
     container_name: prive-admin
     environment:
-      POSTGRES_DB: prive-admin
+      POSTGRES_DB: prive_admin
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
