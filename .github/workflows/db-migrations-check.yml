@@ -1,0 +1,42 @@
+name: DB Migrations Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "packages/db/src/schema/**"
+      - "packages/db/src/migrations/**"
+      - "packages/db/drizzle.config.ts"
+      - "packages/db/package.json"
+
+jobs:
+  drift:
+    name: Drizzle Migration Drift
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Generate migrations
+        env:
+          DATABASE_URL: postgres://placeholder:placeholder@localhost:5432/placeholder
+        run: bun run db:generate
+
+      - name: Verify migrations are committed
+        run: |
+          if ! git diff --quiet -- packages/db/src/migrations; then
+            echo "::error::Schema changed but migrations not regenerated. Run 'bun db:generate' locally and commit the result."
+            git --no-pager diff -- packages/db/src/migrations
+            exit 1
+          fi
