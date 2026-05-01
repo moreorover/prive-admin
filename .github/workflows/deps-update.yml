@@ -27,7 +27,7 @@ jobs:
           export-env: true
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          DEPS_PAT: op://prive-admin/fbhcfht4cmwvvseppq3ur6uh3i/token
+          DEPS_PAT: op://prive-admin/PAT prive-admin deps bot/token
 
       - name: Run taze major
         run: bunx taze major -r -w
