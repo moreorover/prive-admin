@@ -1,0 +1,48 @@
+web:
+  - changed-files:
+      - any-glob-to-any-file:
+          - apps/web/**
+
+db:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/db/**
+
+api:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/api/**
+
+auth:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/auth/**
+
+ui:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/ui/**
+
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - packages/config/**
+          - packages/env/**
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/**
+
+infra:
+  - changed-files:
+      - any-glob-to-any-file:
+          - docker-compose.yml
+          - Caddyfile
+          - apps/web/Dockerfile
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "**/package.json"
+          - bun.lock
