@@ -113,11 +113,15 @@ jobs:
 
       - name: Run backup script on VPS
         run: |
+          # Sanitize ref names like "feature/foo" → "feature-foo" so the
+          # label matches BACKUP_LABEL's allowed charset.
+          REF_SAFE=$(printf '%s' "${GITHUB_REF_NAME}" | tr '/' '-')
+          BACKUP_LABEL="${REF_SAFE}_${GITHUB_SHA}"
           ssh root@prive "
             chmod +x ~/backup_postgres.sh && \
             PG_USER='${POSTGRES_USER}' \
             PG_DATABASE='${POSTGRES_DB}' \
-            BACKUP_LABEL='pre-deploy_${GITHUB_SHA}' \
+            BACKUP_LABEL='${BACKUP_LABEL}' \
             ~/backup_postgres.sh"
 
       - name: Install s3cmd
@@ -141,9 +145,8 @@ jobs:
           bucket_location = auto
           use_https = True
           EOF
-          R2_KEY="pre-deploy/${FILE_NAME}"
-          s3cmd put "${FILE_NAME}" "s3://${R2_BUCKET_NAME}/${R2_KEY}"
-          echo "Uploaded ${FILE_NAME} to r2://${R2_BUCKET_NAME}/${R2_KEY}"
+          s3cmd put "${FILE_NAME}" "s3://${R2_BUCKET_NAME}/${FILE_NAME}"
+          echo "Uploaded ${FILE_NAME} to r2://${R2_BUCKET_NAME}/${FILE_NAME}"
 
   deploy:
     name: Deploy to prive
