@@ -32,7 +32,14 @@ export const createCustomer = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
   .inputValidator(customerSchema)
   .handler(async ({ data }) => {
-    const [result] = await db.insert(customer).values({ name: data.name, phoneNumber: data.phoneNumber }).returning()
+    const [result] = await db
+      .insert(customer)
+      .values({
+        name: data.name,
+        phoneNumber: data.phoneNumber,
+        preferredCurrency: data.preferredCurrency,
+      })
+      .returning()
     return result
   })
 
@@ -42,7 +49,11 @@ export const updateCustomer = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const [result] = await db
       .update(customer)
-      .set({ name: data.name, phoneNumber: data.phoneNumber })
+      .set({
+        name: data.name,
+        phoneNumber: data.phoneNumber,
+        preferredCurrency: data.preferredCurrency,
+      })
       .where(eq(customer.id, data.id!))
       .returning()
     return result
