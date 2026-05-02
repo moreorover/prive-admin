@@ -1,9 +1,8 @@
 import dotenv from "dotenv"
+import dotenvExpand from "dotenv-expand"
 import { defineConfig } from "drizzle-kit"
 
-dotenv.config({
-  path: "../../apps/web/.env",
-})
+dotenvExpand.expand(dotenv.config({ path: "../../apps/web/.env" }))
 
 export default defineConfig({
   schema: "./src/schema",
