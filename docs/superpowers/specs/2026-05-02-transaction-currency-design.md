@@ -2,6 +2,23 @@
 
 Date: 2026-05-02
 
+## Pivot (2026-05-02, post-implementation)
+
+The original design stored the preferred currency on `customer`. During implementation it was clarified that customers don't access the application — staff/admin users do. The preferred currency is therefore a per-app-user setting, not a per-customer one.
+
+**What changed:**
+
+- `customer.preferred_currency` is **not** added. The customer schema is unchanged.
+- A new `user_settings` table (`packages/db/src/schema/user-settings.ts`) holds the preferred currency keyed by `userId` (FK to `users.id`, cascade delete). Existing users have no row; reads default to `"GBP"` until they save a preference. New columns: `user_id PK`, `preferred_currency text NOT NULL DEFAULT 'GBP'`, `created_at`, `updated_at`.
+- The picker lives on the profile page's `EditUserModal` (`apps/web/src/routes/_authenticated/profile.tsx`), not the customer create/edit forms. Customer forms are unchanged.
+- New transactions default to the signed-in user's `preferredCurrency`, sourced via `getUserSettings()` (a TanStack `useQuery` on the appointment page), with a runtime `CURRENCIES.includes(...)` guard falling back to `"GBP"`.
+- New server fns: `getUserSettings`, `updateUserSettings` (`apps/web/src/functions/user-settings.ts`).
+- The "per-user/session default-currency preference" entry under Non-Goals is now in scope and was implemented.
+
+The rest of the design (per-transaction currency column, `formatMinor`, split totals on customer/appointment pages, per-currency dashboard cards, GBP-only hair stats, GBP/EUR allow-list) stands as originally specified.
+
+The sections below describe the original customer-side design and remain for historical context. Read them with the pivot above in mind.
+
 ## Background
 
 Transactions currently store `amount` as an integer in pence (minor units) with the currency hardcoded to GBP throughout the UI (`£` prefix, `formatCents` helpers in five files). The system needs to support EUR alongside GBP.
