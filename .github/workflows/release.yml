@@ -117,6 +117,7 @@ jobs:
             chmod +x ~/backup_postgres.sh && \
             PG_USER='${POSTGRES_USER}' \
             PG_DATABASE='${POSTGRES_DB}' \
+            BACKUP_LABEL='pre-deploy_${GITHUB_SHA}' \
             ~/backup_postgres.sh"
 
       - name: Install s3cmd
@@ -140,7 +141,7 @@ jobs:
           bucket_location = auto
           use_https = True
           EOF
-          R2_KEY="pre-deploy/${GITHUB_SHA}_${FILE_NAME}"
+          R2_KEY="pre-deploy/${FILE_NAME}"
           s3cmd put "${FILE_NAME}" "s3://${R2_BUCKET_NAME}/${R2_KEY}"
           echo "Uploaded ${FILE_NAME} to r2://${R2_BUCKET_NAME}/${R2_KEY}"
 

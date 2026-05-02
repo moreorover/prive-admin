@@ -6,12 +6,25 @@ TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 BACKUP_DIR="${HOME}/db_backups"
 COMPOSE_DIR="${COMPOSE_DIR:-${HOME}/prive-admin}"
 
+# Optional label embedded in the filename (e.g. "pre-deploy_<sha>") so the
+# operator can distinguish scheduled backups from one-off ones at a glance,
+# both on the VPS and in object storage. Restricted to a safe charset.
+BACKUP_LABEL="${BACKUP_LABEL:-}"
+if [[ -n "${BACKUP_LABEL}" ]] && [[ ! "${BACKUP_LABEL}" =~ ^[A-Za-z0-9._-]+$ ]]; then
+  echo "BACKUP_LABEL '${BACKUP_LABEL}' contains unsupported characters" >&2
+  exit 1
+fi
+
 mkdir -p "${BACKUP_DIR}"
 
 # Prune backups older than 14 days
 find "${BACKUP_DIR}" -name "postgres_backup_*.sql" -type f -mtime +14 -delete
 
-OUT="${BACKUP_DIR}/postgres_backup_${TIMESTAMP}.sql"
+if [[ -n "${BACKUP_LABEL}" ]]; then
+  OUT="${BACKUP_DIR}/postgres_backup_${BACKUP_LABEL}_${TIMESTAMP}.sql"
+else
+  OUT="${BACKUP_DIR}/postgres_backup_${TIMESTAMP}.sql"
+fi
 TMP="${OUT}.partial"
 trap 'rm -f "${TMP}"' ERR
 
