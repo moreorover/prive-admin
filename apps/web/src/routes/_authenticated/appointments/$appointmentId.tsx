@@ -37,8 +37,8 @@ import { getAppointment, linkPersonnel } from "@/functions/appointments"
 import { getCustomers } from "@/functions/customers"
 import { getHairAssignedByAppointment } from "@/functions/hair-assigned"
 import { getTransactionsByAppointmentId } from "@/functions/transactions"
-import { appointmentKeys, customerKeys, hairAssignedKeys, transactionKeys } from "@/lib/query-keys"
 import { CURRENCIES, type Currency, formatMinor } from "@/lib/currency"
+import { appointmentKeys, customerKeys, hairAssignedKeys, transactionKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
@@ -319,7 +319,11 @@ function AppointmentDetailPage() {
               New
             </Button>
           </Group>
-          <TransactionsTable items={(transactions ?? []) as TransactionRow[]} onEdit={setEditTx} onDelete={setDeleteTx} />
+          <TransactionsTable
+            items={(transactions ?? []) as TransactionRow[]}
+            onEdit={setEditTx}
+            onDelete={setDeleteTx}
+          />
         </Card>
 
         <Card withBorder>

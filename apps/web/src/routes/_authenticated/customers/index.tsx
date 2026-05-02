@@ -1,4 +1,16 @@
-import { Button, Container, Group, Modal, NativeSelect, Skeleton, Stack, Table, Text, TextInput, Title } from "@mantine/core"
+import {
+  Button,
+  Container,
+  Group,
+  Modal,
+  NativeSelect,
+  Skeleton,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconPlus, IconUsers } from "@tabler/icons-react"
@@ -55,7 +67,11 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
         <Stack>
           <TextInput label="Name" {...form.getInputProps("name")} />
           <TextInput label="Phone Number" placeholder="+1234567890" {...form.getInputProps("phoneNumber")} />
-          <NativeSelect label="Preferred Currency" data={CURRENCY_OPTIONS} {...form.getInputProps("preferredCurrency")} />
+          <NativeSelect
+            label="Preferred Currency"
+            data={CURRENCY_OPTIONS}
+            {...form.getInputProps("preferredCurrency")}
+          />
           <Button type="submit" loading={mutation.isPending}>
             Create Customer
           </Button>

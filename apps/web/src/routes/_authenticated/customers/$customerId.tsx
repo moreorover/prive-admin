@@ -98,12 +98,8 @@ function EditCustomerDialog({
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (data: {
-      id: string
-      name: string
-      phoneNumber?: string | null
-      preferredCurrency: Currency
-    }) => updateCustomer({ data }),
+    mutationFn: (data: { id: string; name: string; phoneNumber?: string | null; preferredCurrency: Currency }) =>
+      updateCustomer({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerKeys.all })
       onOpenChange(false)
@@ -135,7 +131,11 @@ function EditCustomerDialog({
         <Stack>
           <TextInput label="Name" {...form.getInputProps("name")} />
           <TextInput label="Phone Number" placeholder="+1234567890" {...form.getInputProps("phoneNumber")} />
-          <NativeSelect label="Preferred Currency" data={CURRENCY_OPTIONS} {...form.getInputProps("preferredCurrency")} />
+          <NativeSelect
+            label="Preferred Currency"
+            data={CURRENCY_OPTIONS}
+            {...form.getInputProps("preferredCurrency")}
+          />
           <Button type="submit" loading={mutation.isPending}>
             Save Changes
           </Button>

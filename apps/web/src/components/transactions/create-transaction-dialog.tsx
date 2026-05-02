@@ -2,9 +2,10 @@ import { Modal } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
+import type { Currency } from "@/lib/currency"
+
 import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
 import { createTransaction } from "@/functions/transactions"
-import type { Currency } from "@/lib/currency"
 
 type CreateTransactionDialogProps = {
   open: boolean
