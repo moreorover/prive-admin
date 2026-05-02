@@ -103,6 +103,9 @@ function ProfilePage() {
                 <Text fz="xs" c="dimmed">
                   {user.email}
                 </Text>
+                <Text fz="xs" c="dimmed">
+                  Preferred currency: {settings?.preferredCurrency ?? "GBP"}
+                </Text>
               </Stack>
             </Group>
             <Group gap="xs">
