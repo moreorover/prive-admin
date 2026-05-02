@@ -3,10 +3,13 @@ import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
 import { useState } from "react"
 
+import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
+
 export type TransactionFormValues = {
   name: string
   notes: string
-  amountPounds: number
+  amountMajor: number
+  currency: Currency
   type: "BANK" | "CASH" | "PAYPAL"
   status: "PENDING" | "COMPLETED"
   completedDateBy: string | null
@@ -16,6 +19,7 @@ export type TransactionFormSubmit = {
   name: string | null
   notes: string | null
   amount: number
+  currency: Currency
   type: "BANK" | "CASH" | "PAYPAL"
   status: "PENDING" | "COMPLETED"
   completedDateBy: string
@@ -34,11 +38,12 @@ export function TransactionForm({ initialValues, submitLabel, onSubmit, loading 
     initialValues,
     validate: {
       completedDateBy: (value) => (value ? null : "Date is required"),
-      amountPounds: (value) => (Number.isFinite(value) ? null : "Amount is required"),
+      amountMajor: (value) => (Number.isFinite(value) ? null : "Amount is required"),
     },
   })
 
   const [status, setStatus] = useState<TransactionFormValues["status"]>(initialValues.status)
+  const [currency, setCurrency] = useState<Currency>(initialValues.currency)
   const dateLabel = status === "COMPLETED" ? "When was it completed?" : "When should it be completed by?"
 
   return (
@@ -48,7 +53,8 @@ export function TransactionForm({ initialValues, submitLabel, onSubmit, loading 
         await onSubmit({
           name: values.name.trim() || null,
           notes: values.notes.trim() || null,
-          amount: Math.round(values.amountPounds * 100),
+          amount: Math.round(values.amountMajor * 100),
+          currency: values.currency,
           type: values.type,
           status: values.status,
           completedDateBy: values.completedDateBy,
@@ -81,15 +87,25 @@ export function TransactionForm({ initialValues, submitLabel, onSubmit, loading 
               setStatus(next)
             }}
           />
+          <NativeSelect
+            label="Currency"
+            data={CURRENCY_OPTIONS}
+            {...form.getInputProps("currency")}
+            onChange={(event) => {
+              const next = event.currentTarget.value as Currency
+              form.setFieldValue("currency", next)
+              setCurrency(next)
+            }}
+          />
         </Group>
         <DateInput label={dateLabel} valueFormat="DD MMM YYYY" required {...form.getInputProps("completedDateBy")} />
         <NumberInput
           label="Amount"
-          prefix="£"
+          prefix={currencySymbol(currency)}
           decimalScale={2}
           fixedDecimalScale
           step={0.01}
-          {...form.getInputProps("amountPounds")}
+          {...form.getInputProps("amountMajor")}
         />
         <Group justify="flex-end">
           <Button type="submit" loading={loading}>
