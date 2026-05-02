@@ -21,7 +21,9 @@ mkdir -p "${BACKUP_DIR}"
 find "${BACKUP_DIR}" -name "postgres_backup_*.sql" -type f -mtime +14 -delete
 
 if [[ -n "${BACKUP_LABEL}" ]]; then
-  OUT="${BACKUP_DIR}/postgres_backup_${BACKUP_LABEL}_${TIMESTAMP}.sql"
+  # Timestamp first so directory/object listings sort chronologically
+  # regardless of label.
+  OUT="${BACKUP_DIR}/postgres_backup_${TIMESTAMP}_${BACKUP_LABEL}.sql"
 else
   OUT="${BACKUP_DIR}/postgres_backup_${TIMESTAMP}.sql"
 fi
