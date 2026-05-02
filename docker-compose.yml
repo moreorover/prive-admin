@@ -38,6 +38,22 @@ services:
       retries: 5
       start_period: 15s
 
+  dozzle:
+    image: amir20/dozzle:latest
+    restart: unless-stopped
+    environment:
+      DOZZLE_NO_ANALYTICS: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "${TAILSCALE_IP}:8080:8080"
+    healthcheck:
+      test: ["CMD", "/dozzle", "healthcheck"]
+      interval: 3s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
   postgres:
     image: postgres:18-alpine
     restart: unless-stopped
