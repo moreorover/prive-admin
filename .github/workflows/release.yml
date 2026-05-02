@@ -65,9 +65,88 @@ jobs:
           sarif_file: trivy-results.sarif
           category: trivy
 
+  pre-deploy-backup:
+    name: Pre-deploy Postgres Backup
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://prive.salon
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Load secrets from 1Password
+        uses: 1password/load-secrets-action@v2
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          POSTGRES_DB: op://prive-admin/prive-admin-prod/postgres/POSTGRES_DB
+          POSTGRES_USER: op://prive-admin/prive-admin-prod/postgres/POSTGRES_USER
+          R2_ACCOUNT_ID: op://prive-admin/Cloudflare R2/account-id
+          R2_ACCESS_KEY_ID: op://prive-admin/Cloudflare R2/access-key-id
+          R2_SECRET_ACCESS_KEY: op://prive-admin/Cloudflare R2/secret-access-key
+          R2_BUCKET_NAME: op://prive-admin/Cloudflare R2/bucket-name
+          TS_OAUTH_CLIENT_ID: op://prive-admin/tailscale-oauth/client-id
+          TS_OAUTH_CLIENT_SECRET: op://prive-admin/tailscale-oauth/client-secret
+
+      - name: Tailscale up
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ env.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ env.TS_OAUTH_CLIENT_SECRET }}
+          tags: tag:prod-server
+
+      - name: Prepare SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 0700 ~/.ssh
+          ssh-keyscan -H prive >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Copy backup script to VPS
+        run: scp scripts/backup_postgres.sh root@prive:~/backup_postgres.sh
+
+      - name: Run backup script on VPS
+        run: |
+          ssh root@prive "
+            chmod +x ~/backup_postgres.sh && \
+            PG_USER='${POSTGRES_USER}' \
+            PG_DATABASE='${POSTGRES_DB}' \
+            ~/backup_postgres.sh"
+
+      - name: Install s3cmd
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y s3cmd
+
+      - name: Upload backup to Cloudflare R2
+        run: |
+          set -e
+          umask 077
+          FILE_NAME=$(ssh root@prive 'ls -t ~/db_backups/ | head -n1')
+          [ -n "${FILE_NAME}" ] || { echo "no backup file produced on VPS"; exit 1; }
+          ssh root@prive "cat ~/db_backups/${FILE_NAME}" > "${FILE_NAME}"
+          cat > ~/.s3cfg <<EOF
+          [default]
+          access_key = ${R2_ACCESS_KEY_ID}
+          secret_key = ${R2_SECRET_ACCESS_KEY}
+          host_base = ${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+          host_bucket = %(bucket)s.${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+          bucket_location = auto
+          use_https = True
+          EOF
+          R2_KEY="pre-deploy/${GITHUB_SHA}_${FILE_NAME}"
+          s3cmd put "${FILE_NAME}" "s3://${R2_BUCKET_NAME}/${R2_KEY}"
+          echo "Uploaded ${FILE_NAME} to r2://${R2_BUCKET_NAME}/${R2_KEY}"
+
   deploy:
     name: Deploy to prive
-    needs: build-and-push
+    needs: [build-and-push, pre-deploy-backup]
     runs-on: ubuntu-latest
     environment:
       name: production
