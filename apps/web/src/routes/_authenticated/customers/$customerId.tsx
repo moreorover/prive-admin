@@ -97,8 +97,7 @@ function EditCustomerDialog({
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (data: { id: string; name: string; phoneNumber?: string | null }) =>
-      updateCustomer({ data }),
+    mutationFn: (data: { id: string; name: string; phoneNumber?: string | null }) => updateCustomer({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerKeys.all })
       onOpenChange(false)

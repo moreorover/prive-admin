@@ -5,10 +5,10 @@ import { user, session, account } from "./auth"
 import { customer } from "./customer"
 import { hairAssigned, hairOrder } from "./hair"
 import { note } from "./note"
-import { userSettings } from "./user-settings"
 import { order, orderItem } from "./order"
 import { product, productVariant } from "./product"
 import { transaction } from "./transaction"
+import { userSettings } from "./user-settings"
 
 // Auth relations
 export const userRelations = relations(user, ({ one, many }) => ({

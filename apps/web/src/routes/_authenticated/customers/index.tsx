@@ -1,15 +1,4 @@
-import {
-  Button,
-  Container,
-  Group,
-  Modal,
-  Skeleton,
-  Stack,
-  Table,
-  Text,
-  TextInput,
-  Title,
-} from "@mantine/core"
+import { Button, Container, Group, Modal, Skeleton, Stack, Table, Text, TextInput, Title } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconPlus, IconUsers } from "@tabler/icons-react"
@@ -37,8 +26,7 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (data: { name: string; phoneNumber: string | null }) =>
-      createCustomer({ data }),
+    mutationFn: (data: { name: string; phoneNumber: string | null }) => createCustomer({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerKeys.all })
       onOpenChange(false)
