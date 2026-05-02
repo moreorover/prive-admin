@@ -1,18 +1,17 @@
 # prive-admin-tanstack
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines React, TanStack Start, Self, and more.
-
 ## Features
 
 - **TypeScript** - For type safety and improved developer experience
 - **TanStack Start** - SSR framework with TanStack Router
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
+- **Mantine** - React component library (`@mantine/core`, `@mantine/form`, charts, dates, schedule, notifications, modals)
+- **Shared UI package** - Mantine `MantineProvider`, theme, and color-scheme helpers live in `packages/ui`
 - **Drizzle** - TypeScript-first ORM
 - **PostgreSQL** - Database engine
 - **Authentication** - Better-Auth
 - **Oxlint** - Oxlint + Oxfmt (linting & formatting)
 - **Turborepo** - Optimized monorepo build system
+- **Changesets** - Versioning and changelog automation
 
 ## Getting Started
 
@@ -45,29 +44,26 @@ Open [http://localhost:3001](http://localhost:3001) in your browser to see the f
 
 ## UI Customization
 
-React web apps in this stack share shadcn/ui primitives through `packages/ui`.
+React web apps in this stack share Mantine setup through `packages/ui`.
 
-- Change design tokens and global styles in `packages/ui/src/styles/globals.css`
-- Update shared primitives in `packages/ui/src/components/*`
-- Adjust shadcn aliases or style config in `packages/ui/components.json` and `apps/web/components.json`
+- Tweak the theme in `packages/ui/src/theme.ts`
+- Adjust the provider (color scheme, modals, notifications) in `packages/ui/src/provider.tsx`
+- Edit global styles in `packages/ui/src/styles/globals.css`
+- Mantine PostCSS preset config lives in `packages/ui/postcss.config.cjs`
 
-### Add more shared components
-
-Run this from the project root to add more primitives to the shared UI package:
-
-```bash
-npx shadcn@latest add accordion dialog popover sheet table -c packages/ui
-```
-
-Import shared components like this:
+Import shared exports like this:
 
 ```tsx
-import { Button } from "@prive-admin-tanstack/ui/components/button"
+import { Provider as UIProvider } from "@prive-admin-tanstack/ui/provider"
+import { theme } from "@prive-admin-tanstack/ui/theme"
+import "@prive-admin-tanstack/ui/globals.css"
 ```
 
-### Add app-specific blocks
+Mantine components are imported directly from `@mantine/*` packages in app code:
 
-If you want to add app-specific blocks instead of shared primitives, run the shadcn CLI from `apps/web`.
+```tsx
+import { Button } from "@mantine/core"
+```
 
 ## Git Hooks and Formatting
 
@@ -80,9 +76,12 @@ prive-admin-tanstack/
 ├── apps/
 │   └── web/         # Fullstack application (React + TanStack Start)
 ├── packages/
-│   ├── ui/          # Shared shadcn/ui components and styles
-│   ├── auth/        # Authentication configuration & logic
-│   └── db/          # Database schema & queries
+│   ├── api/         # Shared API layer
+│   ├── auth/        # Authentication configuration & logic (Better-Auth)
+│   ├── config/      # Shared TS / tooling config
+│   ├── db/          # Database schema & queries (Drizzle)
+│   ├── env/         # Shared env loading & validation
+│   └── ui/          # Mantine provider, theme, and global styles
 ```
 
 ## Available Scripts
@@ -95,6 +94,7 @@ prive-admin-tanstack/
 - `bun run db:generate`: Generate database client/types
 - `bun run db:migrate`: Run database migrations
 - `bun run db:studio`: Open database studio UI
+- `bun run db:start` / `db:stop` / `db:down` / `db:watch`: Manage local database container
 - `bun run check`: Run Oxlint and Oxfmt
 
 ## Deployment
