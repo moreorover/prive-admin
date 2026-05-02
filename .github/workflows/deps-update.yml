@@ -35,17 +35,6 @@ jobs:
       - name: Update Lockfile
         run: bun install
 
-      - name: Add changeset
-        run: |
-          mkdir -p .changeset
-          cat > .changeset/auto-deps-update.md <<'EOF'
-          ---
-          "web": patch
-          ---
-
-          chore(deps): nightly dependency updates
-          EOF
-
       - name: Create or Update Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
