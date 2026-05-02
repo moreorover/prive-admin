@@ -5,17 +5,19 @@ import { user, session, account } from "./auth"
 import { customer } from "./customer"
 import { hairAssigned, hairOrder } from "./hair"
 import { note } from "./note"
+import { userSettings } from "./user-settings"
 import { order, orderItem } from "./order"
 import { product, productVariant } from "./product"
 import { transaction } from "./transaction"
 
 // Auth relations
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ one, many }) => ({
   sessions: many(session),
   accounts: many(account),
   hairOrdersCreated: many(hairOrder),
   hairAssignedCreated: many(hairAssigned),
   notesCreated: many(note),
+  settings: one(userSettings, { fields: [user.id], references: [userSettings.userId] }),
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -101,4 +103,9 @@ export const noteRelations = relations(note, ({ one }) => ({
   appointment: one(appointment, { fields: [note.appointmentId], references: [appointment.id] }),
   hairOrder: one(hairOrder, { fields: [note.hairOrderId], references: [hairOrder.id] }),
   createdBy: one(user, { fields: [note.createdById], references: [user.id] }),
+}))
+
+// UserSettings relations
+export const userSettingsRelations = relations(userSettings, ({ one }) => ({
+  user: one(user, { fields: [userSettings.userId], references: [user.id] }),
 }))
