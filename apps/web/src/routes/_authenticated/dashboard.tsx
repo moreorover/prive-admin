@@ -93,7 +93,9 @@ function DashboardPage() {
 
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
           {txStats
-            ? CURRENCIES.map((c) => <EnhancedStatCard key={c} title={`Transactions (${c})`} data={txStats[c]} />)
+            ? CURRENCIES.filter(
+                (c) => Number(txStats[c].count.current) > 0 || Number(txStats[c].count.previous) > 0,
+              ).map((c) => <EnhancedStatCard key={c} title={`Transactions (${c})`} data={txStats[c]} />)
             : Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} h={240} />)}
         </SimpleGrid>
 

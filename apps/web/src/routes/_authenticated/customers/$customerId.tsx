@@ -412,7 +412,9 @@ function CustomerDetailPage() {
             id: customer.id,
             name: customer.name,
             phoneNumber: customer.phoneNumber,
-            preferredCurrency: customer.preferredCurrency as Currency,
+            preferredCurrency: (CURRENCIES as readonly string[]).includes(customer.preferredCurrency)
+              ? (customer.preferredCurrency as Currency)
+              : "GBP",
           }}
           open={editOpen}
           onOpenChange={setEditOpen}

@@ -319,11 +319,13 @@ function AppointmentDetailPage() {
               New
             </Button>
           </Group>
-          <TransactionsTable
-            items={(transactions ?? []) as TransactionRow[]}
-            onEdit={setEditTx}
-            onDelete={setDeleteTx}
-          />
+          {(() => {
+            const txRows: TransactionRow[] = txList.map((t) => ({
+              ...t,
+              currency: (CURRENCIES as readonly string[]).includes(t.currency) ? (t.currency as Currency) : "GBP",
+            }))
+            return <TransactionsTable items={txRows} onEdit={setEditTx} onDelete={setDeleteTx} />
+          })()}
         </Card>
 
         <Card withBorder>
