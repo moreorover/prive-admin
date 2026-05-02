@@ -37,8 +37,9 @@ import { getAppointment, linkPersonnel } from "@/functions/appointments"
 import { getCustomers } from "@/functions/customers"
 import { getHairAssignedByAppointment } from "@/functions/hair-assigned"
 import { getTransactionsByAppointmentId } from "@/functions/transactions"
+import { getUserSettings } from "@/functions/user-settings"
 import { CURRENCIES, type Currency, formatMinor } from "@/lib/currency"
-import { appointmentKeys, customerKeys, hairAssignedKeys, transactionKeys } from "@/lib/query-keys"
+import { appointmentKeys, customerKeys, hairAssignedKeys, transactionKeys, userSettingsKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
@@ -60,6 +61,12 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
         queryOptions({
           queryKey: transactionKeys.byAppointment(params.appointmentId),
           queryFn: () => getTransactionsByAppointmentId({ data: { appointmentId: params.appointmentId } }),
+        }),
+      ),
+      context.queryClient.prefetchQuery(
+        queryOptions({
+          queryKey: userSettingsKeys.current(),
+          queryFn: () => getUserSettings(),
         }),
       ),
     ])
@@ -90,6 +97,11 @@ function AppointmentDetailPage() {
   const { data: transactions } = useQuery({
     queryKey: transactionKeys.byAppointment(appointmentId),
     queryFn: () => getTransactionsByAppointmentId({ data: { appointmentId } }),
+  })
+
+  const { data: userSettings } = useQuery({
+    queryKey: userSettingsKeys.current(),
+    queryFn: () => getUserSettings(),
   })
 
   const txList = transactions ?? []
@@ -140,7 +152,10 @@ function AppointmentDetailPage() {
   const txInvalidateKeys = [{ queryKey: transactionKeys.byAppointment(appointmentId) }]
 
   const txCustomerId = createTxCustomerId ?? appointment.client.id
-  const txDefaultCurrency: Currency = "GBP"
+  const txDefaultCurrency: Currency = (() => {
+    const raw = userSettings?.preferredCurrency
+    return raw && (CURRENCIES as readonly string[]).includes(raw) ? (raw as Currency) : "GBP"
+  })()
 
   const openCreateTx = (customerId: string) => {
     setCreateTxCustomerId(customerId)
