@@ -3,7 +3,6 @@ import {
   Container,
   Group,
   Modal,
-  NativeSelect,
   Skeleton,
   Stack,
   Table,
@@ -20,7 +19,6 @@ import { useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
 import { createCustomer, getCustomers } from "@/functions/customers"
-import { CURRENCY_OPTIONS, type Currency } from "@/lib/currency"
 import { customerKeys } from "@/lib/query-keys"
 
 const customersQueryOptions = queryOptions({
@@ -39,7 +37,7 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (data: { name: string; phoneNumber: string | null; preferredCurrency: Currency }) =>
+    mutationFn: (data: { name: string; phoneNumber: string | null }) =>
       createCustomer({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerKeys.all })
@@ -49,15 +47,14 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
-  const form = useForm<{ name: string; phoneNumber: string; preferredCurrency: Currency }>({
-    initialValues: { name: "", phoneNumber: "", preferredCurrency: "GBP" },
+  const form = useForm({
+    initialValues: { name: "", phoneNumber: "" },
   })
 
-  const handleSubmit = async (values: { name: string; phoneNumber: string; preferredCurrency: Currency }) => {
+  const handleSubmit = async (values: { name: string; phoneNumber: string }) => {
     await mutation.mutateAsync({
       name: values.name,
       phoneNumber: values.phoneNumber || null,
-      preferredCurrency: values.preferredCurrency,
     })
   }
 
@@ -67,11 +64,6 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
         <Stack>
           <TextInput label="Name" {...form.getInputProps("name")} />
           <TextInput label="Phone Number" placeholder="+1234567890" {...form.getInputProps("phoneNumber")} />
-          <NativeSelect
-            label="Preferred Currency"
-            data={CURRENCY_OPTIONS}
-            {...form.getInputProps("preferredCurrency")}
-          />
           <Button type="submit" loading={mutation.isPending}>
             Create Customer
           </Button>

@@ -38,7 +38,6 @@ export const createCustomer = createServerFn({ method: "POST" })
       .values({
         name: data.name,
         phoneNumber: data.phoneNumber,
-        preferredCurrency: data.preferredCurrency,
       })
       .returning()
     return result
@@ -53,7 +52,6 @@ export const updateCustomer = createServerFn({ method: "POST" })
       .set({
         name: data.name,
         phoneNumber: data.phoneNumber,
-        preferredCurrency: data.preferredCurrency,
       })
       .where(eq(customer.id, data.id!))
       .returning()

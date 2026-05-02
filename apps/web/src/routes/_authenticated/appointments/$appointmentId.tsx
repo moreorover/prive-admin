@@ -140,14 +140,7 @@ function AppointmentDetailPage() {
   const txInvalidateKeys = [{ queryKey: transactionKeys.byAppointment(appointmentId) }]
 
   const txCustomerId = createTxCustomerId ?? appointment.client.id
-  const txCustomer =
-    txCustomerId === appointment.client.id
-      ? appointment.client
-      : appointment.personnel?.find((p) => p.personnel.id === txCustomerId)?.personnel
-  const txDefaultCurrency: Currency = (() => {
-    const raw = txCustomer?.preferredCurrency
-    return raw && (CURRENCIES as readonly string[]).includes(raw) ? (raw as Currency) : "GBP"
-  })()
+  const txDefaultCurrency: Currency = "GBP"
 
   const openCreateTx = (customerId: string) => {
     setCreateTxCustomerId(customerId)

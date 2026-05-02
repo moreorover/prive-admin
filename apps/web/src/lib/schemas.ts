@@ -1,7 +1,5 @@
 import { z } from "zod"
 
-import { currencySchema } from "./currency"
-
 export const customerSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(5, "Name must be at least 5 characters long").max(50, "Name cannot exceed 50 characters"),
@@ -11,7 +9,6 @@ export const customerSchema = z.object({
     .max(15, "Phone number must be at most 15 characters long")
     .regex(/^\+\d+$/, "Phone number must start with '+' and contain only digits after it")
     .nullish(),
-  preferredCurrency: currencySchema.default("GBP"),
 })
 
 export type CustomerInput = z.infer<typeof customerSchema>
