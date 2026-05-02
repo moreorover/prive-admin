@@ -1,5 +1,13 @@
 # @prive-admin-tanstack/auth
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [bfdd2af]
+  - @prive-admin-tanstack/db@0.0.5
+  - @prive-admin-tanstack/env@0.0.5
+
 ## 0.0.4
 
 ### Patch Changes
