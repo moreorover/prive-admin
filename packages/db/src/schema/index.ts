@@ -1,5 +1,6 @@
 export * from "./auth"
 export * from "./customer"
+export * from "./user-settings"
 export * from "./product"
 export * from "./order"
 export * from "./appointment"

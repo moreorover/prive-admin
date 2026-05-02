@@ -9,6 +9,7 @@ import {
   Group,
   Loader,
   Modal,
+  NativeSelect,
   PasswordInput,
   Stack,
   Text,
@@ -22,7 +23,10 @@ import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
 import Loader2 from "@/components/loader"
+import { getUserSettings, updateUserSettings } from "@/functions/user-settings"
 import { authClient } from "@/lib/auth-client"
+import { CURRENCY_OPTIONS, type Currency } from "@/lib/currency"
+import { userSettingsKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
@@ -62,6 +66,11 @@ function ProfilePage() {
   })
   const sessions = sessionsResult?.data ?? []
 
+  const { data: settings } = useQuery({
+    queryKey: userSettingsKeys.current(),
+    queryFn: () => getUserSettings(),
+  })
+
   const revokeMutation = useMutation({
     mutationFn: (token: string) => authClient.revokeSession({ token }),
     onSuccess: (_, token) => {
@@ -93,6 +102,9 @@ function ProfilePage() {
                 </Text>
                 <Text fz="xs" c="dimmed">
                   {user.email}
+                </Text>
+                <Text fz="xs" c="dimmed">
+                  Preferred currency: {settings?.preferredCurrency ?? "GBP"}
                 </Text>
               </Stack>
             </Group>
@@ -186,7 +198,13 @@ function ProfilePage() {
         </Stack>
       </Card>
 
-      <EditUserModal open={editOpen} onOpenChange={setEditOpen} initialName={user.name} />
+      <EditUserModal
+        key={settings?.preferredCurrency ?? "loading"}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initialName={user.name}
+        initialCurrency={settings?.preferredCurrency ?? "GBP"}
+      />
       <ChangePasswordModal open={pwOpen} onOpenChange={setPwOpen} />
     </Container>
   )
@@ -196,29 +214,49 @@ type EditUserModalProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   initialName: string
+  initialCurrency: string
 }
 
-function EditUserModal({ open, onOpenChange, initialName }: EditUserModalProps) {
+function EditUserModal({ open, onOpenChange, initialName, initialCurrency }: EditUserModalProps) {
   const queryClient = useQueryClient()
   const [submitting, setSubmitting] = useState(false)
-  const form = useForm({ initialValues: { name: initialName } })
+  const safeInitialCurrency: Currency = initialCurrency === "GBP" || initialCurrency === "EUR" ? initialCurrency : "GBP"
+  const form = useForm({ initialValues: { name: initialName, preferredCurrency: safeInitialCurrency } })
 
-  const handleSubmit = async (values: { name: string }) => {
+  const settingsMutation = useMutation({
+    mutationFn: (preferredCurrency: Currency) => updateUserSettings({ data: { preferredCurrency } }),
+  })
+
+  const handleSubmit = async (values: { name: string; preferredCurrency: Currency }) => {
     setSubmitting(true)
-    await authClient.updateUser({
-      name: values.name,
-      fetchOptions: {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["auth"] })
-          notifications.show({ color: "green", message: "Name updated" })
-          onOpenChange(false)
-        },
-        onError: (error) => {
-          notifications.show({ color: "red", message: error.error.message })
-        },
-      },
-    })
-    setSubmitting(false)
+    try {
+      const tasks: Promise<unknown>[] = []
+      if (values.name !== initialName) {
+        tasks.push(
+          new Promise<void>((resolve, reject) => {
+            authClient.updateUser({
+              name: values.name,
+              fetchOptions: {
+                onSuccess: () => resolve(),
+                onError: (error) => reject(new Error(error.error.message)),
+              },
+            })
+          }),
+        )
+      }
+      if (values.preferredCurrency !== safeInitialCurrency) {
+        tasks.push(settingsMutation.mutateAsync(values.preferredCurrency))
+      }
+      await Promise.all(tasks)
+      queryClient.invalidateQueries({ queryKey: ["auth"] })
+      queryClient.invalidateQueries({ queryKey: userSettingsKeys.all })
+      notifications.show({ color: "green", message: "Profile updated" })
+      onOpenChange(false)
+    } catch (error) {
+      notifications.show({ color: "red", message: error instanceof Error ? error.message : "Update failed" })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -226,6 +264,11 @@ function EditUserModal({ open, onOpenChange, initialName }: EditUserModalProps) 
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack>
           <TextInput label="Full Name" required {...form.getInputProps("name")} />
+          <NativeSelect
+            label="Preferred Currency"
+            data={CURRENCY_OPTIONS}
+            {...form.getInputProps("preferredCurrency")}
+          />
           <Button type="submit" loading={submitting}>
             Update
           </Button>

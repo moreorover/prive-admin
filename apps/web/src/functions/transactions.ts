@@ -5,6 +5,7 @@ import { createServerFn } from "@tanstack/react-start"
 import { eq } from "drizzle-orm"
 import { z } from "zod"
 
+import { currencySchema } from "@/lib/currency"
 import { requireAuthMiddleware } from "@/middleware/auth"
 
 const transactionTypeSchema = z.enum(["BANK", "CASH", "PAYPAL"])
@@ -15,6 +16,7 @@ const transactionFieldsSchema = z.object({
   name: z.string().nullish(),
   notes: z.string().nullish(),
   amount: z.number().int(),
+  currency: currencySchema,
   type: transactionTypeSchema,
   status: transactionStatusSchema,
   completedDateBy: dateStringSchema,
@@ -69,6 +71,7 @@ export const createTransaction = createServerFn({ method: "POST" })
           name: data.name ?? null,
           notes: data.notes ?? null,
           amount: data.amount,
+          currency: data.currency,
           type: data.type,
           status: data.status,
           completedDateBy: data.completedDateBy,
@@ -95,6 +98,7 @@ export const updateTransaction = createServerFn({ method: "POST" })
         name: data.name ?? null,
         notes: data.notes ?? null,
         amount: data.amount,
+        currency: data.currency,
         type: data.type,
         status: data.status,
         completedDateBy: data.completedDateBy,

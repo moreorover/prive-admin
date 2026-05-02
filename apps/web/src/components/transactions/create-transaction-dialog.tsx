@@ -2,6 +2,8 @@ import { Modal } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
+import type { Currency } from "@/lib/currency"
+
 import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
 import { createTransaction } from "@/functions/transactions"
 
@@ -10,6 +12,7 @@ type CreateTransactionDialogProps = {
   onOpenChange: (open: boolean) => void
   appointmentId: string
   customerId: string
+  defaultCurrency: Currency
   invalidateKeys: { queryKey: readonly unknown[] }[]
 }
 
@@ -26,6 +29,7 @@ export function CreateTransactionDialog({
   onOpenChange,
   appointmentId,
   customerId,
+  defaultCurrency,
   invalidateKeys,
 }: CreateTransactionDialogProps) {
   const queryClient = useQueryClient()
@@ -47,7 +51,8 @@ export function CreateTransactionDialog({
         initialValues={{
           name: "",
           notes: "",
-          amountPounds: 0,
+          amountMajor: 0,
+          currency: defaultCurrency,
           type: "BANK",
           status: "PENDING",
           completedDateBy: todayIso(),

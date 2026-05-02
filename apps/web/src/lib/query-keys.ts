@@ -48,3 +48,8 @@ export const transactionKeys = {
   all: ["transactions"] as const,
   byAppointment: (appointmentId: string) => [...transactionKeys.all, "by-appointment", appointmentId] as const,
 }
+
+export const userSettingsKeys = {
+  all: ["user-settings"] as const,
+  current: () => [...userSettingsKeys.all, "current"] as const,
+}

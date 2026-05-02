@@ -3,6 +3,7 @@ import { notifications } from "@mantine/notifications"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { deleteTransaction } from "@/functions/transactions"
+import { type Currency, formatMinor } from "@/lib/currency"
 
 type DeleteTransactionDialogProps = {
   open: boolean
@@ -11,12 +12,11 @@ type DeleteTransactionDialogProps = {
     id: string
     name: string | null
     amount: number
+    currency: Currency
     customer?: { name: string } | null
   }
   invalidateKeys: { queryKey: readonly unknown[] }[]
 }
-
-const formatCents = (cents: number) => `£${(cents / 100).toFixed(2)}`
 
 export function DeleteTransactionDialog({
   open,
@@ -41,7 +41,7 @@ export function DeleteTransactionDialog({
       <Stack>
         <Text size="sm">
           This will permanently remove the transaction
-          {transaction.name ? ` "${transaction.name}"` : ""} of {formatCents(transaction.amount)}
+          {transaction.name ? ` "${transaction.name}"` : ""} of {formatMinor(transaction.amount, transaction.currency)}
           {transaction.customer ? ` for ${transaction.customer.name}` : ""}. This action cannot be undone.
         </Text>
         <Group justify="flex-end" gap="xs">

@@ -3,11 +3,14 @@ import { IconAlertTriangle, IconCheck, IconClock, IconDots, IconPencil, IconTras
 import { Link } from "@tanstack/react-router"
 import dayjs from "dayjs"
 
+import { type Currency, formatMinor } from "@/lib/currency"
+
 export type TransactionRow = {
   id: string
   name: string | null
   notes: string | null
   amount: number
+  currency: Currency
   type: "BANK" | "CASH" | "PAYPAL" | string
   status: "PENDING" | "COMPLETED" | string
   completedDateBy: string
@@ -21,8 +24,6 @@ type TransactionsTableProps = {
   onEdit: (item: TransactionRow) => void
   onDelete: (item: TransactionRow) => void
 }
-
-const formatCents = (cents: number) => `£${(cents / 100).toFixed(2)}`
 
 const typeColor: Record<string, string> = {
   BANK: "teal",
@@ -80,7 +81,7 @@ export function TransactionsTable({ items, onEdit, onDelete }: TransactionsTable
                   {tx.type}
                 </Badge>
               </Table.Td>
-              <Table.Td>{formatCents(tx.amount)}</Table.Td>
+              <Table.Td>{formatMinor(tx.amount, tx.currency)}</Table.Td>
               <Table.Td>
                 <Group gap="xs" align="center">
                   <Badge color={statusBadgeColor} leftSection={statusIcon} radius="sm" size="sm" variant="light">

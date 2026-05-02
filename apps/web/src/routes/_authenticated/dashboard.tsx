@@ -24,6 +24,7 @@ import {
   getTransactionStatsForDate,
   type StatCategory,
 } from "@/functions/dashboard"
+import { CURRENCIES } from "@/lib/currency"
 import { dashboardKeys } from "@/lib/query-keys"
 
 const searchSchema = z.object({
@@ -91,7 +92,11 @@ function DashboardPage() {
         </Paper>
 
         <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
-          {txStats ? <EnhancedStatCard title="Transactions" data={txStats} /> : <Skeleton h={240} />}
+          {txStats
+            ? CURRENCIES.filter(
+                (c) => Number(txStats[c].count.current) > 0 || Number(txStats[c].count.previous) > 0,
+              ).map((c) => <EnhancedStatCard key={c} title={`Transactions (${c})`} data={txStats[c]} />)
+            : Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} h={240} />)}
         </SimpleGrid>
 
         <Title order={4}>Hair Assigned during Appointments</Title>

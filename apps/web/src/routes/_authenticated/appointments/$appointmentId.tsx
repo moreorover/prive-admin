@@ -37,9 +37,9 @@ import { getAppointment, linkPersonnel } from "@/functions/appointments"
 import { getCustomers } from "@/functions/customers"
 import { getHairAssignedByAppointment } from "@/functions/hair-assigned"
 import { getTransactionsByAppointmentId } from "@/functions/transactions"
-import { appointmentKeys, customerKeys, hairAssignedKeys, transactionKeys } from "@/lib/query-keys"
-
-const formatCents = (cents: number) => `£${(cents / 100).toFixed(2)}`
+import { getUserSettings } from "@/functions/user-settings"
+import { CURRENCIES, type Currency, formatMinor } from "@/lib/currency"
+import { appointmentKeys, customerKeys, hairAssignedKeys, transactionKeys, userSettingsKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
@@ -61,6 +61,12 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
         queryOptions({
           queryKey: transactionKeys.byAppointment(params.appointmentId),
           queryFn: () => getTransactionsByAppointmentId({ data: { appointmentId: params.appointmentId } }),
+        }),
+      ),
+      context.queryClient.prefetchQuery(
+        queryOptions({
+          queryKey: userSettingsKeys.current(),
+          queryFn: () => getUserSettings(),
         }),
       ),
     ])
@@ -93,13 +99,30 @@ function AppointmentDetailPage() {
     queryFn: () => getTransactionsByAppointmentId({ data: { appointmentId } }),
   })
 
+  const { data: userSettings } = useQuery({
+    queryKey: userSettingsKeys.current(),
+    queryFn: () => getUserSettings(),
+  })
+
   const txList = transactions ?? []
-  const completedSum = txList.filter((t) => t.status === "COMPLETED").reduce((acc, t) => acc + t.amount, 0)
-  const pendingSum = txList.filter((t) => t.status === "PENDING").reduce((acc, t) => acc + t.amount, 0)
-  const totalSum = txList.reduce((acc, t) => acc + t.amount, 0)
+  const totalsByCurrency: Record<Currency, { completed: number; pending: number; total: number }> = {
+    GBP: { completed: 0, pending: 0, total: 0 },
+    EUR: { completed: 0, pending: 0, total: 0 },
+  }
+  for (const t of txList) {
+    const c = t.currency as Currency
+    if (!(c in totalsByCurrency)) continue
+    totalsByCurrency[c].total += t.amount
+    if (t.status === "COMPLETED") totalsByCurrency[c].completed += t.amount
+    else if (t.status === "PENDING") totalsByCurrency[c].pending += t.amount
+  }
+  const currenciesPresent = CURRENCIES.filter(
+    (c) => totalsByCurrency[c].completed !== 0 || totalsByCurrency[c].pending !== 0,
+  )
+  const chartCurrency: Currency = currenciesPresent[0] ?? "GBP"
   const chartData = [
-    { name: "Completed", value: Math.abs(completedSum), color: "green.4" },
-    { name: "Pending", value: Math.abs(pendingSum), color: "pink.6" },
+    { name: "Completed", value: Math.abs(totalsByCurrency[chartCurrency].completed), color: "green.4" },
+    { name: "Pending", value: Math.abs(totalsByCurrency[chartCurrency].pending), color: "pink.6" },
   ]
 
   if (isLoading) {
@@ -127,6 +150,12 @@ function AppointmentDetailPage() {
   ]
 
   const txInvalidateKeys = [{ queryKey: transactionKeys.byAppointment(appointmentId) }]
+
+  const txCustomerId = createTxCustomerId ?? appointment.client.id
+  const txDefaultCurrency: Currency = (() => {
+    const raw = userSettings?.preferredCurrency
+    return raw && (CURRENCIES as readonly string[]).includes(raw) ? (raw as Currency) : "GBP"
+  })()
 
   const openCreateTx = (customerId: string) => {
     setCreateTxCustomerId(customerId)
@@ -248,18 +277,39 @@ function AppointmentDetailPage() {
               No transactions yet.
             </Text>
           ) : (
-            <Group align="center" gap="xl">
+            <Group align="flex-start" gap="xl" wrap="wrap">
               <DonutChart size={124} thickness={15} data={chartData} withLabels={false} />
-              <Stack gap={2}>
-                <Text size="sm">
-                  Completed: <b>{formatCents(completedSum)}</b>
-                </Text>
-                <Text size="sm">
-                  Pending: <b>{formatCents(pendingSum)}</b>
-                </Text>
-                <Text size="sm">
-                  Total: <b>{formatCents(totalSum)}</b>
-                </Text>
+              <Stack gap="md">
+                {currenciesPresent.length === 0 ? (
+                  <Stack gap={2}>
+                    <Text size="sm">
+                      Completed: <b>{formatMinor(0, "GBP")}</b>
+                    </Text>
+                    <Text size="sm">
+                      Pending: <b>{formatMinor(0, "GBP")}</b>
+                    </Text>
+                    <Text size="sm">
+                      Total: <b>{formatMinor(0, "GBP")}</b>
+                    </Text>
+                  </Stack>
+                ) : (
+                  currenciesPresent.map((c) => (
+                    <Stack key={c} gap={2}>
+                      <Text size="xs" c="dimmed" tt="uppercase">
+                        {c}
+                      </Text>
+                      <Text size="sm">
+                        Completed: <b>{formatMinor(totalsByCurrency[c].completed, c)}</b>
+                      </Text>
+                      <Text size="sm">
+                        Pending: <b>{formatMinor(totalsByCurrency[c].pending, c)}</b>
+                      </Text>
+                      <Text size="sm">
+                        Total: <b>{formatMinor(totalsByCurrency[c].total, c)}</b>
+                      </Text>
+                    </Stack>
+                  ))
+                )}
               </Stack>
             </Group>
           )}
@@ -277,7 +327,13 @@ function AppointmentDetailPage() {
               New
             </Button>
           </Group>
-          <TransactionsTable items={transactions ?? []} onEdit={setEditTx} onDelete={setDeleteTx} />
+          {(() => {
+            const txRows: TransactionRow[] = txList.map((t) => ({
+              ...t,
+              currency: (CURRENCIES as readonly string[]).includes(t.currency) ? (t.currency as Currency) : "GBP",
+            }))
+            return <TransactionsTable items={txRows} onEdit={setEditTx} onDelete={setDeleteTx} />
+          })()}
         </Card>
 
         <Card withBorder>
@@ -338,7 +394,8 @@ function AppointmentDetailPage() {
             if (!open) setCreateTxCustomerId(null)
           }}
           appointmentId={appointmentId}
-          customerId={createTxCustomerId ?? appointment.client.id}
+          customerId={txCustomerId}
+          defaultCurrency={txDefaultCurrency}
           invalidateKeys={txInvalidateKeys}
         />
         {editTx && (

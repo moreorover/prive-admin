@@ -35,10 +35,15 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
-  const form = useForm({ initialValues: { name: "", phoneNumber: "" } })
+  const form = useForm({
+    initialValues: { name: "", phoneNumber: "" },
+  })
 
   const handleSubmit = async (values: { name: string; phoneNumber: string }) => {
-    await mutation.mutateAsync({ name: values.name, phoneNumber: values.phoneNumber || null })
+    await mutation.mutateAsync({
+      name: values.name,
+      phoneNumber: values.phoneNumber || null,
+    })
   }
 
   return (
