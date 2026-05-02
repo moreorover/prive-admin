@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
 import { updateTransaction } from "@/functions/transactions"
+import { CURRENCIES, type Currency } from "@/lib/currency"
 
 type EditTransactionDialogProps = {
   open: boolean
@@ -13,6 +14,7 @@ type EditTransactionDialogProps = {
     name: string | null
     notes: string | null
     amount: number
+    currency: Currency | string
     type: "BANK" | "CASH" | "PAYPAL" | string
     status: "PENDING" | "COMPLETED" | string
     completedDateBy: string
@@ -38,6 +40,9 @@ export function EditTransactionDialog({ open, onOpenChange, transaction, invalid
       ? transaction.type
       : "BANK"
   const initialStatus: "PENDING" | "COMPLETED" = transaction.status === "COMPLETED" ? "COMPLETED" : "PENDING"
+  const initialCurrency: Currency = (CURRENCIES as readonly string[]).includes(transaction.currency)
+    ? (transaction.currency as Currency)
+    : "GBP"
 
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Transaction">
@@ -45,7 +50,8 @@ export function EditTransactionDialog({ open, onOpenChange, transaction, invalid
         initialValues={{
           name: transaction.name ?? "",
           notes: transaction.notes ?? "",
-          amountPounds: transaction.amount / 100,
+          amountMajor: transaction.amount / 100,
+          currency: initialCurrency,
           type: initialType,
           status: initialStatus,
           completedDateBy: transaction.completedDateBy,
