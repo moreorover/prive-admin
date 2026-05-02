@@ -35,5 +35,13 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": [".agents", "docs", "packages/db/src/migrations"]
+  "ignorePatterns": [
+    ".agents",
+    "**/*.html",
+    "docs",
+    "routeTree.gen.ts",
+    "packages/db/src/migrations",
+    "**/CHANGELOG.md",
+    "CHANGELOG.md"
+  ]
 }
