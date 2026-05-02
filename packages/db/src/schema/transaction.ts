@@ -10,7 +10,7 @@ export const transaction = pgTable("transaction", {
   name: text("name"),
   notes: text("notes"),
   amount: integer("amount").notNull(),
-  currency: text("currency").notNull().default("GBP"),
+  currency: text("currency").notNull(),
   type: text("type").notNull().default("BANK"),
   status: text("status").notNull().default("PENDING"),
   completedDateBy: date("completed_date_by").defaultNow().notNull(),

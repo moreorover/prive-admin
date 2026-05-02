@@ -1,5 +1,5 @@
 {
-  "id": "f4395c19-0d7a-440a-acd1-8a81c8634696",
+  "id": "d14d56c4-a97b-4564-bc7a-8552b8ef3209",
   "prevId": "40c63603-9a8b-4102-939d-baa54f8104ec",
   "version": "7",
   "dialect": "postgresql",
@@ -825,8 +825,7 @@
           "name": "preferred_currency",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'GBP'"
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",
@@ -1191,8 +1190,7 @@
           "name": "currency",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'GBP'"
+          "notNull": true
         },
         "type": {
           "name": "type",
