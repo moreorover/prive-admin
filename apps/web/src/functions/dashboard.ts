@@ -8,6 +8,7 @@ import { and, eq, gte, isNotNull, isNull, lt } from "drizzle-orm"
 import { z } from "zod"
 
 import { requireAuthMiddleware } from "@/middleware/auth"
+import { CURRENCIES, type Currency, currencySymbol } from "@/lib/currency"
 
 type Range = { start: Date; end: Date }
 
@@ -81,6 +82,30 @@ function categoryFromCents(raw: ReturnType<typeof calcAll>): StatCategory {
   }
 }
 
+function categoryFromMinor(raw: ReturnType<typeof calcAll>, currency: Currency): StatCategory {
+  const fmt = (minor: number) => `${currencySymbol(currency)}${(minor / 100).toFixed(2)}`
+  return {
+    total: {
+      current: fmt(Number(raw.total.current)),
+      previous: fmt(Number(raw.total.previous)),
+      difference: fmt(Number(raw.total.difference)),
+      percentage: raw.total.percentage,
+    },
+    average: {
+      current: fmt(Number(raw.average.current)),
+      previous: fmt(Number(raw.average.previous)),
+      difference: fmt(Number(raw.average.difference)),
+      percentage: raw.average.percentage,
+    },
+    count: {
+      current: raw.count.current,
+      previous: raw.count.previous,
+      difference: raw.count.difference,
+      percentage: raw.count.percentage,
+    },
+  }
+}
+
 function categoryFromGrams(raw: ReturnType<typeof calcAll>): StatCategory {
   return {
     total: {
@@ -113,7 +138,7 @@ export const getTransactionStatsForDate = createServerFn({ method: "GET" })
     const { current, previous } = monthlyRanges(data.date)
     const fetch = async (range: Range) =>
       db
-        .select({ amount: transaction.amount })
+        .select({ amount: transaction.amount, currency: transaction.currency })
         .from(transaction)
         .where(
           and(
@@ -124,12 +149,13 @@ export const getTransactionStatsForDate = createServerFn({ method: "GET" })
           ),
         )
     const [cur, prev] = await Promise.all([fetch(current), fetch(previous)])
-    return categoryFromCents(
-      calcAll(
-        cur.map((t) => t.amount),
-        prev.map((t) => t.amount),
-      ),
-    )
+    const result = {} as Record<Currency, StatCategory>
+    for (const c of CURRENCIES) {
+      const curAmounts = cur.filter((t) => t.currency === c).map((t) => t.amount)
+      const prevAmounts = prev.filter((t) => t.currency === c).map((t) => t.amount)
+      result[c] = categoryFromMinor(calcAll(curAmounts, prevAmounts), c)
+    }
+    return result
   })
 
 export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
