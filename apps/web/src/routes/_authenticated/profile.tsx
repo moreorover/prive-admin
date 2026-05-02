@@ -196,6 +196,7 @@ function ProfilePage() {
       </Card>
 
       <EditUserModal
+        key={settings?.preferredCurrency ?? "loading"}
         open={editOpen}
         onOpenChange={setEditOpen}
         initialName={user.name}
@@ -216,8 +217,7 @@ type EditUserModalProps = {
 function EditUserModal({ open, onOpenChange, initialName, initialCurrency }: EditUserModalProps) {
   const queryClient = useQueryClient()
   const [submitting, setSubmitting] = useState(false)
-  const safeInitialCurrency: Currency =
-    initialCurrency === "GBP" || initialCurrency === "EUR" ? initialCurrency : "GBP"
+  const safeInitialCurrency: Currency = initialCurrency === "GBP" || initialCurrency === "EUR" ? initialCurrency : "GBP"
   const form = useForm({ initialValues: { name: initialName, preferredCurrency: safeInitialCurrency } })
 
   const settingsMutation = useMutation({
@@ -230,13 +230,14 @@ function EditUserModal({ open, onOpenChange, initialName, initialCurrency }: Edi
       const tasks: Promise<unknown>[] = []
       if (values.name !== initialName) {
         tasks.push(
-          authClient.updateUser({
-            name: values.name,
-            fetchOptions: {
-              onError: (error) => {
-                notifications.show({ color: "red", message: error.error.message })
+          new Promise<void>((resolve, reject) => {
+            authClient.updateUser({
+              name: values.name,
+              fetchOptions: {
+                onSuccess: () => resolve(),
+                onError: (error) => reject(new Error(error.error.message)),
               },
-            },
+            })
           }),
         )
       }
@@ -260,7 +261,11 @@ function EditUserModal({ open, onOpenChange, initialName, initialCurrency }: Edi
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack>
           <TextInput label="Full Name" required {...form.getInputProps("name")} />
-          <NativeSelect label="Preferred Currency" data={CURRENCY_OPTIONS} {...form.getInputProps("preferredCurrency")} />
+          <NativeSelect
+            label="Preferred Currency"
+            data={CURRENCY_OPTIONS}
+            {...form.getInputProps("preferredCurrency")}
+          />
           <Button type="submit" loading={submitting}>
             Update
           </Button>
