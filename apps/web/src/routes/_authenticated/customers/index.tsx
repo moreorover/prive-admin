@@ -1,4 +1,4 @@
-import { Button, Container, Group, Modal, Skeleton, Stack, Table, Text, TextInput, Title } from "@mantine/core"
+import { Button, Container, Group, Modal, NativeSelect, Skeleton, Stack, Table, Text, TextInput, Title } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconPlus, IconUsers } from "@tabler/icons-react"
@@ -8,6 +8,7 @@ import { useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
 import { createCustomer, getCustomers } from "@/functions/customers"
+import { CURRENCY_OPTIONS, type Currency } from "@/lib/currency"
 import { customerKeys } from "@/lib/query-keys"
 
 const customersQueryOptions = queryOptions({
@@ -26,7 +27,8 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (data: { name: string; phoneNumber: string | null }) => createCustomer({ data }),
+    mutationFn: (data: { name: string; phoneNumber: string | null; preferredCurrency: Currency }) =>
+      createCustomer({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerKeys.all })
       onOpenChange(false)
@@ -35,10 +37,16 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
-  const form = useForm({ initialValues: { name: "", phoneNumber: "" } })
+  const form = useForm<{ name: string; phoneNumber: string; preferredCurrency: Currency }>({
+    initialValues: { name: "", phoneNumber: "", preferredCurrency: "GBP" },
+  })
 
-  const handleSubmit = async (values: { name: string; phoneNumber: string }) => {
-    await mutation.mutateAsync({ name: values.name, phoneNumber: values.phoneNumber || null })
+  const handleSubmit = async (values: { name: string; phoneNumber: string; preferredCurrency: Currency }) => {
+    await mutation.mutateAsync({
+      name: values.name,
+      phoneNumber: values.phoneNumber || null,
+      preferredCurrency: values.preferredCurrency,
+    })
   }
 
   return (
@@ -47,6 +55,7 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
         <Stack>
           <TextInput label="Name" {...form.getInputProps("name")} />
           <TextInput label="Phone Number" placeholder="+1234567890" {...form.getInputProps("phoneNumber")} />
+          <NativeSelect label="Preferred Currency" data={CURRENCY_OPTIONS} {...form.getInputProps("preferredCurrency")} />
           <Button type="submit" loading={mutation.isPending}>
             Create Customer
           </Button>
