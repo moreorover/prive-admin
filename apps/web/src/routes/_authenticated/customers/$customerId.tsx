@@ -7,6 +7,7 @@ import {
   Divider,
   Group,
   Modal,
+  NativeSelect,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -33,6 +34,7 @@ import { getAppointmentsByCustomerId } from "@/functions/appointments"
 import { getCustomer, getCustomerSummary, updateCustomer } from "@/functions/customers"
 import { getHairAssignedByCustomer } from "@/functions/hair-assigned"
 import { createNote, deleteNote, getNotes } from "@/functions/notes"
+import { CURRENCIES, CURRENCY_OPTIONS, type Currency, formatMinor } from "@/lib/currency"
 import { appointmentKeys, customerKeys, hairAssignedKeys, noteKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
@@ -84,21 +86,24 @@ function StatCard({ label, value }: { label: string; value: string }) {
   )
 }
 
-const formatCurrency = (n: number) => `£${n.toFixed(2)}`
-
 function EditCustomerDialog({
   customer,
   open,
   onOpenChange,
 }: {
-  customer: { id: string; name: string; phoneNumber: string | null }
+  customer: { id: string; name: string; phoneNumber: string | null; preferredCurrency: Currency }
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (data: { id: string; name: string; phoneNumber?: string | null }) => updateCustomer({ data }),
+    mutationFn: (data: {
+      id: string
+      name: string
+      phoneNumber?: string | null
+      preferredCurrency: Currency
+    }) => updateCustomer({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerKeys.all })
       onOpenChange(false)
@@ -108,11 +113,20 @@ function EditCustomerDialog({
   })
 
   const form = useForm({
-    initialValues: { name: customer.name, phoneNumber: customer.phoneNumber ?? "" },
+    initialValues: {
+      name: customer.name,
+      phoneNumber: customer.phoneNumber ?? "",
+      preferredCurrency: customer.preferredCurrency,
+    },
   })
 
-  const handleSubmit = async (values: { name: string; phoneNumber: string }) => {
-    await mutation.mutateAsync({ id: customer.id, name: values.name, phoneNumber: values.phoneNumber || null })
+  const handleSubmit = async (values: { name: string; phoneNumber: string; preferredCurrency: Currency }) => {
+    await mutation.mutateAsync({
+      id: customer.id,
+      name: values.name,
+      phoneNumber: values.phoneNumber || null,
+      preferredCurrency: values.preferredCurrency,
+    })
   }
 
   return (
@@ -121,6 +135,7 @@ function EditCustomerDialog({
         <Stack>
           <TextInput label="Name" {...form.getInputProps("name")} />
           <TextInput label="Phone Number" placeholder="+1234567890" {...form.getInputProps("phoneNumber")} />
+          <NativeSelect label="Preferred Currency" data={CURRENCY_OPTIONS} {...form.getInputProps("preferredCurrency")} />
           <Button type="submit" loading={mutation.isPending}>
             Save Changes
           </Button>
@@ -261,9 +276,21 @@ function CustomerDetailPage() {
         {summary ? (
           <SimpleGrid cols={{ base: 2, sm: 3, lg: 4 }}>
             <StatCard label="Appointments" value={String(summary.appointmentCount)} />
-            <StatCard label="Transactions" value={formatCurrency(summary.transactionSum)} />
-            <StatCard label="Hair Profit" value={formatCurrency(summary.hairAssignedProfitSum)} />
-            <StatCard label="Hair Sold For" value={formatCurrency(summary.hairAssignedSoldForSum)} />
+            <Card withBorder padding="md">
+              <Text size="xs" c="dimmed">
+                Transactions
+              </Text>
+              <Title order={4}>
+                {(() => {
+                  const parts = CURRENCIES.filter((c) => summary.transactionSumsMinor[c] !== 0).map((c) =>
+                    formatMinor(summary.transactionSumsMinor[c], c),
+                  )
+                  return parts.length > 0 ? parts.join(" · ") : formatMinor(0, "GBP")
+                })()}
+              </Title>
+            </Card>
+            <StatCard label="Hair Profit" value={`£${summary.hairAssignedProfitSum.toFixed(2)}`} />
+            <StatCard label="Hair Sold For" value={`£${summary.hairAssignedSoldForSum.toFixed(2)}`} />
             <StatCard label="Hair Weight" value={`${summary.hairAssignedWeightInGramsSum}g`} />
             <StatCard label="Notes" value={String(summary.noteCount)} />
             <Card withBorder padding="md">
@@ -380,7 +407,16 @@ function CustomerDetailPage() {
           </Tabs.Panel>
         </Tabs>
 
-        <EditCustomerDialog customer={customer} open={editOpen} onOpenChange={setEditOpen} />
+        <EditCustomerDialog
+          customer={{
+            id: customer.id,
+            name: customer.name,
+            phoneNumber: customer.phoneNumber,
+            preferredCurrency: customer.preferredCurrency as Currency,
+          }}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+        />
         <AddNoteDialog customerId={customerId} open={noteOpen} onOpenChange={setNoteOpen} />
         <CreateHairAssignedDialog
           open={hairCreateOpen}
