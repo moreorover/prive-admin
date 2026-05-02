@@ -115,8 +115,7 @@ jobs:
         run: |
           # Sanitize ref names like "feature/foo" → "feature-foo" so the
           # label matches BACKUP_LABEL's allowed charset.
-          REF_SAFE=$(printf '%s' "${GITHUB_REF_NAME}" | tr '/' '-')
-          BACKUP_LABEL="${REF_SAFE}_${GITHUB_SHA}"
+          BACKUP_LABEL=$(printf '%s' "${GITHUB_REF_NAME}" | tr '/' '-')
           ssh root@prive "
             chmod +x ~/backup_postgres.sh && \
             PG_USER='${POSTGRES_USER}' \
