@@ -8,6 +8,7 @@
   "packages": {
     ".": {
       "package-name": "prive-admin-tanstack",
+      "component": "",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         {
