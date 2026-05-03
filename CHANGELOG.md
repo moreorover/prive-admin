@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/moreorover/prive-admin/compare/v0.1.0...v0.1.1) (2026-05-03)
+
+
+### Bug Fixes
+
+* **web:** convert money inputs to cents on frontend submit ([#141](https://github.com/moreorover/prive-admin/issues/141)) ([cd4571d](https://github.com/moreorover/prive-admin/commit/cd4571dafed1f4d56c631b4034a22deeddf46e06))
+
 ## [0.1.0](https://github.com/moreorover/prive-admin/compare/v0.0.4...v0.1.0) (2026-05-02)
 
 
