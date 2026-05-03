@@ -3,6 +3,7 @@ import { pgTable, integer, text, timestamp, date } from "drizzle-orm/pg-core"
 
 import { appointment } from "./appointment"
 import { customer } from "./customer"
+import { legalEntity } from "./legal-entity"
 import { order } from "./order"
 
 export const transaction = pgTable("transaction", {
@@ -20,4 +21,5 @@ export const transaction = pgTable("transaction", {
     .references(() => customer.id, { onDelete: "cascade" }),
   orderId: text("order_id").references(() => order.id, { onDelete: "set null" }),
   appointmentId: text("appointment_id").references(() => appointment.id, { onDelete: "set null" }),
+  legalEntityId: text("legal_entity_id").references(() => legalEntity.id, { onDelete: "restrict" }),
 })

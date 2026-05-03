@@ -4,6 +4,7 @@ import { pgTable, integer, serial, text, timestamp, date } from "drizzle-orm/pg-
 import { appointment } from "./appointment"
 import { user } from "./auth"
 import { customer } from "./customer"
+import { legalEntity } from "./legal-entity"
 
 export const hairOrder = pgTable("hair_order", {
   id: text("id").primaryKey().$defaultFn(createId),
@@ -18,6 +19,7 @@ export const hairOrder = pgTable("hair_order", {
   customerId: text("customer_id")
     .notNull()
     .references(() => customer.id, { onDelete: "cascade" }),
+  legalEntityId: text("legal_entity_id").references(() => legalEntity.id, { onDelete: "restrict" }),
   createdById: text("created_by_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
