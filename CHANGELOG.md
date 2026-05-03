@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/moreorover/prive-admin/compare/v0.1.1...v0.1.2) (2026-05-03)
+
+
+### Bug Fixes
+
+* **ci:** use fix(deps) for nightly dependency PRs ([#144](https://github.com/moreorover/prive-admin/issues/144)) ([c80cde0](https://github.com/moreorover/prive-admin/commit/c80cde0556c230596cf250983d0ebc5a03c74750))
+
 ## [0.1.1](https://github.com/moreorover/prive-admin/compare/v0.1.0...v0.1.1) (2026-05-03)
 
 
