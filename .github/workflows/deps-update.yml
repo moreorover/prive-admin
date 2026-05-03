@@ -41,8 +41,8 @@ jobs:
           token: ${{ env.DEPS_PAT }}
           branch: chore/auto-dep-updates
           base: main
-          commit-message: "chore(deps): bump dependencies via taze major"
-          title: "chore(deps): nightly dependency updates"
+          commit-message: "fix(deps): bump dependencies via taze major"
+          title: "fix(deps): nightly dependency updates"
           body: |
             Automated nightly run of `bunx taze major -r -w` followed by `bun install`.
 
