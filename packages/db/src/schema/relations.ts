@@ -4,9 +4,11 @@ import { appointment, personnelOnAppointments } from "./appointment"
 import { user, session, account } from "./auth"
 import { customer } from "./customer"
 import { hairAssigned, hairOrder } from "./hair"
+import { legalEntity } from "./legal-entity"
 import { note } from "./note"
 import { order, orderItem } from "./order"
 import { product, productVariant } from "./product"
+import { salon } from "./salon"
 import { transaction } from "./transaction"
 import { userSettings } from "./user-settings"
 
@@ -64,6 +66,8 @@ export const orderItemRelations = relations(orderItem, ({ one }) => ({
 // Appointment relations
 export const appointmentRelations = relations(appointment, ({ one, many }) => ({
   client: one(customer, { fields: [appointment.clientId], references: [customer.id] }),
+  salon: one(salon, { fields: [appointment.salonId], references: [salon.id] }),
+  legalEntity: one(legalEntity, { fields: [appointment.legalEntityId], references: [legalEntity.id] }),
   personnel: many(personnelOnAppointments),
   transactions: many(transaction),
   hairAssigned: many(hairAssigned),
@@ -80,11 +84,13 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
   customer: one(customer, { fields: [transaction.customerId], references: [customer.id] }),
   order: one(order, { fields: [transaction.orderId], references: [order.id] }),
   appointment: one(appointment, { fields: [transaction.appointmentId], references: [appointment.id] }),
+  legalEntity: one(legalEntity, { fields: [transaction.legalEntityId], references: [legalEntity.id] }),
 }))
 
 // Hair relations
 export const hairOrderRelations = relations(hairOrder, ({ one, many }) => ({
   customer: one(customer, { fields: [hairOrder.customerId], references: [customer.id] }),
+  legalEntity: one(legalEntity, { fields: [hairOrder.legalEntityId], references: [legalEntity.id] }),
   createdBy: one(user, { fields: [hairOrder.createdById], references: [user.id] }),
   hairAssigned: many(hairAssigned),
   notes: many(note),
@@ -108,4 +114,25 @@ export const noteRelations = relations(note, ({ one }) => ({
 // UserSettings relations
 export const userSettingsRelations = relations(userSettings, ({ one }) => ({
   user: one(user, { fields: [userSettings.userId], references: [user.id] }),
+  activeLegalEntity: one(legalEntity, {
+    fields: [userSettings.activeLegalEntityId],
+    references: [legalEntity.id],
+  }),
+}))
+
+// Legal entity relations
+export const legalEntityRelations = relations(legalEntity, ({ many }) => ({
+  salons: many(salon),
+  appointments: many(appointment),
+  transactions: many(transaction),
+  hairOrders: many(hairOrder),
+}))
+
+// Salon relations
+export const salonRelations = relations(salon, ({ one, many }) => ({
+  defaultLegalEntity: one(legalEntity, {
+    fields: [salon.defaultLegalEntityId],
+    references: [legalEntity.id],
+  }),
+  appointments: many(appointment),
 }))
