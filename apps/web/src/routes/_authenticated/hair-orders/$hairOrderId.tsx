@@ -269,7 +269,7 @@ function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModa
           customerId: hairOrder.customerId,
           weightReceived: values.weightReceived,
           weightUsed: hairOrder.weightUsed,
-          total: values.total,
+          total: Math.round(values.total * 100),
         },
       }),
     onSuccess: () => {
@@ -286,7 +286,7 @@ function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModa
       arrivedAt: hairOrder.arrivedAt ?? "",
       status: (hairOrder.status === "COMPLETED" ? "COMPLETED" : "PENDING") as "PENDING" | "COMPLETED",
       weightReceived: hairOrder.weightReceived,
-      total: hairOrder.total,
+      total: hairOrder.total / 100,
     },
   })
 
@@ -306,7 +306,7 @@ function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModa
           />
           <Group grow>
             <NumberInput label="Weight Received (g)" min={0} {...form.getInputProps("weightReceived")} />
-            <NumberInput label="Total (cents)" min={0} {...form.getInputProps("total")} />
+            <NumberInput label="Total" min={0} decimalScale={2} step={0.01} {...form.getInputProps("total")} />
           </Group>
           <Button type="submit" loading={mutation.isPending}>
             Save Changes

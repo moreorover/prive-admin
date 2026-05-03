@@ -80,7 +80,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
       status: "PENDING",
       weightReceived: values.weightReceived,
       weightUsed: 0,
-      total: values.total,
+      total: Math.round(values.total * 100),
     })
   }
 
@@ -99,7 +99,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           <TextInput label="Placed At" type="date" {...form.getInputProps("placedAt")} />
           <Group grow>
             <NumberInput label="Weight (g)" min={0} {...form.getInputProps("weightReceived")} />
-            <NumberInput label="Total (cents)" min={0} {...form.getInputProps("total")} />
+            <NumberInput label="Total" min={0} decimalScale={2} step={0.01} {...form.getInputProps("total")} />
           </Group>
           <Button type="submit" loading={mutation.isPending}>
             Create Hair Order
