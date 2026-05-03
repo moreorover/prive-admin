@@ -33,11 +33,15 @@ export function EditHairAssignedDialog({
   })
 
   const form = useForm({
-    initialValues: { weightInGrams: hairAssigned.weightInGrams, soldFor: hairAssigned.soldFor },
+    initialValues: { weightInGrams: hairAssigned.weightInGrams, soldFor: hairAssigned.soldFor / 100 },
   })
 
   const handleSubmit = async (values: { weightInGrams: number; soldFor: number }) => {
-    await mutation.mutateAsync({ id: hairAssigned.id, ...values })
+    await mutation.mutateAsync({
+      id: hairAssigned.id,
+      weightInGrams: values.weightInGrams,
+      soldFor: Math.round(values.soldFor * 100),
+    })
   }
 
   return (
@@ -45,7 +49,7 @@ export function EditHairAssignedDialog({
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack>
           <NumberInput label="Weight (grams)" min={0} {...form.getInputProps("weightInGrams")} />
-          <NumberInput label="Sold For (cents)" min={0} {...form.getInputProps("soldFor")} />
+          <NumberInput label="Sold For" min={0} decimalScale={2} step={0.01} {...form.getInputProps("soldFor")} />
           <Group justify="flex-end">
             <Button type="submit" loading={mutation.isPending}>
               Save Changes
