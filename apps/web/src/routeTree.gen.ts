@@ -22,10 +22,12 @@ import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedHairOrdersRouteRouteImport } from './routes/_authenticated/hair-orders/route'
 import { Route as AuthenticatedCustomersRouteRouteImport } from './routes/_authenticated/customers/route'
 import { Route as AuthenticatedAppointmentsRouteRouteImport } from './routes/_authenticated/appointments/route'
+import { Route as AuthenticatedLegalEntitiesIndexRouteImport } from './routes/_authenticated/legal-entities/index'
 import { Route as AuthenticatedHairOrdersIndexRouteImport } from './routes/_authenticated/hair-orders/index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as AuthenticatedAppointmentsIndexRouteImport } from './routes/_authenticated/appointments/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AuthenticatedLegalEntitiesLegalEntityIdRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId'
 import { Route as AuthenticatedHairOrdersHairOrderIdRouteImport } from './routes/_authenticated/hair-orders/$hairOrderId'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments/$appointmentId'
@@ -98,6 +100,12 @@ const AuthenticatedAppointmentsRouteRoute =
     path: '/appointments',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLegalEntitiesIndexRoute =
+  AuthenticatedLegalEntitiesIndexRouteImport.update({
+    id: '/legal-entities/',
+    path: '/legal-entities/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHairOrdersIndexRoute =
   AuthenticatedHairOrdersIndexRouteImport.update({
     id: '/',
@@ -121,6 +129,12 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedLegalEntitiesLegalEntityIdRoute =
+  AuthenticatedLegalEntitiesLegalEntityIdRouteImport.update({
+    id: '/legal-entities/$legalEntityId',
+    path: '/legal-entities/$legalEntityId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHairOrdersHairOrderIdRoute =
   AuthenticatedHairOrdersHairOrderIdRouteImport.update({
     id: '/$hairOrderId',
@@ -156,10 +170,12 @@ export interface FileRoutesByFullPath {
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
+  '/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/appointments/': typeof AuthenticatedAppointmentsIndexRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
+  '/legal-entities/': typeof AuthenticatedLegalEntitiesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -174,10 +190,12 @@ export interface FileRoutesByTo {
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
+  '/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/appointments': typeof AuthenticatedAppointmentsIndexRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders': typeof AuthenticatedHairOrdersIndexRoute
+  '/legal-entities': typeof AuthenticatedLegalEntitiesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -197,10 +215,12 @@ export interface FileRoutesById {
   '/_authenticated/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
+  '/_authenticated/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authenticated/appointments/': typeof AuthenticatedAppointmentsIndexRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
+  '/_authenticated/legal-entities/': typeof AuthenticatedLegalEntitiesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -220,10 +240,12 @@ export interface FileRouteTypes {
     | '/appointments/$appointmentId'
     | '/customers/$customerId'
     | '/hair-orders/$hairOrderId'
+    | '/legal-entities/$legalEntityId'
     | '/api/auth/$'
     | '/appointments/'
     | '/customers/'
     | '/hair-orders/'
+    | '/legal-entities/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -238,10 +260,12 @@ export interface FileRouteTypes {
     | '/appointments/$appointmentId'
     | '/customers/$customerId'
     | '/hair-orders/$hairOrderId'
+    | '/legal-entities/$legalEntityId'
     | '/api/auth/$'
     | '/appointments'
     | '/customers'
     | '/hair-orders'
+    | '/legal-entities'
   id:
     | '__root__'
     | '/'
@@ -260,10 +284,12 @@ export interface FileRouteTypes {
     | '/_authenticated/appointments/$appointmentId'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/hair-orders/$hairOrderId'
+    | '/_authenticated/legal-entities/$legalEntityId'
     | '/api/auth/$'
     | '/_authenticated/appointments/'
     | '/_authenticated/customers/'
     | '/_authenticated/hair-orders/'
+    | '/_authenticated/legal-entities/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -367,6 +393,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppointmentsRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/legal-entities/': {
+      id: '/_authenticated/legal-entities/'
+      path: '/legal-entities'
+      fullPath: '/legal-entities/'
+      preLoaderRoute: typeof AuthenticatedLegalEntitiesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hair-orders/': {
       id: '/_authenticated/hair-orders/'
       path: '/'
@@ -394,6 +427,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/legal-entities/$legalEntityId': {
+      id: '/_authenticated/legal-entities/$legalEntityId'
+      path: '/legal-entities/$legalEntityId'
+      fullPath: '/legal-entities/$legalEntityId'
+      preLoaderRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hair-orders/$hairOrderId': {
       id: '/_authenticated/hair-orders/$hairOrderId'
@@ -480,6 +520,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFilesDirectRoute: typeof AuthenticatedFilesDirectRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedLegalEntitiesLegalEntityIdRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRoute
+  AuthenticatedLegalEntitiesIndexRoute: typeof AuthenticatedLegalEntitiesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -495,6 +537,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFilesDirectRoute: AuthenticatedFilesDirectRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedLegalEntitiesLegalEntityIdRoute:
+    AuthenticatedLegalEntitiesLegalEntityIdRoute,
+  AuthenticatedLegalEntitiesIndexRoute: AuthenticatedLegalEntitiesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
