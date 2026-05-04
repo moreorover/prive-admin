@@ -15,16 +15,3 @@ export const getActiveLegalEntityId = createServerFn({ method: "GET" })
     })
     return row?.activeLegalEntityId ?? null
   })
-
-/**
- * Server-internal helper for reuse inside other server functions where we
- * already have the session in context. Prefer this over calling the server
- * function endpoint when running on the server.
- */
-export async function readActiveLegalEntityId(userId: string): Promise<string | null> {
-  const row = await db.query.userSettings.findFirst({
-    where: eq(userSettings.userId, userId),
-    columns: { activeLegalEntityId: true },
-  })
-  return row?.activeLegalEntityId ?? null
-}

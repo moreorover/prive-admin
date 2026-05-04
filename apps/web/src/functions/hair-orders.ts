@@ -4,9 +4,9 @@ import { createServerFn } from "@tanstack/react-start"
 import { eq } from "drizzle-orm"
 import { z } from "zod"
 
-import { readActiveLegalEntityId } from "@/functions/get-active-legal-entity"
 import { hairOrderSchema } from "@/lib/schemas"
 import { requireAuthMiddleware } from "@/middleware/auth"
+import { readActiveLegalEntityId } from "@/server/active-legal-entity.server"
 
 export const getHairOrders = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])

@@ -6,9 +6,9 @@ import { createServerFn } from "@tanstack/react-start"
 import { and, eq, gte, lte } from "drizzle-orm"
 import { z } from "zod"
 
-import { readActiveLegalEntityId } from "@/functions/get-active-legal-entity"
 import { appointmentSchema } from "@/lib/schemas"
 import { requireAuthMiddleware } from "@/middleware/auth"
+import { readActiveLegalEntityId } from "@/server/active-legal-entity.server"
 
 async function assertSameCountry(salonId: string, legalEntityId: string) {
   const [s, le] = await Promise.all([

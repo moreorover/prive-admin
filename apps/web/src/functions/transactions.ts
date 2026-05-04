@@ -5,9 +5,9 @@ import { createServerFn } from "@tanstack/react-start"
 import { and, eq } from "drizzle-orm"
 import { z } from "zod"
 
-import { readActiveLegalEntityId } from "@/functions/get-active-legal-entity"
 import { currencySchema } from "@/lib/currency"
 import { requireAuthMiddleware } from "@/middleware/auth"
+import { readActiveLegalEntityId } from "@/server/active-legal-entity.server"
 
 const transactionTypeSchema = z.enum(["BANK", "CASH", "PAYPAL"])
 const transactionStatusSchema = z.enum(["PENDING", "COMPLETED"])
