@@ -1,9 +1,12 @@
 import {
+  Anchor,
+  Badge,
   Button,
   Container,
   Group,
   Modal,
   NativeSelect,
+  Select,
   Skeleton,
   Stack,
   Table,
@@ -21,6 +24,11 @@ import { useState } from "react"
 import { ClientDate } from "@/components/client-date"
 import { createAppointment, getAppointments } from "@/functions/appointments"
 import { getCustomers } from "@/functions/customers"
+import { getActiveLegalEntityId } from "@/functions/get-active-legal-entity"
+import { listLegalEntities } from "@/functions/legal-entities"
+import { listSalons } from "@/functions/salons"
+import { setActiveLegalEntity } from "@/functions/user-settings"
+import { COUNTRY_FLAGS, type Country } from "@/lib/legal-entity"
 import { appointmentKeys, customerKeys } from "@/lib/query-keys"
 
 const appointmentsQueryOptions = queryOptions({
@@ -43,8 +51,12 @@ function CreateAppointmentDialog({ open, onOpenChange }: { open: boolean; onOpen
     queryFn: () => getCustomers(),
   })
 
+  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
+  const salonsQuery = useQuery({ queryKey: ["salons"], queryFn: () => listSalons() })
+
   const mutation = useMutation({
-    mutationFn: (data: { name: string; startsAt: string; clientId: string }) => createAppointment({ data }),
+    mutationFn: (data: { name: string; startsAt: string; clientId: string; salonId: string; legalEntityId: string }) =>
+      createAppointment({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
       onOpenChange(false)
@@ -53,7 +65,7 @@ function CreateAppointmentDialog({ open, onOpenChange }: { open: boolean; onOpen
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
-  const form = useForm({ initialValues: { name: "", startsAt: "", clientId: "" } })
+  const form = useForm({ initialValues: { name: "", startsAt: "", clientId: "", salonId: "", legalEntityId: "" } })
 
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="New Appointment">
@@ -69,6 +81,41 @@ function CreateAppointmentDialog({ open, onOpenChange }: { open: boolean; onOpen
             ]}
             {...form.getInputProps("clientId")}
           />
+          <Select
+            label="Salon"
+            required
+            data={(salonsQuery.data ?? []).map((s) => ({
+              value: s.id,
+              label: `${COUNTRY_FLAGS[s.country as Country] ?? ""} ${s.name}`,
+            }))}
+            value={form.values.salonId}
+            onChange={(salonId) => {
+              form.setFieldValue("salonId", salonId ?? "")
+              const selectedSalon = salonsQuery.data?.find((s) => s.id === salonId)
+              if (selectedSalon) {
+                form.setFieldValue("legalEntityId", selectedSalon.defaultLegalEntityId)
+              }
+            }}
+          />
+          {(() => {
+            const selectedSalon = salonsQuery.data?.find((s) => s.id === form.values.salonId)
+            const country = selectedSalon?.country
+            const countryLEs = (legalEntitiesQuery.data ?? []).filter((le) => le.country === country)
+            const lockedToSingle = countryLEs.length === 1
+            return (
+              <Select
+                label="Legal entity"
+                required
+                disabled={!country || lockedToSingle}
+                data={countryLEs.map((le) => ({
+                  value: le.id,
+                  label: `${COUNTRY_FLAGS[le.country as Country] ?? ""} ${le.name}`,
+                }))}
+                value={form.values.legalEntityId}
+                onChange={(v) => form.setFieldValue("legalEntityId", v ?? "")}
+              />
+            )
+          })()}
           <Button type="submit" loading={mutation.isPending}>
             Create Appointment
           </Button>
@@ -81,6 +128,20 @@ function CreateAppointmentDialog({ open, onOpenChange }: { open: boolean; onOpen
 function AppointmentsPage() {
   const { data: appointments, isLoading } = useQuery(appointmentsQueryOptions)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const queryClient = useQueryClient()
+
+  const activeQuery = useQuery({ queryKey: ["active-legal-entity"], queryFn: () => getActiveLegalEntityId() })
+  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
+  const setActive = useMutation({
+    mutationFn: () => setActiveLegalEntity({ data: { legalEntityId: null } }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["active-legal-entity"] })
+      await queryClient.invalidateQueries({ queryKey: ["appointments"] })
+    },
+  })
+  const activeName = activeQuery.data
+    ? (legalEntitiesQuery.data?.find((le) => le.id === activeQuery.data)?.name ?? null)
+    : null
 
   return (
     <Container size="lg">
@@ -100,12 +161,24 @@ function AppointmentsPage() {
           </Button>
         </Group>
 
+        {activeName ? (
+          <Group gap="xs" mb="xs">
+            <Text size="sm" c="dimmed">
+              Filtering: {activeName}
+            </Text>
+            <Anchor size="sm" onClick={() => setActive.mutate()}>
+              clear
+            </Anchor>
+          </Group>
+        ) : null}
+
         <Table>
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Name</Table.Th>
               <Table.Th>Client</Table.Th>
               <Table.Th>Date</Table.Th>
+              <Table.Th>Legal Entity</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -120,6 +193,9 @@ function AppointmentsPage() {
                     </Table.Td>
                     <Table.Td>
                       <Skeleton h={14} w={80} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton h={14} w={70} />
                     </Table.Td>
                   </Table.Tr>
                 ))
@@ -140,11 +216,18 @@ function AppointmentsPage() {
                     <Table.Td c="dimmed">
                       <ClientDate date={a.startsAt} showTime />
                     </Table.Td>
+                    <Table.Td>
+                      {a.legalEntity ? (
+                        <Badge variant="light" size="sm">
+                          {a.legalEntity.name}
+                        </Badge>
+                      ) : null}
+                    </Table.Td>
                   </Table.Tr>
                 ))}
             {!isLoading && appointments?.length === 0 && (
               <Table.Tr>
-                <Table.Td colSpan={3} ta="center" c="dimmed">
+                <Table.Td colSpan={4} ta="center" c="dimmed">
                   No appointments yet.
                 </Table.Td>
               </Table.Tr>
