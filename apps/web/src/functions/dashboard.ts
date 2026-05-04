@@ -1,6 +1,8 @@
 import { db } from "@prive-admin-tanstack/db"
+import { whereActiveLegalEntity } from "@prive-admin-tanstack/db"
 import { appointment } from "@prive-admin-tanstack/db/schema/appointment"
 import { hairAssigned } from "@prive-admin-tanstack/db/schema/hair"
+import { hairOrder } from "@prive-admin-tanstack/db/schema/hair"
 import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
 import { createServerFn } from "@tanstack/react-start"
 import dayjs from "dayjs"
@@ -9,6 +11,7 @@ import { z } from "zod"
 
 import { CURRENCIES, type Currency, currencySymbol } from "@/lib/currency"
 import { requireAuthMiddleware } from "@/middleware/auth"
+import { readActiveLegalEntityId } from "@/functions/get-active-legal-entity"
 
 type Range = { start: Date; end: Date }
 
@@ -134,7 +137,8 @@ const toDateString = (d: Date) => d.toISOString().slice(0, 10)
 export const getTransactionStatsForDate = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ date: z.string() }))
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    const activeId = await readActiveLegalEntityId(context.session.user.id)
     const { current, previous } = monthlyRanges(data.date)
     const fetch = async (range: Range) =>
       db
@@ -146,6 +150,7 @@ export const getTransactionStatsForDate = createServerFn({ method: "GET" })
             lt(transaction.completedDateBy, toDateString(range.end)),
             eq(transaction.status, "COMPLETED"),
             isNotNull(transaction.appointmentId),
+            whereActiveLegalEntity(transaction.legalEntityId, activeId),
           ),
         )
     const [cur, prev] = await Promise.all([fetch(current), fetch(previous)])
@@ -161,7 +166,8 @@ export const getTransactionStatsForDate = createServerFn({ method: "GET" })
 export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ date: z.string() }))
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    const activeId = await readActiveLegalEntityId(context.session.user.id)
     const { current, previous } = monthlyRanges(data.date)
     const fetch = async (range: Range) =>
       db
@@ -173,7 +179,13 @@ export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
         })
         .from(hairAssigned)
         .innerJoin(appointment, eq(hairAssigned.appointmentId, appointment.id))
-        .where(and(gte(appointment.startsAt, range.start), lt(appointment.startsAt, range.end)))
+        .where(
+          and(
+            gte(appointment.startsAt, range.start),
+            lt(appointment.startsAt, range.end),
+            whereActiveLegalEntity(appointment.legalEntityId, activeId),
+          ),
+        )
     const [cur, prev] = await Promise.all([fetch(current), fetch(previous)])
     return {
       weightInGrams: categoryFromGrams(
@@ -206,7 +218,8 @@ export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
 export const getHairAssignedThroughSaleStatsForDate = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ date: z.string() }))
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    const activeId = await readActiveLegalEntityId(context.session.user.id)
     const { current, previous } = monthlyRanges(data.date)
     const fetch = async (range: Range) =>
       db
@@ -217,11 +230,13 @@ export const getHairAssignedThroughSaleStatsForDate = createServerFn({ method: "
           pricePerGram: hairAssigned.pricePerGram,
         })
         .from(hairAssigned)
+        .innerJoin(hairOrder, eq(hairAssigned.hairOrderId, hairOrder.id))
         .where(
           and(
             isNull(hairAssigned.appointmentId),
             gte(hairAssigned.createdAt, range.start),
             lt(hairAssigned.createdAt, range.end),
+            whereActiveLegalEntity(hairOrder.legalEntityId, activeId),
           ),
         )
     const [cur, prev] = await Promise.all([fetch(current), fetch(previous)])
