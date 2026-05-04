@@ -331,6 +331,8 @@ function AppointmentDetailPage() {
             const txRows: TransactionRow[] = txList.map((t) => ({
               ...t,
               currency: (CURRENCIES as readonly string[]).includes(t.currency) ? (t.currency as Currency) : "GBP",
+              legalEntityId: t.legalEntityId,
+              legalEntity: t.legalEntity ?? null,
             }))
             return <TransactionsTable items={txRows} onEdit={setEditTx} onDelete={setDeleteTx} />
           })()}

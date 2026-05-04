@@ -18,6 +18,7 @@ type EditTransactionDialogProps = {
     type: "BANK" | "CASH" | "PAYPAL" | string
     status: "PENDING" | "COMPLETED" | string
     completedDateBy: string
+    legalEntityId: string
   }
   invalidateKeys: { queryKey: readonly unknown[] }[]
 }
@@ -55,6 +56,7 @@ export function EditTransactionDialog({ open, onOpenChange, transaction, invalid
           type: initialType,
           status: initialStatus,
           completedDateBy: transaction.completedDateBy,
+          legalEntityId: transaction.legalEntityId,
         }}
         submitLabel="Save Changes"
         loading={mutation.isPending}

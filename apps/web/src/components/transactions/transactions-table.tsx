@@ -16,7 +16,9 @@ export type TransactionRow = {
   completedDateBy: string
   customerId: string
   appointmentId: string | null
+  legalEntityId: string
   customer?: { id: string; name: string } | null
+  legalEntity?: { id: string; name: string } | null
 }
 
 type TransactionsTableProps = {
@@ -46,6 +48,7 @@ export function TransactionsTable({ items, onEdit, onDelete }: TransactionsTable
         <Table.Tr>
           <Table.Th>Customer</Table.Th>
           <Table.Th>Name</Table.Th>
+          <Table.Th>Legal Entity</Table.Th>
           <Table.Th>Type</Table.Th>
           <Table.Th>Amount</Table.Th>
           <Table.Th>Completed</Table.Th>
@@ -76,6 +79,15 @@ export function TransactionsTable({ items, onEdit, onDelete }: TransactionsTable
                 )}
               </Table.Td>
               <Table.Td>{tx.name ?? <Text c="dimmed">—</Text>}</Table.Td>
+              <Table.Td>
+                {tx.legalEntity ? (
+                  <Badge variant="outline" color="gray" size="sm">
+                    {tx.legalEntity.name}
+                  </Badge>
+                ) : (
+                  <Text c="dimmed">—</Text>
+                )}
+              </Table.Td>
               <Table.Td>
                 <Badge color={typeColor[tx.type] ?? "gray"} variant="light">
                   {tx.type}
