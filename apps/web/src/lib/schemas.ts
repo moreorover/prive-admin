@@ -18,8 +18,9 @@ export const appointmentSchema = z.object({
   name: z.string().min(1, "Name is required"),
   startsAt: z.union([z.string(), z.date()]),
   clientId: z.string().min(1, "Client is required"),
+  salonId: z.string().min(1, "Salon is required"),
+  legalEntityId: z.string().min(1, "Legal entity is required"),
 })
-
 export type AppointmentInput = z.infer<typeof appointmentSchema>
 
 export const hairOrderSchema = z.object({
@@ -27,12 +28,12 @@ export const hairOrderSchema = z.object({
   placedAt: z.union([z.string(), z.date(), z.null()]),
   arrivedAt: z.union([z.string(), z.date(), z.null()]),
   customerId: z.string().min(1, "Customer is required"),
+  legalEntityId: z.string().min(1, "Legal entity is required"),
   status: z.enum(["PENDING", "COMPLETED"]).default("PENDING"),
   weightReceived: z.number().min(0),
   weightUsed: z.number().min(0),
   total: z.number().min(0),
 })
-
 export type HairOrderInput = z.infer<typeof hairOrderSchema>
 
 export const noteSchema = z.object({
@@ -44,3 +45,22 @@ export const noteSchema = z.object({
 })
 
 export type NoteInput = z.infer<typeof noteSchema>
+
+import { countrySchema } from "./legal-entity"
+
+export const legalEntityUpdateSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1, "Name is required").max(120),
+  registrationNumber: z.string().max(40).nullish(),
+  vatNumber: z.string().max(40).nullish(),
+})
+export type LegalEntityUpdateInput = z.infer<typeof legalEntityUpdateSchema>
+
+export const salonSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, "Name is required").max(120),
+  country: countrySchema,
+  defaultLegalEntityId: z.string().min(1),
+  address: z.string().max(255).nullish(),
+})
+export type SalonInput = z.infer<typeof salonSchema>
