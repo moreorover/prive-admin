@@ -19,7 +19,7 @@ export const hairOrder = pgTable("hair_order", {
   customerId: text("customer_id")
     .notNull()
     .references(() => customer.id, { onDelete: "cascade" }),
-  legalEntityId: text("legal_entity_id").references(() => legalEntity.id, { onDelete: "restrict" }),
+  legalEntityId: text("legal_entity_id").notNull().references(() => legalEntity.id, { onDelete: "restrict" }),
   createdById: text("created_by_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),

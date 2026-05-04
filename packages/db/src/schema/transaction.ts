@@ -21,5 +21,5 @@ export const transaction = pgTable("transaction", {
     .references(() => customer.id, { onDelete: "cascade" }),
   orderId: text("order_id").references(() => order.id, { onDelete: "set null" }),
   appointmentId: text("appointment_id").references(() => appointment.id, { onDelete: "set null" }),
-  legalEntityId: text("legal_entity_id").references(() => legalEntity.id, { onDelete: "restrict" }),
+  legalEntityId: text("legal_entity_id").notNull().references(() => legalEntity.id, { onDelete: "restrict" }),
 })
