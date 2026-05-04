@@ -30,41 +30,44 @@ export function LegalEntitySwitcher() {
     },
   })
 
-  if (legalEntitiesQuery.isPending || activeQuery.isPending) {
-    return <Skeleton height={32} width={200} />
-  }
-  if (legalEntitiesQuery.isError || activeQuery.isError) {
-    return (
-      <Text size="sm" c="red">
-        LE switcher failed
-      </Text>
-    )
-  }
+  const isPending = legalEntitiesQuery.isPending || activeQuery.isPending
+  const isError = !isPending && (legalEntitiesQuery.isError || activeQuery.isError)
 
-  const data = [
-    { value: ALL_VALUE, label: "All legal entities" },
-    ...legalEntitiesQuery.data.map((le) => ({
-      value: le.id,
-      label: `${COUNTRY_FLAGS[le.country as Country] ?? ""} ${le.name}`,
-    })),
-  ]
+  const data =
+    isPending || isError
+      ? []
+      : [
+          { value: ALL_VALUE, label: "All legal entities" },
+          ...(legalEntitiesQuery.data ?? []).map((le) => ({
+            value: le.id,
+            label: `${COUNTRY_FLAGS[le.country as Country] ?? ""} ${le.name}`,
+          })),
+        ]
 
-  const value = activeQuery.data ?? ALL_VALUE
+  const value = isPending || isError ? ALL_VALUE : (activeQuery.data ?? ALL_VALUE)
 
   return (
     <Group gap="xs" wrap="nowrap">
-      <Select
-        size="sm"
-        w={220}
-        data={data}
-        value={value}
-        onChange={(next) => {
-          if (next === null) return
-          setActive.mutate(next === ALL_VALUE ? null : next)
-        }}
-        allowDeselect={false}
-        aria-label="Active legal entity"
-      />
+      {isPending ? (
+        <Skeleton height={32} width={200} aria-label="Active legal entity" />
+      ) : isError ? (
+        <Text size="sm" c="red">
+          LE switcher failed
+        </Text>
+      ) : (
+        <Select
+          size="sm"
+          w={220}
+          data={data}
+          value={value}
+          onChange={(next) => {
+            if (next === null) return
+            setActive.mutate(next === ALL_VALUE ? null : next)
+          }}
+          allowDeselect={false}
+          aria-label="Active legal entity"
+        />
+      )}
     </Group>
   )
 }
