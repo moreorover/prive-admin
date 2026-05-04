@@ -1,4 +1,5 @@
 import {
+  Anchor,
   Badge,
   Button,
   Container,
@@ -6,6 +7,7 @@ import {
   Modal,
   NativeSelect,
   NumberInput,
+  Select,
   Skeleton,
   Stack,
   Table,
@@ -22,7 +24,11 @@ import { useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
 import { getCustomers } from "@/functions/customers"
+import { getActiveLegalEntityId } from "@/functions/get-active-legal-entity"
 import { createHairOrder, getHairOrders } from "@/functions/hair-orders"
+import { listLegalEntities } from "@/functions/legal-entities"
+import { setActiveLegalEntity } from "@/functions/user-settings"
+import { COUNTRY_FLAGS, type Country } from "@/lib/legal-entity"
 import { customerKeys, hairOrderKeys } from "@/lib/query-keys"
 
 const hairOrdersQueryOptions = queryOptions({
@@ -45,6 +51,9 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     queryFn: () => getCustomers(),
   })
 
+  const activeQuery = useQuery({ queryKey: ["active-legal-entity"], queryFn: () => getActiveLegalEntityId() })
+  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
+
   const mutation = useMutation({
     mutationFn: (data: {
       customerId: string
@@ -54,6 +63,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
       weightReceived: number
       weightUsed: number
       total: number
+      legalEntityId: string
     }) => createHairOrder({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
@@ -64,7 +74,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   })
 
   const form = useForm({
-    initialValues: { customerId: "", placedAt: "", weightReceived: 0, total: 0 },
+    initialValues: { customerId: "", placedAt: "", weightReceived: 0, total: 0, legalEntityId: activeQuery.data ?? "" },
   })
 
   const handleSubmit = async (values: {
@@ -72,6 +82,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     placedAt: string
     weightReceived: number
     total: number
+    legalEntityId: string
   }) => {
     await mutation.mutateAsync({
       customerId: values.customerId,
@@ -81,6 +92,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
       weightReceived: values.weightReceived,
       weightUsed: 0,
       total: Math.round(values.total * 100),
+      legalEntityId: values.legalEntityId,
     })
   }
 
@@ -101,6 +113,16 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
             <NumberInput label="Weight (g)" min={0} {...form.getInputProps("weightReceived")} />
             <NumberInput label="Total" min={0} decimalScale={2} step={0.01} {...form.getInputProps("total")} />
           </Group>
+          <Select
+            label="Legal entity (payer)"
+            required
+            data={(legalEntitiesQuery.data ?? []).map((le) => ({
+              value: le.id,
+              label: `${COUNTRY_FLAGS[le.country as Country] ?? ""} ${le.name}`,
+            }))}
+            value={form.values.legalEntityId}
+            onChange={(v) => form.setFieldValue("legalEntityId", v ?? "")}
+          />
           <Button type="submit" loading={mutation.isPending}>
             Create Hair Order
           </Button>
@@ -113,6 +135,20 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 function HairOrdersPage() {
   const { data: hairOrders, isLoading } = useQuery(hairOrdersQueryOptions)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const queryClient = useQueryClient()
+
+  const activeQuery = useQuery({ queryKey: ["active-legal-entity"], queryFn: () => getActiveLegalEntityId() })
+  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
+  const setActive = useMutation({
+    mutationFn: () => setActiveLegalEntity({ data: { legalEntityId: null } }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["active-legal-entity"] })
+      await queryClient.invalidateQueries({ queryKey: ["hair-orders"] })
+    },
+  })
+  const activeName = activeQuery.data
+    ? (legalEntitiesQuery.data?.find((le) => le.id === activeQuery.data)?.name ?? null)
+    : null
 
   return (
     <Container size="lg">
@@ -132,6 +168,17 @@ function HairOrdersPage() {
           </Button>
         </Group>
 
+        {activeName ? (
+          <Group gap="xs" mb="xs">
+            <Text size="sm" c="dimmed">
+              Filtering: {activeName}
+            </Text>
+            <Anchor size="sm" onClick={() => setActive.mutate()}>
+              clear
+            </Anchor>
+          </Group>
+        ) : null}
+
         <Table>
           <Table.Thead>
             <Table.Tr>
@@ -140,6 +187,7 @@ function HairOrdersPage() {
               <Table.Th>Status</Table.Th>
               <Table.Th>Weight (g)</Table.Th>
               <Table.Th>Placed</Table.Th>
+              <Table.Th>Legal Entity</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -160,6 +208,9 @@ function HairOrdersPage() {
                     </Table.Td>
                     <Table.Td>
                       <Skeleton h={14} w={70} />
+                    </Table.Td>
+                    <Table.Td>
+                      <Skeleton h={14} w={80} />
                     </Table.Td>
                   </Table.Tr>
                 ))
@@ -182,11 +233,18 @@ function HairOrdersPage() {
                     </Table.Td>
                     <Table.Td c="dimmed">{ho.weightReceived}g</Table.Td>
                     <Table.Td c="dimmed">{ho.placedAt ? <ClientDate date={ho.placedAt} /> : "—"}</Table.Td>
+                    <Table.Td>
+                      {ho.legalEntity ? (
+                        <Badge variant="light" size="sm">
+                          {ho.legalEntity.name}
+                        </Badge>
+                      ) : null}
+                    </Table.Td>
                   </Table.Tr>
                 ))}
             {!isLoading && hairOrders?.length === 0 && (
               <Table.Tr>
-                <Table.Td colSpan={5} ta="center" c="dimmed">
+                <Table.Td colSpan={6} ta="center" c="dimmed">
                   No hair orders yet.
                 </Table.Td>
               </Table.Tr>

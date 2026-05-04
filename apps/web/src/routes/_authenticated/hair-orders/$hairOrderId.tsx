@@ -9,6 +9,7 @@ import {
   Modal,
   NativeSelect,
   NumberInput,
+  Select,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -29,6 +30,8 @@ import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair
 import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
 import { getHairOrder, recalculateHairOrderPrices, updateHairOrder } from "@/functions/hair-orders"
+import { listLegalEntities } from "@/functions/legal-entities"
+import { COUNTRY_FLAGS, type Country } from "@/lib/legal-entity"
 import { hairOrderKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")({
@@ -246,11 +249,14 @@ type EditHairOrderModalProps = {
     weightUsed: number
     total: number
     customerId: string
+    legalEntityId: string
   }
 }
 
 function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModalProps) {
   const queryClient = useQueryClient()
+
+  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
 
   const mutation = useMutation({
     mutationFn: (values: {
@@ -259,6 +265,7 @@ function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModa
       status: "PENDING" | "COMPLETED"
       weightReceived: number
       total: number
+      legalEntityId: string
     }) =>
       updateHairOrder({
         data: {
@@ -270,6 +277,7 @@ function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModa
           weightReceived: values.weightReceived,
           weightUsed: hairOrder.weightUsed,
           total: Math.round(values.total * 100),
+          legalEntityId: values.legalEntityId,
         },
       }),
     onSuccess: () => {
@@ -287,6 +295,7 @@ function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModa
       status: (hairOrder.status === "COMPLETED" ? "COMPLETED" : "PENDING") as "PENDING" | "COMPLETED",
       weightReceived: hairOrder.weightReceived,
       total: hairOrder.total / 100,
+      legalEntityId: hairOrder.legalEntityId,
     },
   })
 
@@ -308,6 +317,16 @@ function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModa
             <NumberInput label="Weight Received (g)" min={0} {...form.getInputProps("weightReceived")} />
             <NumberInput label="Total" min={0} decimalScale={2} step={0.01} {...form.getInputProps("total")} />
           </Group>
+          <Select
+            label="Legal entity (payer)"
+            required
+            data={(legalEntitiesQuery.data ?? []).map((le) => ({
+              value: le.id,
+              label: `${COUNTRY_FLAGS[le.country as Country] ?? ""} ${le.name}`,
+            }))}
+            value={form.values.legalEntityId}
+            onChange={(v) => form.setFieldValue("legalEntityId", v ?? "")}
+          />
           <Button type="submit" loading={mutation.isPending}>
             Save Changes
           </Button>
