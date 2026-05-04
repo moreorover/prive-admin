@@ -15,6 +15,13 @@
       "when": 1777724148446,
       "tag": "0001_plain_young_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777835904382,
+      "tag": "0002_multi_legal_entity",
+      "breakpoints": true
     }
   ]
 }
