@@ -23,6 +23,8 @@ import { Route as AuthenticatedHairOrdersRouteRouteImport } from './routes/_auth
 import { Route as AuthenticatedCustomersRouteRouteImport } from './routes/_authenticated/customers/route'
 import { Route as AuthenticatedAppointmentsRouteRouteImport } from './routes/_authenticated/appointments/route'
 import { Route as AuthenticatedLegalEntitiesIndexRouteImport } from './routes/_authenticated/legal-entities/index'
+import { Route as AuthenticatedSalonsIndexRouteImport } from './routes/_authenticated/salons/index'
+import { Route as AuthenticatedSalonsSalonIdRouteImport } from './routes/_authenticated/salons/$salonId'
 import { Route as AuthenticatedHairOrdersIndexRouteImport } from './routes/_authenticated/hair-orders/index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as AuthenticatedAppointmentsIndexRouteImport } from './routes/_authenticated/appointments/index'
@@ -106,6 +108,18 @@ const AuthenticatedLegalEntitiesIndexRoute =
     path: '/legal-entities/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSalonsIndexRoute =
+  AuthenticatedSalonsIndexRouteImport.update({
+    id: '/salons/',
+    path: '/salons/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSalonsSalonIdRoute =
+  AuthenticatedSalonsSalonIdRouteImport.update({
+    id: '/salons/$salonId',
+    path: '/salons/$salonId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHairOrdersIndexRoute =
   AuthenticatedHairOrdersIndexRouteImport.update({
     id: '/',
@@ -176,6 +190,8 @@ export interface FileRoutesByFullPath {
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
   '/legal-entities/': typeof AuthenticatedLegalEntitiesIndexRoute
+  '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
+  '/salons/': typeof AuthenticatedSalonsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -196,6 +212,8 @@ export interface FileRoutesByTo {
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders': typeof AuthenticatedHairOrdersIndexRoute
   '/legal-entities': typeof AuthenticatedLegalEntitiesIndexRoute
+  '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
+  '/salons': typeof AuthenticatedSalonsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -221,6 +239,8 @@ export interface FileRoutesById {
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
   '/_authenticated/legal-entities/': typeof AuthenticatedLegalEntitiesIndexRoute
+  '/_authenticated/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
+  '/_authenticated/salons/': typeof AuthenticatedSalonsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -246,6 +266,8 @@ export interface FileRouteTypes {
     | '/customers/'
     | '/hair-orders/'
     | '/legal-entities/'
+    | '/salons/$salonId'
+    | '/salons/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -266,6 +288,8 @@ export interface FileRouteTypes {
     | '/customers'
     | '/hair-orders'
     | '/legal-entities'
+    | '/salons/$salonId'
+    | '/salons'
   id:
     | '__root__'
     | '/'
@@ -290,6 +314,8 @@ export interface FileRouteTypes {
     | '/_authenticated/customers/'
     | '/_authenticated/hair-orders/'
     | '/_authenticated/legal-entities/'
+    | '/_authenticated/salons/$salonId'
+    | '/_authenticated/salons/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -435,6 +461,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/salons/': {
+      id: '/_authenticated/salons/'
+      path: '/salons'
+      fullPath: '/salons/'
+      preLoaderRoute: typeof AuthenticatedSalonsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/salons/$salonId': {
+      id: '/_authenticated/salons/$salonId'
+      path: '/salons/$salonId'
+      fullPath: '/salons/$salonId'
+      preLoaderRoute: typeof AuthenticatedSalonsSalonIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hair-orders/$hairOrderId': {
       id: '/_authenticated/hair-orders/$hairOrderId'
       path: '/$hairOrderId'
@@ -522,6 +562,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedLegalEntitiesLegalEntityIdRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRoute
   AuthenticatedLegalEntitiesIndexRoute: typeof AuthenticatedLegalEntitiesIndexRoute
+  AuthenticatedSalonsIndexRoute: typeof AuthenticatedSalonsIndexRoute
+  AuthenticatedSalonsSalonIdRoute: typeof AuthenticatedSalonsSalonIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -540,6 +582,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLegalEntitiesLegalEntityIdRoute:
     AuthenticatedLegalEntitiesLegalEntityIdRoute,
   AuthenticatedLegalEntitiesIndexRoute: AuthenticatedLegalEntitiesIndexRoute,
+  AuthenticatedSalonsIndexRoute: AuthenticatedSalonsIndexRoute,
+  AuthenticatedSalonsSalonIdRoute: AuthenticatedSalonsSalonIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
