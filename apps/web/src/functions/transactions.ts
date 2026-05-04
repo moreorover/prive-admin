@@ -1,10 +1,11 @@
-import { db } from "@prive-admin-tanstack/db"
+import { db, whereActiveLegalEntity } from "@prive-admin-tanstack/db"
 import { personnelOnAppointments } from "@prive-admin-tanstack/db/schema/appointment"
 import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
 import { createServerFn } from "@tanstack/react-start"
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { z } from "zod"
 
+import { readActiveLegalEntityId } from "@/functions/get-active-legal-entity"
 import { currencySchema } from "@/lib/currency"
 import { requireAuthMiddleware } from "@/middleware/auth"
 
@@ -20,15 +21,24 @@ const transactionFieldsSchema = z.object({
   type: transactionTypeSchema,
   status: transactionStatusSchema,
   completedDateBy: dateStringSchema,
+  legalEntityId: z.string().min(1, "Legal entity is required"),
 })
 
 export const getTransactionsByAppointmentId = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ appointmentId: z.string() }))
-  .handler(async ({ data }) => {
+  .handler(async ({ context, data }) => {
+    const activeId = await readActiveLegalEntityId(context.session.user.id)
+    const filters = [
+      eq(transaction.appointmentId, data.appointmentId),
+      whereActiveLegalEntity(transaction.legalEntityId, activeId),
+    ].filter(Boolean)
     return db.query.transaction.findMany({
-      where: eq(transaction.appointmentId, data.appointmentId),
-      with: { customer: { columns: { id: true, name: true } } },
+      where: and(...filters),
+      with: {
+        customer: { columns: { id: true, name: true } },
+        legalEntity: { columns: { id: true, name: true, type: true, country: true } },
+      },
       orderBy: (tx, { asc }) => [asc(tx.completedDateBy)],
     })
   })
@@ -75,6 +85,7 @@ export const createTransaction = createServerFn({ method: "POST" })
           type: data.type,
           status: data.status,
           completedDateBy: data.completedDateBy,
+          legalEntityId: data.legalEntityId,
         })
         .returning()
       return result
@@ -102,6 +113,7 @@ export const updateTransaction = createServerFn({ method: "POST" })
         type: data.type,
         status: data.status,
         completedDateBy: data.completedDateBy,
+        legalEntityId: data.legalEntityId,
       })
       .where(eq(transaction.id, data.id))
       .returning()
