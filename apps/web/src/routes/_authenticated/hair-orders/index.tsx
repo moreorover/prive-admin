@@ -146,9 +146,12 @@ function HairOrdersPage() {
       await queryClient.invalidateQueries({ queryKey: ["hair-orders"] })
     },
   })
-  const activeName = activeQuery.data
-    ? (legalEntitiesQuery.data?.find((le) => le.id === activeQuery.data)?.name ?? null)
-    : null
+  const activeName =
+    activeQuery.isPending || legalEntitiesQuery.isPending
+      ? null
+      : activeQuery.data
+        ? (legalEntitiesQuery.data?.find((le) => le.id === activeQuery.data)?.name ?? null)
+        : null
 
   return (
     <Container size="lg">

@@ -139,9 +139,12 @@ function AppointmentsPage() {
       await queryClient.invalidateQueries({ queryKey: ["appointments"] })
     },
   })
-  const activeName = activeQuery.data
-    ? (legalEntitiesQuery.data?.find((le) => le.id === activeQuery.data)?.name ?? null)
-    : null
+  const activeName =
+    activeQuery.isPending || legalEntitiesQuery.isPending
+      ? null
+      : activeQuery.data
+        ? (legalEntitiesQuery.data?.find((le) => le.id === activeQuery.data)?.name ?? null)
+        : null
 
   return (
     <Container size="lg">
