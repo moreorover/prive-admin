@@ -13,13 +13,15 @@ describe("whereActiveLegalEntity", () => {
     expect(clause).toBeDefined()
     // SQL helper objects from drizzle expose a `queryChunks` array; the literal id should appear inside.
     const queryChunks = "queryChunks" in clause ? (clause as any).queryChunks : []
-    const stringified = queryChunks.map((chunk: any) => {
-      if (typeof chunk === "string") return chunk
-      if (typeof chunk === "object" && chunk !== null && "value" in chunk) {
-        return String(chunk.value)
-      }
-      return ""
-    }).join("")
+    const stringified = queryChunks
+      .map((chunk: any) => {
+        if (typeof chunk === "string") return chunk
+        if (typeof chunk === "object" && chunk !== null && "value" in chunk) {
+          return String(chunk.value)
+        }
+        return ""
+      })
+      .join("")
     expect(stringified).toContain("le_123")
   })
 })

@@ -12,8 +12,12 @@ export const appointment = pgTable("appointment", {
   clientId: text("client_id")
     .notNull()
     .references(() => customer.id, { onDelete: "cascade" }),
-  salonId: text("salon_id").notNull().references(() => salon.id, { onDelete: "restrict" }),
-  legalEntityId: text("legal_entity_id").notNull().references(() => legalEntity.id, { onDelete: "restrict" }),
+  salonId: text("salon_id")
+    .notNull()
+    .references(() => salon.id, { onDelete: "restrict" }),
+  legalEntityId: text("legal_entity_id")
+    .notNull()
+    .references(() => legalEntity.id, { onDelete: "restrict" }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .$onUpdate(() => new Date())

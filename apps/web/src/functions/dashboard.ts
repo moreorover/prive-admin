@@ -9,9 +9,9 @@ import dayjs from "dayjs"
 import { and, eq, gte, isNotNull, isNull, lt } from "drizzle-orm"
 import { z } from "zod"
 
+import { readActiveLegalEntityId } from "@/functions/get-active-legal-entity"
 import { CURRENCIES, type Currency, currencySymbol } from "@/lib/currency"
 import { requireAuthMiddleware } from "@/middleware/auth"
-import { readActiveLegalEntityId } from "@/functions/get-active-legal-entity"
 
 type Range = { start: Date; end: Date }
 

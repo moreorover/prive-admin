@@ -1,7 +1,7 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
 
-import { legalEntity } from "./legal-entity"
 import { user } from "./auth"
+import { legalEntity } from "./legal-entity"
 
 export const userSettings = pgTable("user_settings", {
   userId: text("user_id")

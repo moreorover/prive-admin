@@ -4,8 +4,8 @@ import { useForm } from "@mantine/form"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
-import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
 import { listLegalEntities } from "@/functions/legal-entities"
+import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
 import { COUNTRY_FLAGS, type Country } from "@/lib/legal-entity"
 
 export type TransactionFormValues = {
