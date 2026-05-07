@@ -1,7 +1,6 @@
-import { db } from "@prive-admin-tanstack/db"
+import { db, whereActiveLegalEntity } from "@prive-admin-tanstack/db"
 import { appointment } from "@prive-admin-tanstack/db/schema/appointment"
-import { hairAssigned } from "@prive-admin-tanstack/db/schema/hair"
-import { hairOrder } from "@prive-admin-tanstack/db/schema/hair"
+import { hairAssigned, hairOrder } from "@prive-admin-tanstack/db/schema/hair"
 import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
 import { createServerFn } from "@tanstack/react-start"
 import dayjs from "dayjs"
@@ -134,7 +133,7 @@ const toDateString = (d: Date) => d.toISOString().slice(0, 10)
 
 export const getTransactionStatsForDate = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .inputValidator(z.object({ date: z.string() }))
+  .inputValidator(z.object({ date: z.string(), legalEntityId: z.string().optional() }))
   .handler(async ({ data }) => {
     const { current, previous } = monthlyRanges(data.date)
     const fetch = async (range: Range) =>
@@ -147,6 +146,7 @@ export const getTransactionStatsForDate = createServerFn({ method: "GET" })
             lt(transaction.completedDateBy, toDateString(range.end)),
             eq(transaction.status, "COMPLETED"),
             isNotNull(transaction.appointmentId),
+            data.legalEntityId ? whereActiveLegalEntity(transaction.legalEntityId, data.legalEntityId) : undefined,
           ),
         )
     const [cur, prev] = await Promise.all([fetch(current), fetch(previous)])
@@ -161,7 +161,7 @@ export const getTransactionStatsForDate = createServerFn({ method: "GET" })
 
 export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .inputValidator(z.object({ date: z.string() }))
+  .inputValidator(z.object({ date: z.string(), legalEntityId: z.string().optional() }))
   .handler(async ({ data }) => {
     const { current, previous } = monthlyRanges(data.date)
     const fetch = async (range: Range) =>
@@ -174,10 +174,12 @@ export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
         })
         .from(hairAssigned)
         .innerJoin(appointment, eq(hairAssigned.appointmentId, appointment.id))
+        .innerJoin(hairOrder, eq(hairAssigned.hairOrderId, hairOrder.id))
         .where(
           and(
             gte(appointment.startsAt, range.start),
             lt(appointment.startsAt, range.end),
+            data.legalEntityId ? eq(hairOrder.legalEntityId, data.legalEntityId) : undefined,
           ),
         )
     const [cur, prev] = await Promise.all([fetch(current), fetch(previous)])
@@ -211,7 +213,7 @@ export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
 
 export const getHairAssignedThroughSaleStatsForDate = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .inputValidator(z.object({ date: z.string() }))
+  .inputValidator(z.object({ date: z.string(), legalEntityId: z.string().optional() }))
   .handler(async ({ data }) => {
     const { current, previous } = monthlyRanges(data.date)
     const fetch = async (range: Range) =>
@@ -229,6 +231,7 @@ export const getHairAssignedThroughSaleStatsForDate = createServerFn({ method: "
             isNull(hairAssigned.appointmentId),
             gte(hairAssigned.createdAt, range.start),
             lt(hairAssigned.createdAt, range.end),
+            data.legalEntityId ? eq(hairOrder.legalEntityId, data.legalEntityId) : undefined,
           ),
         )
     const [cur, prev] = await Promise.all([fetch(current), fetch(previous)])

@@ -5,6 +5,7 @@ import {
   Divider,
   Group,
   Paper,
+  Select,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -16,6 +17,7 @@ import { IconArrowDownRight, IconArrowUpRight, IconCash } from "@tabler/icons-re
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import dayjs from "dayjs"
+import { useState } from "react"
 import { z } from "zod"
 
 import {
@@ -24,6 +26,7 @@ import {
   getTransactionStatsForDate,
   type StatCategory,
 } from "@/functions/dashboard"
+import { listLegalEntities } from "@/functions/legal-entities"
 import { CURRENCIES } from "@/lib/currency"
 import { dashboardKeys } from "@/lib/query-keys"
 
@@ -31,22 +34,23 @@ const searchSchema = z.object({
   date: z.string().optional(),
 })
 
-const transactionStatsOptions = (date: string) =>
+const transactionStatsOptions = (date: string, legalEntityId: string) =>
   queryOptions({
-    queryKey: dashboardKeys.transactionStats(date),
-    queryFn: () => getTransactionStatsForDate({ data: { date } }),
+    queryKey: [...dashboardKeys.transactionStats(date), legalEntityId],
+    queryFn: () => getTransactionStatsForDate({ data: { date, legalEntityId: legalEntityId || undefined } }),
   })
 
-const hairAssignedStatsOptions = (date: string) =>
+const hairAssignedStatsOptions = (date: string, legalEntityId: string) =>
   queryOptions({
-    queryKey: dashboardKeys.hairAssignedStats(date),
-    queryFn: () => getHairAssignedStatsForDate({ data: { date } }),
+    queryKey: [...dashboardKeys.hairAssignedStats(date), legalEntityId],
+    queryFn: () => getHairAssignedStatsForDate({ data: { date, legalEntityId: legalEntityId || undefined } }),
   })
 
-const hairSaleStatsOptions = (date: string) =>
+const hairSaleStatsOptions = (date: string, legalEntityId: string) =>
   queryOptions({
-    queryKey: dashboardKeys.hairSaleStats(date),
-    queryFn: () => getHairAssignedThroughSaleStatsForDate({ data: { date } }),
+    queryKey: [...dashboardKeys.hairSaleStats(date), legalEntityId],
+    queryFn: () =>
+      getHairAssignedThroughSaleStatsForDate({ data: { date, legalEntityId: legalEntityId || undefined } }),
   })
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -55,9 +59,9 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   loaderDeps: ({ search }) => ({ date: search.date ?? dayjs().startOf("month").format("YYYY-MM-DD") }),
   loader: async ({ context, deps }) => {
     await Promise.all([
-      context.queryClient.prefetchQuery(transactionStatsOptions(deps.date)),
-      context.queryClient.prefetchQuery(hairAssignedStatsOptions(deps.date)),
-      context.queryClient.prefetchQuery(hairSaleStatsOptions(deps.date)),
+      context.queryClient.prefetchQuery(transactionStatsOptions(deps.date, "")),
+      context.queryClient.prefetchQuery(hairAssignedStatsOptions(deps.date, "")),
+      context.queryClient.prefetchQuery(hairSaleStatsOptions(deps.date, "")),
     ])
   },
 })
@@ -69,9 +73,12 @@ function DashboardPage() {
 
   const setDate = (next: string) => navigate({ search: { date: next } })
 
-  const { data: txStats } = useQuery(transactionStatsOptions(date))
-  const { data: hairApt } = useQuery(hairAssignedStatsOptions(date))
-  const { data: hairSale } = useQuery(hairSaleStatsOptions(date))
+  const [legalEntityFilter, setLegalEntityFilter] = useState<string>("")
+  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
+
+  const { data: txStats } = useQuery(transactionStatsOptions(date, legalEntityFilter))
+  const { data: hairApt } = useQuery(hairAssignedStatsOptions(date, legalEntityFilter))
+  const { data: hairSale } = useQuery(hairSaleStatsOptions(date, legalEntityFilter))
 
   return (
     <Container size="lg">
@@ -87,6 +94,16 @@ function DashboardPage() {
               <Button variant="default" onClick={() => setDate(dayjs(date).add(1, "month").format("YYYY-MM-DD"))}>
                 Next
               </Button>
+              <Select
+                label="Legal entity"
+                data={[
+                  { value: "", label: "All" },
+                  ...(legalEntitiesQuery.data ?? []).map((le) => ({ value: le.id, label: le.name })),
+                ]}
+                value={legalEntityFilter}
+                onChange={(v) => setLegalEntityFilter(v ?? "")}
+                w={240}
+              />
             </Group>
           </Group>
         </Paper>
