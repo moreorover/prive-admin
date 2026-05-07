@@ -4,6 +4,7 @@ import {
   Badge,
   Button,
   Card,
+  Container,
   FileInput,
   Group,
   Modal,
@@ -103,122 +104,130 @@ function BankStatementsPage() {
   }
 
   return (
-    <Stack p="md">
-      <Title order={3}>Bank statements</Title>
+    <Container size="lg">
+      <Stack p="md">
+        <Title order={3}>Bank statements</Title>
 
-      <Card withBorder>
-        <Stack>
-          <Text fw={500}>Upload SEB statement (CSV)</Text>
-          <Group align="end">
-            <FileInput placeholder="Pick a .csv file" value={file} onChange={setFile} accept=".csv,text/csv" w={400} />
-            <Button onClick={handleUpload} loading={importMutation.isPending} disabled={!file}>
-              Import
-            </Button>
-          </Group>
-          {importResult && (
-            <Alert variant="light" color="green">
-              IBAN <code>{importResult.accountIban}</code>: imported {importResult.inserted} new entries, skipped{" "}
-              {importResult.skipped} duplicates (total rows {importResult.total}).
-            </Alert>
-          )}
-        </Stack>
-      </Card>
-
-      <Group>
-        <Select
-          label="Bank account"
-          data={[
-            { value: "", label: "All accounts" },
-            ...(accountsQuery.data ?? []).map((a) => ({ value: a.id, label: a.displayName })),
-          ]}
-          value={bankAccountFilter}
-          onChange={(v) => setBankAccountFilter(v ?? "")}
-          w={260}
-        />
-        <Select
-          label="Status"
-          data={[
-            { value: "PENDING", label: "Pending" },
-            { value: "LINKED", label: "Linked" },
-            { value: "IGNORED", label: "Ignored" },
-            { value: "ALL", label: "All" },
-          ]}
-          value={statusFilter}
-          onChange={(v) => setStatusFilter((v as StatusFilter) ?? "PENDING")}
-          w={180}
-        />
-      </Group>
-
-      <Card withBorder>
-        <Table>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Date</Table.Th>
-              <Table.Th>In/Out</Table.Th>
-              <Table.Th>Amount</Table.Th>
-              <Table.Th>Counterparty</Table.Th>
-              <Table.Th>Purpose</Table.Th>
-              <Table.Th>Account</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th />
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {(entriesQuery.data ?? []).map((e) => (
-              <Table.Tr key={e.id}>
-                <Table.Td>{e.date}</Table.Td>
-                <Table.Td>
-                  <Badge variant="light" color={e.direction === "C" ? "green" : "red"}>
-                    {e.direction === "C" ? "In" : "Out"}
-                  </Badge>
-                </Table.Td>
-                <Table.Td>{formatMinor(e.amount, e.currency as Currency)}</Table.Td>
-                <Table.Td>{e.counterpartyName ?? "—"}</Table.Td>
-                <Table.Td>
-                  <Text size="xs" lineClamp={2}>
-                    {e.purpose ?? "—"}
-                  </Text>
-                </Table.Td>
-                <Table.Td>{e.bankAccount?.displayName}</Table.Td>
-                <Table.Td>
-                  <Badge
-                    variant="light"
-                    color={e.status === "PENDING" ? "blue" : e.status === "LINKED" ? "green" : "gray"}
-                  >
-                    {e.status}
-                  </Badge>
-                </Table.Td>
-                <Table.Td>
-                  {e.status === "PENDING" ? (
-                    <Group gap="xs" wrap="nowrap">
-                      <Anchor size="sm" onClick={() => setPromoteEntryId(e.id)}>
-                        Promote
-                      </Anchor>
-                      <Anchor size="sm" c="dimmed" onClick={() => ignoreMutation.mutate(e.id)}>
-                        Ignore
-                      </Anchor>
-                    </Group>
-                  ) : (
-                    <Anchor size="sm" c="dimmed" onClick={() => undoMutation.mutate(e.id)}>
-                      Undo
-                    </Anchor>
-                  )}
-                </Table.Td>
-              </Table.Tr>
-            ))}
-            {entriesQuery.data?.length === 0 && (
-              <Table.Tr>
-                <Table.Td colSpan={8} ta="center" c="dimmed">
-                  No entries.
-                </Table.Td>
-              </Table.Tr>
+        <Card withBorder>
+          <Stack>
+            <Text fw={500}>Upload SEB statement (CSV)</Text>
+            <Group align="end">
+              <FileInput
+                placeholder="Pick a .csv file"
+                value={file}
+                onChange={setFile}
+                accept=".csv,text/csv"
+                w={400}
+              />
+              <Button onClick={handleUpload} loading={importMutation.isPending} disabled={!file}>
+                Import
+              </Button>
+            </Group>
+            {importResult && (
+              <Alert variant="light" color="green">
+                IBAN <code>{importResult.accountIban}</code>: imported {importResult.inserted} new entries, skipped{" "}
+                {importResult.skipped} duplicates (total rows {importResult.total}).
+              </Alert>
             )}
-          </Table.Tbody>
-        </Table>
-      </Card>
+          </Stack>
+        </Card>
 
-      <PromoteEntryModal entryId={promoteEntryId} onClose={() => setPromoteEntryId(null)} />
-    </Stack>
+        <Group>
+          <Select
+            label="Bank account"
+            data={[
+              { value: "", label: "All accounts" },
+              ...(accountsQuery.data ?? []).map((a) => ({ value: a.id, label: a.displayName })),
+            ]}
+            value={bankAccountFilter}
+            onChange={(v) => setBankAccountFilter(v ?? "")}
+            w={260}
+          />
+          <Select
+            label="Status"
+            data={[
+              { value: "PENDING", label: "Pending" },
+              { value: "LINKED", label: "Linked" },
+              { value: "IGNORED", label: "Ignored" },
+              { value: "ALL", label: "All" },
+            ]}
+            value={statusFilter}
+            onChange={(v) => setStatusFilter((v as StatusFilter) ?? "PENDING")}
+            w={180}
+          />
+        </Group>
+
+        <Card withBorder>
+          <Table>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Date</Table.Th>
+                <Table.Th>In/Out</Table.Th>
+                <Table.Th>Amount</Table.Th>
+                <Table.Th>Counterparty</Table.Th>
+                <Table.Th>Purpose</Table.Th>
+                <Table.Th>Account</Table.Th>
+                <Table.Th>Status</Table.Th>
+                <Table.Th />
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {(entriesQuery.data ?? []).map((e) => (
+                <Table.Tr key={e.id}>
+                  <Table.Td>{e.date}</Table.Td>
+                  <Table.Td>
+                    <Badge variant="light" color={e.direction === "C" ? "green" : "red"}>
+                      {e.direction === "C" ? "In" : "Out"}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td>{formatMinor(e.amount, e.currency as Currency)}</Table.Td>
+                  <Table.Td>{e.counterpartyName ?? "—"}</Table.Td>
+                  <Table.Td>
+                    <Text size="xs" lineClamp={2}>
+                      {e.purpose ?? "—"}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>{e.bankAccount?.displayName}</Table.Td>
+                  <Table.Td>
+                    <Badge
+                      variant="light"
+                      color={e.status === "PENDING" ? "blue" : e.status === "LINKED" ? "green" : "gray"}
+                    >
+                      {e.status}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td>
+                    {e.status === "PENDING" ? (
+                      <Group gap="xs" wrap="nowrap">
+                        <Anchor size="sm" onClick={() => setPromoteEntryId(e.id)}>
+                          Promote
+                        </Anchor>
+                        <Anchor size="sm" c="dimmed" onClick={() => ignoreMutation.mutate(e.id)}>
+                          Ignore
+                        </Anchor>
+                      </Group>
+                    ) : (
+                      <Anchor size="sm" c="dimmed" onClick={() => undoMutation.mutate(e.id)}>
+                        Undo
+                      </Anchor>
+                    )}
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+              {entriesQuery.data?.length === 0 && (
+                <Table.Tr>
+                  <Table.Td colSpan={8} ta="center" c="dimmed">
+                    No entries.
+                  </Table.Td>
+                </Table.Tr>
+              )}
+            </Table.Tbody>
+          </Table>
+        </Card>
+
+        <PromoteEntryModal entryId={promoteEntryId} onClose={() => setPromoteEntryId(null)} />
+      </Stack>
+    </Container>
   )
 }
 

@@ -1,4 +1,4 @@
-import { Button, Card, Group, Stack, TextInput, Title } from "@mantine/core"
+import { Button, Card, Container, Group, Stack, TextInput, Title } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -58,29 +58,31 @@ function LegalEntityEdit() {
   })
 
   return (
-    <Stack p="md">
-      <Title order={3}>Edit legal entity</Title>
-      <Card withBorder>
-        <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
-          <Stack>
-            <TextInput label="Name" required {...form.getInputProps("name")} />
-            <TextInput
-              label="Registration number"
-              placeholder="Companies House / JAR"
-              {...form.getInputProps("registrationNumber")}
-            />
-            <TextInput label="VAT number" {...form.getInputProps("vatNumber")} />
-            <Group>
-              <Button type="submit" loading={save.isPending}>
-                Save
-              </Button>
-              <Button component={Link} to="/legal-entities" variant="subtle">
-                Cancel
-              </Button>
-            </Group>
-          </Stack>
-        </form>
-      </Card>
-    </Stack>
+    <Container size="lg">
+      <Stack p="md">
+        <Title order={3}>Edit legal entity</Title>
+        <Card withBorder>
+          <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
+            <Stack>
+              <TextInput label="Name" required {...form.getInputProps("name")} />
+              <TextInput
+                label="Registration number"
+                placeholder="Companies House / JAR"
+                {...form.getInputProps("registrationNumber")}
+              />
+              <TextInput label="VAT number" {...form.getInputProps("vatNumber")} />
+              <Group>
+                <Button type="submit" loading={save.isPending}>
+                  Save
+                </Button>
+                <Button component={Link} to="/legal-entities" variant="subtle">
+                  Cancel
+                </Button>
+              </Group>
+            </Stack>
+          </form>
+        </Card>
+      </Stack>
+    </Container>
   )
 }
