@@ -1,14 +1,14 @@
-import { db } from "@prive-admin-tanstack/db"
-import { bankAccount } from "@prive-admin-tanstack/db/schema/bank-account"
-import { bankStatementEntry } from "@prive-admin-tanstack/db/schema/bank-statement-entry"
-import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
-import { personnelOnAppointments } from "@prive-admin-tanstack/db/schema/appointment"
-import { createServerFn } from "@tanstack/react-start"
-import { eq, and, desc } from "drizzle-orm"
-import { z } from "zod"
+import {db} from "@prive-admin-tanstack/db"
+import {personnelOnAppointments} from "@prive-admin-tanstack/db/schema/appointment"
+import {bankAccount} from "@prive-admin-tanstack/db/schema/bank-account"
+import {bankStatementEntry} from "@prive-admin-tanstack/db/schema/bank-statement-entry"
+import {transaction} from "@prive-admin-tanstack/db/schema/transaction"
+import {createServerFn} from "@tanstack/react-start"
+import {and, desc, eq} from "drizzle-orm"
+import {z} from "zod"
 
-import { requireAuthMiddleware } from "@/middleware/auth"
-import { parseSebCsv } from "@/server/seb-csv.server"
+import {requireAuthMiddleware} from "@/middleware/auth"
+import {parseSebCsv} from "@/server/seb-csv.server"
 
 export const importSebCsv = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
