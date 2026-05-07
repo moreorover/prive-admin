@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { currencySchema } from "./currency"
+
 export const customerSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(5, "Name must be at least 5 characters long").max(50, "Name cannot exceed 50 characters"),
@@ -59,3 +61,18 @@ export const salonSchema = z.object({
   address: z.string().max(255).nullish(),
 })
 export type SalonInput = z.infer<typeof salonSchema>
+
+export const bankAccountSchema = z.object({
+  id: z.string().optional(),
+  legalEntityId: z.string().min(1, "Legal entity is required"),
+  iban: z
+    .string()
+    .min(15, "IBAN looks too short")
+    .max(34, "IBAN looks too long")
+    .regex(/^[A-Z]{2}\d{2}[A-Z0-9]+$/, "Invalid IBAN format"),
+  currency: currencySchema,
+  bankName: z.string().max(120).nullish(),
+  swift: z.string().max(11).nullish(),
+  displayName: z.string().min(1, "Display name is required").max(120),
+})
+export type BankAccountInput = z.infer<typeof bankAccountSchema>
