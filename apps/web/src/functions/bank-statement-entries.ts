@@ -6,8 +6,8 @@ import { createServerFn } from "@tanstack/react-start"
 import { eq, and, desc } from "drizzle-orm"
 import { z } from "zod"
 
-import { parseSebCsv } from "@/server/seb-csv.server"
 import { requireAuthMiddleware } from "@/middleware/auth"
+import { parseSebCsv } from "@/server/seb-csv.server"
 
 export const importSebCsv = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
@@ -20,9 +20,7 @@ export const importSebCsv = createServerFn({ method: "POST" })
       columns: { id: true, currency: true },
     })
     if (!account) {
-      throw new Error(
-        `No bank account configured for IBAN ${parsed.accountIban}. Add it in /bank-accounts first.`,
-      )
+      throw new Error(`No bank account configured for IBAN ${parsed.accountIban}. Add it in /bank-accounts first.`)
     }
 
     if (parsed.rows.length === 0) {
