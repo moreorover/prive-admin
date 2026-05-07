@@ -19,7 +19,6 @@ export const appointmentSchema = z.object({
   startsAt: z.union([z.string(), z.date()]),
   clientId: z.string().min(1, "Client is required"),
   salonId: z.string().min(1, "Salon is required"),
-  legalEntityId: z.string().min(1, "Legal entity is required"),
 })
 export type AppointmentInput = z.infer<typeof appointmentSchema>
 
@@ -46,8 +45,6 @@ export const noteSchema = z.object({
 
 export type NoteInput = z.infer<typeof noteSchema>
 
-import { countrySchema } from "./legal-entity"
-
 export const legalEntityUpdateSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1, "Name is required").max(120),
@@ -59,8 +56,6 @@ export type LegalEntityUpdateInput = z.infer<typeof legalEntityUpdateSchema>
 export const salonSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "Name is required").max(120),
-  country: countrySchema,
-  defaultLegalEntityId: z.string().min(1),
   address: z.string().max(255).nullish(),
 })
 export type SalonInput = z.infer<typeof salonSchema>

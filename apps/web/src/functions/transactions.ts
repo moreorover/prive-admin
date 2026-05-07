@@ -1,13 +1,12 @@
-import { db, whereActiveLegalEntity } from "@prive-admin-tanstack/db"
+import { db } from "@prive-admin-tanstack/db"
 import { personnelOnAppointments } from "@prive-admin-tanstack/db/schema/appointment"
 import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
 import { createServerFn } from "@tanstack/react-start"
-import { and, eq } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 import { z } from "zod"
 
 import { currencySchema } from "@/lib/currency"
 import { requireAuthMiddleware } from "@/middleware/auth"
-import { readActiveLegalEntityId } from "@/server/active-legal-entity.server"
 
 const transactionTypeSchema = z.enum(["BANK", "CASH", "PAYPAL"])
 const transactionStatusSchema = z.enum(["PENDING", "COMPLETED"])
@@ -27,14 +26,9 @@ const transactionFieldsSchema = z.object({
 export const getTransactionsByAppointmentId = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ appointmentId: z.string() }))
-  .handler(async ({ context, data }) => {
-    const activeId = await readActiveLegalEntityId(context.session.user.id)
-    const filters = [
-      eq(transaction.appointmentId, data.appointmentId),
-      whereActiveLegalEntity(transaction.legalEntityId, activeId),
-    ].filter(Boolean)
+  .handler(async ({ data }) => {
     return db.query.transaction.findMany({
-      where: and(...filters),
+      where: eq(transaction.appointmentId, data.appointmentId),
       with: {
         customer: { columns: { id: true, name: true } },
         legalEntity: { columns: { id: true, name: true, type: true, country: true } },
