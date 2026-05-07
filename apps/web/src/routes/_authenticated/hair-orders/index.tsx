@@ -1,5 +1,4 @@
 import {
-  Anchor,
   Badge,
   Button,
   Container,
@@ -24,10 +23,8 @@ import { useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
 import { getCustomers } from "@/functions/customers"
-import { getActiveLegalEntityId } from "@/functions/get-active-legal-entity"
 import { createHairOrder, getHairOrders } from "@/functions/hair-orders"
 import { listLegalEntities } from "@/functions/legal-entities"
-import { setActiveLegalEntity } from "@/functions/user-settings"
 import { COUNTRY_FLAGS, type Country } from "@/lib/legal-entity"
 import { customerKeys, hairOrderKeys } from "@/lib/query-keys"
 
@@ -51,7 +48,6 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     queryFn: () => getCustomers(),
   })
 
-  const activeQuery = useQuery({ queryKey: ["active-legal-entity"], queryFn: () => getActiveLegalEntityId() })
   const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
 
   const mutation = useMutation({
@@ -74,7 +70,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   })
 
   const form = useForm({
-    initialValues: { customerId: "", placedAt: "", weightReceived: 0, total: 0, legalEntityId: activeQuery.data ?? "" },
+    initialValues: { customerId: "", placedAt: "", weightReceived: 0, total: 0, legalEntityId: "" },
   })
 
   const handleSubmit = async (values: {
@@ -135,23 +131,6 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 function HairOrdersPage() {
   const { data: hairOrders, isLoading } = useQuery(hairOrdersQueryOptions)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const queryClient = useQueryClient()
-
-  const activeQuery = useQuery({ queryKey: ["active-legal-entity"], queryFn: () => getActiveLegalEntityId() })
-  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
-  const setActive = useMutation({
-    mutationFn: () => setActiveLegalEntity({ data: { legalEntityId: null } }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["active-legal-entity"] })
-      await queryClient.invalidateQueries({ queryKey: ["hair-orders"] })
-    },
-  })
-  const activeName =
-    activeQuery.isPending || legalEntitiesQuery.isPending
-      ? null
-      : activeQuery.data
-        ? (legalEntitiesQuery.data?.find((le) => le.id === activeQuery.data)?.name ?? null)
-        : null
 
   return (
     <Container size="lg">
@@ -170,17 +149,6 @@ function HairOrdersPage() {
             New Order
           </Button>
         </Group>
-
-        {activeName ? (
-          <Group gap="xs" mb="xs">
-            <Text size="sm" c="dimmed">
-              Filtering: {activeName}
-            </Text>
-            <Anchor size="sm" onClick={() => setActive.mutate()}>
-              clear
-            </Anchor>
-          </Group>
-        ) : null}
 
         <Table>
           <Table.Thead>

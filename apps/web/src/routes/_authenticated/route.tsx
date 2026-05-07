@@ -36,7 +36,6 @@ import { useQueryErrorResetBoundary } from "@tanstack/react-query"
 import { Link, Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { LegalEntitySwitcher } from "@/components/legal-entity-switcher"
 import { getUser } from "@/functions/get-user"
 import { authClient } from "@/lib/auth-client"
 
@@ -94,7 +93,6 @@ function AuthenticatedLayout() {
             />
 
             <Group gap="xs" visibleFrom="xs" wrap="nowrap">
-              <LegalEntitySwitcher />
               <ColorSchemeToggle />
               <UserSection />
             </Group>
@@ -140,7 +138,6 @@ function AuthenticatedLayout() {
           ))}
           <Divider my="sm" />
           <Group p="md">
-            <LegalEntitySwitcher />
             <ColorSchemeToggle />
             <UserSection />
           </Group>

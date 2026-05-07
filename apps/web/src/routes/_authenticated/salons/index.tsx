@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 
 import { listSalons } from "@/functions/salons"
-import { COUNTRY_FLAGS, COUNTRY_LABELS, type Country } from "@/lib/legal-entity"
 
 export const Route = createFileRoute("/_authenticated/salons/")({
   component: SalonsIndex,
@@ -25,8 +24,7 @@ function SalonsIndex() {
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Name</Table.Th>
-              <Table.Th>Country</Table.Th>
-              <Table.Th>Default legal entity</Table.Th>
+              <Table.Th>Address</Table.Th>
               <Table.Th />
             </Table.Tr>
           </Table.Thead>
@@ -34,10 +32,7 @@ function SalonsIndex() {
             {(q.data ?? []).map((s) => (
               <Table.Tr key={s.id}>
                 <Table.Td>{s.name}</Table.Td>
-                <Table.Td>
-                  {COUNTRY_FLAGS[s.country as Country]} {COUNTRY_LABELS[s.country as Country]}
-                </Table.Td>
-                <Table.Td>{s.defaultLegalEntity?.name}</Table.Td>
+                <Table.Td>{s.address ?? "—"}</Table.Td>
                 <Table.Td>
                   <Anchor renderRoot={(props) => <Link to="/salons/$salonId" params={{ salonId: s.id }} {...props} />}>
                     Edit

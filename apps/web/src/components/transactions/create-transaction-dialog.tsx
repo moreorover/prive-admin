@@ -1,11 +1,10 @@
 import { Modal } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import type { Currency } from "@/lib/currency"
 
 import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
-import { getActiveLegalEntityId } from "@/functions/get-active-legal-entity"
 import { createTransaction } from "@/functions/transactions"
 
 type CreateTransactionDialogProps = {
@@ -34,7 +33,6 @@ export function CreateTransactionDialog({
   invalidateKeys,
 }: CreateTransactionDialogProps) {
   const queryClient = useQueryClient()
-  const activeQuery = useQuery({ queryKey: ["active-legal-entity"], queryFn: () => getActiveLegalEntityId() })
 
   const mutation = useMutation({
     mutationFn: (values: TransactionFormSubmit) =>
@@ -58,7 +56,7 @@ export function CreateTransactionDialog({
           type: "BANK",
           status: "PENDING",
           completedDateBy: todayIso(),
-          legalEntityId: activeQuery.data ?? "",
+          legalEntityId: "",
         }}
         submitLabel="Create"
         loading={mutation.isPending}
