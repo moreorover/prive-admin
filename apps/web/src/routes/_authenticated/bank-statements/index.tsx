@@ -154,7 +154,7 @@ function BankStatementsPage() {
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Date</Table.Th>
-              <Table.Th>Direction</Table.Th>
+              <Table.Th>In/Out</Table.Th>
               <Table.Th>Amount</Table.Th>
               <Table.Th>Counterparty</Table.Th>
               <Table.Th>Purpose</Table.Th>
@@ -169,7 +169,7 @@ function BankStatementsPage() {
                 <Table.Td>{e.date}</Table.Td>
                 <Table.Td>
                   <Badge variant="light" color={e.direction === "C" ? "green" : "red"}>
-                    {e.direction}
+                    {e.direction === "C" ? "In" : "Out"}
                   </Badge>
                 </Table.Td>
                 <Table.Td>{formatMinor(e.amount, e.currency as Currency)}</Table.Td>
@@ -270,7 +270,7 @@ function PromoteEntryModal({ entryId, onClose }: { entryId: string | null; onClo
           </Text>
           <Text size="sm">
             <strong>Amount:</strong> {formatMinor(entryQuery.data.amount, entryQuery.data.currency as Currency)} (
-            {entryQuery.data.direction === "C" ? "credit" : "debit"})
+            {entryQuery.data.direction === "C" ? "in" : "out"})
           </Text>
           <Text size="sm">
             <strong>Date:</strong> {entryQuery.data.date}
