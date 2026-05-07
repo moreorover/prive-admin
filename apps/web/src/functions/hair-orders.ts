@@ -1,4 +1,4 @@
-import { db } from "@prive-admin-tanstack/db"
+import { db, whereActiveLegalEntity } from "@prive-admin-tanstack/db"
 import { hairAssigned, hairOrder } from "@prive-admin-tanstack/db/schema/hair"
 import { createServerFn } from "@tanstack/react-start"
 import { eq } from "drizzle-orm"
@@ -9,8 +9,11 @@ import { requireAuthMiddleware } from "@/middleware/auth"
 
 export const getHairOrders = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .handler(async () => {
+  .inputValidator(z.object({ legalEntityId: z.string().optional() }).optional())
+  .handler(async ({ data }) => {
+    const filter = data?.legalEntityId ? whereActiveLegalEntity(hairOrder.legalEntityId, data.legalEntityId) : undefined
     return db.query.hairOrder.findMany({
+      where: filter,
       with: { createdBy: true, customer: true, legalEntity: true },
       orderBy: (hairOrder, { asc }) => [asc(hairOrder.uid)],
     })

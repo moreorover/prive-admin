@@ -17,7 +17,7 @@ import {
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconPlus, IconScissors } from "@tabler/icons-react"
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -28,16 +28,8 @@ import { listLegalEntities } from "@/functions/legal-entities"
 import { COUNTRY_FLAGS, type Country } from "@/lib/legal-entity"
 import { customerKeys, hairOrderKeys } from "@/lib/query-keys"
 
-const hairOrdersQueryOptions = queryOptions({
-  queryKey: hairOrderKeys.list(),
-  queryFn: () => getHairOrders(),
-})
-
 export const Route = createFileRoute("/_authenticated/hair-orders/")({
   component: HairOrdersPage,
-  loader: async ({ context }) => {
-    await context.queryClient.prefetchQuery(hairOrdersQueryOptions)
-  },
 })
 
 function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
@@ -129,7 +121,12 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 }
 
 function HairOrdersPage() {
-  const { data: hairOrders, isLoading } = useQuery(hairOrdersQueryOptions)
+  const [legalEntityFilter, setLegalEntityFilter] = useState<string>("")
+  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
+  const { data: hairOrders, isLoading } = useQuery({
+    queryKey: ["hair-orders", legalEntityFilter],
+    queryFn: () => getHairOrders({ data: { legalEntityId: legalEntityFilter || undefined } }),
+  })
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
@@ -148,6 +145,19 @@ function HairOrdersPage() {
           <Button leftSection={<IconPlus size={14} />} onClick={() => setDialogOpen(true)}>
             New Order
           </Button>
+        </Group>
+
+        <Group mb="md">
+          <Select
+            label="Legal entity"
+            data={[
+              { value: "", label: "All" },
+              ...(legalEntitiesQuery.data ?? []).map((le) => ({ value: le.id, label: le.name })),
+            ]}
+            value={legalEntityFilter}
+            onChange={(v) => setLegalEntityFilter(v ?? "")}
+            w={240}
+          />
         </Group>
 
         <Table>
