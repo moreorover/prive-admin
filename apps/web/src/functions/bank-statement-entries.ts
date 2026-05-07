@@ -2,6 +2,7 @@ import { db } from "@prive-admin-tanstack/db"
 import { bankAccount } from "@prive-admin-tanstack/db/schema/bank-account"
 import { bankStatementEntry } from "@prive-admin-tanstack/db/schema/bank-statement-entry"
 import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
+import { personnelOnAppointments } from "@prive-admin-tanstack/db/schema/appointment"
 import { createServerFn } from "@tanstack/react-start"
 import { eq, and, desc } from "drizzle-orm"
 import { z } from "zod"
@@ -119,6 +120,24 @@ export const promoteEntryToTransaction = createServerFn({ method: "POST" })
       if (!entry) throw new Error("Statement entry not found")
       if (entry.status === "LINKED") throw new Error("Entry already linked to a transaction")
       if (entry.status === "IGNORED") throw new Error("Entry is marked ignored; un-ignore first")
+
+      if (data.appointmentId) {
+        const allowed = new Set<string>()
+        const appt = await tx.query.appointment.findFirst({
+          where: (a, { eq }) => eq(a.id, data.appointmentId!),
+          columns: { id: true, clientId: true },
+        })
+        if (!appt) throw new Error("Appointment not found")
+        allowed.add(appt.clientId)
+        const personnel = await tx
+          .select({ personnelId: personnelOnAppointments.personnelId })
+          .from(personnelOnAppointments)
+          .where(eq(personnelOnAppointments.appointmentId, data.appointmentId))
+        for (const p of personnel) allowed.add(p.personnelId)
+        if (!allowed.has(data.customerId)) {
+          throw new Error("Customer must be the appointment client or assigned personnel")
+        }
+      }
 
       const [created] = await tx
         .insert(transaction)
