@@ -2,6 +2,7 @@ import { DonutChart } from "@mantine/charts"
 import {
   ActionIcon,
   Anchor,
+  Badge,
   Button,
   Card,
   Checkbox,
@@ -19,7 +20,16 @@ import {
   Title,
 } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
-import { IconArrowLeft, IconCash, IconClock, IconDots, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
+import {
+  IconArrowLeft,
+  IconCash,
+  IconClock,
+  IconDots,
+  IconLink,
+  IconPlus,
+  IconUser,
+  IconUsers,
+} from "@tabler/icons-react"
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
@@ -34,6 +44,7 @@ import { DeleteTransactionDialog } from "@/components/transactions/delete-transa
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
 import { getAppointment, linkPersonnel } from "@/functions/appointments"
+import { listBankStatementEntries, promoteEntryToTransaction } from "@/functions/bank-statement-entries"
 import { getCustomers } from "@/functions/customers"
 import { getHairAssignedByAppointment } from "@/functions/hair-assigned"
 import { getTransactionsByAppointmentId } from "@/functions/transactions"
@@ -83,6 +94,9 @@ function AppointmentDetailPage() {
   const [createTxCustomerId, setCreateTxCustomerId] = useState<string | null>(null)
   const [editTx, setEditTx] = useState<TransactionRow | null>(null)
   const [deleteTx, setDeleteTx] = useState<TransactionRow | null>(null)
+  const [linkBankOpen, setLinkBankOpen] = useState(false)
+
+  const queryClient = useQueryClient()
 
   const { data: appointment, isLoading } = useQuery({
     queryKey: appointmentKeys.detail(appointmentId),
@@ -318,14 +332,24 @@ function AppointmentDetailPage() {
         <Card withBorder>
           <Group justify="space-between" mb="sm">
             <Title order={5}>Transactions</Title>
-            <Button
-              variant="subtle"
-              size="xs"
-              leftSection={<IconPlus size={12} />}
-              onClick={() => openCreateTx(appointment.client.id)}
-            >
-              New
-            </Button>
+            <Group gap="xs">
+              <Button
+                variant="default"
+                size="xs"
+                leftSection={<IconLink size={12} />}
+                onClick={() => setLinkBankOpen(true)}
+              >
+                Link bank entry
+              </Button>
+              <Button
+                variant="subtle"
+                size="xs"
+                leftSection={<IconPlus size={12} />}
+                onClick={() => openCreateTx(appointment.client.id)}
+              >
+                New
+              </Button>
+            </Group>
           </Group>
           {(() => {
             const txRows: TransactionRow[] = txList.map((t) => ({
@@ -416,6 +440,17 @@ function AppointmentDetailPage() {
             invalidateKeys={txInvalidateKeys}
           />
         )}
+        <LinkBankEntryDialog
+          appointmentId={appointmentId}
+          customerId={appointment.client.id}
+          open={linkBankOpen}
+          onOpenChange={setLinkBankOpen}
+          onLinked={async () => {
+            await queryClient.invalidateQueries({ queryKey: ["bank-statement-entries"] })
+            await queryClient.invalidateQueries({ queryKey: transactionKeys.byAppointment(appointmentId) })
+            setLinkBankOpen(false)
+          }}
+        />
       </Stack>
     </Container>
   )
@@ -529,6 +564,81 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
             Confirm
           </Button>
         </Group>
+      </Stack>
+    </Modal>
+  )
+}
+
+function LinkBankEntryDialog({
+  appointmentId,
+  customerId,
+  open,
+  onOpenChange,
+  onLinked,
+}: {
+  appointmentId: string
+  customerId: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onLinked: () => void
+}) {
+  const entriesQuery = useQuery({
+    queryKey: ["bank-statement-entries", "pending"],
+    queryFn: () => listBankStatementEntries({ data: { status: "PENDING" } }),
+    enabled: open,
+  })
+
+  const promote = useMutation({
+    mutationFn: (entryId: string) =>
+      promoteEntryToTransaction({
+        data: { entryId, appointmentId, customerId },
+      }),
+    onSuccess: () => {
+      notifications.show({ color: "green", message: "Linked" })
+      onLinked()
+    },
+    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+  })
+
+  return (
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="Link bank entry" size="lg">
+      <Stack>
+        {(entriesQuery.data ?? []).length === 0 ? (
+          <Text c="dimmed">No pending bank entries.</Text>
+        ) : (
+          <Table>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Date</Table.Th>
+                <Table.Th>In/Out</Table.Th>
+                <Table.Th>Amount</Table.Th>
+                <Table.Th>Counterparty</Table.Th>
+                <Table.Th>Account</Table.Th>
+                <Table.Th />
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {(entriesQuery.data ?? []).map((e) => (
+                <Table.Tr key={e.id}>
+                  <Table.Td>{e.date}</Table.Td>
+                  <Table.Td>
+                    <Badge variant="light" color={e.direction === "C" ? "green" : "red"}>
+                      {e.direction === "C" ? "In" : "Out"}
+                    </Badge>
+                  </Table.Td>
+                  <Table.Td>{formatMinor(e.amount, e.currency as Currency)}</Table.Td>
+                  <Table.Td>{e.counterpartyName ?? "—"}</Table.Td>
+                  <Table.Td>{e.bankAccount?.displayName}</Table.Td>
+                  <Table.Td>
+                    <Button size="xs" loading={promote.isPending} onClick={() => promote.mutate(e.id)}>
+                      Link
+                    </Button>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        )}
       </Stack>
     </Modal>
   )
