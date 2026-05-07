@@ -1,5 +1,6 @@
 export * from "./auth"
 export * from "./bank-account"
+export * from "./bank-statement-entry"
 export * from "./customer"
 export * from "./user-settings"
 export * from "./product"

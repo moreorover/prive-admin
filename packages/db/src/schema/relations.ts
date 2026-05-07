@@ -2,6 +2,8 @@ import { relations } from "drizzle-orm"
 
 import { appointment, personnelOnAppointments } from "./appointment"
 import { user, session, account } from "./auth"
+import { bankAccount } from "./bank-account"
+import { bankStatementEntry } from "./bank-statement-entry"
 import { customer } from "./customer"
 import { hairAssigned, hairOrder } from "./hair"
 import { legalEntity } from "./legal-entity"
@@ -84,6 +86,7 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
   order: one(order, { fields: [transaction.orderId], references: [order.id] }),
   appointment: one(appointment, { fields: [transaction.appointmentId], references: [appointment.id] }),
   legalEntity: one(legalEntity, { fields: [transaction.legalEntityId], references: [legalEntity.id] }),
+  bankAccount: one(bankAccount, { fields: [transaction.bankAccountId], references: [bankAccount.id] }),
 }))
 
 // Hair relations
@@ -117,6 +120,7 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
 
 // Legal entity relations
 export const legalEntityRelations = relations(legalEntity, ({ many }) => ({
+  bankAccounts: many(bankAccount),
   transactions: many(transaction),
   hairOrders: many(hairOrder),
 }))
@@ -124,4 +128,26 @@ export const legalEntityRelations = relations(legalEntity, ({ many }) => ({
 // Salon relations
 export const salonRelations = relations(salon, ({ many }) => ({
   appointments: many(appointment),
+}))
+
+// Bank account relations
+export const bankAccountRelations = relations(bankAccount, ({ one, many }) => ({
+  legalEntity: one(legalEntity, {
+    fields: [bankAccount.legalEntityId],
+    references: [legalEntity.id],
+  }),
+  statementEntries: many(bankStatementEntry),
+  transactions: many(transaction),
+}))
+
+// Bank statement entry relations
+export const bankStatementEntryRelations = relations(bankStatementEntry, ({ one }) => ({
+  bankAccount: one(bankAccount, {
+    fields: [bankStatementEntry.bankAccountId],
+    references: [bankAccount.id],
+  }),
+  linkedTransaction: one(transaction, {
+    fields: [bankStatementEntry.linkedTransactionId],
+    references: [transaction.id],
+  }),
 }))
