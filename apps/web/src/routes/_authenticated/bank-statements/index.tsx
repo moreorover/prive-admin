@@ -186,7 +186,7 @@ function BankStatementsPage() {
                         {e.bankAccount?.displayName}
                       </Text>
                     </Table.Td>
-                    <Table.Td ta="right">
+                    <Table.Td ta="right" style={{ whiteSpace: "nowrap" }}>
                       <Text size="sm" fw={500} c={color}>
                         {sign}
                         {formatMinor(e.amount, e.currency as Currency)}
