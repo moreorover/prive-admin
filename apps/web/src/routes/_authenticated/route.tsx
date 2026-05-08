@@ -47,15 +47,18 @@ const tabs = [
   { value: "/appointments", label: "Appointments" },
   { value: "/calendar", label: "Calendar" },
   { value: "/hair-orders", label: "Hair Orders" },
+  { value: "/bank-statements", label: "Bank statements" },
+  { value: "/reports", label: "Reports" },
+] as const
+
+const setupTabs = [
   { value: "/legal-entities", label: "Legal entities" },
   { value: "/salons", label: "Salons" },
   { value: "/bank-accounts", label: "Bank accounts" },
-  { value: "/bank-statements", label: "Bank statements" },
-  { value: "/reports", label: "Reports" },
   { value: "/bills", label: "Bills" },
-  // { value: "/files", label: "Files (Proxy)" },
-  // { value: "/files-direct", label: "Files (Direct)" },
 ] as const
+
+const allNav = [...tabs, ...setupTabs] as const
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -78,6 +81,9 @@ function AuthenticatedLayout() {
 
   const activeTab =
     tabs.find((t) => location.pathname === t.value || location.pathname.startsWith(`${t.value}/`))?.value ?? null
+  const setupActive = setupTabs.some(
+    (t) => location.pathname === t.value || location.pathname.startsWith(`${t.value}/`),
+  )
 
   return (
     <Box>
@@ -104,23 +110,46 @@ function AuthenticatedLayout() {
         </Container>
 
         <Container size="lg">
-          <Tabs
-            value={activeTab}
-            variant="outline"
-            visibleFrom="xs"
-            classNames={{
-              list: classes.tabsList,
-              tab: classes.tab,
-            }}
-          >
-            <Tabs.List>
-              {tabs.map((tab) => (
-                <Tabs.Tab key={tab.value} value={tab.value} renderRoot={(props) => <Link to={tab.value} {...props} />}>
-                  {tab.label}
-                </Tabs.Tab>
-              ))}
-            </Tabs.List>
-          </Tabs>
+          <Group justify="space-between" wrap="nowrap" visibleFrom="xs">
+            <Tabs
+              value={activeTab}
+              variant="outline"
+              classNames={{
+                list: classes.tabsList,
+                tab: classes.tab,
+              }}
+            >
+              <Tabs.List>
+                {tabs.map((tab) => (
+                  <Tabs.Tab
+                    key={tab.value}
+                    value={tab.value}
+                    renderRoot={(props) => <Link to={tab.value} {...props} />}
+                  >
+                    {tab.label}
+                  </Tabs.Tab>
+                ))}
+              </Tabs.List>
+            </Tabs>
+            <Menu position="bottom-end" withinPortal>
+              <Menu.Target>
+                <Button
+                  variant={setupActive ? "light" : "subtle"}
+                  size="sm"
+                  rightSection={<IconChevronDown size={14} stroke={1.5} />}
+                >
+                  Setup
+                </Button>
+              </Menu.Target>
+              <Menu.Dropdown>
+                {setupTabs.map((tab) => (
+                  <Menu.Item key={tab.value} renderRoot={(props) => <Link to={tab.value} {...props} />}>
+                    {tab.label}
+                  </Menu.Item>
+                ))}
+              </Menu.Dropdown>
+            </Menu>
+          </Group>
         </Container>
       </div>
 
@@ -135,7 +164,7 @@ function AuthenticatedLayout() {
       >
         <ScrollArea h="calc(100vh - 80px)" mx="-md">
           <Divider my="sm" />
-          {tabs.map((tab) => (
+          {allNav.map((tab) => (
             <Link key={tab.value} to={tab.value} className={classes.drawerLink} onClick={closeDrawer}>
               {tab.label}
             </Link>
