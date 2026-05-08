@@ -3,6 +3,7 @@ import { relations } from "drizzle-orm"
 import { appointment, personnelOnAppointments } from "./appointment"
 import { user, session, account } from "./auth"
 import { bankAccount } from "./bank-account"
+import { bankStatementAttachment } from "./bank-statement-attachment"
 import { bankStatementEntry } from "./bank-statement-entry"
 import { customer } from "./customer"
 import { hairAssigned, hairOrder } from "./hair"
@@ -141,7 +142,7 @@ export const bankAccountRelations = relations(bankAccount, ({ one, many }) => ({
 }))
 
 // Bank statement entry relations
-export const bankStatementEntryRelations = relations(bankStatementEntry, ({ one }) => ({
+export const bankStatementEntryRelations = relations(bankStatementEntry, ({ one, many }) => ({
   bankAccount: one(bankAccount, {
     fields: [bankStatementEntry.bankAccountId],
     references: [bankAccount.id],
@@ -149,5 +150,18 @@ export const bankStatementEntryRelations = relations(bankStatementEntry, ({ one 
   linkedTransaction: one(transaction, {
     fields: [bankStatementEntry.linkedTransactionId],
     references: [transaction.id],
+  }),
+  attachments: many(bankStatementAttachment),
+}))
+
+// Bank statement attachment relations
+export const bankStatementAttachmentRelations = relations(bankStatementAttachment, ({ one }) => ({
+  entry: one(bankStatementEntry, {
+    fields: [bankStatementAttachment.bankStatementEntryId],
+    references: [bankStatementEntry.id],
+  }),
+  uploadedBy: one(user, {
+    fields: [bankStatementAttachment.uploadedById],
+    references: [user.id],
   }),
 }))

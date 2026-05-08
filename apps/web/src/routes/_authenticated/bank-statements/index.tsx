@@ -1,6 +1,7 @@
 import {
   ActionIcon,
   Alert,
+  Badge,
   Button,
   Card,
   Container,
@@ -8,21 +9,25 @@ import {
   Group,
   Menu,
   Modal,
+  Popover,
   Select,
   Stack,
   Table,
   Text,
   TextInput,
   Title,
+  Tooltip,
 } from "@mantine/core"
+import { MonthPickerInput } from "@mantine/dates"
 import { notifications } from "@mantine/notifications"
-import { IconDotsVertical } from "@tabler/icons-react"
+import { IconDotsVertical, IconDownload, IconPaperclip, IconTrash } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 
 import { getAppointment, getAppointments } from "@/functions/appointments"
 import { listBankAccounts } from "@/functions/bank-accounts"
+import { deleteAttachment, listAttachmentCounts, listAttachments } from "@/functions/bank-statement-attachments"
 import {
   getBankStatementEntry,
   ignoreStatementEntry,
@@ -54,6 +59,10 @@ function BankStatementsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("PENDING")
   const [linkAppointmentEntryId, setLinkAppointmentEntryId] = useState<string | null>(null)
   const [standaloneEntryId, setStandaloneEntryId] = useState<string | null>(null)
+  const [exportMonth, setExportMonth] = useState<Date | null>(() => {
+    const d = new Date()
+    return new Date(d.getFullYear(), d.getMonth(), 1)
+  })
 
   const accountsQuery = useQuery({ queryKey: ["bank-accounts"], queryFn: () => listBankAccounts() })
 
@@ -66,6 +75,11 @@ function BankStatementsPage() {
           status: statusFilter === "ALL" ? undefined : statusFilter,
         },
       }),
+  })
+
+  const attachmentCountsQuery = useQuery({
+    queryKey: ["bank-statement-attachment-counts"],
+    queryFn: () => listAttachmentCounts(),
   })
 
   const importMutation = useMutation({
@@ -135,29 +149,54 @@ function BankStatementsPage() {
           </Stack>
         </Card>
 
-        <Group>
-          <Select
-            label="Bank account"
-            data={[
-              { value: "", label: "All accounts" },
-              ...(accountsQuery.data ?? []).map((a) => ({ value: a.id, label: a.displayName })),
-            ]}
-            value={bankAccountFilter}
-            onChange={(v) => setBankAccountFilter(v ?? "")}
-            w={260}
-          />
-          <Select
-            label="Status"
-            data={[
-              { value: "PENDING", label: "Pending" },
-              { value: "LINKED", label: "Linked" },
-              { value: "IGNORED", label: "Ignored" },
-              { value: "ALL", label: "All" },
-            ]}
-            value={statusFilter}
-            onChange={(v) => setStatusFilter((v as StatusFilter) ?? "PENDING")}
-            w={180}
-          />
+        <Group align="end" justify="space-between">
+          <Group>
+            <Select
+              label="Bank account"
+              data={[
+                { value: "", label: "All accounts" },
+                ...(accountsQuery.data ?? []).map((a) => ({ value: a.id, label: a.displayName })),
+              ]}
+              value={bankAccountFilter}
+              onChange={(v) => setBankAccountFilter(v ?? "")}
+              w={260}
+            />
+            <Select
+              label="Status"
+              data={[
+                { value: "PENDING", label: "Pending" },
+                { value: "LINKED", label: "Linked" },
+                { value: "IGNORED", label: "Ignored" },
+                { value: "ALL", label: "All" },
+              ]}
+              value={statusFilter}
+              onChange={(v) => setStatusFilter((v as StatusFilter) ?? "PENDING")}
+              w={180}
+            />
+          </Group>
+          <Group align="end">
+            <MonthPickerInput
+              label="Export month"
+              value={exportMonth}
+              onChange={(v) => setExportMonth(v ? new Date(v) : null)}
+              w={180}
+            />
+            <Button
+              leftSection={<IconDownload size={16} />}
+              disabled={!exportMonth}
+              onClick={() => {
+                if (!exportMonth) return
+                const params = new URLSearchParams({
+                  year: String(exportMonth.getFullYear()),
+                  month: String(exportMonth.getMonth() + 1),
+                })
+                if (bankAccountFilter) params.set("bankAccountId", bankAccountFilter)
+                window.location.href = `/api/statement-attachments/export?${params.toString()}`
+              }}
+            >
+              Download zip
+            </Button>
+          </Group>
         </Group>
 
         <Card withBorder>
@@ -168,6 +207,9 @@ function BankStatementsPage() {
                 <Table.Th ta="right">Amount</Table.Th>
                 <Table.Th>Counterparty</Table.Th>
                 <Table.Th>Purpose</Table.Th>
+                <Table.Th ta="center" w={60}>
+                  Files
+                </Table.Th>
                 <Table.Th />
               </Table.Tr>
             </Table.Thead>
@@ -194,6 +236,9 @@ function BankStatementsPage() {
                       <Text size="xs" lineClamp={2}>
                         {e.purpose ?? "—"}
                       </Text>
+                    </Table.Td>
+                    <Table.Td ta="center">
+                      <AttachmentsCell entryId={e.id} count={attachmentCountsQuery.data?.[e.id] ?? 0} />
                     </Table.Td>
                     <Table.Td ta="right">
                       <Menu position="bottom-end" withinPortal>
@@ -223,7 +268,7 @@ function BankStatementsPage() {
               })}
               {entriesQuery.data?.length === 0 && (
                 <Table.Tr>
-                  <Table.Td colSpan={5} ta="center" c="dimmed">
+                  <Table.Td colSpan={6} ta="center" c="dimmed">
                     No entries.
                   </Table.Td>
                 </Table.Tr>
@@ -236,6 +281,113 @@ function BankStatementsPage() {
         <PromoteStandaloneModal entryId={standaloneEntryId} onClose={() => setStandaloneEntryId(null)} />
       </Stack>
     </Container>
+  )
+}
+
+function AttachmentsCell({ entryId, count }: { entryId: string; count: number }) {
+  const queryClient = useQueryClient()
+  const [opened, setOpened] = useState(false)
+  const [busy, setBusy] = useState(false)
+
+  const listQuery = useQuery({
+    queryKey: ["bank-statement-attachments", entryId],
+    queryFn: () => listAttachments({ data: { entryId } }),
+    enabled: opened,
+  })
+
+  const invalidate = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["bank-statement-attachments", entryId] })
+    await queryClient.invalidateQueries({ queryKey: ["bank-statement-attachment-counts"] })
+  }
+
+  const remove = useMutation({
+    mutationFn: (id: string) => deleteAttachment({ data: { id } }),
+    onSuccess: async () => {
+      notifications.show({ color: "green", message: "Deleted" })
+      await invalidate()
+    },
+    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+  })
+
+  const upload = async (file: File) => {
+    setBusy(true)
+    try {
+      const fd = new FormData()
+      fd.append("entryId", entryId)
+      fd.append("file", file)
+      const res = await fetch("/api/statement-attachments/upload", { method: "POST", body: fd })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error ?? `Upload failed (${res.status})`)
+      }
+      notifications.show({ color: "green", message: "Uploaded" })
+      await invalidate()
+    } catch (err) {
+      notifications.show({ color: "red", message: (err as Error).message })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Popover opened={opened} onChange={setOpened} position="left" withArrow shadow="md" width={360}>
+      <Popover.Target>
+        <Tooltip label={count > 0 ? `${count} file${count === 1 ? "" : "s"}` : "Add file"} withArrow>
+          <ActionIcon variant={count > 0 ? "light" : "subtle"} onClick={() => setOpened((v) => !v)} aria-label="Files">
+            {count > 0 ? (
+              <Badge size="sm" variant="filled" circle>
+                {count}
+              </Badge>
+            ) : (
+              <IconPaperclip size={16} />
+            )}
+          </ActionIcon>
+        </Tooltip>
+      </Popover.Target>
+      <Popover.Dropdown>
+        <Stack gap="xs">
+          <Text fw={500} size="sm">
+            Attachments
+          </Text>
+          {opened && listQuery.isLoading && (
+            <Text size="xs" c="dimmed">
+              Loading…
+            </Text>
+          )}
+          {(listQuery.data ?? []).map((a) => (
+            <Group key={a.id} justify="space-between" wrap="nowrap" gap="xs">
+              <Text size="xs" style={{ wordBreak: "break-all" }}>
+                {a.originalName}
+              </Text>
+              <ActionIcon
+                size="sm"
+                variant="subtle"
+                color="red"
+                onClick={() => remove.mutate(a.id)}
+                loading={remove.isPending}
+                aria-label="Delete"
+              >
+                <IconTrash size={14} />
+              </ActionIcon>
+            </Group>
+          ))}
+          {opened && listQuery.data?.length === 0 && (
+            <Text size="xs" c="dimmed">
+              No files yet.
+            </Text>
+          )}
+          <FileInput
+            placeholder="Add file"
+            size="xs"
+            disabled={busy}
+            value={null}
+            onChange={(f) => {
+              if (f) void upload(f)
+            }}
+          />
+        </Stack>
+      </Popover.Dropdown>
+    </Popover>
   )
 }
 
