@@ -57,6 +57,13 @@
       "when": 1778276236459,
       "tag": "0007_wet_warbound",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1778277285411,
+      "tag": "0008_brainy_khan",
+      "breakpoints": true
     }
   ]
 }

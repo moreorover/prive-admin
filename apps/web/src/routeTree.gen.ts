@@ -29,6 +29,8 @@ import { Route as AuthenticatedHairOrdersIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as AuthenticatedBankStatementsIndexRouteImport } from './routes/_authenticated/bank-statements/index'
 import { Route as AuthenticatedAppointmentsIndexRouteImport } from './routes/_authenticated/appointments/index'
+import { Route as ApiStatementAttachmentsUploadRouteImport } from './routes/api/statement-attachments.upload'
+import { Route as ApiStatementAttachmentsExportRouteImport } from './routes/api/statement-attachments.export'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthenticatedSalonsSalonIdRouteImport } from './routes/_authenticated/salons/$salonId'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId'
@@ -147,6 +149,18 @@ const AuthenticatedAppointmentsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedAppointmentsRouteRoute,
   } as any)
+const ApiStatementAttachmentsUploadRoute =
+  ApiStatementAttachmentsUploadRouteImport.update({
+    id: '/api/statement-attachments/upload',
+    path: '/api/statement-attachments/upload',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiStatementAttachmentsExportRoute =
+  ApiStatementAttachmentsExportRouteImport.update({
+    id: '/api/statement-attachments/export',
+    path: '/api/statement-attachments/export',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -209,6 +223,8 @@ export interface FileRoutesByFullPath {
   '/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRoute
   '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/statement-attachments/export': typeof ApiStatementAttachmentsExportRoute
+  '/api/statement-attachments/upload': typeof ApiStatementAttachmentsUploadRoute
   '/appointments/': typeof AuthenticatedAppointmentsIndexRoute
   '/bank-statements/': typeof AuthenticatedBankStatementsIndexRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
@@ -234,6 +250,8 @@ export interface FileRoutesByTo {
   '/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRoute
   '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/statement-attachments/export': typeof ApiStatementAttachmentsExportRoute
+  '/api/statement-attachments/upload': typeof ApiStatementAttachmentsUploadRoute
   '/appointments': typeof AuthenticatedAppointmentsIndexRoute
   '/bank-statements': typeof AuthenticatedBankStatementsIndexRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
@@ -264,6 +282,8 @@ export interface FileRoutesById {
   '/_authenticated/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRoute
   '/_authenticated/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/statement-attachments/export': typeof ApiStatementAttachmentsExportRoute
+  '/api/statement-attachments/upload': typeof ApiStatementAttachmentsUploadRoute
   '/_authenticated/appointments/': typeof AuthenticatedAppointmentsIndexRoute
   '/_authenticated/bank-statements/': typeof AuthenticatedBankStatementsIndexRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
@@ -294,6 +314,8 @@ export interface FileRouteTypes {
     | '/legal-entities/$legalEntityId'
     | '/salons/$salonId'
     | '/api/auth/$'
+    | '/api/statement-attachments/export'
+    | '/api/statement-attachments/upload'
     | '/appointments/'
     | '/bank-statements/'
     | '/customers/'
@@ -319,6 +341,8 @@ export interface FileRouteTypes {
     | '/legal-entities/$legalEntityId'
     | '/salons/$salonId'
     | '/api/auth/$'
+    | '/api/statement-attachments/export'
+    | '/api/statement-attachments/upload'
     | '/appointments'
     | '/bank-statements'
     | '/customers'
@@ -348,6 +372,8 @@ export interface FileRouteTypes {
     | '/_authenticated/legal-entities/$legalEntityId'
     | '/_authenticated/salons/$salonId'
     | '/api/auth/$'
+    | '/api/statement-attachments/export'
+    | '/api/statement-attachments/upload'
     | '/_authenticated/appointments/'
     | '/_authenticated/bank-statements/'
     | '/_authenticated/customers/'
@@ -363,6 +389,8 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ApiUploadRoute: typeof ApiUploadRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiStatementAttachmentsExportRoute: typeof ApiStatementAttachmentsExportRoute
+  ApiStatementAttachmentsUploadRoute: typeof ApiStatementAttachmentsUploadRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -506,6 +534,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/appointments/'
       preLoaderRoute: typeof AuthenticatedAppointmentsIndexRouteImport
       parentRoute: typeof AuthenticatedAppointmentsRouteRoute
+    }
+    '/api/statement-attachments/upload': {
+      id: '/api/statement-attachments/upload'
+      path: '/api/statement-attachments/upload'
+      fullPath: '/api/statement-attachments/upload'
+      preLoaderRoute: typeof ApiStatementAttachmentsUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/statement-attachments/export': {
+      id: '/api/statement-attachments/export'
+      path: '/api/statement-attachments/export'
+      fullPath: '/api/statement-attachments/export'
+      preLoaderRoute: typeof ApiStatementAttachmentsExportRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -662,6 +704,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ApiUploadRoute: ApiUploadRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiStatementAttachmentsExportRoute: ApiStatementAttachmentsExportRoute,
+  ApiStatementAttachmentsUploadRoute: ApiStatementAttachmentsUploadRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
