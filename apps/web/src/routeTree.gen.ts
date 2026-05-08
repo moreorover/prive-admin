@@ -23,6 +23,7 @@ import { Route as AuthenticatedHairOrdersRouteRouteImport } from './routes/_auth
 import { Route as AuthenticatedCustomersRouteRouteImport } from './routes/_authenticated/customers/route'
 import { Route as AuthenticatedAppointmentsRouteRouteImport } from './routes/_authenticated/appointments/route'
 import { Route as AuthenticatedSalonsIndexRouteImport } from './routes/_authenticated/salons/index'
+import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated/reports/index'
 import { Route as AuthenticatedLegalEntitiesIndexRouteImport } from './routes/_authenticated/legal-entities/index'
 import { Route as AuthenticatedHairOrdersIndexRouteImport } from './routes/_authenticated/hair-orders/index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
@@ -111,6 +112,12 @@ const AuthenticatedSalonsIndexRoute =
   AuthenticatedSalonsIndexRouteImport.update({
     id: '/salons/',
     path: '/salons/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedReportsIndexRoute =
+  AuthenticatedReportsIndexRouteImport.update({
+    id: '/reports/',
+    path: '/reports/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedLegalEntitiesIndexRoute =
@@ -230,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
   '/legal-entities/': typeof AuthenticatedLegalEntitiesIndexRoute
+  '/reports/': typeof AuthenticatedReportsIndexRoute
   '/salons/': typeof AuthenticatedSalonsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -257,6 +265,7 @@ export interface FileRoutesByTo {
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders': typeof AuthenticatedHairOrdersIndexRoute
   '/legal-entities': typeof AuthenticatedLegalEntitiesIndexRoute
+  '/reports': typeof AuthenticatedReportsIndexRoute
   '/salons': typeof AuthenticatedSalonsIndexRoute
 }
 export interface FileRoutesById {
@@ -289,6 +298,7 @@ export interface FileRoutesById {
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
   '/_authenticated/legal-entities/': typeof AuthenticatedLegalEntitiesIndexRoute
+  '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
   '/_authenticated/salons/': typeof AuthenticatedSalonsIndexRoute
 }
 export interface FileRouteTypes {
@@ -321,6 +331,7 @@ export interface FileRouteTypes {
     | '/customers/'
     | '/hair-orders/'
     | '/legal-entities/'
+    | '/reports/'
     | '/salons/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -348,6 +359,7 @@ export interface FileRouteTypes {
     | '/customers'
     | '/hair-orders'
     | '/legal-entities'
+    | '/reports'
     | '/salons'
   id:
     | '__root__'
@@ -379,6 +391,7 @@ export interface FileRouteTypes {
     | '/_authenticated/customers/'
     | '/_authenticated/hair-orders/'
     | '/_authenticated/legal-entities/'
+    | '/_authenticated/reports/'
     | '/_authenticated/salons/'
   fileRoutesById: FileRoutesById
 }
@@ -488,6 +501,13 @@ declare module '@tanstack/react-router' {
       path: '/salons'
       fullPath: '/salons/'
       preLoaderRoute: typeof AuthenticatedSalonsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reports/': {
+      id: '/_authenticated/reports/'
+      path: '/reports'
+      fullPath: '/reports/'
+      preLoaderRoute: typeof AuthenticatedReportsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/legal-entities/': {
@@ -667,6 +687,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBankStatementsIndexRoute: typeof AuthenticatedBankStatementsIndexRoute
   AuthenticatedBillsIndexRoute: typeof AuthenticatedBillsIndexRoute
   AuthenticatedLegalEntitiesIndexRoute: typeof AuthenticatedLegalEntitiesIndexRoute
+  AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
   AuthenticatedSalonsIndexRoute: typeof AuthenticatedSalonsIndexRoute
 }
 
@@ -693,6 +714,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBankStatementsIndexRoute: AuthenticatedBankStatementsIndexRoute,
   AuthenticatedBillsIndexRoute: AuthenticatedBillsIndexRoute,
   AuthenticatedLegalEntitiesIndexRoute: AuthenticatedLegalEntitiesIndexRoute,
+  AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
   AuthenticatedSalonsIndexRoute: AuthenticatedSalonsIndexRoute,
 }
 

@@ -48,12 +48,7 @@ export const getBankAccountMonthlyBreakdown = createServerFn({ method: "GET" })
         sum: sql<number>`coalesce(sum(${bankStatementEntry.amount}), 0)::int`,
       })
       .from(bankStatementEntry)
-      .where(
-        and(
-          gte(bankStatementEntry.date, yearStart),
-          lt(bankStatementEntry.date, yearEnd),
-        ),
-      )
+      .where(and(gte(bankStatementEntry.date, yearStart), lt(bankStatementEntry.date, yearEnd)))
       .groupBy(
         bankStatementEntry.bankAccountId,
         sql`extract(month from ${bankStatementEntry.date})`,
