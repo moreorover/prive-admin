@@ -43,6 +43,13 @@
       "when": 1778262052523,
       "tag": "0005_bill_and_transaction_bill_id",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778262342228,
+      "tag": "0006_transaction_customer_optional",
+      "breakpoints": true
     }
   ]
 }

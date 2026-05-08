@@ -14,7 +14,7 @@ export type TransactionRow = {
   type: "BANK" | "CASH" | "PAYPAL" | string
   status: "PENDING" | "COMPLETED" | string
   completedDateBy: string
-  customerId: string
+  customerId: string | null
   appointmentId: string | null
   legalEntityId: string
   customer?: { id: string; name: string } | null

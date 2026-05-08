@@ -18,9 +18,7 @@ export const transaction = pgTable("transaction", {
   status: text("status").notNull().default("PENDING"),
   completedDateBy: date("completed_date_by").defaultNow().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-  customerId: text("customer_id")
-    .notNull()
-    .references(() => customer.id, { onDelete: "cascade" }),
+  customerId: text("customer_id").references(() => customer.id, { onDelete: "set null" }),
   orderId: text("order_id").references(() => order.id, { onDelete: "set null" }),
   appointmentId: text("appointment_id").references(() => appointment.id, { onDelete: "set null" }),
   legalEntityId: text("legal_entity_id")
