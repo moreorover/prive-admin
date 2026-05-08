@@ -76,3 +76,10 @@ export const bankAccountSchema = z.object({
   displayName: z.string().min(1, "Display name is required").max(120),
 })
 export type BankAccountInput = z.infer<typeof bankAccountSchema>
+
+export const billSchema = z.object({
+  id: z.string().optional(),
+  legalEntityId: z.string().min(1, "Legal entity is required"),
+  name: z.string().min(1, "Name is required").max(120),
+})
+export type BillInput = z.infer<typeof billSchema>
