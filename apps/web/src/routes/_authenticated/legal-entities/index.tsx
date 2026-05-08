@@ -24,27 +24,25 @@ function LegalEntitiesIndex() {
                 <Table.Th>Type</Table.Th>
                 <Table.Th>Country</Table.Th>
                 <Table.Th>Default currency</Table.Th>
-                <Table.Th />
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
               {(q.data ?? []).map((le) => (
                 <Table.Tr key={le.id}>
-                  <Table.Td>{le.name}</Table.Td>
-                  <Table.Td>{le.type}</Table.Td>
-                  <Table.Td>
-                    {COUNTRY_FLAGS[le.country as Country]} {COUNTRY_LABELS[le.country as Country]}
-                  </Table.Td>
-                  <Table.Td>{le.defaultCurrency}</Table.Td>
                   <Table.Td>
                     <Anchor
                       renderRoot={(props) => (
                         <Link to="/legal-entities/$legalEntityId" params={{ legalEntityId: le.id }} {...props} />
                       )}
                     >
-                      Edit
+                      {le.name}
                     </Anchor>
                   </Table.Td>
+                  <Table.Td>{le.type}</Table.Td>
+                  <Table.Td>
+                    {COUNTRY_FLAGS[le.country as Country]} {COUNTRY_LABELS[le.country as Country]}
+                  </Table.Td>
+                  <Table.Td>{le.defaultCurrency}</Table.Td>
                 </Table.Tr>
               ))}
             </Table.Tbody>

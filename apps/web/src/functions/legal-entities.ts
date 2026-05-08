@@ -19,7 +19,13 @@ export const getLegalEntity = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ id: z.string().min(1) }))
   .handler(async ({ data }) => {
-    const row = await db.query.legalEntity.findFirst({ where: eq(legalEntity.id, data.id) })
+    const row = await db.query.legalEntity.findFirst({
+      where: eq(legalEntity.id, data.id),
+      with: {
+        bankAccounts: { orderBy: (a, { asc }) => [asc(a.displayName)] },
+        bills: { orderBy: (b, { asc }) => [asc(b.name)] },
+      },
+    })
     if (!row) throw new Error("Legal entity not found")
     return row
   })

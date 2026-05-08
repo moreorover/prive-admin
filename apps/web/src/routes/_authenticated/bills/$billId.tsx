@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useEffect } from "react"
+import { z } from "zod"
 
 import { createBill, getBill, updateBill } from "@/functions/bills"
 import { listLegalEntities } from "@/functions/legal-entities"
@@ -12,10 +13,12 @@ import { billSchema } from "@/lib/schemas"
 
 export const Route = createFileRoute("/_authenticated/bills/$billId")({
   component: BillEdit,
+  validateSearch: z.object({ legalEntityId: z.string().optional() }),
 })
 
 function BillEdit() {
   const { billId } = Route.useParams()
+  const search = Route.useSearch()
   const isNew = billId === "new"
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -28,7 +31,7 @@ function BillEdit() {
   })
 
   const form = useForm({
-    initialValues: { id: undefined as string | undefined, legalEntityId: "", name: "" },
+    initialValues: { id: undefined as string | undefined, legalEntityId: search.legalEntityId ?? "", name: "" },
     validate: zodResolver(billSchema),
   })
 
@@ -49,13 +52,16 @@ function BillEdit() {
       if (isNew) return createBill({ data: values })
       return updateBill({ data: { ...values, id: billId } })
     },
-    onSuccess: async () => {
+    onSuccess: async (_, values) => {
       notifications.show({ color: "green", message: "Saved" })
       await queryClient.invalidateQueries({ queryKey: ["bills"] })
-      navigate({ to: "/bills" })
+      await queryClient.invalidateQueries({ queryKey: ["legal-entity", values.legalEntityId] })
+      navigate({ to: "/legal-entities/$legalEntityId", params: { legalEntityId: values.legalEntityId } })
     },
     onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
   })
+
+  const cancelTarget = form.values.legalEntityId || search.legalEntityId
 
   return (
     <Container size="lg">
@@ -76,7 +82,16 @@ function BillEdit() {
                 <Button type="submit" loading={save.isPending}>
                   Save
                 </Button>
-                <Button renderRoot={(props) => <Link to="/bills" {...props} />} variant="subtle">
+                <Button
+                  renderRoot={(props) =>
+                    cancelTarget ? (
+                      <Link to="/legal-entities/$legalEntityId" params={{ legalEntityId: cancelTarget }} {...props} />
+                    ) : (
+                      <Link to="/legal-entities" {...props} />
+                    )
+                  }
+                  variant="subtle"
+                >
                   Cancel
                 </Button>
               </Group>
