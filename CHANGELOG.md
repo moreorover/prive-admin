@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/moreorover/prive-admin/compare/v0.1.4...v0.1.5) (2026-05-08)
+
+
+### Bug Fixes
+
+* **ci:** set release-please package-name to empty string ([#156](https://github.com/moreorover/prive-admin/issues/156)) ([cbbb8ce](https://github.com/moreorover/prive-admin/commit/cbbb8cedd710d962251ec2287e8c668fbd53d5b5))
+
 ## [0.1.4](https://github.com/moreorover/prive-admin/compare/v0.1.3...v0.1.4) (2026-05-08)
 
 
