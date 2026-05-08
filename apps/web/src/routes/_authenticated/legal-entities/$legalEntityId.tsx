@@ -98,47 +98,6 @@ function LegalEntityShow() {
             </Table>
           </Stack>
         </Card>
-
-        <Card withBorder>
-          <Stack>
-            <Group justify="space-between">
-              <Title order={4}>Bills</Title>
-              <Button
-                size="xs"
-                renderRoot={(props) => (
-                  <Link to="/bills/$billId" params={{ billId: "new" }} search={{ legalEntityId }} {...props} />
-                )}
-              >
-                New bill
-              </Button>
-            </Group>
-            <Table>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Name</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {(q.data?.bills ?? []).map((b) => (
-                  <Table.Tr key={b.id}>
-                    <Table.Td>
-                      <Anchor renderRoot={(props) => <Link to="/bills/$billId" params={{ billId: b.id }} {...props} />}>
-                        {b.name}
-                      </Anchor>
-                    </Table.Td>
-                  </Table.Tr>
-                ))}
-                {q.data && q.data.bills.length === 0 && (
-                  <Table.Tr>
-                    <Table.Td ta="center" c="dimmed">
-                      No bills.
-                    </Table.Td>
-                  </Table.Tr>
-                )}
-              </Table.Tbody>
-            </Table>
-          </Stack>
-        </Card>
       </Stack>
 
       <EditLegalEntityModal

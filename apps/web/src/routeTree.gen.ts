@@ -34,7 +34,6 @@ import { Route as AuthenticatedSalonsSalonIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId'
 import { Route as AuthenticatedHairOrdersHairOrderIdRouteImport } from './routes/_authenticated/hair-orders/$hairOrderId'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
-import { Route as AuthenticatedBillsBillIdRouteImport } from './routes/_authenticated/bills/$billId'
 import { Route as AuthenticatedBankAccountsBankAccountIdRouteImport } from './routes/_authenticated/bank-accounts/$bankAccountId'
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments/$appointmentId'
 
@@ -177,12 +176,6 @@ const AuthenticatedCustomersCustomerIdRoute =
     path: '/$customerId',
     getParentRoute: () => AuthenticatedCustomersRouteRoute,
   } as any)
-const AuthenticatedBillsBillIdRoute =
-  AuthenticatedBillsBillIdRouteImport.update({
-    id: '/bills/$billId',
-    path: '/bills/$billId',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedBankAccountsBankAccountIdRoute =
   AuthenticatedBankAccountsBankAccountIdRouteImport.update({
     id: '/bank-accounts/$bankAccountId',
@@ -211,7 +204,6 @@ export interface FileRoutesByFullPath {
   '/api/upload': typeof ApiUploadRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/bank-accounts/$bankAccountId': typeof AuthenticatedBankAccountsBankAccountIdRoute
-  '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRoute
@@ -237,7 +229,6 @@ export interface FileRoutesByTo {
   '/api/upload': typeof ApiUploadRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/bank-accounts/$bankAccountId': typeof AuthenticatedBankAccountsBankAccountIdRoute
-  '/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRoute
@@ -268,7 +259,6 @@ export interface FileRoutesById {
   '/api/upload': typeof ApiUploadRoute
   '/_authenticated/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/_authenticated/bank-accounts/$bankAccountId': typeof AuthenticatedBankAccountsBankAccountIdRoute
-  '/_authenticated/bills/$billId': typeof AuthenticatedBillsBillIdRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/_authenticated/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRoute
@@ -299,7 +289,6 @@ export interface FileRouteTypes {
     | '/api/upload'
     | '/appointments/$appointmentId'
     | '/bank-accounts/$bankAccountId'
-    | '/bills/$billId'
     | '/customers/$customerId'
     | '/hair-orders/$hairOrderId'
     | '/legal-entities/$legalEntityId'
@@ -325,7 +314,6 @@ export interface FileRouteTypes {
     | '/api/upload'
     | '/appointments/$appointmentId'
     | '/bank-accounts/$bankAccountId'
-    | '/bills/$billId'
     | '/customers/$customerId'
     | '/hair-orders/$hairOrderId'
     | '/legal-entities/$legalEntityId'
@@ -355,7 +343,6 @@ export interface FileRouteTypes {
     | '/api/upload'
     | '/_authenticated/appointments/$appointmentId'
     | '/_authenticated/bank-accounts/$bankAccountId'
-    | '/_authenticated/bills/$billId'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/hair-orders/$hairOrderId'
     | '/_authenticated/legal-entities/$legalEntityId'
@@ -555,13 +542,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
       parentRoute: typeof AuthenticatedCustomersRouteRoute
     }
-    '/_authenticated/bills/$billId': {
-      id: '/_authenticated/bills/$billId'
-      path: '/bills/$billId'
-      fullPath: '/bills/$billId'
-      preLoaderRoute: typeof AuthenticatedBillsBillIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/bank-accounts/$bankAccountId': {
       id: '/_authenticated/bank-accounts/$bankAccountId'
       path: '/bank-accounts/$bankAccountId'
@@ -641,7 +621,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedBankAccountsBankAccountIdRoute: typeof AuthenticatedBankAccountsBankAccountIdRoute
-  AuthenticatedBillsBillIdRoute: typeof AuthenticatedBillsBillIdRoute
   AuthenticatedLegalEntitiesLegalEntityIdRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRoute
   AuthenticatedSalonsSalonIdRoute: typeof AuthenticatedSalonsSalonIdRoute
   AuthenticatedBankStatementsIndexRoute: typeof AuthenticatedBankStatementsIndexRoute
@@ -665,7 +644,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedBankAccountsBankAccountIdRoute:
     AuthenticatedBankAccountsBankAccountIdRoute,
-  AuthenticatedBillsBillIdRoute: AuthenticatedBillsBillIdRoute,
   AuthenticatedLegalEntitiesLegalEntityIdRoute:
     AuthenticatedLegalEntitiesLegalEntityIdRoute,
   AuthenticatedSalonsSalonIdRoute: AuthenticatedSalonsSalonIdRoute,

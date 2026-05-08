@@ -29,7 +29,6 @@ export const getBankAccount = createServerFn({ method: "GET" })
             linkedTransaction: {
               with: {
                 customer: { columns: { id: true, name: true } },
-                bill: { columns: { id: true, name: true } },
               },
             },
           },

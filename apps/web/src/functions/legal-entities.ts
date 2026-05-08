@@ -23,7 +23,6 @@ export const getLegalEntity = createServerFn({ method: "GET" })
       where: eq(legalEntity.id, data.id),
       with: {
         bankAccounts: { orderBy: (a, { asc }) => [asc(a.displayName)] },
-        bills: { orderBy: (b, { asc }) => [asc(b.name)] },
       },
     })
     if (!row) throw new Error("Legal entity not found")

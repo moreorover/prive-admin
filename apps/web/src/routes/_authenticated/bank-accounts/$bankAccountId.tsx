@@ -101,9 +101,7 @@ function BankAccountShow({ id }: { id: string }) {
                   const sign = e.direction === "C" ? "+" : "−"
                   const color = e.direction === "C" ? "teal" : "red"
                   const statusColor = e.status === "LINKED" ? "green" : e.status === "IGNORED" ? "gray" : "yellow"
-                  const linkBits = [e.linkedTransaction?.customer?.name, e.linkedTransaction?.bill?.name].filter(
-                    Boolean,
-                  )
+                  const linkBits = [e.linkedTransaction?.customer?.name].filter(Boolean)
                   return (
                     <Table.Tr key={e.id}>
                       <Table.Td style={{ whiteSpace: "nowrap" }}>{e.date}</Table.Td>
