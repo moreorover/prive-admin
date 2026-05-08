@@ -2,6 +2,7 @@ import {db} from "@prive-admin-tanstack/db"
 import {personnelOnAppointments} from "@prive-admin-tanstack/db/schema/appointment"
 import {bankAccount} from "@prive-admin-tanstack/db/schema/bank-account"
 import {bankStatementEntry} from "@prive-admin-tanstack/db/schema/bank-statement-entry"
+import {bill} from "@prive-admin-tanstack/db/schema/bill"
 import {transaction} from "@prive-admin-tanstack/db/schema/transaction"
 import {createServerFn} from "@tanstack/react-start"
 import {and, desc, eq} from "drizzle-orm"
@@ -162,6 +163,55 @@ export const promoteEntryToTransaction = createServerFn({ method: "POST" })
         .where(eq(bankStatementEntry.id, entry.id))
 
       return { transactionId: created.id, entryId: entry.id }
+    })
+  })
+
+export const linkEntryToBill = createServerFn({ method: "POST" })
+  .middleware([requireAuthMiddleware])
+  .inputValidator(z.object({ entryId: z.string().min(1), billId: z.string().min(1) }))
+  .handler(async ({ data }) => {
+    return await db.transaction(async (tx) => {
+      const entry = await tx.query.bankStatementEntry.findFirst({
+        where: eq(bankStatementEntry.id, data.entryId),
+        with: { bankAccount: { columns: { id: true, legalEntityId: true } } },
+      })
+      if (!entry) throw new Error("Statement entry not found")
+      if (entry.status === "LINKED") throw new Error("Entry already linked")
+      if (entry.status === "IGNORED") throw new Error("Entry is ignored; un-ignore first")
+
+      const billRow = await tx.query.bill.findFirst({
+        where: eq(bill.id, data.billId),
+        columns: { id: true, legalEntityId: true },
+      })
+      if (!billRow) throw new Error("Bill not found")
+      if (billRow.legalEntityId !== entry.bankAccount.legalEntityId) {
+        throw new Error("Bill and bank account must belong to the same legal entity")
+      }
+
+      const [created] = await tx
+        .insert(transaction)
+        .values({
+          name: null,
+          notes: entry.purpose ?? null,
+          amount: entry.amount,
+          currency: entry.currency,
+          type: "BANK",
+          status: "COMPLETED",
+          completedDateBy: entry.date,
+          customerId: null,
+          appointmentId: null,
+          legalEntityId: entry.bankAccount.legalEntityId,
+          bankAccountId: entry.bankAccount.id,
+          billId: billRow.id,
+        })
+        .returning()
+
+      await tx
+        .update(bankStatementEntry)
+        .set({ status: "LINKED", linkedTransactionId: created.id })
+        .where(eq(bankStatementEntry.id, entry.id))
+
+      return { transactionId: created.id, entryId: entry.id, billId: billRow.id }
     })
   })
 
