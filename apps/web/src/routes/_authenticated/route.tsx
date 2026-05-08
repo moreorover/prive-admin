@@ -51,6 +51,7 @@ const tabs = [
   { value: "/salons", label: "Salons" },
   { value: "/bank-accounts", label: "Bank accounts" },
   { value: "/bank-statements", label: "Bank statements" },
+  { value: "/bills", label: "Bills" },
   // { value: "/files", label: "Files (Proxy)" },
   // { value: "/files-direct", label: "Files (Direct)" },
 ] as const
