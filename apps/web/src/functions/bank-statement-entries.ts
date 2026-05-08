@@ -1,15 +1,15 @@
-import {db} from "@prive-admin-tanstack/db"
-import {personnelOnAppointments} from "@prive-admin-tanstack/db/schema/appointment"
-import {bankAccount} from "@prive-admin-tanstack/db/schema/bank-account"
-import {bankStatementEntry} from "@prive-admin-tanstack/db/schema/bank-statement-entry"
-import {bill} from "@prive-admin-tanstack/db/schema/bill"
-import {transaction} from "@prive-admin-tanstack/db/schema/transaction"
-import {createServerFn} from "@tanstack/react-start"
-import {and, desc, eq} from "drizzle-orm"
-import {z} from "zod"
+import { db } from "@prive-admin-tanstack/db"
+import { personnelOnAppointments } from "@prive-admin-tanstack/db/schema/appointment"
+import { bankAccount } from "@prive-admin-tanstack/db/schema/bank-account"
+import { bankStatementEntry } from "@prive-admin-tanstack/db/schema/bank-statement-entry"
+import { bill } from "@prive-admin-tanstack/db/schema/bill"
+import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
+import { createServerFn } from "@tanstack/react-start"
+import { and, desc, eq } from "drizzle-orm"
+import { z } from "zod"
 
-import {requireAuthMiddleware} from "@/middleware/auth"
-import {parseSebCsv} from "@/server/seb-csv.server"
+import { requireAuthMiddleware } from "@/middleware/auth"
+import { parseSebCsv } from "@/server/seb-csv.server"
 
 export const importSebCsv = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])

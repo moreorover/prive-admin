@@ -40,10 +40,7 @@ export const createBill = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
   .inputValidator(billSchema)
   .handler(async ({ data }) => {
-    const [row] = await db
-      .insert(bill)
-      .values({ legalEntityId: data.legalEntityId, name: data.name })
-      .returning()
+    const [row] = await db.insert(bill).values({ legalEntityId: data.legalEntityId, name: data.name }).returning()
     return row
   })
 
