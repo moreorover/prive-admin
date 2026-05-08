@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/moreorover/prive-admin/compare/v0.1.2...v0.1.3) (2026-05-08)
+
+
+### Bug Fixes
+
+* **deps:** bump dependencies via taze major ([#147](https://github.com/moreorover/prive-admin/issues/147)) ([ef6d814](https://github.com/moreorover/prive-admin/commit/ef6d814ff000564b8d574ab4b14af34f6ab9a711))
+* **deps:** override fast-xml-builder to ^1.1.7 ([#150](https://github.com/moreorover/prive-admin/issues/150)) ([718db59](https://github.com/moreorover/prive-admin/commit/718db594564e334ce722eedd1974003d016b5ba2))
+
 ## [0.1.2](https://github.com/moreorover/prive-admin/compare/v0.1.1...v0.1.2) (2026-05-03)
 
 
