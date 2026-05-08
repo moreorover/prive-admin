@@ -180,7 +180,7 @@ function BankStatementsPage() {
                 const color = e.direction === "C" ? "teal" : "red"
                 return (
                   <Table.Tr key={e.id}>
-                    <Table.Td>
+                    <Table.Td style={{ whiteSpace: "nowrap" }}>
                       <Text size="sm">{e.date}</Text>
                       <Text size="xs" c="dimmed">
                         {e.bankAccount?.displayName}
