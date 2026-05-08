@@ -27,12 +27,10 @@ import {
   getBankStatementEntry,
   ignoreStatementEntry,
   importSebCsv,
-  linkEntryToBill,
   listBankStatementEntries,
   promoteEntryToTransaction,
   undoStatementEntry,
 } from "@/functions/bank-statement-entries"
-import { listBills } from "@/functions/bills"
 import { getCustomers } from "@/functions/customers"
 import { formatMinor, type Currency } from "@/lib/currency"
 
@@ -55,7 +53,6 @@ function BankStatementsPage() {
   const [bankAccountFilter, setBankAccountFilter] = useState<string>("")
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("PENDING")
   const [linkAppointmentEntryId, setLinkAppointmentEntryId] = useState<string | null>(null)
-  const [linkBillEntryId, setLinkBillEntryId] = useState<string | null>(null)
   const [standaloneEntryId, setStandaloneEntryId] = useState<string | null>(null)
 
   const accountsQuery = useQuery({ queryKey: ["bank-accounts"], queryFn: () => listBankAccounts() })
@@ -209,7 +206,6 @@ function BankStatementsPage() {
                           {e.status === "PENDING" ? (
                             <>
                               <Menu.Item onClick={() => setLinkAppointmentEntryId(e.id)}>Link to appointment</Menu.Item>
-                              <Menu.Item onClick={() => setLinkBillEntryId(e.id)}>Link to bill</Menu.Item>
                               <Menu.Item onClick={() => setStandaloneEntryId(e.id)}>Promote standalone</Menu.Item>
                               <Menu.Divider />
                               <Menu.Item color="gray" onClick={() => ignoreMutation.mutate(e.id)}>
@@ -237,7 +233,6 @@ function BankStatementsPage() {
         </Card>
 
         <LinkToAppointmentModal entryId={linkAppointmentEntryId} onClose={() => setLinkAppointmentEntryId(null)} />
-        <LinkToBillModal entryId={linkBillEntryId} onClose={() => setLinkBillEntryId(null)} />
         <PromoteStandaloneModal entryId={standaloneEntryId} onClose={() => setStandaloneEntryId(null)} />
       </Stack>
     </Container>
@@ -448,73 +443,6 @@ function PromoteStandaloneModal({ entryId, onClose }: { entryId: string | null; 
             </Button>
             <Button onClick={() => promote.mutate()} loading={promote.isPending} disabled={!customerId}>
               Promote
-            </Button>
-          </Group>
-        </Stack>
-      )}
-    </Modal>
-  )
-}
-
-function LinkToBillModal({ entryId, onClose }: { entryId: string | null; onClose: () => void }) {
-  const queryClient = useQueryClient()
-  const opened = entryId !== null
-
-  const entryQuery = useQuery({
-    queryKey: ["bank-statement-entry", entryId],
-    queryFn: () => getBankStatementEntry({ data: { id: entryId! } }),
-    enabled: opened,
-  })
-
-  const billsQuery = useQuery({
-    queryKey: ["bills", entryQuery.data?.bankAccount?.legalEntity?.id ?? null],
-    queryFn: () =>
-      listBills({
-        data: { legalEntityId: entryQuery.data?.bankAccount?.legalEntity?.id ?? "" },
-      }),
-    enabled: opened && !!entryQuery.data?.bankAccount?.legalEntity?.id,
-  })
-
-  const [billId, setBillId] = useState<string>("")
-
-  useEffect(() => {
-    if (!opened) setBillId("")
-  }, [opened])
-
-  const link = useMutation({
-    mutationFn: () => linkEntryToBill({ data: { entryId: entryId!, billId } }),
-    onSuccess: async () => {
-      notifications.show({ color: "green", message: "Linked to bill" })
-      await queryClient.invalidateQueries({ queryKey: ["bank-statement-entries"] })
-      onClose()
-    },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
-  })
-
-  return (
-    <Modal opened={opened} onClose={onClose} title="Link entry to bill">
-      {entryQuery.data && (
-        <Stack>
-          <EntrySummary entry={entryQuery.data} />
-          <Select
-            label="Bill"
-            required
-            searchable
-            data={(billsQuery.data ?? []).map((b) => ({ value: b.id, label: b.name }))}
-            value={billId}
-            onChange={(v) => setBillId(v ?? "")}
-            description={
-              entryQuery.data.bankAccount?.legalEntity
-                ? `Showing bills for ${entryQuery.data.bankAccount.legalEntity.name}`
-                : undefined
-            }
-          />
-          <Group justify="flex-end">
-            <Button variant="subtle" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button onClick={() => link.mutate()} loading={link.isPending} disabled={!billId}>
-              Link
             </Button>
           </Group>
         </Stack>

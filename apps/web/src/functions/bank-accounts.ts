@@ -22,7 +22,19 @@ export const getBankAccount = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const row = await db.query.bankAccount.findFirst({
       where: eq(bankAccount.id, data.id),
-      with: { legalEntity: true },
+      with: {
+        legalEntity: true,
+        statementEntries: {
+          with: {
+            linkedTransaction: {
+              with: {
+                customer: { columns: { id: true, name: true } },
+              },
+            },
+          },
+          orderBy: (e, { desc }) => [desc(e.date), desc(e.importedAt)],
+        },
+      },
     })
     if (!row) throw new Error("Bank account not found")
     return row
