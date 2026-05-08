@@ -186,8 +186,13 @@ jobs:
       - name: Render .env
         run: |
           umask 077
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            IMAGE_TAG="${GITHUB_REF_NAME}"
+          else
+            IMAGE_TAG="${GITHUB_SHA}"
+          fi
           cat > .env <<EOF
-          IMAGE_TAG=${GITHUB_SHA}
+          IMAGE_TAG=${IMAGE_TAG}
           GITHUB_REPOSITORY=${GITHUB_REPOSITORY}
           NODE_ENV=production
           POSTGRES_DB=${POSTGRES_DB}
