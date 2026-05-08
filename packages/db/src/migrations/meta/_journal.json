@@ -36,6 +36,13 @@
       "when": 1778176558047,
       "tag": "0004_bank_account_and_statement_entries",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778262052523,
+      "tag": "0005_bill_and_transaction_bill_id",
+      "breakpoints": true
     }
   ]
 }
