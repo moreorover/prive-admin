@@ -4,6 +4,7 @@ import { appointment, personnelOnAppointments } from "./appointment"
 import { user, session, account } from "./auth"
 import { bankAccount } from "./bank-account"
 import { bankStatementEntry } from "./bank-statement-entry"
+import { bill } from "./bill"
 import { customer } from "./customer"
 import { hairAssigned, hairOrder } from "./hair"
 import { legalEntity } from "./legal-entity"
@@ -87,6 +88,7 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
   appointment: one(appointment, { fields: [transaction.appointmentId], references: [appointment.id] }),
   legalEntity: one(legalEntity, { fields: [transaction.legalEntityId], references: [legalEntity.id] }),
   bankAccount: one(bankAccount, { fields: [transaction.bankAccountId], references: [bankAccount.id] }),
+  bill: one(bill, { fields: [transaction.billId], references: [bill.id] }),
 }))
 
 // Hair relations
@@ -121,8 +123,15 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
 // Legal entity relations
 export const legalEntityRelations = relations(legalEntity, ({ many }) => ({
   bankAccounts: many(bankAccount),
+  bills: many(bill),
   transactions: many(transaction),
   hairOrders: many(hairOrder),
+}))
+
+// Bill relations
+export const billRelations = relations(bill, ({ one, many }) => ({
+  legalEntity: one(legalEntity, { fields: [bill.legalEntityId], references: [legalEntity.id] }),
+  transactions: many(transaction),
 }))
 
 // Salon relations

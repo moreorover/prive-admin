@@ -1,4 +1,5 @@
 export * from "./auth"
+export * from "./bill"
 export * from "./bank-account"
 export * from "./bank-statement-entry"
 export * from "./customer"
