@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.1.5](https://github.com/moreorover/prive-admin/compare/v0.1.4...v0.1.5) (2026-05-08)
+
+
+### Bug Fixes
+
+* **ci:** set release-please package-name to empty string ([#156](https://github.com/moreorover/prive-admin/issues/156)) ([cbbb8ce](https://github.com/moreorover/prive-admin/commit/cbbb8cedd710d962251ec2287e8c668fbd53d5b5))
+
+## [0.1.4](https://github.com/moreorover/prive-admin/compare/v0.1.3...v0.1.4) (2026-05-08)
+
+
+### Bug Fixes
+
+* **ci:** drop release-please package-name to fix tag creation ([#154](https://github.com/moreorover/prive-admin/issues/154)) ([0c5d951](https://github.com/moreorover/prive-admin/commit/0c5d951eb341960f3d0cf1fb72cdd74b61d9bf88))
+
+## [0.1.3](https://github.com/moreorover/prive-admin/compare/v0.1.2...v0.1.3) (2026-05-08)
+
+
+### Bug Fixes
+
+* **deps:** bump dependencies via taze major ([#147](https://github.com/moreorover/prive-admin/issues/147)) ([ef6d814](https://github.com/moreorover/prive-admin/commit/ef6d814ff000564b8d574ab4b14af34f6ab9a711))
+* **deps:** override fast-xml-builder to ^1.1.7 ([#150](https://github.com/moreorover/prive-admin/issues/150)) ([718db59](https://github.com/moreorover/prive-admin/commit/718db594564e334ce722eedd1974003d016b5ba2))
+
 ## [0.1.2](https://github.com/moreorover/prive-admin/compare/v0.1.1...v0.1.2) (2026-05-03)
 
 
