@@ -7,6 +7,7 @@
   "bootstrap-sha": "1a32c3050da0b0c6b970268d5554759a6d1e8125",
   "packages": {
     ".": {
+      "package-name": "",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         {
