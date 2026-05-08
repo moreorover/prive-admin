@@ -1,12 +1,12 @@
 import {
+  ActionIcon,
   Alert,
-  Anchor,
-  Badge,
   Button,
   Card,
   Container,
   FileInput,
   Group,
+  Menu,
   Modal,
   Select,
   Stack,
@@ -16,6 +16,7 @@ import {
   Title,
 } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
+import { IconDotsVertical } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
@@ -167,67 +168,66 @@ function BankStatementsPage() {
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>Date</Table.Th>
-                <Table.Th>In/Out</Table.Th>
-                <Table.Th>Amount</Table.Th>
+                <Table.Th ta="right">Amount</Table.Th>
                 <Table.Th>Counterparty</Table.Th>
                 <Table.Th>Purpose</Table.Th>
-                <Table.Th>Account</Table.Th>
-                <Table.Th>Status</Table.Th>
                 <Table.Th />
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {(entriesQuery.data ?? []).map((e) => (
-                <Table.Tr key={e.id}>
-                  <Table.Td>{e.date}</Table.Td>
-                  <Table.Td>
-                    <Badge variant="light" color={e.direction === "C" ? "green" : "red"}>
-                      {e.direction === "C" ? "In" : "Out"}
-                    </Badge>
-                  </Table.Td>
-                  <Table.Td>{formatMinor(e.amount, e.currency as Currency)}</Table.Td>
-                  <Table.Td>{e.counterpartyName ?? "—"}</Table.Td>
-                  <Table.Td>
-                    <Text size="xs" lineClamp={2}>
-                      {e.purpose ?? "—"}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>{e.bankAccount?.displayName}</Table.Td>
-                  <Table.Td>
-                    <Badge
-                      variant="light"
-                      color={e.status === "PENDING" ? "blue" : e.status === "LINKED" ? "green" : "gray"}
-                    >
-                      {e.status}
-                    </Badge>
-                  </Table.Td>
-                  <Table.Td>
-                    {e.status === "PENDING" ? (
-                      <Group gap="xs" wrap="nowrap">
-                        <Anchor size="sm" onClick={() => setLinkAppointmentEntryId(e.id)}>
-                          Link to appointment
-                        </Anchor>
-                        <Anchor size="sm" onClick={() => setLinkBillEntryId(e.id)}>
-                          Link to bill
-                        </Anchor>
-                        <Anchor size="sm" onClick={() => setStandaloneEntryId(e.id)}>
-                          Promote standalone
-                        </Anchor>
-                        <Anchor size="sm" c="dimmed" onClick={() => ignoreMutation.mutate(e.id)}>
-                          Ignore
-                        </Anchor>
-                      </Group>
-                    ) : (
-                      <Anchor size="sm" c="dimmed" onClick={() => undoMutation.mutate(e.id)}>
-                        Undo
-                      </Anchor>
-                    )}
-                  </Table.Td>
-                </Table.Tr>
-              ))}
+              {(entriesQuery.data ?? []).map((e) => {
+                const sign = e.direction === "C" ? "+" : "−"
+                const color = e.direction === "C" ? "teal" : "red"
+                return (
+                  <Table.Tr key={e.id}>
+                    <Table.Td>
+                      <Text size="sm">{e.date}</Text>
+                      <Text size="xs" c="dimmed">
+                        {e.bankAccount?.displayName}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td ta="right">
+                      <Text size="sm" fw={500} c={color}>
+                        {sign}
+                        {formatMinor(e.amount, e.currency as Currency)}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>{e.counterpartyName ?? "—"}</Table.Td>
+                    <Table.Td>
+                      <Text size="xs" lineClamp={2}>
+                        {e.purpose ?? "—"}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td ta="right">
+                      <Menu position="bottom-end" withinPortal>
+                        <Menu.Target>
+                          <ActionIcon variant="subtle" aria-label="Actions">
+                            <IconDotsVertical size={16} />
+                          </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          {e.status === "PENDING" ? (
+                            <>
+                              <Menu.Item onClick={() => setLinkAppointmentEntryId(e.id)}>Link to appointment</Menu.Item>
+                              <Menu.Item onClick={() => setLinkBillEntryId(e.id)}>Link to bill</Menu.Item>
+                              <Menu.Item onClick={() => setStandaloneEntryId(e.id)}>Promote standalone</Menu.Item>
+                              <Menu.Divider />
+                              <Menu.Item color="gray" onClick={() => ignoreMutation.mutate(e.id)}>
+                                Ignore
+                              </Menu.Item>
+                            </>
+                          ) : (
+                            <Menu.Item onClick={() => undoMutation.mutate(e.id)}>Undo ({e.status})</Menu.Item>
+                          )}
+                        </Menu.Dropdown>
+                      </Menu>
+                    </Table.Td>
+                  </Table.Tr>
+                )
+              })}
               {entriesQuery.data?.length === 0 && (
                 <Table.Tr>
-                  <Table.Td colSpan={8} ta="center" c="dimmed">
+                  <Table.Td colSpan={5} ta="center" c="dimmed">
                     No entries.
                   </Table.Td>
                 </Table.Tr>
