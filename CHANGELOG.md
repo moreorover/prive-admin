@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.0](https://github.com/moreorover/prive-admin/compare/v0.1.6...v0.2.0) (2026-05-09)
+
+
+### Features
+
+* **auth:** block new user registrations ([#170](https://github.com/moreorover/prive-admin/issues/170)) ([19002ea](https://github.com/moreorover/prive-admin/commit/19002ea1802624f44da5e5bc1a1bc58112ab076b))
+
+## [0.1.6](https://github.com/moreorover/prive-admin/compare/v0.1.5...v0.1.6) (2026-05-09)
+
+
+### Bug Fixes
+
+* **deps:** nightly dependency updates ([#162](https://github.com/moreorover/prive-admin/issues/162)) ([10234b2](https://github.com/moreorover/prive-admin/commit/10234b2936a5ca4a101ba2e22674a45b8de10a32))
+
 ## [0.1.5](https://github.com/moreorover/prive-admin/compare/v0.1.4...v0.1.5) (2026-05-08)
 
 

@@ -1,11 +1,9 @@
 import { ActionIcon, Box, Center, Stack, Title, useMantineColorScheme } from "@mantine/core"
 import { IconDeviceDesktop, IconMoon, IconSun } from "@tabler/icons-react"
 import { Link, createFileRoute, redirect } from "@tanstack/react-router"
-import { useState } from "react"
 import { z } from "zod"
 
 import SignInForm from "@/components/sign-in-form"
-import SignUpForm from "@/components/sign-up-form"
 import { getUser } from "@/functions/get-user"
 
 export const Route = createFileRoute("/login")({
@@ -23,7 +21,6 @@ export const Route = createFileRoute("/login")({
 
 function RouteComponent() {
   const { redirect } = Route.useSearch()
-  const [showSignIn, setShowSignIn] = useState(false)
   const { colorScheme, setColorScheme } = useMantineColorScheme()
 
   const next = colorScheme === "light" ? "dark" : colorScheme === "dark" ? "auto" : "light"
@@ -50,11 +47,7 @@ function RouteComponent() {
               Privé
             </Title>
           </Link>
-          {showSignIn ? (
-            <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} redirectTo={redirect} />
-          ) : (
-            <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} redirectTo={redirect} />
-          )}
+          <SignInForm redirectTo={redirect} />
         </Stack>
       </Center>
     </Box>
