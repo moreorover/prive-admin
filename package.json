@@ -45,11 +45,5 @@
     "typescript": "^6.0.3",
     "zod": "catalog:"
   },
-  "overrides": {
-    "fast-xml-builder": "^1.1.7"
-  },
-  "packageManager": "bun@1.3.13",
-  "_overridesNotes": {
-    "fast-xml-builder": "GHSA-5wm8-gmm8-39j9, GHSA-45c6-75p6-83cc. Drop when @aws-sdk/xml-builder ships a fast-xml-parser release that requires fast-xml-builder >=1.1.7. Tracking: #151."
-  }
+  "packageManager": "bun@1.3.13"
 }
