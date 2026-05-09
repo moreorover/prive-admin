@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Interactive restore of a Postgres dump from Cloudflare R2 into the local
-# database container defined in packages/db/docker-compose.yml.
+# database container defined in docker-compose.dev.yml.
 #
 # Usage:
 #   scripts/restore_postgres.sh
@@ -22,7 +22,7 @@
 set -euo pipefail
 umask 077
 
-PG_CONTAINER="${PG_CONTAINER:-prive-admin}"
+PG_CONTAINER="${PG_CONTAINER:-postgres}"
 PG_SUPERUSER="${PG_SUPERUSER:-postgres}"
 PG_PASSWORD="${PG_PASSWORD:-password}"
 
@@ -124,7 +124,7 @@ printf '\ndownloading %s\n' "${S3_KEY}"
 s3cmd -c "${S3CFG}" get "${S3_KEY}" "${LOCAL_PATH}"
 
 if ! docker ps --format '{{.Names}}' | grep -Fxq "${PG_CONTAINER}"; then
-  err "postgres container '${PG_CONTAINER}' is not running. Start it with: (cd packages/db && docker compose up -d)"
+  err "postgres container '${PG_CONTAINER}' is not running. Start it with: bun compose:up"
 fi
 
 # Validate the production role name we'll create locally — guards against
