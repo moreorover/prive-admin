@@ -28,10 +28,10 @@
     "db:studio": "turbo run db:studio -F @prive-admin-tanstack/db",
     "db:generate": "turbo run db:generate -F @prive-admin-tanstack/db",
     "db:migrate": "turbo run db:migrate -F @prive-admin-tanstack/db",
-    "db:start": "turbo run db:start -F @prive-admin-tanstack/db",
-    "db:watch": "turbo run db:watch -F @prive-admin-tanstack/db",
-    "db:stop": "turbo run db:stop -F @prive-admin-tanstack/db",
-    "db:down": "turbo run db:down -F @prive-admin-tanstack/db",
+    "compose:up": "docker compose -f docker-compose.dev.yml up -d",
+    "compose:watch": "docker compose -f docker-compose.dev.yml up",
+    "compose:stop": "docker compose -f docker-compose.dev.yml stop",
+    "compose:down": "docker compose -f docker-compose.dev.yml down",
     "check": "oxlint && oxfmt --write"
   },
   "devDependencies": {
