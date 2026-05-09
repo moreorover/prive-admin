@@ -94,7 +94,7 @@ prive-admin-tanstack/
 - `bun run db:generate`: Generate database client/types
 - `bun run db:migrate`: Run database migrations
 - `bun run db:studio`: Open database studio UI
-- `bun run db:start` / `db:stop` / `db:down` / `db:watch`: Manage local database container
+- `bun run compose:up` / `compose:stop` / `compose:down` / `compose:watch`: Manage local dev compose stack (Postgres + MinIO)
 - `bun run check`: Run Oxlint and Oxfmt
 
 ## Deployment

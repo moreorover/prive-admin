@@ -28,10 +28,10 @@
     "db:studio": "turbo run db:studio -F @prive-admin-tanstack/db",
     "db:generate": "turbo run db:generate -F @prive-admin-tanstack/db",
     "db:migrate": "turbo run db:migrate -F @prive-admin-tanstack/db",
-    "db:start": "turbo run db:start -F @prive-admin-tanstack/db",
-    "db:watch": "turbo run db:watch -F @prive-admin-tanstack/db",
-    "db:stop": "turbo run db:stop -F @prive-admin-tanstack/db",
-    "db:down": "turbo run db:down -F @prive-admin-tanstack/db",
+    "compose:up": "docker compose -f docker-compose.dev.yml up -d",
+    "compose:watch": "docker compose -f docker-compose.dev.yml up",
+    "compose:stop": "docker compose -f docker-compose.dev.yml stop",
+    "compose:down": "docker compose -f docker-compose.dev.yml down",
     "check": "oxlint && oxfmt --write"
   },
   "devDependencies": {
@@ -41,15 +41,9 @@
     "dotenv": "catalog:",
     "oxfmt": "^0.48.0",
     "oxlint": "^1.63.0",
-    "turbo": "^2.9.10",
+    "turbo": "^2.9.12",
     "typescript": "^6.0.3",
     "zod": "catalog:"
   },
-  "overrides": {
-    "fast-xml-builder": "^1.1.7"
-  },
-  "packageManager": "bun@1.3.13",
-  "_overridesNotes": {
-    "fast-xml-builder": "GHSA-5wm8-gmm8-39j9, GHSA-45c6-75p6-83cc. Drop when @aws-sdk/xml-builder ships a fast-xml-parser release that requires fast-xml-builder >=1.1.7. Tracking: #151."
-  }
+  "packageManager": "bun@1.3.13"
 }
