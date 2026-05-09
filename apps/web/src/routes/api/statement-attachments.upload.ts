@@ -42,7 +42,7 @@ export const Route = createFileRoute("/api/statement-attachments/upload")({
         }
 
         const safeName = file.name.replace(/[^\w.-]+/g, "_")
-        const key = `statement-uploads/${entryId}/${Date.now()}-${safeName}`
+        const key = `statement_uploads/${entryId}/${Date.now()}-${safeName}`
         const arrayBuffer = await file.arrayBuffer()
 
         try {
