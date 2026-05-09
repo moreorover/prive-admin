@@ -288,6 +288,7 @@ function AttachmentsCell({ entryId, count }: { entryId: string; count: number })
   const queryClient = useQueryClient()
   const [opened, setOpened] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [fileInputKey, setFileInputKey] = useState(0)
 
   const listQuery = useQuery({
     queryKey: ["bank-statement-attachments", entryId],
@@ -326,6 +327,7 @@ function AttachmentsCell({ entryId, count }: { entryId: string; count: number })
       notifications.show({ color: "red", message: (err as Error).message })
     } finally {
       setBusy(false)
+      setFileInputKey((k) => k + 1)
     }
   }
 
@@ -377,6 +379,7 @@ function AttachmentsCell({ entryId, count }: { entryId: string; count: number })
             </Text>
           )}
           <FileInput
+            key={fileInputKey}
             placeholder="Add file"
             size="xs"
             disabled={busy}
