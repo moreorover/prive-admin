@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/moreorover/prive-admin/compare/v0.1.5...v0.1.6) (2026-05-09)
+
+
+### Bug Fixes
+
+* **deps:** nightly dependency updates ([#162](https://github.com/moreorover/prive-admin/issues/162)) ([10234b2](https://github.com/moreorover/prive-admin/commit/10234b2936a5ca4a101ba2e22674a45b8de10a32))
+
 ## [0.1.5](https://github.com/moreorover/prive-admin/compare/v0.1.4...v0.1.5) (2026-05-08)
 
 
