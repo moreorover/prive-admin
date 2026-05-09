@@ -79,6 +79,6 @@ jobs:
           bucket_location = auto
           use_https = True
           EOF
-          s3cmd put "${FILE_NAME}" "s3://${R2_BUCKET_NAME}/${FILE_NAME}"
+          s3cmd put "${FILE_NAME}" "s3://${R2_BUCKET_NAME}/postgres_backup/${FILE_NAME}"
           s3cmd info "s3://${R2_BUCKET_NAME}" || true
-          echo "Uploaded ${FILE_NAME} to r2://${R2_BUCKET_NAME}"
+          echo "Uploaded ${FILE_NAME} to r2://${R2_BUCKET_NAME}/postgres_backup/${FILE_NAME}"
