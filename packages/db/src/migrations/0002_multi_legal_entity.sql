@@ -33,23 +33,19 @@ ALTER TABLE "user_settings" ADD CONSTRAINT "user_settings_active_legal_entity_id
 ALTER TABLE "transaction" ADD CONSTRAINT "transaction_legal_entity_id_legal_entity_id_fk" FOREIGN KEY ("legal_entity_id") REFERENCES "public"."legal_entity"("id") ON DELETE restrict ON UPDATE no action;
 --> statement-breakpoint
 
--- Seed legal entities
+-- Seed legal entities (cuid2 IDs to match app-generated rows)
 INSERT INTO "legal_entity" ("id","name","type","country","default_currency","created_at","updated_at")
 VALUES
-  (gen_random_uuid()::text, 'Prive UK Ltd', 'LTD', 'GB', 'GBP', now(), now()),
-  (gen_random_uuid()::text, 'Prive LT IV',  'IV',  'LT', 'EUR', now(), now()),
-  (gen_random_uuid()::text, 'Prive LT MB',  'MB',  'LT', 'EUR', now(), now());
+  ('dsozp1b55nr55ac1zka1znx6', 'Prive UK Ltd', 'LTD', 'GB', 'GBP', now(), now()),
+  ('l5tn3uz35ngs42ulsniayw1u', 'Prive LT IV',  'IV',  'LT', 'EUR', now(), now()),
+  ('s0c79bofwj9td8zq8metyb58', 'Prive LT MB',  'MB',  'LT', 'EUR', now(), now());
 --> statement-breakpoint
 
--- Seed salons
+-- Seed salons (cuid2 IDs)
 INSERT INTO "salon" ("id","name","country","default_legal_entity_id","created_at","updated_at")
-SELECT gen_random_uuid()::text, 'Prive UK', 'GB', le.id, now(), now()
-FROM "legal_entity" le WHERE le.type = 'LTD' AND le.country = 'GB';
---> statement-breakpoint
-
-INSERT INTO "salon" ("id","name","country","default_legal_entity_id","created_at","updated_at")
-SELECT gen_random_uuid()::text, 'Prive LT', 'LT', le.id, now(), now()
-FROM "legal_entity" le WHERE le.type = 'IV' AND le.country = 'LT';
+VALUES
+  ('e6zm59ne62w8wzeqbr8bsbar', 'Prive UK', 'GB', 'dsozp1b55nr55ac1zka1znx6', now(), now()),
+  ('o5shsv4dktcez6d7g8efijv5', 'Prive LT', 'LT', 'l5tn3uz35ngs42ulsniayw1u', now(), now());
 --> statement-breakpoint
 
 -- Backfill appointment.salon_id and appointment.legal_entity_id
