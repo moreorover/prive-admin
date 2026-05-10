@@ -134,6 +134,7 @@ export const getCashMonthlyBreakdown = createServerFn({ method: "GET" })
           eq(transaction.status, "COMPLETED"),
           gte(transaction.completedDateBy, yearStart),
           lt(transaction.completedDateBy, yearEnd),
+          data.legalEntityId ? eq(transaction.legalEntityId, data.legalEntityId) : undefined,
         ),
       )
       .groupBy(
