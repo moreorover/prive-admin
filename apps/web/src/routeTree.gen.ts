@@ -28,7 +28,6 @@ import { Route as AuthenticatedLegalEntitiesIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedHairOrdersIndexRouteImport } from './routes/_authenticated/hair-orders/index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as AuthenticatedBankStatementsIndexRouteImport } from './routes/_authenticated/bank-statements/index'
-import { Route as AuthenticatedAppointmentsIndexRouteImport } from './routes/_authenticated/appointments/index'
 import { Route as ApiStatementAttachmentsUploadRouteImport } from './routes/api/statement-attachments.upload'
 import { Route as ApiStatementAttachmentsExportRouteImport } from './routes/api/statement-attachments.export'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -143,12 +142,6 @@ const AuthenticatedBankStatementsIndexRoute =
     path: '/bank-statements/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAppointmentsIndexRoute =
-  AuthenticatedAppointmentsIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedAppointmentsRouteRoute,
-  } as any)
 const ApiStatementAttachmentsUploadRoute =
   ApiStatementAttachmentsUploadRouteImport.update({
     id: '/api/statement-attachments/upload',
@@ -225,7 +218,6 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/statement-attachments/export': typeof ApiStatementAttachmentsExportRoute
   '/api/statement-attachments/upload': typeof ApiStatementAttachmentsUploadRoute
-  '/appointments/': typeof AuthenticatedAppointmentsIndexRoute
   '/bank-statements/': typeof AuthenticatedBankStatementsIndexRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
@@ -236,6 +228,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/appointments': typeof AuthenticatedAppointmentsRouteRouteWithChildren
   '/calendar': typeof AuthenticatedCalendarRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/files': typeof AuthenticatedFilesRoute
@@ -252,7 +245,6 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/statement-attachments/export': typeof ApiStatementAttachmentsExportRoute
   '/api/statement-attachments/upload': typeof ApiStatementAttachmentsUploadRoute
-  '/appointments': typeof AuthenticatedAppointmentsIndexRoute
   '/bank-statements': typeof AuthenticatedBankStatementsIndexRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders': typeof AuthenticatedHairOrdersIndexRoute
@@ -284,7 +276,6 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/statement-attachments/export': typeof ApiStatementAttachmentsExportRoute
   '/api/statement-attachments/upload': typeof ApiStatementAttachmentsUploadRoute
-  '/_authenticated/appointments/': typeof AuthenticatedAppointmentsIndexRoute
   '/_authenticated/bank-statements/': typeof AuthenticatedBankStatementsIndexRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
@@ -316,7 +307,6 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/statement-attachments/export'
     | '/api/statement-attachments/upload'
-    | '/appointments/'
     | '/bank-statements/'
     | '/customers/'
     | '/hair-orders/'
@@ -327,6 +317,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/appointments'
     | '/calendar'
     | '/dashboard'
     | '/files'
@@ -343,7 +334,6 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/statement-attachments/export'
     | '/api/statement-attachments/upload'
-    | '/appointments'
     | '/bank-statements'
     | '/customers'
     | '/hair-orders'
@@ -374,7 +364,6 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/statement-attachments/export'
     | '/api/statement-attachments/upload'
-    | '/_authenticated/appointments/'
     | '/_authenticated/bank-statements/'
     | '/_authenticated/customers/'
     | '/_authenticated/hair-orders/'
@@ -528,13 +517,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBankStatementsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/appointments/': {
-      id: '/_authenticated/appointments/'
-      path: '/'
-      fullPath: '/appointments/'
-      preLoaderRoute: typeof AuthenticatedAppointmentsIndexRouteImport
-      parentRoute: typeof AuthenticatedAppointmentsRouteRoute
-    }
     '/api/statement-attachments/upload': {
       id: '/api/statement-attachments/upload'
       path: '/api/statement-attachments/upload'
@@ -603,14 +585,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAppointmentsRouteRouteChildren {
   AuthenticatedAppointmentsAppointmentIdRoute: typeof AuthenticatedAppointmentsAppointmentIdRoute
-  AuthenticatedAppointmentsIndexRoute: typeof AuthenticatedAppointmentsIndexRoute
 }
 
 const AuthenticatedAppointmentsRouteRouteChildren: AuthenticatedAppointmentsRouteRouteChildren =
   {
     AuthenticatedAppointmentsAppointmentIdRoute:
       AuthenticatedAppointmentsAppointmentIdRoute,
-    AuthenticatedAppointmentsIndexRoute: AuthenticatedAppointmentsIndexRoute,
   }
 
 const AuthenticatedAppointmentsRouteRouteWithChildren =

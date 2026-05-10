@@ -44,7 +44,6 @@ import classes from "./route.module.css"
 const tabs = [
   { value: "/dashboard", label: "Dashboard" },
   { value: "/customers", label: "Customers" },
-  { value: "/appointments", label: "Appointments" },
   { value: "/calendar", label: "Calendar" },
   { value: "/hair-orders", label: "Hair Orders" },
   { value: "/bank-statements", label: "Bank statements" },

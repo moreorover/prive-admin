@@ -180,10 +180,10 @@ function AppointmentDetailPage() {
     <Container size="lg">
       <Stack>
         <Stack gap="xs">
-          <Anchor component={Link} to="/appointments" size="xs" c="dimmed">
+          <Anchor component={Link} to="/calendar" size="xs" c="dimmed">
             <Group gap={4}>
               <IconArrowLeft size={12} />
-              Back to appointments
+              Back to calendar
             </Group>
           </Anchor>
           <Title order={2}>{appointment.name}</Title>
