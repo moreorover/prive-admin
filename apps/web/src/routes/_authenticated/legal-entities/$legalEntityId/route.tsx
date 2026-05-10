@@ -1,20 +1,21 @@
-import { Anchor, Button, Card, Container, Group, Modal, Stack, Table, Text, TextInput, Title } from "@mantine/core"
+import { Button, Container, Group, Modal, Stack, TextInput, Title } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { useDisclosure } from "@mantine/hooks"
 import { notifications } from "@mantine/notifications"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Link, createFileRoute } from "@tanstack/react-router"
+import { Outlet, createFileRoute } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useEffect } from "react"
 
+import { LegalEntityTabs } from "@/components/legal-entity-tabs"
 import { getLegalEntity, updateLegalEntity } from "@/functions/legal-entities"
 import { legalEntityUpdateSchema } from "@/lib/schemas"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId")({
-  component: LegalEntityShow,
+  component: LegalEntityLayout,
 })
 
-function LegalEntityShow() {
+function LegalEntityLayout() {
   const { legalEntityId } = Route.useParams()
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
 
@@ -33,71 +34,9 @@ function LegalEntityShow() {
           </Button>
         </Group>
 
-        <Card withBorder>
-          <Stack gap="xs">
-            <Field label="Name" value={q.data?.name} />
-            <Field label="Registration number" value={q.data?.registrationNumber ?? "—"} />
-            <Field label="VAT number" value={q.data?.vatNumber ?? "—"} />
-          </Stack>
-        </Card>
+        <LegalEntityTabs legalEntityId={legalEntityId} />
 
-        <Card withBorder>
-          <Stack>
-            <Group justify="space-between">
-              <Title order={4}>Bank accounts</Title>
-              <Button
-                size="xs"
-                renderRoot={(props) => (
-                  <Link
-                    to="/bank-accounts/$bankAccountId"
-                    params={{ bankAccountId: "new" }}
-                    search={{ legalEntityId }}
-                    {...props}
-                  />
-                )}
-              >
-                New bank account
-              </Button>
-            </Group>
-            <Table>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Name</Table.Th>
-                  <Table.Th>IBAN</Table.Th>
-                  <Table.Th>Currency</Table.Th>
-                  <Table.Th>Bank</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {(q.data?.bankAccounts ?? []).map((a) => (
-                  <Table.Tr key={a.id}>
-                    <Table.Td>
-                      <Anchor
-                        renderRoot={(props) => (
-                          <Link to="/bank-accounts/$bankAccountId" params={{ bankAccountId: a.id }} {...props} />
-                        )}
-                      >
-                        {a.displayName}
-                      </Anchor>
-                    </Table.Td>
-                    <Table.Td>
-                      <code>{a.iban}</code>
-                    </Table.Td>
-                    <Table.Td>{a.currency}</Table.Td>
-                    <Table.Td>{a.bankName ?? "—"}</Table.Td>
-                  </Table.Tr>
-                ))}
-                {q.data && q.data.bankAccounts.length === 0 && (
-                  <Table.Tr>
-                    <Table.Td colSpan={4} ta="center" c="dimmed">
-                      No bank accounts.
-                    </Table.Td>
-                  </Table.Tr>
-                )}
-              </Table.Tbody>
-            </Table>
-          </Stack>
-        </Card>
+        <Outlet />
       </Stack>
 
       <EditLegalEntityModal
@@ -115,17 +54,6 @@ function LegalEntityShow() {
         }
       />
     </Container>
-  )
-}
-
-function Field({ label, value }: { label: string; value: string | undefined }) {
-  return (
-    <Group gap="md">
-      <Text size="sm" c="dimmed" w={180}>
-        {label}
-      </Text>
-      <Text size="sm">{value ?? ""}</Text>
-    </Group>
   )
 }
 
@@ -149,12 +77,7 @@ function EditLegalEntityModal({
   const queryClient = useQueryClient()
 
   const form = useForm<EditValues & { id: string }>({
-    initialValues: {
-      id: legalEntityId,
-      name: "",
-      registrationNumber: "",
-      vatNumber: "",
-    },
+    initialValues: { id: legalEntityId, name: "", registrationNumber: "", vatNumber: "" },
     validate: zodResolver(legalEntityUpdateSchema),
   })
 
