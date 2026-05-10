@@ -1,5 +1,4 @@
 import {
-  Badge,
   Button,
   Container,
   Group,
@@ -7,9 +6,7 @@ import {
   NativeSelect,
   NumberInput,
   Select,
-  Skeleton,
   Stack,
-  Table,
   Text,
   TextInput,
   Title,
@@ -18,10 +15,10 @@ import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconPlus, IconScissors } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Link, createFileRoute } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { ClientDate } from "@/components/client-date"
+import { HairOrdersTable } from "@/components/hair-orders-table"
 import { getCustomers } from "@/functions/customers"
 import { createHairOrder, getHairOrders } from "@/functions/hair-orders"
 import { listLegalEntities } from "@/functions/legal-entities"
@@ -160,78 +157,7 @@ function HairOrdersPage() {
           />
         </Group>
 
-        <Table>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>#</Table.Th>
-              <Table.Th>Customer</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th>Weight (g)</Table.Th>
-              <Table.Th>Placed</Table.Th>
-              <Table.Th>Legal Entity</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {isLoading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <Table.Tr key={i}>
-                    <Table.Td>
-                      <Skeleton h={14} w={30} />
-                    </Table.Td>
-                    <Table.Td>
-                      <Skeleton h={14} w={90} />
-                    </Table.Td>
-                    <Table.Td>
-                      <Skeleton h={14} w={60} />
-                    </Table.Td>
-                    <Table.Td>
-                      <Skeleton h={14} w={50} />
-                    </Table.Td>
-                    <Table.Td>
-                      <Skeleton h={14} w={70} />
-                    </Table.Td>
-                    <Table.Td>
-                      <Skeleton h={14} w={80} />
-                    </Table.Td>
-                  </Table.Tr>
-                ))
-              : hairOrders?.map((ho) => (
-                  <Table.Tr key={ho.id}>
-                    <Table.Td>
-                      <Text
-                        renderRoot={(props) => (
-                          <Link to="/hair-orders/$hairOrderId" params={{ hairOrderId: ho.id }} {...props} />
-                        )}
-                        c="blue"
-                        fw={500}
-                      >
-                        #{ho.uid}
-                      </Text>
-                    </Table.Td>
-                    <Table.Td c="dimmed">{ho.customer?.name ?? "—"}</Table.Td>
-                    <Table.Td>
-                      <Badge variant={ho.status === "COMPLETED" ? "light" : "outline"}>{ho.status}</Badge>
-                    </Table.Td>
-                    <Table.Td c="dimmed">{ho.weightReceived}g</Table.Td>
-                    <Table.Td c="dimmed">{ho.placedAt ? <ClientDate date={ho.placedAt} /> : "—"}</Table.Td>
-                    <Table.Td>
-                      {ho.legalEntity ? (
-                        <Badge variant="light" size="sm">
-                          {ho.legalEntity.name}
-                        </Badge>
-                      ) : null}
-                    </Table.Td>
-                  </Table.Tr>
-                ))}
-            {!isLoading && hairOrders?.length === 0 && (
-              <Table.Tr>
-                <Table.Td colSpan={6} ta="center" c="dimmed">
-                  No hair orders yet.
-                </Table.Td>
-              </Table.Tr>
-            )}
-          </Table.Tbody>
-        </Table>
+        <HairOrdersTable hairOrders={hairOrders} isLoading={isLoading} />
 
         <CreateHairOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       </Stack>
