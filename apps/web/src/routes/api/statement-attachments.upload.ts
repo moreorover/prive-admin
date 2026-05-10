@@ -20,12 +20,10 @@ export const Route = createFileRoute("/api/statement-attachments/upload")({
         }
 
         const formData = await request.formData()
-        const entryId = formData.get("entryId")
+        const rawEntryId = formData.get("entryId")
+        const entryId = typeof rawEntryId === "string" && rawEntryId.length > 0 ? rawEntryId : null
         const file = formData.get("file") as globalThis.File | null
 
-        if (typeof entryId !== "string" || !entryId) {
-          return Response.json({ error: "Missing entryId" }, { status: 400 })
-        }
         if (!file) {
           return Response.json({ error: "No file provided" }, { status: 400 })
         }
@@ -33,16 +31,18 @@ export const Route = createFileRoute("/api/statement-attachments/upload")({
           return Response.json({ error: `File exceeds ${MAX_BYTES} bytes` }, { status: 413 })
         }
 
-        const entry = await db.query.bankStatementEntry.findFirst({
-          where: eq(bankStatementEntry.id, entryId),
-          columns: { id: true },
-        })
-        if (!entry) {
-          return Response.json({ error: "Entry not found" }, { status: 404 })
+        if (entryId) {
+          const entry = await db.query.bankStatementEntry.findFirst({
+            where: eq(bankStatementEntry.id, entryId),
+            columns: { id: true },
+          })
+          if (!entry) {
+            return Response.json({ error: "Entry not found" }, { status: 404 })
+          }
         }
 
         const safeName = file.name.replace(/[^\w.-]+/g, "_")
-        const key = `statement_uploads/${entryId}/${Date.now()}-${safeName}`
+        const key = `statement_uploads/${entryId ?? "_unassigned"}/${Date.now()}-${safeName}`
         const arrayBuffer = await file.arrayBuffer()
 
         try {

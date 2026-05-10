@@ -6,9 +6,9 @@ import { bankStatementEntry } from "./bank-statement-entry"
 
 export const bankStatementAttachment = pgTable("bank_statement_attachment", {
   id: text("id").primaryKey().$defaultFn(createId),
-  bankStatementEntryId: text("bank_statement_entry_id")
-    .notNull()
-    .references(() => bankStatementEntry.id, { onDelete: "cascade" }),
+  bankStatementEntryId: text("bank_statement_entry_id").references(() => bankStatementEntry.id, {
+    onDelete: "cascade",
+  }),
   r2Key: text("r2_key").notNull().unique(),
   originalName: text("original_name").notNull(),
   contentType: text("content_type").notNull(),

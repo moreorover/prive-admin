@@ -64,6 +64,13 @@
       "when": 1778277285411,
       "tag": "0008_brainy_khan",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1778416956755,
+      "tag": "0009_easy_doomsday",
+      "breakpoints": true
     }
   ]
 }
