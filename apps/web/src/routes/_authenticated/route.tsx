@@ -42,14 +42,10 @@ import { authClient } from "@/lib/auth-client"
 import classes from "./route.module.css"
 
 const tabs = [
-  { value: "/dashboard", label: "Dashboard" },
   { value: "/customers", label: "Customers" },
   { value: "/calendar", label: "Calendar" },
   { value: "/hair-orders", label: "Hair Orders" },
-  { value: "/bank-statements", label: "Bank statements" },
-  { value: "/reports", label: "Reports" },
   { value: "/legal-entities", label: "Legal entities" },
-  { value: "/salons", label: "Salons" },
 ] as const
 
 export const Route = createFileRoute("/_authenticated")({
