@@ -1,7 +1,8 @@
-import { Anchor, Button, Card, Container, Group, Stack, Table, Title } from "@mantine/core"
+import { Button, Card, Container, Group, Stack, Title } from "@mantine/core"
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 
+import { SalonsTable } from "@/components/salons-table"
 import { listSalons } from "@/functions/salons"
 
 export const Route = createFileRoute("/_authenticated/salons/")({
@@ -21,30 +22,7 @@ function SalonsIndex() {
           </Button>
         </Group>
         <Card withBorder>
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Address</Table.Th>
-                <Table.Th />
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {(q.data ?? []).map((s) => (
-                <Table.Tr key={s.id}>
-                  <Table.Td>{s.name}</Table.Td>
-                  <Table.Td>{s.address ?? "—"}</Table.Td>
-                  <Table.Td>
-                    <Anchor
-                      renderRoot={(props) => <Link to="/salons/$salonId" params={{ salonId: s.id }} {...props} />}
-                    >
-                      Edit
-                    </Anchor>
-                  </Table.Td>
-                </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
+          <SalonsTable salons={q.data ?? []} />
         </Card>
       </Stack>
     </Container>
