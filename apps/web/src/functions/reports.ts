@@ -1,14 +1,18 @@
 import { db } from "@prive-admin-tanstack/db"
+import { bankAccount } from "@prive-admin-tanstack/db/schema/bank-account"
 import { bankStatementEntry } from "@prive-admin-tanstack/db/schema/bank-statement-entry"
 import { legalEntity } from "@prive-admin-tanstack/db/schema/legal-entity"
 import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
 import { createServerFn } from "@tanstack/react-start"
-import { and, eq, gte, lt, sql } from "drizzle-orm"
+import { and, eq, gte, inArray, lt, sql } from "drizzle-orm"
 import { z } from "zod"
 
 import { requireAuthMiddleware } from "@/middleware/auth"
 
-const yearSchema = z.object({ year: z.number().int().min(2000).max(3000) })
+const yearSchema = z.object({
+  year: z.number().int().min(2000).max(3000),
+  legalEntityId: z.string().optional(),
+})
 
 export type MonthlyBucket = {
   month: number // 1-12
@@ -36,9 +40,13 @@ export const getBankAccountMonthlyBreakdown = createServerFn({ method: "GET" })
 
     // Pull all entries within the year + per-account metadata.
     const accounts = await db.query.bankAccount.findMany({
+      where: data.legalEntityId ? eq(bankAccount.legalEntityId, data.legalEntityId) : undefined,
       with: { legalEntity: true },
       orderBy: (a, { asc }) => [asc(a.displayName)],
     })
+
+    const accountIds = accounts.map((a) => a.id)
+    if (accountIds.length === 0) return []
 
     const rows = await db
       .select({
@@ -48,7 +56,13 @@ export const getBankAccountMonthlyBreakdown = createServerFn({ method: "GET" })
         sum: sql<number>`coalesce(sum(${bankStatementEntry.amount}), 0)::int`,
       })
       .from(bankStatementEntry)
-      .where(and(gte(bankStatementEntry.date, yearStart), lt(bankStatementEntry.date, yearEnd)))
+      .where(
+        and(
+          gte(bankStatementEntry.date, yearStart),
+          lt(bankStatementEntry.date, yearEnd),
+          inArray(bankStatementEntry.bankAccountId, accountIds),
+        ),
+      )
       .groupBy(
         bankStatementEntry.bankAccountId,
         sql`extract(month from ${bankStatementEntry.date})`,
