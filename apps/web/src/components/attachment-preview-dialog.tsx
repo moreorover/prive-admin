@@ -22,6 +22,7 @@ export function AttachmentPreviewDialog({
       opened={opened}
       onClose={onClose}
       size="xl"
+      zIndex={400}
       title={
         attachment && (
           <Group gap="sm">

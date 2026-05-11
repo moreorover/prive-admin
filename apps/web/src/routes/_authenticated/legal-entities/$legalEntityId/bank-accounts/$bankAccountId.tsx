@@ -502,7 +502,10 @@ function AttachmentsCell({
           {(listQuery.data ?? []).map((a) => (
             <Group key={a.id} justify="space-between" wrap="nowrap" gap="xs">
               <UnstyledButton
-                onClick={() => onPreview({ id: a.id, originalName: a.originalName, contentType: a.contentType })}
+                onClick={() => {
+                  setOpened(false)
+                  onPreview({ id: a.id, originalName: a.originalName, contentType: a.contentType })
+                }}
                 style={{ textAlign: "left", flex: 1, minWidth: 0 }}
               >
                 <Text size="xs" td="underline" style={{ wordBreak: "break-all" }}>
