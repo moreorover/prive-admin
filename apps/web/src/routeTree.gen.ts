@@ -27,6 +27,7 @@ import { Route as AuthenticatedHairOrdersIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as AuthenticatedBankStatementsIndexRouteImport } from './routes/_authenticated/bank-statements/index'
 import { Route as ApiStatementAttachmentsUploadRouteImport } from './routes/api/statement-attachments.upload'
+import { Route as ApiStatementAttachmentsPreviewRouteImport } from './routes/api/statement-attachments.preview'
 import { Route as ApiStatementAttachmentsExportRouteImport } from './routes/api/statement-attachments.export'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthenticatedSalonsSalonIdRouteImport } from './routes/_authenticated/salons/$salonId'
@@ -141,6 +142,12 @@ const ApiStatementAttachmentsUploadRoute =
     path: '/api/statement-attachments/upload',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiStatementAttachmentsPreviewRoute =
+  ApiStatementAttachmentsPreviewRouteImport.update({
+    id: '/api/statement-attachments/preview',
+    path: '/api/statement-attachments/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiStatementAttachmentsExportRoute =
   ApiStatementAttachmentsExportRouteImport.update({
     id: '/api/statement-attachments/export',
@@ -245,6 +252,7 @@ export interface FileRoutesByFullPath {
   '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/statement-attachments/export': typeof ApiStatementAttachmentsExportRoute
+  '/api/statement-attachments/preview': typeof ApiStatementAttachmentsPreviewRoute
   '/api/statement-attachments/upload': typeof ApiStatementAttachmentsUploadRoute
   '/bank-statements/': typeof AuthenticatedBankStatementsIndexRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
@@ -275,6 +283,7 @@ export interface FileRoutesByTo {
   '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/statement-attachments/export': typeof ApiStatementAttachmentsExportRoute
+  '/api/statement-attachments/preview': typeof ApiStatementAttachmentsPreviewRoute
   '/api/statement-attachments/upload': typeof ApiStatementAttachmentsUploadRoute
   '/bank-statements': typeof AuthenticatedBankStatementsIndexRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
@@ -310,6 +319,7 @@ export interface FileRoutesById {
   '/_authenticated/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/statement-attachments/export': typeof ApiStatementAttachmentsExportRoute
+  '/api/statement-attachments/preview': typeof ApiStatementAttachmentsPreviewRoute
   '/api/statement-attachments/upload': typeof ApiStatementAttachmentsUploadRoute
   '/_authenticated/bank-statements/': typeof AuthenticatedBankStatementsIndexRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
@@ -345,6 +355,7 @@ export interface FileRouteTypes {
     | '/salons/$salonId'
     | '/api/auth/$'
     | '/api/statement-attachments/export'
+    | '/api/statement-attachments/preview'
     | '/api/statement-attachments/upload'
     | '/bank-statements/'
     | '/customers/'
@@ -375,6 +386,7 @@ export interface FileRouteTypes {
     | '/salons/$salonId'
     | '/api/auth/$'
     | '/api/statement-attachments/export'
+    | '/api/statement-attachments/preview'
     | '/api/statement-attachments/upload'
     | '/bank-statements'
     | '/customers'
@@ -409,6 +421,7 @@ export interface FileRouteTypes {
     | '/_authenticated/salons/$salonId'
     | '/api/auth/$'
     | '/api/statement-attachments/export'
+    | '/api/statement-attachments/preview'
     | '/api/statement-attachments/upload'
     | '/_authenticated/bank-statements/'
     | '/_authenticated/customers/'
@@ -432,6 +445,7 @@ export interface RootRouteChildren {
   ApiUploadRoute: typeof ApiUploadRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiStatementAttachmentsExportRoute: typeof ApiStatementAttachmentsExportRoute
+  ApiStatementAttachmentsPreviewRoute: typeof ApiStatementAttachmentsPreviewRoute
   ApiStatementAttachmentsUploadRoute: typeof ApiStatementAttachmentsUploadRoute
 }
 
@@ -561,6 +575,13 @@ declare module '@tanstack/react-router' {
       path: '/api/statement-attachments/upload'
       fullPath: '/api/statement-attachments/upload'
       preLoaderRoute: typeof ApiStatementAttachmentsUploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/statement-attachments/preview': {
+      id: '/api/statement-attachments/preview'
+      path: '/api/statement-attachments/preview'
+      fullPath: '/api/statement-attachments/preview'
+      preLoaderRoute: typeof ApiStatementAttachmentsPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/statement-attachments/export': {
@@ -792,6 +813,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiUploadRoute: ApiUploadRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiStatementAttachmentsExportRoute: ApiStatementAttachmentsExportRoute,
+  ApiStatementAttachmentsPreviewRoute: ApiStatementAttachmentsPreviewRoute,
   ApiStatementAttachmentsUploadRoute: ApiStatementAttachmentsUploadRoute,
 }
 export const routeTree = rootRouteImport
