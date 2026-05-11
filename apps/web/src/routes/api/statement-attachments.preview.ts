@@ -42,12 +42,25 @@ export const Route = createFileRoute("/api/statement-attachments/preview")({
         }
 
         const webStream = Readable.toWeb(obj.Body as Readable) as unknown as ReadableStream
+        const inlineSafeTypes = new Set([
+          "application/pdf",
+          "image/jpeg",
+          "image/png",
+          "image/gif",
+          "image/webp",
+          "text/plain",
+          "text/csv",
+        ])
+        const contentType = row.contentType || "application/octet-stream"
+        const disposition = inlineSafeTypes.has(contentType) ? "inline" : "attachment"
         const filename = encodeURIComponent(row.originalName)
+
         return new Response(webStream, {
           headers: {
-            "Content-Type": row.contentType || "application/octet-stream",
-            "Content-Disposition": `inline; filename="${filename}"; filename*=UTF-8''${filename}`,
+            "Content-Type": contentType,
+            "Content-Disposition": `${disposition}; filename="${filename}"; filename*=UTF-8''${filename}`,
             "Cache-Control": "private, max-age=60",
+            "X-Content-Type-Options": "nosniff",
           },
         })
       },
