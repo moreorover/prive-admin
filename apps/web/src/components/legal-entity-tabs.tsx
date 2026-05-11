@@ -3,6 +3,7 @@ import { Link, useLocation } from "@tanstack/react-router"
 
 const TABS = [
   { value: "overview", label: "Overview" },
+  { value: "documents", label: "Documents" },
   { value: "bank-accounts", label: "Bank accounts" },
   { value: "reports", label: "Reports" },
   { value: "salons", label: "Salons" },
