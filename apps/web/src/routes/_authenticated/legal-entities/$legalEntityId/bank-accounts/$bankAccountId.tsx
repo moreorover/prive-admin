@@ -257,6 +257,7 @@ function BankAccountShow({ id }: { id: string }) {
                   label="Month"
                   value={exportMonth}
                   onChange={(v) => setExportMonth(v ? new Date(v) : null)}
+                  popoverProps={{ withinPortal: false }}
                 />
                 <Button
                   leftSection={<IconDownload size={16} />}
