@@ -3,7 +3,6 @@ import { appointment } from "@prive-admin-tanstack/db/schema/appointment"
 import { hairAssigned, hairOrder } from "@prive-admin-tanstack/db/schema/hair"
 import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
 import { createServerFn } from "@tanstack/react-start"
-import dayjs from "dayjs"
 import { and, eq, gte, isNotNull, isNull, lt } from "drizzle-orm"
 import { z } from "zod"
 
@@ -12,13 +11,10 @@ import { requireAuthMiddleware } from "@/middleware/auth"
 
 type Range = { start: Date; end: Date }
 
-function monthlyRanges(dateInput: string): { current: Range; previous: Range } {
-  const start = dayjs(dateInput).startOf("month")
-  const nextMonthStart = start.add(1, "month")
-  const previousStart = start.subtract(1, "month")
+function yearlyRanges(year: number): { current: Range; previous: Range } {
   return {
-    current: { start: start.toDate(), end: nextMonthStart.toDate() },
-    previous: { start: previousStart.toDate(), end: start.toDate() },
+    current: { start: new Date(Date.UTC(year, 0, 1)), end: new Date(Date.UTC(year + 1, 0, 1)) },
+    previous: { start: new Date(Date.UTC(year - 1, 0, 1)), end: new Date(Date.UTC(year, 0, 1)) },
   }
 }
 
@@ -133,9 +129,9 @@ const toDateString = (d: Date) => d.toISOString().slice(0, 10)
 
 export const getTransactionStatsForDate = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .inputValidator(z.object({ date: z.string(), legalEntityId: z.string().optional() }))
+  .inputValidator(z.object({ year: z.number().int().min(2000).max(3000), legalEntityId: z.string().optional() }))
   .handler(async ({ data }) => {
-    const { current, previous } = monthlyRanges(data.date)
+    const { current, previous } = yearlyRanges(data.year)
     const fetch = async (range: Range) =>
       db
         .select({ amount: transaction.amount, currency: transaction.currency })
@@ -161,9 +157,9 @@ export const getTransactionStatsForDate = createServerFn({ method: "GET" })
 
 export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .inputValidator(z.object({ date: z.string(), legalEntityId: z.string().optional() }))
+  .inputValidator(z.object({ year: z.number().int().min(2000).max(3000), legalEntityId: z.string().optional() }))
   .handler(async ({ data }) => {
-    const { current, previous } = monthlyRanges(data.date)
+    const { current, previous } = yearlyRanges(data.year)
     const fetch = async (range: Range) =>
       db
         .select({
@@ -213,9 +209,9 @@ export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
 
 export const getHairAssignedThroughSaleStatsForDate = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .inputValidator(z.object({ date: z.string(), legalEntityId: z.string().optional() }))
+  .inputValidator(z.object({ year: z.number().int().min(2000).max(3000), legalEntityId: z.string().optional() }))
   .handler(async ({ data }) => {
-    const { current, previous } = monthlyRanges(data.date)
+    const { current, previous } = yearlyRanges(data.year)
     const fetch = async (range: Range) =>
       db
         .select({

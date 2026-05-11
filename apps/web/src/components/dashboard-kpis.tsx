@@ -1,138 +1,142 @@
-import { Card, Divider, Group, SimpleGrid, Skeleton, Stack, Tabs, Text, Title } from "@mantine/core"
-import { IconArrowDownRight, IconArrowUpRight, IconCash } from "@tabler/icons-react"
+import { Card, Group, Stack, Table, Text } from "@mantine/core"
+import { IconArrowDownRight, IconArrowUpRight } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 
 import {
   getHairAssignedStatsForDate,
   getHairAssignedThroughSaleStatsForDate,
   getTransactionStatsForDate,
-  type StatCategory,
+  type StatValue,
 } from "@/functions/dashboard"
-import { CURRENCIES } from "@/lib/currency"
 import { dashboardKeys } from "@/lib/query-keys"
 
-type StatTab = "total" | "average" | "count"
-
-export function DashboardKpis({ date, legalEntityId }: { date: string; legalEntityId: string }) {
+export function DashboardKpis({ year, legalEntityId }: { year: number; legalEntityId: string }) {
   const txQuery = useQuery({
-    queryKey: [...dashboardKeys.transactionStats(date), legalEntityId],
-    queryFn: () => getTransactionStatsForDate({ data: { date, legalEntityId: legalEntityId || undefined } }),
+    queryKey: [...dashboardKeys.transactionStats(year), legalEntityId],
+    queryFn: () => getTransactionStatsForDate({ data: { year, legalEntityId: legalEntityId || undefined } }),
   })
   const hairAptQuery = useQuery({
-    queryKey: [...dashboardKeys.hairAssignedStats(date), legalEntityId],
-    queryFn: () => getHairAssignedStatsForDate({ data: { date, legalEntityId: legalEntityId || undefined } }),
+    queryKey: [...dashboardKeys.hairAssignedStats(year), legalEntityId],
+    queryFn: () => getHairAssignedStatsForDate({ data: { year, legalEntityId: legalEntityId || undefined } }),
   })
   const hairSaleQuery = useQuery({
-    queryKey: [...dashboardKeys.hairSaleStats(date), legalEntityId],
+    queryKey: [...dashboardKeys.hairSaleStats(year), legalEntityId],
     queryFn: () =>
-      getHairAssignedThroughSaleStatsForDate({ data: { date, legalEntityId: legalEntityId || undefined } }),
+      getHairAssignedThroughSaleStatsForDate({ data: { year, legalEntityId: legalEntityId || undefined } }),
   })
-
-  const txStats = txQuery.data
-  const hairApt = hairAptQuery.data
-  const hairSale = hairSaleQuery.data
 
   return (
     <Stack>
-      <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
-        {txStats
-          ? CURRENCIES.filter((c) => Number(txStats[c].count.current) > 0 || Number(txStats[c].count.previous) > 0).map(
-              (c) => <EnhancedStatCard key={c} title={`Transactions (${c})`} data={txStats[c]} />,
-            )
-          : Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} h={240} />)}
-      </SimpleGrid>
+      <SectionTable
+        title="Transactions"
+        rowHeader="Currency"
+        rows={
+          txQuery.data
+            ? Object.entries(txQuery.data)
+                .filter(([, stat]) => Number(stat.count.current) > 0 || Number(stat.count.previous) > 0)
+                .map(([currency, stat]) => ({ label: currency, value: stat.total }))
+            : null
+        }
+      />
 
-      <Title order={4}>Hair Assigned during Appointments</Title>
-      <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
-        {hairApt ? (
-          <>
-            <EnhancedStatCard title="Weight in Grams" data={hairApt.weightInGrams} />
-            <EnhancedStatCard title="Sold For" data={hairApt.soldFor} />
-            <EnhancedStatCard title="Profit" data={hairApt.profit} />
-            <EnhancedStatCard title="Price per Gram" data={hairApt.pricePerGram} defaultTab="average" />
-          </>
-        ) : (
-          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} h={240} />)
-        )}
-      </SimpleGrid>
+      <SectionTable
+        title="Hair assigned during appointments"
+        rows={
+          hairAptQuery.data
+            ? [
+                { label: "Weight (g)", value: hairAptQuery.data.weightInGrams.total },
+                { label: "Sold for", value: hairAptQuery.data.soldFor.total },
+                { label: "Profit", value: hairAptQuery.data.profit.total },
+                { label: "Price per gram", value: hairAptQuery.data.pricePerGram.total },
+              ]
+            : null
+        }
+      />
 
-      <Title order={4}>Hair Assigned during Sale</Title>
-      <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
-        {hairSale ? (
-          <>
-            <EnhancedStatCard title="Weight in Grams" data={hairSale.weightInGrams} />
-            <EnhancedStatCard title="Sold For" data={hairSale.soldFor} />
-            <EnhancedStatCard title="Profit" data={hairSale.profit} />
-            <EnhancedStatCard title="Price per Gram" data={hairSale.pricePerGram} defaultTab="average" />
-          </>
-        ) : (
-          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} h={240} />)
-        )}
-      </SimpleGrid>
+      <SectionTable
+        title="Hair assigned during sale"
+        rows={
+          hairSaleQuery.data
+            ? [
+                { label: "Weight (g)", value: hairSaleQuery.data.weightInGrams.total },
+                { label: "Sold for", value: hairSaleQuery.data.soldFor.total },
+                { label: "Profit", value: hairSaleQuery.data.profit.total },
+                { label: "Price per gram", value: hairSaleQuery.data.pricePerGram.total },
+              ]
+            : null
+        }
+      />
     </Stack>
   )
 }
 
-function EnhancedStatCard({
+function SectionTable({
   title,
-  data,
-  defaultTab = "total",
+  rows,
+  rowHeader = "Metric",
 }: {
   title: string
-  data: StatCategory
-  defaultTab?: StatTab
+  rows: { label: string; value: StatValue }[] | null
+  rowHeader?: string
 }) {
   return (
-    <Card withBorder padding="md" radius="md">
-      <Group justify="space-between">
-        <Text size="xs" c="dimmed" tt="uppercase">
-          {title}
-        </Text>
-        <IconCash size={20} />
+    <Card withBorder>
+      <Group justify="space-between" mb="xs">
+        <Text fw={500}>{title}</Text>
       </Group>
-
-      <Tabs defaultValue={defaultTab} mt="md">
-        <Tabs.List>
-          <Tabs.Tab value="total">Total</Tabs.Tab>
-          <Tabs.Tab value="average">Average</Tabs.Tab>
-          <Tabs.Tab value="count">Count</Tabs.Tab>
-        </Tabs.List>
-        <StatTabPanel value="total" stat={data.total} />
-        <StatTabPanel value="average" stat={data.average} />
-        <StatTabPanel value="count" stat={data.count} />
-      </Tabs>
-
-      <Text fz="xs" c="dimmed" mt="sm">
-        Compared to previous period
-      </Text>
+      <Table striped>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>{rowHeader}</Table.Th>
+            <Table.Th ta="right">Current</Table.Th>
+            <Table.Th ta="right">Previous</Table.Th>
+            <Table.Th ta="right">Difference</Table.Th>
+            <Table.Th ta="right">% change</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {rows === null && (
+            <Table.Tr>
+              <Table.Td colSpan={5} c="dimmed">
+                Loading…
+              </Table.Td>
+            </Table.Tr>
+          )}
+          {rows !== null && rows.length === 0 && (
+            <Table.Tr>
+              <Table.Td colSpan={5} ta="center" c="dimmed">
+                No data.
+              </Table.Td>
+            </Table.Tr>
+          )}
+          {rows?.map((r) => {
+            const pct = r.value.percentage
+            const positive = pct >= 0
+            const Icon = positive ? IconArrowUpRight : IconArrowDownRight
+            const pctColor = positive ? "teal" : "red"
+            return (
+              <Table.Tr key={r.label}>
+                <Table.Td>{r.label}</Table.Td>
+                <Table.Td ta="right" fw={500}>
+                  {r.value.current}
+                </Table.Td>
+                <Table.Td ta="right" c="dimmed">
+                  {r.value.previous}
+                </Table.Td>
+                <Table.Td ta="right">{r.value.difference}</Table.Td>
+                <Table.Td ta="right" c={pctColor}>
+                  <Group gap={2} justify="flex-end" wrap="nowrap">
+                    <Text size="sm" fw={500}>
+                      {pct}%
+                    </Text>
+                    <Icon size={14} />
+                  </Group>
+                </Table.Td>
+              </Table.Tr>
+            )
+          })}
+        </Table.Tbody>
+      </Table>
     </Card>
-  )
-}
-
-function StatTabPanel({ value, stat }: { value: StatTab; stat: StatCategory[StatTab] }) {
-  const positive = stat.percentage >= 0
-  const Icon = positive ? IconArrowUpRight : IconArrowDownRight
-  const color = positive ? "teal" : "red"
-  return (
-    <Tabs.Panel value={value} pt="xs">
-      <Stack gap="xs">
-        <Group align="flex-end" gap="xs" mt="sm">
-          <Title order={3}>{stat.current}</Title>
-          <Group gap={4} c={color}>
-            <Text size="sm" fw={500}>
-              {stat.percentage}%
-            </Text>
-            <Icon size={16} />
-          </Group>
-        </Group>
-        <Text fz="xs" c="dimmed">
-          Previous: {stat.previous}
-        </Text>
-        <Divider my={4} />
-        <Text fz="xs" c="dimmed">
-          Difference: {stat.difference}
-        </Text>
-      </Stack>
-    </Tabs.Panel>
   )
 }
