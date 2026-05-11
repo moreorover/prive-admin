@@ -1,4 +1,5 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3"
+import { createId } from "@paralleldrive/cuid2"
 import { auth } from "@prive-admin-tanstack/auth"
 import { db } from "@prive-admin-tanstack/db"
 import { bankStatementAttachment } from "@prive-admin-tanstack/db/schema/bank-statement-attachment"
@@ -42,7 +43,11 @@ export const Route = createFileRoute("/api/statement-attachments/upload")({
         }
 
         const safeName = file.name.replace(/[^\w.-]+/g, "_")
-        const key = `statement_uploads/${entryId ?? "_unassigned"}/${Date.now()}-${safeName}`
+        const now = new Date()
+        const yyyy = now.getUTCFullYear()
+        const mm = String(now.getUTCMonth() + 1).padStart(2, "0")
+        const attachmentId = createId()
+        const key = `statement_uploads/${yyyy}/${mm}/${attachmentId}-${safeName}`
         const arrayBuffer = await file.arrayBuffer()
 
         try {
@@ -62,6 +67,7 @@ export const Route = createFileRoute("/api/statement-attachments/upload")({
         const [row] = await db
           .insert(bankStatementAttachment)
           .values({
+            id: attachmentId,
             bankStatementEntryId: entryId,
             r2Key: key,
             originalName: file.name,
