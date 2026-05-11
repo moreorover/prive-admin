@@ -66,16 +66,13 @@ export function BankAccountReportCard({ a }: { a: BankAccountMonthlyBreakdown })
 }
 
 export function CashReportTable({ data }: { data: CashMonthlyBreakdown[] }) {
-  const rows: { month: number; currency: string; total: number }[] = []
+  const rows: { month: number; currency: string; in: number; out: number }[] = []
   for (const c of data) {
     for (const m of c.months) {
-      if (m.total !== 0) rows.push({ month: m.month, currency: c.currency, total: m.total })
+      if (m.in !== 0 || m.out !== 0) rows.push({ month: m.month, currency: c.currency, in: m.in, out: m.out })
     }
   }
   rows.sort((a, b) => a.month - b.month || a.currency.localeCompare(b.currency))
-
-  const totalsByCurrency = new Map<string, number>()
-  for (const c of data) totalsByCurrency.set(c.currency, c.total)
 
   return (
     <Card withBorder>
@@ -87,35 +84,55 @@ export function CashReportTable({ data }: { data: CashMonthlyBreakdown[] }) {
           <Table.Tr>
             <Table.Th>Month</Table.Th>
             <Table.Th>Currency</Table.Th>
+            <Table.Th ta="right">In</Table.Th>
+            <Table.Th ta="right">Out</Table.Th>
             <Table.Th ta="right">Net</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {rows.map((r) => (
-            <Table.Tr key={`${r.month}-${r.currency}`}>
-              <Table.Td>{MONTH_NAMES[r.month - 1]}</Table.Td>
-              <Table.Td>{r.currency}</Table.Td>
-              <Table.Td ta="right" c={r.total > 0 ? "teal" : r.total < 0 ? "red" : "dimmed"}>
-                {formatMinor(r.total, r.currency as Currency)}
-              </Table.Td>
-            </Table.Tr>
-          ))}
+          {rows.map((r) => {
+            const net = r.in - r.out
+            return (
+              <Table.Tr key={`${r.month}-${r.currency}`}>
+                <Table.Td>{MONTH_NAMES[r.month - 1]}</Table.Td>
+                <Table.Td>{r.currency}</Table.Td>
+                <Table.Td ta="right" c={r.in > 0 ? "teal" : "dimmed"}>
+                  {formatMinor(r.in, r.currency as Currency)}
+                </Table.Td>
+                <Table.Td ta="right" c={r.out > 0 ? "red" : "dimmed"}>
+                  {formatMinor(r.out, r.currency as Currency)}
+                </Table.Td>
+                <Table.Td ta="right" fw={500} c={net > 0 ? "teal" : net < 0 ? "red" : "dimmed"}>
+                  {formatMinor(net, r.currency as Currency)}
+                </Table.Td>
+              </Table.Tr>
+            )
+          })}
           {rows.length === 0 && (
             <Table.Tr>
-              <Table.Td colSpan={3} ta="center" c="dimmed">
+              <Table.Td colSpan={5} ta="center" c="dimmed">
                 No cash transactions.
               </Table.Td>
             </Table.Tr>
           )}
-          {Array.from(totalsByCurrency.entries()).map(([currency, total]) => (
-            <Table.Tr key={`total-${currency}`}>
-              <Table.Td fw={600}>Total</Table.Td>
-              <Table.Td fw={600}>{currency}</Table.Td>
-              <Table.Td ta="right" fw={700} c={total > 0 ? "teal" : total < 0 ? "red" : "dimmed"}>
-                {formatMinor(total, currency as Currency)}
-              </Table.Td>
-            </Table.Tr>
-          ))}
+          {data.map((c) => {
+            const net = c.totalIn - c.totalOut
+            return (
+              <Table.Tr key={`total-${c.currency}`}>
+                <Table.Td fw={600}>Total</Table.Td>
+                <Table.Td fw={600}>{c.currency}</Table.Td>
+                <Table.Td ta="right" fw={600} c="teal">
+                  {formatMinor(c.totalIn, c.currency as Currency)}
+                </Table.Td>
+                <Table.Td ta="right" fw={600} c="red">
+                  {formatMinor(c.totalOut, c.currency as Currency)}
+                </Table.Td>
+                <Table.Td ta="right" fw={700} c={net > 0 ? "teal" : net < 0 ? "red" : "dimmed"}>
+                  {formatMinor(net, c.currency as Currency)}
+                </Table.Td>
+              </Table.Tr>
+            )
+          })}
         </Table.Tbody>
       </Table>
     </Card>
