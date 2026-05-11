@@ -5,7 +5,6 @@ const TABS = [
   { value: "overview", label: "Overview" },
   { value: "bank-accounts", label: "Bank accounts" },
   { value: "reports", label: "Reports" },
-  { value: "hair-orders", label: "Hair orders" },
   { value: "salons", label: "Salons" },
 ] as const
 
