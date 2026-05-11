@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { BankAccountReportCard, CashReportCard } from "@/components/reports-cards"
+import { BankAccountReportCard, CashReportTable } from "@/components/reports-cards"
 import { getBankAccountMonthlyBreakdown, getCashMonthlyBreakdown } from "@/functions/reports"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/reports")({
@@ -54,7 +54,7 @@ function ReportsTab() {
       {(cashQuery.data ?? []).length === 0 ? (
         <Text c="dimmed">No cash transactions in {year}.</Text>
       ) : (
-        (cashQuery.data ?? []).map((c) => <CashReportCard key={`${c.legalEntityId}-${c.currency}`} c={c} />)
+        <CashReportTable data={cashQuery.data ?? []} />
       )}
     </Stack>
   )

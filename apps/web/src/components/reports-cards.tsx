@@ -65,30 +65,54 @@ export function BankAccountReportCard({ a }: { a: BankAccountMonthlyBreakdown })
   )
 }
 
-export function CashReportCard({ c }: { c: CashMonthlyBreakdown }) {
+export function CashReportTable({ data }: { data: CashMonthlyBreakdown[] }) {
+  const rows: { month: number; currency: string; total: number }[] = []
+  for (const c of data) {
+    for (const m of c.months) {
+      if (m.total !== 0) rows.push({ month: m.month, currency: c.currency, total: m.total })
+    }
+  }
+  rows.sort((a, b) => a.month - b.month || a.currency.localeCompare(b.currency))
+
+  const totalsByCurrency = new Map<string, number>()
+  for (const c of data) totalsByCurrency.set(c.currency, c.total)
+
   return (
-    <Card key={`${c.legalEntityId}-${c.currency}`} withBorder>
+    <Card withBorder>
       <Group justify="space-between" mb="xs">
-        <Text fw={500}>
-          {c.legalEntityName} · {c.currency}
-        </Text>
-        <Text size="sm" c="teal" fw={500}>
-          Total {formatMinor(c.total, c.currency as Currency)}
-        </Text>
+        <Text fw={500}>Cash (manual transactions)</Text>
       </Group>
       <Table striped>
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Month</Table.Th>
-            <Table.Th ta="right">Total</Table.Th>
+            <Table.Th>Currency</Table.Th>
+            <Table.Th ta="right">Net</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {c.months.map((m) => (
-            <Table.Tr key={m.month}>
-              <Table.Td>{MONTH_NAMES[m.month - 1]}</Table.Td>
-              <Table.Td ta="right" c={m.total > 0 ? "teal" : "dimmed"}>
-                {formatMinor(m.total, c.currency as Currency)}
+          {rows.map((r) => (
+            <Table.Tr key={`${r.month}-${r.currency}`}>
+              <Table.Td>{MONTH_NAMES[r.month - 1]}</Table.Td>
+              <Table.Td>{r.currency}</Table.Td>
+              <Table.Td ta="right" c={r.total > 0 ? "teal" : r.total < 0 ? "red" : "dimmed"}>
+                {formatMinor(r.total, r.currency as Currency)}
+              </Table.Td>
+            </Table.Tr>
+          ))}
+          {rows.length === 0 && (
+            <Table.Tr>
+              <Table.Td colSpan={3} ta="center" c="dimmed">
+                No cash transactions.
+              </Table.Td>
+            </Table.Tr>
+          )}
+          {Array.from(totalsByCurrency.entries()).map(([currency, total]) => (
+            <Table.Tr key={`total-${currency}`}>
+              <Table.Td fw={600}>Total</Table.Td>
+              <Table.Td fw={600}>{currency}</Table.Td>
+              <Table.Td ta="right" fw={700} c={total > 0 ? "teal" : total < 0 ? "red" : "dimmed"}>
+                {formatMinor(total, currency as Currency)}
               </Table.Td>
             </Table.Tr>
           ))}
