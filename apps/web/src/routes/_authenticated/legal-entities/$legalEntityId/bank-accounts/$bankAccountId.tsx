@@ -230,43 +230,52 @@ function BankAccountShow({ id }: { id: string }) {
         </Card>
 
         <Group align="end" justify="space-between">
-          <Group>
-            <Select
-              label="Status"
-              data={[
-                { value: "PENDING", label: "Pending" },
-                { value: "LINKED", label: "Linked" },
-                { value: "IGNORED", label: "Ignored" },
-                { value: "ALL", label: "All" },
-              ]}
-              value={statusFilter}
-              onChange={(v) => setStatusFilter((v as StatusFilter) ?? "PENDING")}
-              w={180}
-            />
-          </Group>
-          <Group align="end">
-            <MonthPickerInput
-              label="Export month"
-              value={exportMonth}
-              onChange={(v) => setExportMonth(v ? new Date(v) : null)}
-              w={180}
-            />
-            <Button
-              leftSection={<IconDownload size={16} />}
-              disabled={!exportMonth}
-              onClick={() => {
-                if (!exportMonth) return
-                const params = new URLSearchParams({
-                  year: String(exportMonth.getFullYear()),
-                  month: String(exportMonth.getMonth() + 1),
-                  bankAccountId: id,
-                })
-                window.location.href = `/api/statement-attachments/export?${params.toString()}`
-              }}
-            >
-              Download zip
-            </Button>
-          </Group>
+          <Select
+            label="Status"
+            data={[
+              { value: "PENDING", label: "Pending" },
+              { value: "LINKED", label: "Linked" },
+              { value: "IGNORED", label: "Ignored" },
+              { value: "ALL", label: "All" },
+            ]}
+            value={statusFilter}
+            onChange={(v) => setStatusFilter((v as StatusFilter) ?? "PENDING")}
+            w={180}
+          />
+          <Popover position="bottom-end" withArrow shadow="md" width={260}>
+            <Popover.Target>
+              <Button variant="default" leftSection={<IconDownload size={16} />}>
+                Export attachments
+              </Button>
+            </Popover.Target>
+            <Popover.Dropdown>
+              <Stack gap="xs">
+                <Text fw={500} size="sm">
+                  Download attachments as zip
+                </Text>
+                <MonthPickerInput
+                  label="Month"
+                  value={exportMonth}
+                  onChange={(v) => setExportMonth(v ? new Date(v) : null)}
+                />
+                <Button
+                  leftSection={<IconDownload size={16} />}
+                  disabled={!exportMonth}
+                  onClick={() => {
+                    if (!exportMonth) return
+                    const params = new URLSearchParams({
+                      year: String(exportMonth.getFullYear()),
+                      month: String(exportMonth.getMonth() + 1),
+                      bankAccountId: id,
+                    })
+                    window.location.href = `/api/statement-attachments/export?${params.toString()}`
+                  }}
+                >
+                  Download zip
+                </Button>
+              </Stack>
+            </Popover.Dropdown>
+          </Popover>
         </Group>
 
         <Card withBorder>
