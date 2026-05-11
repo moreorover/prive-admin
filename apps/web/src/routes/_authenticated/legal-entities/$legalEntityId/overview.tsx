@@ -1,17 +1,26 @@
 import { Group, NumberInput, Stack, Title } from "@mantine/core"
 import { createFileRoute } from "@tanstack/react-router"
-import { useState } from "react"
+import { z } from "zod"
 
 import { DashboardKpis } from "@/components/dashboard-kpis"
 
+const searchSchema = z.object({
+  year: z.number().int().min(2000).max(3000).optional(),
+})
+
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/overview")({
   component: OverviewTab,
+  validateSearch: searchSchema,
 })
 
 function OverviewTab() {
   const { legalEntityId } = Route.useParams()
+  const search = Route.useSearch()
+  const navigate = Route.useNavigate()
   const currentYear = new Date().getFullYear()
-  const [year, setYear] = useState<number>(currentYear)
+  const year = search.year ?? currentYear
+
+  const setYear = (next: number) => navigate({ search: { year: next } })
 
   return (
     <Stack>

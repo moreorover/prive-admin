@@ -1,19 +1,28 @@
 import { Group, NumberInput, Stack, Text, Title } from "@mantine/core"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { useState } from "react"
+import { z } from "zod"
 
 import { BankAccountReportCard, CashReportTable } from "@/components/reports-cards"
 import { getBankAccountMonthlyBreakdown, getCashMonthlyBreakdown } from "@/functions/reports"
 
+const searchSchema = z.object({
+  year: z.number().int().min(2000).max(3000).optional(),
+})
+
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/reports")({
   component: ReportsTab,
+  validateSearch: searchSchema,
 })
 
 function ReportsTab() {
   const { legalEntityId } = Route.useParams()
+  const search = Route.useSearch()
+  const navigate = Route.useNavigate()
   const currentYear = new Date().getFullYear()
-  const [year, setYear] = useState<number>(currentYear)
+  const year = search.year ?? currentYear
+
+  const setYear = (next: number) => navigate({ search: { year: next } })
 
   const bankQuery = useQuery({
     queryKey: ["reports", "bank", year, legalEntityId],
