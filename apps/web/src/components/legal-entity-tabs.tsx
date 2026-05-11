@@ -1,5 +1,8 @@
-import { Tabs } from "@mantine/core"
+import { Badge, Group, Tabs } from "@mantine/core"
+import { useQuery } from "@tanstack/react-query"
 import { Link, useLocation } from "@tanstack/react-router"
+
+import { listUnassignedAttachments } from "@/functions/bank-statement-attachments"
 
 const TABS = [
   { value: "overview", label: "Overview" },
@@ -14,6 +17,12 @@ export function LegalEntityTabs({ legalEntityId }: { legalEntityId: string }) {
   const segment = location.pathname.split(`/legal-entities/${legalEntityId}/`)[1]?.split("/")[0] ?? "overview"
   const active = TABS.find((t) => t.value === segment)?.value ?? "overview"
 
+  const unassignedQuery = useQuery({
+    queryKey: ["bank-statement-attachments", "unassigned"],
+    queryFn: () => listUnassignedAttachments(),
+  })
+  const unassignedCount = unassignedQuery.data?.length ?? 0
+
   return (
     <Tabs value={active} variant="outline" mb="md">
       <Tabs.List>
@@ -24,8 +33,17 @@ export function LegalEntityTabs({ legalEntityId }: { legalEntityId: string }) {
             renderRoot={(props) => (
               <Link to={`/legal-entities/$legalEntityId/${t.value}`} params={{ legalEntityId }} {...props} />
             )}
+            rightSection={
+              t.value === "documents" && unassignedCount > 0 ? (
+                <Badge size="xs" variant="filled" color="orange" circle>
+                  {unassignedCount}
+                </Badge>
+              ) : undefined
+            }
           >
-            {t.label}
+            <Group gap={6} wrap="nowrap">
+              {t.label}
+            </Group>
           </Tabs.Tab>
         ))}
       </Tabs.List>
