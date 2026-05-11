@@ -35,7 +35,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useEffect, useState } from "react"
-import { z } from "zod"
 
 import { getAppointment, getAppointments } from "@/functions/appointments"
 import { createBankAccount, getBankAccount, updateBankAccount } from "@/functions/bank-accounts"
@@ -58,9 +57,8 @@ import { listLegalEntities } from "@/functions/legal-entities"
 import { CURRENCY_OPTIONS, type Currency, formatMinor } from "@/lib/currency"
 import { bankAccountSchema } from "@/lib/schemas"
 
-export const Route = createFileRoute("/_authenticated/bank-accounts/$bankAccountId")({
+export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/bank-accounts/$bankAccountId")({
   component: BankAccountRoute,
-  validateSearch: z.object({ legalEntityId: z.string().optional() }),
 })
 
 function BankAccountRoute() {
@@ -829,7 +827,7 @@ function EditBankAccountModal({
 }
 
 function BankAccountNew() {
-  const search = Route.useSearch()
+  const { legalEntityId: pathLegalEntityId } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
@@ -837,7 +835,7 @@ function BankAccountNew() {
   const form = useForm<FormValues & { id: undefined }>({
     initialValues: {
       id: undefined,
-      legalEntityId: search.legalEntityId ?? "",
+      legalEntityId: pathLegalEntityId,
       iban: "",
       currency: "EUR",
       bankName: "",
@@ -853,12 +851,15 @@ function BankAccountNew() {
       notifications.show({ color: "green", message: "Saved" })
       await queryClient.invalidateQueries({ queryKey: ["bank-accounts"] })
       await queryClient.invalidateQueries({ queryKey: ["legal-entity", values.legalEntityId] })
-      navigate({ to: "/legal-entities/$legalEntityId", params: { legalEntityId: values.legalEntityId } })
+      navigate({
+        to: "/legal-entities/$legalEntityId/bank-accounts",
+        params: { legalEntityId: values.legalEntityId },
+      })
     },
     onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
   })
 
-  const cancelTarget = form.values.legalEntityId || search.legalEntityId
+  const cancelTarget = form.values.legalEntityId || pathLegalEntityId
 
   return (
     <Container size="lg">
@@ -898,7 +899,11 @@ function BankAccountNew() {
                 <Button
                   renderRoot={(props) =>
                     cancelTarget ? (
-                      <Link to="/legal-entities/$legalEntityId" params={{ legalEntityId: cancelTarget }} {...props} />
+                      <Link
+                        to="/legal-entities/$legalEntityId/bank-accounts"
+                        params={{ legalEntityId: cancelTarget }}
+                        {...props}
+                      />
                     ) : (
                       <Link to="/legal-entities" {...props} />
                     )

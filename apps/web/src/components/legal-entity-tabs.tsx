@@ -11,7 +11,8 @@ const TABS = [
 
 export function LegalEntityTabs({ legalEntityId }: { legalEntityId: string }) {
   const location = useLocation()
-  const active = TABS.find((t) => location.pathname.endsWith(`/${t.value}`))?.value ?? "overview"
+  const segment = location.pathname.split(`/legal-entities/${legalEntityId}/`)[1]?.split("/")[0] ?? "overview"
+  const active = TABS.find((t) => t.value === segment)?.value ?? "overview"
 
   return (
     <Tabs value={active} variant="outline" mb="md">

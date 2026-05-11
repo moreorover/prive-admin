@@ -32,7 +32,6 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthenticatedSalonsSalonIdRouteImport } from './routes/_authenticated/salons/$salonId'
 import { Route as AuthenticatedHairOrdersHairOrderIdRouteImport } from './routes/_authenticated/hair-orders/$hairOrderId'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
-import { Route as AuthenticatedBankAccountsBankAccountIdRouteImport } from './routes/_authenticated/bank-accounts/$bankAccountId'
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments/$appointmentId'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdRouteRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/route'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdIndexRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/index'
@@ -40,7 +39,8 @@ import { Route as AuthenticatedLegalEntitiesLegalEntityIdSalonsRouteImport } fro
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdReportsRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/reports'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdOverviewRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/overview'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdDocumentsRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/documents'
-import { Route as AuthenticatedLegalEntitiesLegalEntityIdBankAccountsRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/bank-accounts'
+import { Route as AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/bank-accounts/index'
+import { Route as AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/bank-accounts/$bankAccountId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -170,12 +170,6 @@ const AuthenticatedCustomersCustomerIdRoute =
     path: '/$customerId',
     getParentRoute: () => AuthenticatedCustomersRouteRoute,
   } as any)
-const AuthenticatedBankAccountsBankAccountIdRoute =
-  AuthenticatedBankAccountsBankAccountIdRouteImport.update({
-    id: '/bank-accounts/$bankAccountId',
-    path: '/bank-accounts/$bankAccountId',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedAppointmentsAppointmentIdRoute =
   AuthenticatedAppointmentsAppointmentIdRouteImport.update({
     id: '/$appointmentId',
@@ -218,12 +212,20 @@ const AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute =
     path: '/documents',
     getParentRoute: () => AuthenticatedLegalEntitiesLegalEntityIdRouteRoute,
   } as any)
-const AuthenticatedLegalEntitiesLegalEntityIdBankAccountsRoute =
-  AuthenticatedLegalEntitiesLegalEntityIdBankAccountsRouteImport.update({
-    id: '/bank-accounts',
-    path: '/bank-accounts',
+const AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRoute =
+  AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRouteImport.update({
+    id: '/bank-accounts/',
+    path: '/bank-accounts/',
     getParentRoute: () => AuthenticatedLegalEntitiesLegalEntityIdRouteRoute,
   } as any)
+const AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRoute =
+  AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRouteImport.update(
+    {
+      id: '/bank-accounts/$bankAccountId',
+      path: '/bank-accounts/$bankAccountId',
+      getParentRoute: () => AuthenticatedLegalEntitiesLegalEntityIdRouteRoute,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -238,7 +240,6 @@ export interface FileRoutesByFullPath {
   '/api/upload': typeof ApiUploadRoute
   '/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
-  '/bank-accounts/$bankAccountId': typeof AuthenticatedBankAccountsBankAccountIdRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
@@ -251,12 +252,13 @@ export interface FileRoutesByFullPath {
   '/legal-entities/': typeof AuthenticatedLegalEntitiesIndexRoute
   '/reports/': typeof AuthenticatedReportsIndexRoute
   '/salons/': typeof AuthenticatedSalonsIndexRoute
-  '/legal-entities/$legalEntityId/bank-accounts': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsRoute
   '/legal-entities/$legalEntityId/documents': typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute
   '/legal-entities/$legalEntityId/overview': typeof AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute
   '/legal-entities/$legalEntityId/reports': typeof AuthenticatedLegalEntitiesLegalEntityIdReportsRoute
   '/legal-entities/$legalEntityId/salons': typeof AuthenticatedLegalEntitiesLegalEntityIdSalonsRoute
   '/legal-entities/$legalEntityId/': typeof AuthenticatedLegalEntitiesLegalEntityIdIndexRoute
+  '/legal-entities/$legalEntityId/bank-accounts/$bankAccountId': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRoute
+  '/legal-entities/$legalEntityId/bank-accounts/': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -268,7 +270,6 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/upload': typeof ApiUploadRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
-  '/bank-accounts/$bankAccountId': typeof AuthenticatedBankAccountsBankAccountIdRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
@@ -281,12 +282,13 @@ export interface FileRoutesByTo {
   '/legal-entities': typeof AuthenticatedLegalEntitiesIndexRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
   '/salons': typeof AuthenticatedSalonsIndexRoute
-  '/legal-entities/$legalEntityId/bank-accounts': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsRoute
   '/legal-entities/$legalEntityId/documents': typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute
   '/legal-entities/$legalEntityId/overview': typeof AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute
   '/legal-entities/$legalEntityId/reports': typeof AuthenticatedLegalEntitiesLegalEntityIdReportsRoute
   '/legal-entities/$legalEntityId/salons': typeof AuthenticatedLegalEntitiesLegalEntityIdSalonsRoute
   '/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdIndexRoute
+  '/legal-entities/$legalEntityId/bank-accounts/$bankAccountId': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRoute
+  '/legal-entities/$legalEntityId/bank-accounts': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -303,7 +305,6 @@ export interface FileRoutesById {
   '/api/upload': typeof ApiUploadRoute
   '/_authenticated/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren
   '/_authenticated/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
-  '/_authenticated/bank-accounts/$bankAccountId': typeof AuthenticatedBankAccountsBankAccountIdRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/_authenticated/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
@@ -316,12 +317,13 @@ export interface FileRoutesById {
   '/_authenticated/legal-entities/': typeof AuthenticatedLegalEntitiesIndexRoute
   '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
   '/_authenticated/salons/': typeof AuthenticatedSalonsIndexRoute
-  '/_authenticated/legal-entities/$legalEntityId/bank-accounts': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsRoute
   '/_authenticated/legal-entities/$legalEntityId/documents': typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute
   '/_authenticated/legal-entities/$legalEntityId/overview': typeof AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute
   '/_authenticated/legal-entities/$legalEntityId/reports': typeof AuthenticatedLegalEntitiesLegalEntityIdReportsRoute
   '/_authenticated/legal-entities/$legalEntityId/salons': typeof AuthenticatedLegalEntitiesLegalEntityIdSalonsRoute
   '/_authenticated/legal-entities/$legalEntityId/': typeof AuthenticatedLegalEntitiesLegalEntityIdIndexRoute
+  '/_authenticated/legal-entities/$legalEntityId/bank-accounts/$bankAccountId': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRoute
+  '/_authenticated/legal-entities/$legalEntityId/bank-accounts/': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -338,7 +340,6 @@ export interface FileRouteTypes {
     | '/api/upload'
     | '/legal-entities/$legalEntityId'
     | '/appointments/$appointmentId'
-    | '/bank-accounts/$bankAccountId'
     | '/customers/$customerId'
     | '/hair-orders/$hairOrderId'
     | '/salons/$salonId'
@@ -351,12 +352,13 @@ export interface FileRouteTypes {
     | '/legal-entities/'
     | '/reports/'
     | '/salons/'
-    | '/legal-entities/$legalEntityId/bank-accounts'
     | '/legal-entities/$legalEntityId/documents'
     | '/legal-entities/$legalEntityId/overview'
     | '/legal-entities/$legalEntityId/reports'
     | '/legal-entities/$legalEntityId/salons'
     | '/legal-entities/$legalEntityId/'
+    | '/legal-entities/$legalEntityId/bank-accounts/$bankAccountId'
+    | '/legal-entities/$legalEntityId/bank-accounts/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -368,7 +370,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/api/upload'
     | '/appointments/$appointmentId'
-    | '/bank-accounts/$bankAccountId'
     | '/customers/$customerId'
     | '/hair-orders/$hairOrderId'
     | '/salons/$salonId'
@@ -381,12 +382,13 @@ export interface FileRouteTypes {
     | '/legal-entities'
     | '/reports'
     | '/salons'
-    | '/legal-entities/$legalEntityId/bank-accounts'
     | '/legal-entities/$legalEntityId/documents'
     | '/legal-entities/$legalEntityId/overview'
     | '/legal-entities/$legalEntityId/reports'
     | '/legal-entities/$legalEntityId/salons'
     | '/legal-entities/$legalEntityId'
+    | '/legal-entities/$legalEntityId/bank-accounts/$bankAccountId'
+    | '/legal-entities/$legalEntityId/bank-accounts'
   id:
     | '__root__'
     | '/'
@@ -402,7 +404,6 @@ export interface FileRouteTypes {
     | '/api/upload'
     | '/_authenticated/legal-entities/$legalEntityId'
     | '/_authenticated/appointments/$appointmentId'
-    | '/_authenticated/bank-accounts/$bankAccountId'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/hair-orders/$hairOrderId'
     | '/_authenticated/salons/$salonId'
@@ -415,12 +416,13 @@ export interface FileRouteTypes {
     | '/_authenticated/legal-entities/'
     | '/_authenticated/reports/'
     | '/_authenticated/salons/'
-    | '/_authenticated/legal-entities/$legalEntityId/bank-accounts'
     | '/_authenticated/legal-entities/$legalEntityId/documents'
     | '/_authenticated/legal-entities/$legalEntityId/overview'
     | '/_authenticated/legal-entities/$legalEntityId/reports'
     | '/_authenticated/legal-entities/$legalEntityId/salons'
     | '/_authenticated/legal-entities/$legalEntityId/'
+    | '/_authenticated/legal-entities/$legalEntityId/bank-accounts/$bankAccountId'
+    | '/_authenticated/legal-entities/$legalEntityId/bank-accounts/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -596,13 +598,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
       parentRoute: typeof AuthenticatedCustomersRouteRoute
     }
-    '/_authenticated/bank-accounts/$bankAccountId': {
-      id: '/_authenticated/bank-accounts/$bankAccountId'
-      path: '/bank-accounts/$bankAccountId'
-      fullPath: '/bank-accounts/$bankAccountId'
-      preLoaderRoute: typeof AuthenticatedBankAccountsBankAccountIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/appointments/$appointmentId': {
       id: '/_authenticated/appointments/$appointmentId'
       path: '/$appointmentId'
@@ -652,11 +647,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRouteImport
       parentRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRoute
     }
-    '/_authenticated/legal-entities/$legalEntityId/bank-accounts': {
-      id: '/_authenticated/legal-entities/$legalEntityId/bank-accounts'
+    '/_authenticated/legal-entities/$legalEntityId/bank-accounts/': {
+      id: '/_authenticated/legal-entities/$legalEntityId/bank-accounts/'
       path: '/bank-accounts'
-      fullPath: '/legal-entities/$legalEntityId/bank-accounts'
-      preLoaderRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsRouteImport
+      fullPath: '/legal-entities/$legalEntityId/bank-accounts/'
+      preLoaderRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRouteImport
+      parentRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRoute
+    }
+    '/_authenticated/legal-entities/$legalEntityId/bank-accounts/$bankAccountId': {
+      id: '/_authenticated/legal-entities/$legalEntityId/bank-accounts/$bankAccountId'
+      path: '/bank-accounts/$bankAccountId'
+      fullPath: '/legal-entities/$legalEntityId/bank-accounts/$bankAccountId'
+      preLoaderRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRouteImport
       parentRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRoute
     }
   }
@@ -712,18 +714,17 @@ const AuthenticatedHairOrdersRouteRouteWithChildren =
   )
 
 interface AuthenticatedLegalEntitiesLegalEntityIdRouteRouteChildren {
-  AuthenticatedLegalEntitiesLegalEntityIdBankAccountsRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsRoute
   AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute
   AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute
   AuthenticatedLegalEntitiesLegalEntityIdReportsRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdReportsRoute
   AuthenticatedLegalEntitiesLegalEntityIdSalonsRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdSalonsRoute
   AuthenticatedLegalEntitiesLegalEntityIdIndexRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdIndexRoute
+  AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRoute
+  AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRoute
 }
 
 const AuthenticatedLegalEntitiesLegalEntityIdRouteRouteChildren: AuthenticatedLegalEntitiesLegalEntityIdRouteRouteChildren =
   {
-    AuthenticatedLegalEntitiesLegalEntityIdBankAccountsRoute:
-      AuthenticatedLegalEntitiesLegalEntityIdBankAccountsRoute,
     AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute:
       AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute,
     AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute:
@@ -734,6 +735,10 @@ const AuthenticatedLegalEntitiesLegalEntityIdRouteRouteChildren: AuthenticatedLe
       AuthenticatedLegalEntitiesLegalEntityIdSalonsRoute,
     AuthenticatedLegalEntitiesLegalEntityIdIndexRoute:
       AuthenticatedLegalEntitiesLegalEntityIdIndexRoute,
+    AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRoute:
+      AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRoute,
+    AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRoute:
+      AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRoute,
   }
 
 const AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren =
@@ -750,7 +755,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedLegalEntitiesLegalEntityIdRouteRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren
-  AuthenticatedBankAccountsBankAccountIdRoute: typeof AuthenticatedBankAccountsBankAccountIdRoute
   AuthenticatedSalonsSalonIdRoute: typeof AuthenticatedSalonsSalonIdRoute
   AuthenticatedBankStatementsIndexRoute: typeof AuthenticatedBankStatementsIndexRoute
   AuthenticatedLegalEntitiesIndexRoute: typeof AuthenticatedLegalEntitiesIndexRoute
@@ -771,8 +775,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedLegalEntitiesLegalEntityIdRouteRoute:
     AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren,
-  AuthenticatedBankAccountsBankAccountIdRoute:
-    AuthenticatedBankAccountsBankAccountIdRoute,
   AuthenticatedSalonsSalonIdRoute: AuthenticatedSalonsSalonIdRoute,
   AuthenticatedBankStatementsIndexRoute: AuthenticatedBankStatementsIndexRoute,
   AuthenticatedLegalEntitiesIndexRoute: AuthenticatedLegalEntitiesIndexRoute,

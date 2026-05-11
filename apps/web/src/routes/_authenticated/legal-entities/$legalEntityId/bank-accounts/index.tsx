@@ -4,7 +4,7 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 
 import { getLegalEntity } from "@/functions/legal-entities"
 
-export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/bank-accounts")({
+export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/bank-accounts/")({
   component: BankAccountsTab,
 })
 
@@ -24,9 +24,8 @@ function BankAccountsTab() {
             size="xs"
             renderRoot={(props) => (
               <Link
-                to="/bank-accounts/$bankAccountId"
-                params={{ bankAccountId: "new" }}
-                search={{ legalEntityId }}
+                to="/legal-entities/$legalEntityId/bank-accounts/$bankAccountId"
+                params={{ legalEntityId, bankAccountId: "new" }}
                 {...props}
               />
             )}
@@ -49,7 +48,11 @@ function BankAccountsTab() {
                 <Table.Td>
                   <Anchor
                     renderRoot={(props) => (
-                      <Link to="/bank-accounts/$bankAccountId" params={{ bankAccountId: a.id }} {...props} />
+                      <Link
+                        to="/legal-entities/$legalEntityId/bank-accounts/$bankAccountId"
+                        params={{ legalEntityId, bankAccountId: a.id }}
+                        {...props}
+                      />
                     )}
                   >
                     {a.displayName}

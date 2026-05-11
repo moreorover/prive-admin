@@ -21,7 +21,9 @@ export const importSebCsv = createServerFn({ method: "POST" })
       columns: { id: true, currency: true },
     })
     if (!account) {
-      throw new Error(`No bank account configured for IBAN ${parsed.accountIban}. Add it in /bank-accounts first.`)
+      throw new Error(
+        `No bank account configured for IBAN ${parsed.accountIban}. Add it from the legal entity's Bank accounts tab first.`,
+      )
     }
 
     if (parsed.rows.length === 0) {
