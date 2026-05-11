@@ -1,10 +1,11 @@
-import { ActionIcon, Card, FileInput, Group, Select, Stack, Table, Text, Tooltip } from "@mantine/core"
+import { ActionIcon, Card, FileInput, Group, Select, Stack, Table, Text, Tooltip, UnstyledButton } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { IconTrash } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
+import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
 import {
   assignAttachmentToEntry,
   deleteAttachment,
@@ -21,6 +22,7 @@ function DocumentsTab() {
   const queryClient = useQueryClient()
   const [busy, setBusy] = useState(false)
   const [fileInputKey, setFileInputKey] = useState(0)
+  const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
 
   const unassignedQuery = useQuery({
     queryKey: ["bank-statement-attachments", "unassigned"],
@@ -85,80 +87,90 @@ function DocumentsTab() {
   const items = unassignedQuery.data ?? []
 
   return (
-    <Card withBorder>
-      <Stack>
-        <Group justify="space-between">
-          <Text fw={500}>Unassigned documents</Text>
-          <Text size="xs" c="dimmed">
-            {items.length} file{items.length === 1 ? "" : "s"}
-          </Text>
-        </Group>
-        <Group align="end">
-          <FileInput
-            key={fileInputKey}
-            placeholder="Upload document"
-            disabled={busy}
-            value={null}
-            onChange={(f) => {
-              if (f) void upload(f)
-            }}
-            w={400}
-          />
-        </Group>
-        {items.length > 0 && (
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>File</Table.Th>
-                <Table.Th>Uploaded</Table.Th>
-                <Table.Th w={360}>Assign to entry</Table.Th>
-                <Table.Th />
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {items.map((a) => (
-                <Table.Tr key={a.id}>
-                  <Table.Td>
-                    <Text size="sm" style={{ wordBreak: "break-all" }}>
-                      {a.originalName}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Text size="xs" c="dimmed">
-                      {new Date(a.uploadedAt).toLocaleString()}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td>
-                    <Select
-                      placeholder="Pick entry…"
-                      searchable
-                      data={entryOptions}
-                      value={null}
-                      onChange={(v) => {
-                        if (v) assign.mutate({ id: a.id, entryId: v })
-                      }}
-                      disabled={assign.isPending}
-                    />
-                  </Table.Td>
-                  <Table.Td ta="right">
-                    <Tooltip label="Delete">
-                      <ActionIcon
-                        variant="subtle"
-                        color="red"
-                        onClick={() => remove.mutate(a.id)}
-                        loading={remove.isPending}
-                        aria-label="Delete"
-                      >
-                        <IconTrash size={14} />
-                      </ActionIcon>
-                    </Tooltip>
-                  </Table.Td>
+    <>
+      <Card withBorder>
+        <Stack>
+          <Group justify="space-between">
+            <Text fw={500}>Unassigned documents</Text>
+            <Text size="xs" c="dimmed">
+              {items.length} file{items.length === 1 ? "" : "s"}
+            </Text>
+          </Group>
+          <Group align="end">
+            <FileInput
+              key={fileInputKey}
+              placeholder="Upload document"
+              disabled={busy}
+              value={null}
+              onChange={(f) => {
+                if (f) void upload(f)
+              }}
+              w={400}
+            />
+          </Group>
+          {items.length > 0 && (
+            <Table>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>File</Table.Th>
+                  <Table.Th>Uploaded</Table.Th>
+                  <Table.Th w={360}>Assign to entry</Table.Th>
+                  <Table.Th />
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        )}
-      </Stack>
-    </Card>
+              </Table.Thead>
+              <Table.Tbody>
+                {items.map((a) => (
+                  <Table.Tr key={a.id}>
+                    <Table.Td>
+                      <UnstyledButton
+                        onClick={() =>
+                          setPreviewAttachment({ id: a.id, originalName: a.originalName, contentType: a.contentType })
+                        }
+                        style={{ textAlign: "left" }}
+                      >
+                        <Text size="sm" td="underline" style={{ wordBreak: "break-all" }}>
+                          {a.originalName}
+                        </Text>
+                      </UnstyledButton>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="xs" c="dimmed">
+                        {new Date(a.uploadedAt).toLocaleString()}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Select
+                        placeholder="Pick entry…"
+                        searchable
+                        data={entryOptions}
+                        value={null}
+                        onChange={(v) => {
+                          if (v) assign.mutate({ id: a.id, entryId: v })
+                        }}
+                        disabled={assign.isPending}
+                      />
+                    </Table.Td>
+                    <Table.Td ta="right">
+                      <Tooltip label="Delete">
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          onClick={() => remove.mutate(a.id)}
+                          loading={remove.isPending}
+                          aria-label="Delete"
+                        >
+                          <IconTrash size={14} />
+                        </ActionIcon>
+                      </Tooltip>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          )}
+        </Stack>
+      </Card>
+      <AttachmentPreviewDialog attachment={previewAttachment} onClose={() => setPreviewAttachment(null)} />
+    </>
   )
 }
