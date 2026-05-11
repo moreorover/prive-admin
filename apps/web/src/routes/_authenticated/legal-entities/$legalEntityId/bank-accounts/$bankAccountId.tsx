@@ -39,9 +39,11 @@ import { useEffect, useState } from "react"
 import { getAppointment, getAppointments } from "@/functions/appointments"
 import { createBankAccount, getBankAccount, updateBankAccount } from "@/functions/bank-accounts"
 import {
+  assignAttachmentToEntry,
   deleteAttachment,
   listAttachmentCounts,
   listAttachments,
+  listUnassignedAttachments,
   unassignAttachment,
 } from "@/functions/bank-statement-attachments"
 import {
@@ -393,6 +395,12 @@ function AttachmentsCell({ entryId, count }: { entryId: string; count: number })
     enabled: opened,
   })
 
+  const unassignedQuery = useQuery({
+    queryKey: ["bank-statement-attachments", "unassigned"],
+    queryFn: () => listUnassignedAttachments(),
+    enabled: opened,
+  })
+
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: ["bank-statement-attachments"] })
     await queryClient.invalidateQueries({ queryKey: ["bank-statement-attachment-counts"] })
@@ -411,6 +419,15 @@ function AttachmentsCell({ entryId, count }: { entryId: string; count: number })
     mutationFn: (id: string) => unassignAttachment({ data: { id } }),
     onSuccess: async () => {
       notifications.show({ color: "green", message: "Unassigned" })
+      await invalidate()
+    },
+    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+  })
+
+  const assign = useMutation({
+    mutationFn: (attachmentId: string) => assignAttachmentToEntry({ data: { id: attachmentId, entryId } }),
+    onSuccess: async () => {
+      notifications.show({ color: "green", message: "Attached" })
       await invalidate()
     },
     onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
@@ -497,9 +514,23 @@ function AttachmentsCell({ entryId, count }: { entryId: string; count: number })
               No files yet.
             </Text>
           )}
+          {(unassignedQuery.data ?? []).length > 0 && (
+            <Select
+              placeholder="Attach existing…"
+              size="xs"
+              searchable
+              data={(unassignedQuery.data ?? []).map((a) => ({ value: a.id, label: a.originalName }))}
+              value={null}
+              onChange={(v) => {
+                if (v) assign.mutate(v)
+              }}
+              disabled={assign.isPending}
+              comboboxProps={{ withinPortal: false }}
+            />
+          )}
           <FileInput
             key={fileInputKey}
-            placeholder="Add file"
+            placeholder="Upload new"
             size="xs"
             disabled={busy}
             value={null}
