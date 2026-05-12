@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/moreorover/prive-admin/compare/v0.3.0...v0.4.0) (2026-05-12)
+
+
+### Features
+
+* **appointments:** add create appointment dialog ([#175](https://github.com/moreorover/prive-admin/issues/175)) ([f9dba20](https://github.com/moreorover/prive-admin/commit/f9dba20957eff1e482206bcf268f3c9a388b6fea))
+* **calendar:** configure schedule view-specific props ([#176](https://github.com/moreorover/prive-admin/issues/176)) ([6da4d05](https://github.com/moreorover/prive-admin/commit/6da4d058f0fc054ccda0f33fb5739f5f4e0cae86))
+
 ## [0.3.0](https://github.com/moreorover/prive-admin/compare/v0.2.0...v0.3.0) (2026-05-12)
 
 
