@@ -20,6 +20,7 @@ const transactionFieldsSchema = z.object({
   type: transactionTypeSchema,
   status: transactionStatusSchema,
   completedDateBy: dateStringSchema,
+  legalEntityId: z.string().min(1, "Legal entity is required"),
 })
 
 export const getTransactionsByAppointmentId = createServerFn({ method: "GET" })
@@ -28,7 +29,10 @@ export const getTransactionsByAppointmentId = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     return db.query.transaction.findMany({
       where: eq(transaction.appointmentId, data.appointmentId),
-      with: { customer: { columns: { id: true, name: true } } },
+      with: {
+        customer: { columns: { id: true, name: true } },
+        legalEntity: { columns: { id: true, name: true, type: true, country: true } },
+      },
       orderBy: (tx, { asc }) => [asc(tx.completedDateBy)],
     })
   })
@@ -75,6 +79,7 @@ export const createTransaction = createServerFn({ method: "POST" })
           type: data.type,
           status: data.status,
           completedDateBy: data.completedDateBy,
+          legalEntityId: data.legalEntityId,
         })
         .returning()
       return result
@@ -102,6 +107,7 @@ export const updateTransaction = createServerFn({ method: "POST" })
         type: data.type,
         status: data.status,
         completedDateBy: data.completedDateBy,
+        legalEntityId: data.legalEntityId,
       })
       .where(eq(transaction.id, data.id))
       .returning()

@@ -2,11 +2,16 @@ import { relations } from "drizzle-orm"
 
 import { appointment, personnelOnAppointments } from "./appointment"
 import { user, session, account } from "./auth"
+import { bankAccount } from "./bank-account"
+import { bankStatementAttachment } from "./bank-statement-attachment"
+import { bankStatementEntry } from "./bank-statement-entry"
 import { customer } from "./customer"
 import { hairAssigned, hairOrder } from "./hair"
+import { legalEntity } from "./legal-entity"
 import { note } from "./note"
 import { order, orderItem } from "./order"
 import { product, productVariant } from "./product"
+import { salon } from "./salon"
 import { transaction } from "./transaction"
 import { userSettings } from "./user-settings"
 
@@ -64,6 +69,7 @@ export const orderItemRelations = relations(orderItem, ({ one }) => ({
 // Appointment relations
 export const appointmentRelations = relations(appointment, ({ one, many }) => ({
   client: one(customer, { fields: [appointment.clientId], references: [customer.id] }),
+  salon: one(salon, { fields: [appointment.salonId], references: [salon.id] }),
   personnel: many(personnelOnAppointments),
   transactions: many(transaction),
   hairAssigned: many(hairAssigned),
@@ -80,11 +86,14 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
   customer: one(customer, { fields: [transaction.customerId], references: [customer.id] }),
   order: one(order, { fields: [transaction.orderId], references: [order.id] }),
   appointment: one(appointment, { fields: [transaction.appointmentId], references: [appointment.id] }),
+  legalEntity: one(legalEntity, { fields: [transaction.legalEntityId], references: [legalEntity.id] }),
+  bankAccount: one(bankAccount, { fields: [transaction.bankAccountId], references: [bankAccount.id] }),
 }))
 
 // Hair relations
 export const hairOrderRelations = relations(hairOrder, ({ one, many }) => ({
   customer: one(customer, { fields: [hairOrder.customerId], references: [customer.id] }),
+  legalEntity: one(legalEntity, { fields: [hairOrder.legalEntityId], references: [legalEntity.id] }),
   createdBy: one(user, { fields: [hairOrder.createdById], references: [user.id] }),
   hairAssigned: many(hairAssigned),
   notes: many(note),
@@ -108,4 +117,51 @@ export const noteRelations = relations(note, ({ one }) => ({
 // UserSettings relations
 export const userSettingsRelations = relations(userSettings, ({ one }) => ({
   user: one(user, { fields: [userSettings.userId], references: [user.id] }),
+}))
+
+// Legal entity relations
+export const legalEntityRelations = relations(legalEntity, ({ many }) => ({
+  bankAccounts: many(bankAccount),
+  transactions: many(transaction),
+  hairOrders: many(hairOrder),
+}))
+
+// Salon relations
+export const salonRelations = relations(salon, ({ many }) => ({
+  appointments: many(appointment),
+}))
+
+// Bank account relations
+export const bankAccountRelations = relations(bankAccount, ({ one, many }) => ({
+  legalEntity: one(legalEntity, {
+    fields: [bankAccount.legalEntityId],
+    references: [legalEntity.id],
+  }),
+  statementEntries: many(bankStatementEntry),
+  transactions: many(transaction),
+}))
+
+// Bank statement entry relations
+export const bankStatementEntryRelations = relations(bankStatementEntry, ({ one, many }) => ({
+  bankAccount: one(bankAccount, {
+    fields: [bankStatementEntry.bankAccountId],
+    references: [bankAccount.id],
+  }),
+  linkedTransaction: one(transaction, {
+    fields: [bankStatementEntry.linkedTransactionId],
+    references: [transaction.id],
+  }),
+  attachments: many(bankStatementAttachment),
+}))
+
+// Bank statement attachment relations
+export const bankStatementAttachmentRelations = relations(bankStatementAttachment, ({ one }) => ({
+  entry: one(bankStatementEntry, {
+    fields: [bankStatementAttachment.bankStatementEntryId],
+    references: [bankStatementEntry.id],
+  }),
+  uploadedBy: one(user, {
+    fields: [bankStatementAttachment.uploadedById],
+    references: [user.id],
+  }),
 }))

@@ -56,6 +56,7 @@ export function CreateTransactionDialog({
           type: "BANK",
           status: "PENDING",
           completedDateBy: todayIso(),
+          legalEntityId: "",
         }}
         submitLabel="Create"
         loading={mutation.isPending}

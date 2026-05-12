@@ -1,9 +1,12 @@
-import { Button, Group, NativeSelect, NumberInput, Stack, Textarea, TextInput } from "@mantine/core"
+import { Button, Group, NativeSelect, NumberInput, Select, Stack, Textarea, TextInput } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
+import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
+import { listLegalEntities } from "@/functions/legal-entities"
 import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
+import { COUNTRY_FLAGS, type Country } from "@/lib/legal-entity"
 
 export type TransactionFormValues = {
   name: string
@@ -13,6 +16,7 @@ export type TransactionFormValues = {
   type: "BANK" | "CASH" | "PAYPAL"
   status: "PENDING" | "COMPLETED"
   completedDateBy: string | null
+  legalEntityId: string
 }
 
 export type TransactionFormSubmit = {
@@ -23,6 +27,7 @@ export type TransactionFormSubmit = {
   type: "BANK" | "CASH" | "PAYPAL"
   status: "PENDING" | "COMPLETED"
   completedDateBy: string
+  legalEntityId: string
 }
 
 type TransactionFormProps = {
@@ -33,6 +38,8 @@ type TransactionFormProps = {
 }
 
 export function TransactionForm({ initialValues, submitLabel, onSubmit, loading }: TransactionFormProps) {
+  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
+
   const form = useForm<TransactionFormValues>({
     mode: "uncontrolled",
     initialValues,
@@ -58,12 +65,23 @@ export function TransactionForm({ initialValues, submitLabel, onSubmit, loading 
           type: values.type,
           status: values.status,
           completedDateBy: values.completedDateBy,
+          legalEntityId: values.legalEntityId,
         })
       })}
     >
       <Stack>
         <TextInput label="Name" placeholder="Transaction name" {...form.getInputProps("name")} />
         <Textarea label="Notes" placeholder="Notes (optional)" autosize minRows={2} {...form.getInputProps("notes")} />
+        <Select
+          label="Legal entity"
+          required
+          data={(legalEntitiesQuery.data ?? []).map((le) => ({
+            value: le.id,
+            label: `${COUNTRY_FLAGS[le.country as Country] ?? ""} ${le.name}`,
+          }))}
+          value={form.values.legalEntityId}
+          onChange={(v) => form.setFieldValue("legalEntityId", v ?? "")}
+        />
         <Group grow>
           <NativeSelect
             label="Type"

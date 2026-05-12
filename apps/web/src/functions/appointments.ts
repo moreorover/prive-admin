@@ -17,16 +17,12 @@ export const getAppointments = createServerFn({ method: "GET" })
   )
   .handler(async ({ data }) => {
     const conditions = []
-    if (data.startDate) {
-      conditions.push(gte(appointment.startsAt, new Date(data.startDate)))
-    }
-    if (data.endDate) {
-      conditions.push(lte(appointment.startsAt, new Date(data.endDate)))
-    }
+    if (data.startDate) conditions.push(gte(appointment.startsAt, new Date(data.startDate)))
+    if (data.endDate) conditions.push(lte(appointment.startsAt, new Date(data.endDate)))
 
     return db.query.appointment.findMany({
       where: conditions.length > 0 ? and(...conditions) : undefined,
-      with: { client: true },
+      with: { client: true, salon: true },
       orderBy: (appointment, { asc }) => [asc(appointment.startsAt)],
     })
   })
@@ -39,6 +35,7 @@ export const getAppointment = createServerFn({ method: "GET" })
       where: eq(appointment.id, data.id),
       with: {
         client: true,
+        salon: true,
         personnel: { with: { personnel: true } },
         notes: { with: { createdBy: true } },
       },
@@ -59,6 +56,7 @@ export const createAppointment = createServerFn({ method: "POST" })
         name: data.name,
         startsAt: new Date(data.startsAt),
         clientId: data.clientId,
+        salonId: data.salonId,
       })
       .returning()
     return result
@@ -73,6 +71,7 @@ export const updateAppointment = createServerFn({ method: "POST" })
       .set({
         name: data.name,
         startsAt: new Date(data.startsAt),
+        salonId: data.salonId,
       })
       .where(eq(appointment.id, data.id!))
       .returning()
@@ -96,6 +95,7 @@ export const getAppointmentsByCustomerId = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     return db.query.appointment.findMany({
       where: eq(appointment.clientId, data.customerId),
+      with: { salon: true },
       orderBy: (appointment, { desc }) => [desc(appointment.startsAt)],
     })
   })

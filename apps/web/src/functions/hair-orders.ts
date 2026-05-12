@@ -1,4 +1,4 @@
-import { db } from "@prive-admin-tanstack/db"
+import { db, whereActiveLegalEntity } from "@prive-admin-tanstack/db"
 import { hairAssigned, hairOrder } from "@prive-admin-tanstack/db/schema/hair"
 import { createServerFn } from "@tanstack/react-start"
 import { eq } from "drizzle-orm"
@@ -9,9 +9,12 @@ import { requireAuthMiddleware } from "@/middleware/auth"
 
 export const getHairOrders = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .handler(async () => {
+  .inputValidator(z.object({ legalEntityId: z.string().optional() }).optional())
+  .handler(async ({ data }) => {
+    const filter = data?.legalEntityId ? whereActiveLegalEntity(hairOrder.legalEntityId, data.legalEntityId) : undefined
     return db.query.hairOrder.findMany({
-      with: { createdBy: true, customer: true },
+      where: filter,
+      with: { createdBy: true, customer: true, legalEntity: true },
       orderBy: (hairOrder, { asc }) => [asc(hairOrder.uid)],
     })
   })
@@ -25,6 +28,7 @@ export const getHairOrder = createServerFn({ method: "GET" })
       with: {
         createdBy: true,
         customer: true,
+        legalEntity: true,
         hairAssigned: { with: { client: true } },
         notes: { with: { createdBy: true } },
       },
@@ -46,6 +50,7 @@ export const createHairOrder = createServerFn({ method: "POST" })
         arrivedAt: data.arrivedAt ? String(data.arrivedAt) : null,
         status: data.status,
         customerId: data.customerId,
+        legalEntityId: data.legalEntityId,
         weightReceived: data.weightReceived,
         weightUsed: data.weightUsed,
         total: data.total,
@@ -68,6 +73,7 @@ export const updateHairOrder = createServerFn({ method: "POST" })
         weightReceived: data.weightReceived,
         weightUsed: data.weightUsed,
         total: data.total,
+        legalEntityId: data.legalEntityId,
       })
       .where(eq(hairOrder.id, data.id!))
       .returning()
