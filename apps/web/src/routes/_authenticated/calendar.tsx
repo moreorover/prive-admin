@@ -1,10 +1,12 @@
-import { Container, Stack, Title } from "@mantine/core"
+import { Button, Container, Group, Stack, Title } from "@mantine/core"
 import { Schedule, type ScheduleEventData, type ScheduleViewLevel } from "@mantine/schedule"
+import { IconPlus } from "@tabler/icons-react"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
 import { getAppointments } from "@/functions/appointments"
 import { appointmentKeys } from "@/lib/query-keys"
 
@@ -25,6 +27,7 @@ function CalendarPage() {
   const navigate = useNavigate()
   const [view, setView] = useState<ScheduleViewLevel>("month")
   const [date, setDate] = useState<string>(dayjs().format("YYYY-MM-DD"))
+  const [createOpen, setCreateOpen] = useState(false)
 
   const events = useMemo<ScheduleEventData[]>(() => {
     return (appointments ?? []).map((a) => {
@@ -68,7 +71,12 @@ function CalendarPage() {
   return (
     <Container size="xl">
       <Stack>
-        <Title order={2}>Calendar</Title>
+        <Group justify="space-between">
+          <Title order={2}>Calendar</Title>
+          <Button leftSection={<IconPlus size={14} />} onClick={() => setCreateOpen(true)}>
+            New appointment
+          </Button>
+        </Group>
         <Schedule
           events={events}
           view={view}
@@ -91,6 +99,12 @@ function CalendarPage() {
           monthViewProps={{
             firstDayOfWeek: 1,
           }}
+        />
+        <CreateAppointmentDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          invalidateKeys={[{ queryKey: appointmentKeys.list() }]}
+          navigateOnSuccess
         />
       </Stack>
     </Container>

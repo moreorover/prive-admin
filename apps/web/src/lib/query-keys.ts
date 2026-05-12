@@ -26,6 +26,12 @@ export const appointmentKeys = {
   byCustomer: (customerId: string) => [...appointmentKeys.all, "by-customer", customerId] as const,
 }
 
+export const salonKeys = {
+  all: ["salons"] as const,
+  list: () => [...salonKeys.all, "list"] as const,
+  detail: (id: string) => [...salonKeys.all, "detail", id] as const,
+}
+
 export const hairOrderKeys = {
   all: ["hair-orders"] as const,
   list: () => [...hairOrderKeys.all, "list"] as const,
