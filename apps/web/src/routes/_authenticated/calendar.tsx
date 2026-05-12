@@ -1,6 +1,5 @@
-import { Button, Container, Group, Stack, Title } from "@mantine/core"
+import { Container, Stack, Title } from "@mantine/core"
 import { Schedule, type ScheduleEventData, type ScheduleViewLevel } from "@mantine/schedule"
-import { IconPlus } from "@tabler/icons-react"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
@@ -28,6 +27,12 @@ function CalendarPage() {
   const [view, setView] = useState<ScheduleViewLevel>("month")
   const [date, setDate] = useState<string>(dayjs().format("YYYY-MM-DD"))
   const [createOpen, setCreateOpen] = useState(false)
+  const [defaultStartsAt, setDefaultStartsAt] = useState<string | null>(null)
+
+  const openCreate = useCallback((startsAt: string | null) => {
+    setDefaultStartsAt(startsAt)
+    setCreateOpen(true)
+  }, [])
 
   const events = useMemo<ScheduleEventData[]>(() => {
     return (appointments ?? []).map((a) => {
@@ -71,12 +76,7 @@ function CalendarPage() {
   return (
     <Container size="xl">
       <Stack>
-        <Group justify="space-between">
-          <Title order={2}>Calendar</Title>
-          <Button leftSection={<IconPlus size={14} />} onClick={() => setCreateOpen(true)}>
-            New appointment
-          </Button>
-        </Group>
+        <Title order={2}>Calendar</Title>
         <Schedule
           events={events}
           view={view}
@@ -85,6 +85,8 @@ function CalendarPage() {
           onDateChange={setDate}
           layout="responsive"
           onEventClick={(event) => goToAppointment(String(event.id))}
+          onTimeSlotClick={({ slotStart }) => openCreate(slotStart)}
+          onDayClick={(d) => openCreate(`${d} 09:00:00`)}
           dayViewProps={{
             startTime: "09:00:00",
             endTime: "19:00:00",
@@ -103,6 +105,7 @@ function CalendarPage() {
         <CreateAppointmentDialog
           open={createOpen}
           onOpenChange={setCreateOpen}
+          defaultStartsAt={defaultStartsAt}
           invalidateKeys={[{ queryKey: appointmentKeys.list() }]}
           navigateOnSuccess
         />
