@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/moreorover/prive-admin/compare/v0.4.0...v0.4.1) (2026-05-12)
+
+
+### Bug Fixes
+
+* **bank-accounts:** drop nested Container in new form ([#178](https://github.com/moreorover/prive-admin/issues/178)) ([5695ea7](https://github.com/moreorover/prive-admin/commit/5695ea7b5c648a16c1990b448abf8f4a77bdef36))
+
 ## [0.4.0](https://github.com/moreorover/prive-admin/compare/v0.3.0...v0.4.0) (2026-05-12)
 
 
