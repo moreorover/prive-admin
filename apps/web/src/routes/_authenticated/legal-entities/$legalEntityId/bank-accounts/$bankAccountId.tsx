@@ -931,61 +931,59 @@ function BankAccountNew() {
   const cancelTarget = form.values.legalEntityId || pathLegalEntityId
 
   return (
-    <Container size="lg">
-      <Stack p="md">
-        <Title order={3}>New bank account</Title>
-        <Card withBorder>
-          <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
-            <Stack>
-              <TextInput label="Display name" required {...form.getInputProps("displayName")} />
-              <Select
-                label="Legal entity"
-                required
-                data={(legalEntitiesQuery.data ?? []).map((le) => ({ value: le.id, label: le.name }))}
-                value={form.values.legalEntityId}
-                onChange={(v) => form.setFieldValue("legalEntityId", v ?? "")}
-              />
-              <TextInput
-                label="IBAN"
-                required
-                placeholder="LT577044090116053605"
-                {...form.getInputProps("iban")}
-                onChange={(e) => form.setFieldValue("iban", e.currentTarget.value.replace(/\s+/g, "").toUpperCase())}
-              />
-              <Select
-                label="Currency"
-                required
-                data={CURRENCY_OPTIONS}
-                value={form.values.currency}
-                onChange={(v) => form.setFieldValue("currency", (v as Currency) ?? "EUR")}
-              />
-              <TextInput label="Bank name" placeholder="AB SEB BANKAS" {...form.getInputProps("bankName")} />
-              <TextInput label="SWIFT" placeholder="CBVILT2X" {...form.getInputProps("swift")} />
-              <Group>
-                <Button type="submit" loading={save.isPending}>
-                  Save
-                </Button>
-                <Button
-                  renderRoot={(props) =>
-                    cancelTarget ? (
-                      <Link
-                        to="/legal-entities/$legalEntityId/bank-accounts"
-                        params={{ legalEntityId: cancelTarget }}
-                        {...props}
-                      />
-                    ) : (
-                      <Link to="/legal-entities" {...props} />
-                    )
-                  }
-                  variant="subtle"
-                >
-                  Cancel
-                </Button>
-              </Group>
-            </Stack>
-          </form>
-        </Card>
-      </Stack>
-    </Container>
+    <Stack>
+      <Title order={3}>New bank account</Title>
+      <Card withBorder>
+        <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
+          <Stack>
+            <TextInput label="Display name" required {...form.getInputProps("displayName")} />
+            <Select
+              label="Legal entity"
+              required
+              data={(legalEntitiesQuery.data ?? []).map((le) => ({ value: le.id, label: le.name }))}
+              value={form.values.legalEntityId}
+              onChange={(v) => form.setFieldValue("legalEntityId", v ?? "")}
+            />
+            <TextInput
+              label="IBAN"
+              required
+              placeholder="LT577044090116053605"
+              {...form.getInputProps("iban")}
+              onChange={(e) => form.setFieldValue("iban", e.currentTarget.value.replace(/\s+/g, "").toUpperCase())}
+            />
+            <Select
+              label="Currency"
+              required
+              data={CURRENCY_OPTIONS}
+              value={form.values.currency}
+              onChange={(v) => form.setFieldValue("currency", (v as Currency) ?? "EUR")}
+            />
+            <TextInput label="Bank name" placeholder="AB SEB BANKAS" {...form.getInputProps("bankName")} />
+            <TextInput label="SWIFT" placeholder="CBVILT2X" {...form.getInputProps("swift")} />
+            <Group>
+              <Button type="submit" loading={save.isPending}>
+                Save
+              </Button>
+              <Button
+                renderRoot={(props) =>
+                  cancelTarget ? (
+                    <Link
+                      to="/legal-entities/$legalEntityId/bank-accounts"
+                      params={{ legalEntityId: cancelTarget }}
+                      {...props}
+                    />
+                  ) : (
+                    <Link to="/legal-entities" {...props} />
+                  )
+                }
+                variant="subtle"
+              >
+                Cancel
+              </Button>
+            </Group>
+          </Stack>
+        </form>
+      </Card>
+    </Stack>
   )
 }
