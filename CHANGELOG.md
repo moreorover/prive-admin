@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/moreorover/prive-admin/compare/v0.2.0...v0.3.0) (2026-05-12)
+
+
+### Features
+
+* multi-legal-entity tenancy + entity-first IA + document workflow ([#148](https://github.com/moreorover/prive-admin/issues/148)) ([1ac4589](https://github.com/moreorover/prive-admin/commit/1ac458928f970b12b6e1495b5e5ffc0d52ce2ded))
+
 ## [0.2.0](https://github.com/moreorover/prive-admin/compare/v0.1.6...v0.2.0) (2026-05-09)
 
 
