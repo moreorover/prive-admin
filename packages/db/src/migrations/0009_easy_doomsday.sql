@@ -1,1 +1,0 @@
-ALTER TABLE "bank_statement_attachment" ALTER COLUMN "bank_statement_entry_id" DROP NOT NULL;

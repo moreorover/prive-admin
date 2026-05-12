@@ -19,57 +19,8 @@
     {
       "idx": 2,
       "version": "7",
-      "when": 1777835904382,
-      "tag": "0002_multi_legal_entity",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1778176240095,
-      "tag": "0003_drop_le_couplings",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1778176558047,
-      "tag": "0004_bank_account_and_statement_entries",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1778262052523,
-      "tag": "0005_bill_and_transaction_bill_id",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1778262342228,
-      "tag": "0006_transaction_customer_optional",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1778276236459,
-      "tag": "0007_wet_warbound",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1778277285411,
-      "tag": "0008_brainy_khan",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1778416956755,
-      "tag": "0009_easy_doomsday",
+      "when": 1778606017255,
+      "tag": "0002_workable_microbe",
       "breakpoints": true
     }
   ]
