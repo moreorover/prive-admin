@@ -77,6 +77,20 @@ function CalendarPage() {
           onDateChange={setDate}
           layout="responsive"
           onEventClick={(event) => goToAppointment(String(event.id))}
+          dayViewProps={{
+            startTime: "09:00:00",
+            endTime: "19:00:00",
+            intervalMinutes: 30,
+          }}
+          weekViewProps={{
+            startTime: "09:00:00",
+            endTime: "19:00:00",
+            intervalMinutes: 30,
+            withWeekendDays: true,
+          }}
+          monthViewProps={{
+            firstDayOfWeek: 1,
+          }}
         />
       </Stack>
     </Container>
