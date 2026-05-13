@@ -8,13 +8,13 @@ import { and, desc, eq } from "drizzle-orm"
 import { z } from "zod"
 
 import { requireAuthMiddleware } from "@/middleware/auth"
-import { parseSebCsv } from "@/server/seb-csv.server"
+import { parseBankCsv } from "@/server/bank-csv.server"
 
-export const importSebCsv = createServerFn({ method: "POST" })
+export const importBankCsv = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ csv: z.string().min(1) }))
   .handler(async ({ data }) => {
-    const parsed = parseSebCsv(data.csv)
+    const parsed = parseBankCsv(data.csv)
 
     const account = await db.query.bankAccount.findFirst({
       where: eq(bankAccount.iban, parsed.accountIban),

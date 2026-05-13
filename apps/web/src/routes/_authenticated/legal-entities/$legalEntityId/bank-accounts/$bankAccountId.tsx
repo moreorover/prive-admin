@@ -51,7 +51,7 @@ import {
 import {
   getBankStatementEntry,
   ignoreStatementEntry,
-  importSebCsv,
+  importBankCsv,
   listBankStatementEntries,
   promoteEntryToTransaction,
   undoStatementEntry,
@@ -114,7 +114,7 @@ function BankAccountShow({ id }: { id: string }) {
   })
 
   const importMutation = useMutation({
-    mutationFn: async (csv: string) => importSebCsv({ data: { csv } }),
+    mutationFn: async (csv: string) => importBankCsv({ data: { csv } }),
     onSuccess: async (result) => {
       setImportResult(result)
       setFile(null)
@@ -213,7 +213,7 @@ function BankAccountShow({ id }: { id: string }) {
 
           <Card withBorder>
             <Stack>
-              <Text fw={500}>Upload SEB statement (CSV)</Text>
+              <Text fw={500}>Upload bank statement (SEB or Swedbank CSV)</Text>
               <Group align="end">
                 <FileInput
                   placeholder="Pick a .csv file"
