@@ -34,7 +34,15 @@ jobs:
         with:
           timeout_minutes: 5
           max_attempts: 3
-          command: bunx taze major -r -w
+          shell: bash
+          command: |
+            set -o pipefail
+            log=$(mktemp)
+            bunx taze major -r -w --concurrency 3 2>&1 | tee "$log"
+            if grep -q 'Timeout requesting' "$log"; then
+              echo "::warning::taze hit registry timeouts; failing step to trigger retry"
+              exit 1
+            fi
 
       - name: Update Lockfile
         run: bun install
