@@ -5,7 +5,6 @@ import {
   Badge,
   Button,
   Card,
-  Container,
   FileInput,
   Group,
   Menu,
@@ -153,243 +152,239 @@ function BankAccountShow({ id }: { id: string }) {
 
   return (
     <>
-      <Container size="lg">
-        <Stack p="md">
-          {q.data?.legalEntity && (
-            <Anchor
-              renderRoot={(props) => (
-                <Link
-                  to="/legal-entities/$legalEntityId/bank-accounts"
-                  params={{ legalEntityId: q.data!.legalEntity!.id }}
-                  {...props}
-                />
-              )}
-              size="xs"
-              c="dimmed"
-            >
-              <Group gap={4}>
-                <IconArrowLeft size={12} />
-                Back to {q.data.legalEntity.name}
-              </Group>
-            </Anchor>
-          )}
-
-          <Group justify="space-between">
-            <Title order={3}>{q.data?.displayName ?? "Bank account"}</Title>
-            <Button onClick={openEdit} disabled={!q.data}>
-              Edit
-            </Button>
-          </Group>
-
-          <Card withBorder>
-            <Stack gap="xs">
-              <Field label="Display name" value={q.data?.displayName} />
-              <Field
-                label="Legal entity"
-                value={
-                  q.data?.legalEntity ? (
-                    <Anchor
-                      renderRoot={(props) => (
-                        <Link
-                          to="/legal-entities/$legalEntityId"
-                          params={{ legalEntityId: q.data!.legalEntity!.id }}
-                          {...props}
-                        />
-                      )}
-                    >
-                      {q.data.legalEntity.name}
-                    </Anchor>
-                  ) : (
-                    "—"
-                  )
-                }
+      <Stack>
+        {q.data?.legalEntity && (
+          <Anchor
+            renderRoot={(props) => (
+              <Link
+                to="/legal-entities/$legalEntityId/bank-accounts"
+                params={{ legalEntityId: q.data!.legalEntity!.id }}
+                {...props}
               />
-              <Field label="IBAN" value={q.data ? <code>{q.data.iban}</code> : undefined} />
-              <Field label="Currency" value={q.data?.currency} />
-              <Field label="Bank" value={q.data?.bankName ?? "—"} />
-              <Field label="SWIFT" value={q.data?.swift ?? "—"} />
-            </Stack>
-          </Card>
+            )}
+            size="xs"
+            c="dimmed"
+          >
+            <Group gap={4}>
+              <IconArrowLeft size={12} />
+              Back to {q.data.legalEntity.name}
+            </Group>
+          </Anchor>
+        )}
 
-          <Card withBorder>
-            <Stack>
-              <Text fw={500}>Upload SEB statement (CSV)</Text>
-              <Group align="end">
-                <FileInput
-                  placeholder="Pick a .csv file"
-                  value={file}
-                  onChange={setFile}
-                  accept=".csv,text/csv"
-                  w={400}
-                />
-                <Button onClick={handleUpload} loading={importMutation.isPending} disabled={!file}>
-                  Import
-                </Button>
-              </Group>
-              {importResult && (
-                <Alert variant="light" color="green">
-                  IBAN <code>{importResult.accountIban}</code>: imported {importResult.inserted} new entries, skipped{" "}
-                  {importResult.skipped} duplicates (total rows {importResult.total}).
-                </Alert>
-              )}
-            </Stack>
-          </Card>
+        <Group justify="space-between">
+          <Title order={3}>{q.data?.displayName ?? "Bank account"}</Title>
+          <Button onClick={openEdit} disabled={!q.data}>
+            Edit
+          </Button>
+        </Group>
 
-          <Group align="end" justify="space-between">
-            <Select
-              label="Status"
-              data={[
-                { value: "PENDING", label: "Pending" },
-                { value: "LINKED", label: "Linked" },
-                { value: "IGNORED", label: "Ignored" },
-                { value: "ALL", label: "All" },
-              ]}
-              value={statusFilter}
-              onChange={(v) => setStatusFilter((v as StatusFilter) ?? "PENDING")}
-              w={180}
-            />
-            <Popover position="bottom-end" withArrow shadow="md" width={260}>
-              <Popover.Target>
-                <Button variant="default" leftSection={<IconDownload size={16} />}>
-                  Export attachments
-                </Button>
-              </Popover.Target>
-              <Popover.Dropdown>
-                <Stack gap="xs">
-                  <Text fw={500} size="sm">
-                    Download attachments as zip
-                  </Text>
-                  <MonthPickerInput
-                    label="Month"
-                    value={exportMonth}
-                    onChange={(v) => setExportMonth(v ? new Date(v) : null)}
-                    popoverProps={{ withinPortal: false }}
-                  />
-                  <Button
-                    leftSection={<IconDownload size={16} />}
-                    disabled={!exportMonth}
-                    onClick={() => {
-                      if (!exportMonth) return
-                      const params = new URLSearchParams({
-                        year: String(exportMonth.getFullYear()),
-                        month: String(exportMonth.getMonth() + 1),
-                        bankAccountId: id,
-                      })
-                      window.location.href = `/api/statement-attachments/export?${params.toString()}`
-                    }}
+        <Card withBorder>
+          <Stack gap="xs">
+            <Field label="Display name" value={q.data?.displayName} />
+            <Field
+              label="Legal entity"
+              value={
+                q.data?.legalEntity ? (
+                  <Anchor
+                    renderRoot={(props) => (
+                      <Link
+                        to="/legal-entities/$legalEntityId"
+                        params={{ legalEntityId: q.data!.legalEntity!.id }}
+                        {...props}
+                      />
+                    )}
                   >
-                    Download zip
-                  </Button>
-                </Stack>
-              </Popover.Dropdown>
-            </Popover>
-          </Group>
+                    {q.data.legalEntity.name}
+                  </Anchor>
+                ) : (
+                  "—"
+                )
+              }
+            />
+            <Field label="IBAN" value={q.data ? <code>{q.data.iban}</code> : undefined} />
+            <Field label="Currency" value={q.data?.currency} />
+            <Field label="Bank" value={q.data?.bankName ?? "—"} />
+            <Field label="SWIFT" value={q.data?.swift ?? "—"} />
+          </Stack>
+        </Card>
 
-          <Card withBorder>
-            <Table>
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>Date</Table.Th>
-                  <Table.Th ta="right">Amount</Table.Th>
-                  <Table.Th>Counterparty</Table.Th>
-                  <Table.Th>Purpose</Table.Th>
-                  <Table.Th ta="center" w={60}>
-                    Files
-                  </Table.Th>
-                  <Table.Th />
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {(entriesQuery.data ?? []).map((e) => {
-                  const sign = e.direction === "C" ? "+" : "−"
-                  const color = e.direction === "C" ? "teal" : "red"
-                  return (
-                    <Table.Tr key={e.id}>
-                      <Table.Td style={{ whiteSpace: "nowrap" }}>
-                        <Text size="sm">{e.date}</Text>
-                        <Text size="xs" c="dimmed">
-                          {e.bankAccount?.displayName}
-                        </Text>
-                      </Table.Td>
-                      <Table.Td ta="right" style={{ whiteSpace: "nowrap" }}>
-                        <Text size="sm" fw={500} c={color}>
-                          {sign}
-                          {formatMinor(e.amount, e.currency as Currency)}
-                        </Text>
-                      </Table.Td>
-                      <Table.Td>{e.counterpartyName ?? "—"}</Table.Td>
-                      <Table.Td>
-                        <Text size="xs" lineClamp={2}>
-                          {e.purpose ?? "—"}
-                        </Text>
-                      </Table.Td>
-                      <Table.Td ta="center">
-                        <AttachmentsCell
-                          entryId={e.id}
-                          count={attachmentCountsQuery.data?.[e.id] ?? 0}
-                          onPreview={setPreviewAttachment}
-                        />
-                      </Table.Td>
-                      <Table.Td ta="right">
-                        <Menu position="bottom-end" withinPortal>
-                          <Menu.Target>
-                            <ActionIcon variant="subtle" aria-label="Actions">
-                              <IconDotsVertical size={16} />
-                            </ActionIcon>
-                          </Menu.Target>
-                          <Menu.Dropdown>
-                            {e.status === "PENDING" ? (
-                              <>
-                                <Menu.Item onClick={() => setLinkAppointmentEntryId(e.id)}>
-                                  Link to appointment
-                                </Menu.Item>
-                                <Menu.Item onClick={() => setStandaloneEntryId(e.id)}>Promote standalone</Menu.Item>
-                                <Menu.Divider />
-                                <Menu.Item color="gray" onClick={() => ignoreMutation.mutate(e.id)}>
-                                  Ignore
-                                </Menu.Item>
-                              </>
-                            ) : (
-                              <Menu.Item onClick={() => undoMutation.mutate(e.id)}>Undo ({e.status})</Menu.Item>
-                            )}
-                          </Menu.Dropdown>
-                        </Menu>
-                      </Table.Td>
-                    </Table.Tr>
-                  )
-                })}
-                {entriesQuery.data?.length === 0 && (
-                  <Table.Tr>
-                    <Table.Td colSpan={6} ta="center" c="dimmed">
-                      No entries.
+        <Card withBorder>
+          <Stack>
+            <Text fw={500}>Upload SEB statement (CSV)</Text>
+            <Group align="end">
+              <FileInput
+                placeholder="Pick a .csv file"
+                value={file}
+                onChange={setFile}
+                accept=".csv,text/csv"
+                w={400}
+              />
+              <Button onClick={handleUpload} loading={importMutation.isPending} disabled={!file}>
+                Import
+              </Button>
+            </Group>
+            {importResult && (
+              <Alert variant="light" color="green">
+                IBAN <code>{importResult.accountIban}</code>: imported {importResult.inserted} new entries, skipped{" "}
+                {importResult.skipped} duplicates (total rows {importResult.total}).
+              </Alert>
+            )}
+          </Stack>
+        </Card>
+
+        <Group align="end" justify="space-between">
+          <Select
+            label="Status"
+            data={[
+              { value: "PENDING", label: "Pending" },
+              { value: "LINKED", label: "Linked" },
+              { value: "IGNORED", label: "Ignored" },
+              { value: "ALL", label: "All" },
+            ]}
+            value={statusFilter}
+            onChange={(v) => setStatusFilter((v as StatusFilter) ?? "PENDING")}
+            w={180}
+          />
+          <Popover position="bottom-end" withArrow shadow="md" width={260}>
+            <Popover.Target>
+              <Button variant="default" leftSection={<IconDownload size={16} />}>
+                Export attachments
+              </Button>
+            </Popover.Target>
+            <Popover.Dropdown>
+              <Stack gap="xs">
+                <Text fw={500} size="sm">
+                  Download attachments as zip
+                </Text>
+                <MonthPickerInput
+                  label="Month"
+                  value={exportMonth}
+                  onChange={(v) => setExportMonth(v ? new Date(v) : null)}
+                  popoverProps={{ withinPortal: false }}
+                />
+                <Button
+                  leftSection={<IconDownload size={16} />}
+                  disabled={!exportMonth}
+                  onClick={() => {
+                    if (!exportMonth) return
+                    const params = new URLSearchParams({
+                      year: String(exportMonth.getFullYear()),
+                      month: String(exportMonth.getMonth() + 1),
+                      bankAccountId: id,
+                    })
+                    window.location.href = `/api/statement-attachments/export?${params.toString()}`
+                  }}
+                >
+                  Download zip
+                </Button>
+              </Stack>
+            </Popover.Dropdown>
+          </Popover>
+        </Group>
+
+        <Card withBorder>
+          <Table>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Date</Table.Th>
+                <Table.Th ta="right">Amount</Table.Th>
+                <Table.Th>Counterparty</Table.Th>
+                <Table.Th>Purpose</Table.Th>
+                <Table.Th ta="center" w={60}>
+                  Files
+                </Table.Th>
+                <Table.Th />
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {(entriesQuery.data ?? []).map((e) => {
+                const sign = e.direction === "C" ? "+" : "−"
+                const color = e.direction === "C" ? "teal" : "red"
+                return (
+                  <Table.Tr key={e.id}>
+                    <Table.Td style={{ whiteSpace: "nowrap" }}>
+                      <Text size="sm">{e.date}</Text>
+                      <Text size="xs" c="dimmed">
+                        {e.bankAccount?.displayName}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td ta="right" style={{ whiteSpace: "nowrap" }}>
+                      <Text size="sm" fw={500} c={color}>
+                        {sign}
+                        {formatMinor(e.amount, e.currency as Currency)}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>{e.counterpartyName ?? "—"}</Table.Td>
+                    <Table.Td>
+                      <Text size="xs" lineClamp={2}>
+                        {e.purpose ?? "—"}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td ta="center">
+                      <AttachmentsCell
+                        entryId={e.id}
+                        count={attachmentCountsQuery.data?.[e.id] ?? 0}
+                        onPreview={setPreviewAttachment}
+                      />
+                    </Table.Td>
+                    <Table.Td ta="right">
+                      <Menu position="bottom-end" withinPortal>
+                        <Menu.Target>
+                          <ActionIcon variant="subtle" aria-label="Actions">
+                            <IconDotsVertical size={16} />
+                          </ActionIcon>
+                        </Menu.Target>
+                        <Menu.Dropdown>
+                          {e.status === "PENDING" ? (
+                            <>
+                              <Menu.Item onClick={() => setLinkAppointmentEntryId(e.id)}>Link to appointment</Menu.Item>
+                              <Menu.Item onClick={() => setStandaloneEntryId(e.id)}>Promote standalone</Menu.Item>
+                              <Menu.Divider />
+                              <Menu.Item color="gray" onClick={() => ignoreMutation.mutate(e.id)}>
+                                Ignore
+                              </Menu.Item>
+                            </>
+                          ) : (
+                            <Menu.Item onClick={() => undoMutation.mutate(e.id)}>Undo ({e.status})</Menu.Item>
+                          )}
+                        </Menu.Dropdown>
+                      </Menu>
                     </Table.Td>
                   </Table.Tr>
-                )}
-              </Table.Tbody>
-            </Table>
-          </Card>
-        </Stack>
+                )
+              })}
+              {entriesQuery.data?.length === 0 && (
+                <Table.Tr>
+                  <Table.Td colSpan={6} ta="center" c="dimmed">
+                    No entries.
+                  </Table.Td>
+                </Table.Tr>
+              )}
+            </Table.Tbody>
+          </Table>
+        </Card>
+      </Stack>
 
-        <EditBankAccountModal
-          opened={editOpened}
-          onClose={closeEdit}
-          bankAccountId={id}
-          initial={
-            q.data
-              ? {
-                  legalEntityId: q.data.legalEntityId,
-                  iban: q.data.iban,
-                  currency: q.data.currency as Currency,
-                  bankName: q.data.bankName ?? "",
-                  swift: q.data.swift ?? "",
-                  displayName: q.data.displayName,
-                }
-              : null
-          }
-        />
-        <LinkToAppointmentModal entryId={linkAppointmentEntryId} onClose={() => setLinkAppointmentEntryId(null)} />
-        <PromoteStandaloneModal entryId={standaloneEntryId} onClose={() => setStandaloneEntryId(null)} />
-      </Container>
+      <EditBankAccountModal
+        opened={editOpened}
+        onClose={closeEdit}
+        bankAccountId={id}
+        initial={
+          q.data
+            ? {
+                legalEntityId: q.data.legalEntityId,
+                iban: q.data.iban,
+                currency: q.data.currency as Currency,
+                bankName: q.data.bankName ?? "",
+                swift: q.data.swift ?? "",
+                displayName: q.data.displayName,
+              }
+            : null
+        }
+      />
+      <LinkToAppointmentModal entryId={linkAppointmentEntryId} onClose={() => setLinkAppointmentEntryId(null)} />
+      <PromoteStandaloneModal entryId={standaloneEntryId} onClose={() => setStandaloneEntryId(null)} />
       <AttachmentPreviewDialog attachment={previewAttachment} onClose={() => setPreviewAttachment(null)} />
     </>
   )
