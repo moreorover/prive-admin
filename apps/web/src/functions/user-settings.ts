@@ -15,10 +15,7 @@ export const getUserSettings = createServerFn({ method: "GET" })
       where: eq(userSettings.userId, userId),
     })
     if (row) {
-      return {
-        userId: row.userId,
-        preferredCurrency: row.preferredCurrency,
-      }
+      return { userId: row.userId, preferredCurrency: row.preferredCurrency }
     }
     return { userId, preferredCurrency: "GBP" as const }
   })

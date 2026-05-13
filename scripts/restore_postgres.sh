@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Interactive restore of a Postgres dump from Cloudflare R2 into the local
-# database container defined in packages/db/docker-compose.yml.
+# database container defined in docker-compose.dev.yml.
 #
 # Usage:
 #   scripts/restore_postgres.sh
@@ -14,7 +14,7 @@
 #   PG_CONTAINER      Local postgres container name. Default: prive-admin
 #   PG_SUPERUSER      Postgres superuser inside the container. Default: postgres
 #   PG_PASSWORD       Postgres password. Default: password
-#   R2_PREFIX         Limit listing to this key prefix (e.g. "pre-deploy/").
+#   R2_PREFIX         Limit listing to this key prefix. Default: postgres_backup/
 #   KEEP_DOWNLOAD     If set, keep the downloaded dump file after restore.
 #
 # The script depends on: op, s3cmd, docker, gzip (only when restoring .gz dumps).
@@ -22,7 +22,7 @@
 set -euo pipefail
 umask 077
 
-PG_CONTAINER="${PG_CONTAINER:-prive-admin}"
+PG_CONTAINER="${PG_CONTAINER:-postgres}"
 PG_SUPERUSER="${PG_SUPERUSER:-postgres}"
 PG_PASSWORD="${PG_PASSWORD:-password}"
 
@@ -75,7 +75,7 @@ bucket_location = auto
 use_https = True
 EOF
 
-LIST_PREFIX="s3://${R2_BUCKET_NAME}/${R2_PREFIX:-}"
+LIST_PREFIX="s3://${R2_BUCKET_NAME}/${R2_PREFIX:-postgres_backup/}"
 printf 'listing %s\n' "${LIST_PREFIX}"
 
 # s3cmd ls output: "YYYY-MM-DD HH:MM   SIZE   s3://bucket/key"
@@ -124,7 +124,7 @@ printf '\ndownloading %s\n' "${S3_KEY}"
 s3cmd -c "${S3CFG}" get "${S3_KEY}" "${LOCAL_PATH}"
 
 if ! docker ps --format '{{.Names}}' | grep -Fxq "${PG_CONTAINER}"; then
-  err "postgres container '${PG_CONTAINER}' is not running. Start it with: (cd packages/db && docker compose up -d)"
+  err "postgres container '${PG_CONTAINER}' is not running. Start it with: bun compose:up"
 fi
 
 # Validate the production role name we'll create locally — guards against

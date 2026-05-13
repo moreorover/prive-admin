@@ -13,6 +13,10 @@
     "check-types": {
       "dependsOn": ["transit"]
     },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
     "dev": {
       "cache": false,
       "persistent": true
@@ -30,20 +34,6 @@
     "db:studio": {
       "cache": false,
       "persistent": true
-    },
-    "db:start": {
-      "cache": false,
-      "persistent": true
-    },
-    "db:stop": {
-      "cache": false
-    },
-    "db:watch": {
-      "cache": false,
-      "persistent": true
-    },
-    "db:down": {
-      "cache": false
     }
   }
 }

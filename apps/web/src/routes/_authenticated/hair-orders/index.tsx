@@ -1,14 +1,12 @@
 import {
-  Badge,
   Button,
   Container,
   Group,
   Modal,
   NativeSelect,
   NumberInput,
-  Skeleton,
+  Select,
   Stack,
-  Table,
   Text,
   TextInput,
   Title,
@@ -16,25 +14,19 @@ import {
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconPlus, IconScissors } from "@tabler/icons-react"
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Link, createFileRoute } from "@tanstack/react-router"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { ClientDate } from "@/components/client-date"
+import { HairOrdersTable } from "@/components/hair-orders-table"
 import { getCustomers } from "@/functions/customers"
 import { createHairOrder, getHairOrders } from "@/functions/hair-orders"
+import { listLegalEntities } from "@/functions/legal-entities"
+import { COUNTRY_FLAGS, type Country } from "@/lib/legal-entity"
 import { customerKeys, hairOrderKeys } from "@/lib/query-keys"
-
-const hairOrdersQueryOptions = queryOptions({
-  queryKey: hairOrderKeys.list(),
-  queryFn: () => getHairOrders(),
-})
 
 export const Route = createFileRoute("/_authenticated/hair-orders/")({
   component: HairOrdersPage,
-  loader: async ({ context }) => {
-    await context.queryClient.prefetchQuery(hairOrdersQueryOptions)
-  },
 })
 
 function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
@@ -45,6 +37,8 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     queryFn: () => getCustomers(),
   })
 
+  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
+
   const mutation = useMutation({
     mutationFn: (data: {
       customerId: string
@@ -54,6 +48,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
       weightReceived: number
       weightUsed: number
       total: number
+      legalEntityId: string
     }) => createHairOrder({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
@@ -64,7 +59,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   })
 
   const form = useForm({
-    initialValues: { customerId: "", placedAt: "", weightReceived: 0, total: 0 },
+    initialValues: { customerId: "", placedAt: "", weightReceived: 0, total: 0, legalEntityId: "" },
   })
 
   const handleSubmit = async (values: {
@@ -72,6 +67,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     placedAt: string
     weightReceived: number
     total: number
+    legalEntityId: string
   }) => {
     await mutation.mutateAsync({
       customerId: values.customerId,
@@ -80,7 +76,8 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
       status: "PENDING",
       weightReceived: values.weightReceived,
       weightUsed: 0,
-      total: values.total,
+      total: Math.round(values.total * 100),
+      legalEntityId: values.legalEntityId,
     })
   }
 
@@ -99,8 +96,18 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           <TextInput label="Placed At" type="date" {...form.getInputProps("placedAt")} />
           <Group grow>
             <NumberInput label="Weight (g)" min={0} {...form.getInputProps("weightReceived")} />
-            <NumberInput label="Total (cents)" min={0} {...form.getInputProps("total")} />
+            <NumberInput label="Total" min={0} decimalScale={2} step={0.01} {...form.getInputProps("total")} />
           </Group>
+          <Select
+            label="Legal entity (payer)"
+            required
+            data={(legalEntitiesQuery.data ?? []).map((le) => ({
+              value: le.id,
+              label: `${COUNTRY_FLAGS[le.country as Country] ?? ""} ${le.name}`,
+            }))}
+            value={form.values.legalEntityId}
+            onChange={(v) => form.setFieldValue("legalEntityId", v ?? "")}
+          />
           <Button type="submit" loading={mutation.isPending}>
             Create Hair Order
           </Button>
@@ -111,7 +118,12 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 }
 
 function HairOrdersPage() {
-  const { data: hairOrders, isLoading } = useQuery(hairOrdersQueryOptions)
+  const [legalEntityFilter, setLegalEntityFilter] = useState<string>("")
+  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
+  const { data: hairOrders, isLoading } = useQuery({
+    queryKey: ["hair-orders", legalEntityFilter],
+    queryFn: () => getHairOrders({ data: { legalEntityId: legalEntityFilter || undefined } }),
+  })
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
@@ -132,67 +144,20 @@ function HairOrdersPage() {
           </Button>
         </Group>
 
-        <Table>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>#</Table.Th>
-              <Table.Th>Customer</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th>Weight (g)</Table.Th>
-              <Table.Th>Placed</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {isLoading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <Table.Tr key={i}>
-                    <Table.Td>
-                      <Skeleton h={14} w={30} />
-                    </Table.Td>
-                    <Table.Td>
-                      <Skeleton h={14} w={90} />
-                    </Table.Td>
-                    <Table.Td>
-                      <Skeleton h={14} w={60} />
-                    </Table.Td>
-                    <Table.Td>
-                      <Skeleton h={14} w={50} />
-                    </Table.Td>
-                    <Table.Td>
-                      <Skeleton h={14} w={70} />
-                    </Table.Td>
-                  </Table.Tr>
-                ))
-              : hairOrders?.map((ho) => (
-                  <Table.Tr key={ho.id}>
-                    <Table.Td>
-                      <Text
-                        renderRoot={(props) => (
-                          <Link to="/hair-orders/$hairOrderId" params={{ hairOrderId: ho.id }} {...props} />
-                        )}
-                        c="blue"
-                        fw={500}
-                      >
-                        #{ho.uid}
-                      </Text>
-                    </Table.Td>
-                    <Table.Td c="dimmed">{ho.customer?.name ?? "—"}</Table.Td>
-                    <Table.Td>
-                      <Badge variant={ho.status === "COMPLETED" ? "light" : "outline"}>{ho.status}</Badge>
-                    </Table.Td>
-                    <Table.Td c="dimmed">{ho.weightReceived}g</Table.Td>
-                    <Table.Td c="dimmed">{ho.placedAt ? <ClientDate date={ho.placedAt} /> : "—"}</Table.Td>
-                  </Table.Tr>
-                ))}
-            {!isLoading && hairOrders?.length === 0 && (
-              <Table.Tr>
-                <Table.Td colSpan={5} ta="center" c="dimmed">
-                  No hair orders yet.
-                </Table.Td>
-              </Table.Tr>
-            )}
-          </Table.Tbody>
-        </Table>
+        <Group mb="md">
+          <Select
+            label="Legal entity"
+            data={[
+              { value: "", label: "All" },
+              ...(legalEntitiesQuery.data ?? []).map((le) => ({ value: le.id, label: le.name })),
+            ]}
+            value={legalEntityFilter}
+            onChange={(v) => setLegalEntityFilter(v ?? "")}
+            w={240}
+          />
+        </Group>
+
+        <HairOrdersTable hairOrders={hairOrders} isLoading={isLoading} />
 
         <CreateHairOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       </Stack>

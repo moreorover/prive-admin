@@ -30,7 +30,19 @@ jobs:
           DEPS_PAT: op://prive-admin/PAT prive-admin deps bot/token
 
       - name: Run taze major
-        run: bunx taze major -r -w
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          shell: bash
+          command: |
+            set -o pipefail
+            log=$(mktemp)
+            bunx taze major -r -w --concurrency 3 2>&1 | tee "$log"
+            if grep -q 'Timeout requesting' "$log"; then
+              echo "::warning::taze hit registry timeouts; failing step to trigger retry"
+              exit 1
+            fi
 
       - name: Update Lockfile
         run: bun install
@@ -41,8 +53,8 @@ jobs:
           token: ${{ env.DEPS_PAT }}
           branch: chore/auto-dep-updates
           base: main
-          commit-message: "chore(deps): bump dependencies via taze major"
-          title: "chore(deps): nightly dependency updates"
+          commit-message: "fix(deps): bump dependencies via taze major"
+          title: "fix(deps): nightly dependency updates"
           body: |
             Automated nightly run of `bunx taze major -r -w` followed by `bun install`.
 

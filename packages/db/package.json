@@ -1,6 +1,6 @@
 {
   "name": "@prive-admin-tanstack/db",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -16,10 +16,8 @@
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
     "db:migrate": "drizzle-kit migrate",
-    "db:start": "docker compose up -d",
-    "db:watch": "docker compose up",
-    "db:stop": "docker compose stop",
-    "db:down": "docker compose down"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^3.3.0",
@@ -34,6 +32,7 @@
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/pg": "^8.20.0",
     "drizzle-kit": "^0.31.10",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.6"
   }
 }

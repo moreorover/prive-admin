@@ -3,6 +3,7 @@ import type { ErrorComponentProps } from "@tanstack/react-router"
 import {
   ActionIcon,
   Avatar,
+  Badge,
   Box,
   Burger,
   Button,
@@ -32,23 +33,21 @@ import {
   IconSun,
   IconUserCircle,
 } from "@tabler/icons-react"
-import { useQueryErrorResetBoundary } from "@tanstack/react-query"
+import { useQuery, useQueryErrorResetBoundary } from "@tanstack/react-query"
 import { Link, Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
 
+import { listUnassignedAttachments } from "@/functions/bank-statement-attachments"
 import { getUser } from "@/functions/get-user"
 import { authClient } from "@/lib/auth-client"
 
 import classes from "./route.module.css"
 
 const tabs = [
-  { value: "/dashboard", label: "Dashboard" },
   { value: "/customers", label: "Customers" },
-  { value: "/appointments", label: "Appointments" },
   { value: "/calendar", label: "Calendar" },
   { value: "/hair-orders", label: "Hair Orders" },
-  { value: "/files", label: "Files (Proxy)" },
-  { value: "/files-direct", label: "Files (Direct)" },
+  { value: "/legal-entities", label: "Legal entities" },
 ] as const
 
 export const Route = createFileRoute("/_authenticated")({
@@ -72,6 +71,12 @@ function AuthenticatedLayout() {
 
   const activeTab =
     tabs.find((t) => location.pathname === t.value || location.pathname.startsWith(`${t.value}/`))?.value ?? null
+
+  const unassignedQuery = useQuery({
+    queryKey: ["bank-statement-attachments", "unassigned"],
+    queryFn: () => listUnassignedAttachments(),
+  })
+  const unassignedCount = unassignedQuery.data?.length ?? 0
 
   return (
     <Box>
@@ -101,15 +106,26 @@ function AuthenticatedLayout() {
           <Tabs
             value={activeTab}
             variant="outline"
-            visibleFrom="xs"
             classNames={{
               list: classes.tabsList,
               tab: classes.tab,
             }}
+            visibleFrom="xs"
           >
             <Tabs.List>
               {tabs.map((tab) => (
-                <Tabs.Tab key={tab.value} value={tab.value} renderRoot={(props) => <Link to={tab.value} {...props} />}>
+                <Tabs.Tab
+                  key={tab.value}
+                  value={tab.value}
+                  renderRoot={(props) => <Link to={tab.value} {...props} />}
+                  rightSection={
+                    tab.value === "/legal-entities" && unassignedCount > 0 ? (
+                      <Badge size="xs" variant="filled" color="orange" circle>
+                        {unassignedCount}
+                      </Badge>
+                    ) : undefined
+                  }
+                >
                   {tab.label}
                 </Tabs.Tab>
               ))}
@@ -131,7 +147,14 @@ function AuthenticatedLayout() {
           <Divider my="sm" />
           {tabs.map((tab) => (
             <Link key={tab.value} to={tab.value} className={classes.drawerLink} onClick={closeDrawer}>
-              {tab.label}
+              <Group gap={6} wrap="nowrap">
+                {tab.label}
+                {tab.value === "/legal-entities" && unassignedCount > 0 && (
+                  <Badge size="xs" variant="filled" color="orange" circle>
+                    {unassignedCount}
+                  </Badge>
+                )}
+              </Group>
             </Link>
           ))}
           <Divider my="sm" />

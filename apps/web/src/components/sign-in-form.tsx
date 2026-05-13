@@ -17,13 +17,7 @@ const schema = z.object({
 
 type SignInValues = z.infer<typeof schema>
 
-export default function SignInForm({
-  onSwitchToSignUp,
-  redirectTo,
-}: {
-  onSwitchToSignUp: () => void
-  redirectTo?: string
-}) {
+export default function SignInForm({ redirectTo }: { redirectTo?: string }) {
   const navigate = useNavigate()
   const { isPending } = authClient.useSession()
   const [submitting, setSubmitting] = useState(false)
@@ -68,11 +62,6 @@ export default function SignInForm({
           </Button>
         </Stack>
       </form>
-      <Stack mt="md" align="center">
-        <Button variant="subtle" onClick={onSwitchToSignUp}>
-          Need an account? Sign Up
-        </Button>
-      </Stack>
     </Container>
   )
 }

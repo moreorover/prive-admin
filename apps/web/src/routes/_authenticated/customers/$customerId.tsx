@@ -24,6 +24,7 @@ import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/r
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
+import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
 import { ClientDate } from "@/components/client-date"
 import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
 import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
@@ -182,6 +183,7 @@ function CustomerDetailPage() {
   const { customerId } = Route.useParams()
   const [editOpen, setEditOpen] = useState(false)
   const [noteOpen, setNoteOpen] = useState(false)
+  const [appointmentCreateOpen, setAppointmentCreateOpen] = useState(false)
   const [hairCreateOpen, setHairCreateOpen] = useState(false)
   const [hairEditItem, setHairEditItem] = useState<HairAssignedRow | null>(null)
   const [hairDeleteItem, setHairDeleteItem] = useState<HairAssignedRow | null>(null)
@@ -312,6 +314,17 @@ function CustomerDetailPage() {
 
           <Tabs.Panel value="appointments" pt="md">
             <Card withBorder>
+              <Group justify="space-between" mb="sm">
+                <Title order={5}>Appointments</Title>
+                <Button
+                  variant="subtle"
+                  size="xs"
+                  leftSection={<IconPlus size={12} />}
+                  onClick={() => setAppointmentCreateOpen(true)}
+                >
+                  New
+                </Button>
+              </Group>
               {appointments && appointments.length > 0 ? (
                 <Table>
                   <Table.Thead>
@@ -400,6 +413,16 @@ function CustomerDetailPage() {
 
         <EditCustomerDialog customer={customer} open={editOpen} onOpenChange={setEditOpen} />
         <AddNoteDialog customerId={customerId} open={noteOpen} onOpenChange={setNoteOpen} />
+        <CreateAppointmentDialog
+          open={appointmentCreateOpen}
+          onOpenChange={setAppointmentCreateOpen}
+          defaultClientId={customerId}
+          invalidateKeys={[
+            { queryKey: appointmentKeys.byCustomer(customerId) },
+            { queryKey: customerKeys.summary(customerId) },
+          ]}
+          navigateOnSuccess
+        />
         <CreateHairAssignedDialog
           open={hairCreateOpen}
           onOpenChange={setHairCreateOpen}

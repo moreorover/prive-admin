@@ -5,6 +5,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
 import { getAppointments } from "@/functions/appointments"
 import { appointmentKeys } from "@/lib/query-keys"
 
@@ -25,6 +26,13 @@ function CalendarPage() {
   const navigate = useNavigate()
   const [view, setView] = useState<ScheduleViewLevel>("month")
   const [date, setDate] = useState<string>(dayjs().format("YYYY-MM-DD"))
+  const [createOpen, setCreateOpen] = useState(false)
+  const [defaultStartsAt, setDefaultStartsAt] = useState<string | null>(null)
+
+  const openCreate = useCallback((startsAt: string | null) => {
+    setDefaultStartsAt(startsAt)
+    setCreateOpen(true)
+  }, [])
 
   const events = useMemo<ScheduleEventData[]>(() => {
     return (appointments ?? []).map((a) => {
@@ -77,6 +85,29 @@ function CalendarPage() {
           onDateChange={setDate}
           layout="responsive"
           onEventClick={(event) => goToAppointment(String(event.id))}
+          onTimeSlotClick={({ slotStart }) => openCreate(slotStart)}
+          onDayClick={(d) => openCreate(`${d} 09:00:00`)}
+          dayViewProps={{
+            startTime: "09:00:00",
+            endTime: "19:00:00",
+            intervalMinutes: 30,
+          }}
+          weekViewProps={{
+            startTime: "09:00:00",
+            endTime: "19:00:00",
+            intervalMinutes: 30,
+            withWeekendDays: true,
+          }}
+          monthViewProps={{
+            firstDayOfWeek: 1,
+          }}
+        />
+        <CreateAppointmentDialog
+          open={createOpen}
+          onOpenChange={setCreateOpen}
+          defaultStartsAt={defaultStartsAt}
+          invalidateKeys={[{ queryKey: appointmentKeys.list() }]}
+          navigateOnSuccess
         />
       </Stack>
     </Container>
