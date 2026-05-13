@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/moreorover/prive-admin/compare/v0.5.0...v0.5.1) (2026-05-13)
+
+
+### Bug Fixes
+
+* **deps:** bump dependencies via taze major ([#173](https://github.com/moreorover/prive-admin/issues/173)) ([65dd63e](https://github.com/moreorover/prive-admin/commit/65dd63e2e9f933c82b8d5049aeddf6a18d3f6fd0))
+
 ## [0.5.0](https://github.com/moreorover/prive-admin/compare/v0.4.1...v0.5.0) (2026-05-13)
 
 
