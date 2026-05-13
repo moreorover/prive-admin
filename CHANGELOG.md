@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0](https://github.com/moreorover/prive-admin/compare/v0.4.1...v0.5.0) (2026-05-13)
+
+
+### Features
+
+* **bank-accounts:** support Swedbank CSV statement imports ([#180](https://github.com/moreorover/prive-admin/issues/180)) ([a93f3c7](https://github.com/moreorover/prive-admin/commit/a93f3c7b86e5887da877a2be99566571a27b9747))
+
+
+### Bug Fixes
+
+* **bank-accounts:** drop nested Container in show view ([#182](https://github.com/moreorover/prive-admin/issues/182)) ([893153f](https://github.com/moreorover/prive-admin/commit/893153ff97918c9da5e8de91182f93efd940b3a1))
+
 ## [0.4.1](https://github.com/moreorover/prive-admin/compare/v0.4.0...v0.4.1) (2026-05-12)
 
 
