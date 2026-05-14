@@ -1,12 +1,14 @@
-import { Button, Container, Group, Modal, Skeleton, Stack, Table, Text, TextInput, Title } from "@mantine/core"
+import { Button, Container, Modal, Skeleton, Stack, Table, Text, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
-import { IconPlus, IconUsers } from "@tabler/icons-react"
+import { IconPlus } from "@tabler/icons-react"
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
+import { PageHeader } from "@/components/page-header"
+import { Section } from "@/components/section"
 import { createCustomer, getCustomers } from "@/functions/customers"
 import { customerKeys } from "@/lib/query-keys"
 
@@ -66,23 +68,17 @@ function CustomersPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
-    <Container size="lg">
-      <Stack>
-        <Group justify="space-between" align="flex-end">
-          <Stack gap={4}>
-            <Group gap="xs" c="dimmed">
-              <IconUsers size={16} />
-              <Text size="xs" tt="uppercase">
-                Customers
-              </Text>
-            </Group>
-            <Title order={2}>Customers</Title>
-          </Stack>
+    <Container size="xl">
+      <PageHeader
+        title="Customers"
+        description="People you serve. Click a name to see their appointments and notes."
+        actions={
           <Button leftSection={<IconPlus size={14} />} onClick={() => setDialogOpen(true)}>
-            New Customer
+            New customer
           </Button>
-        </Group>
-
+        }
+      />
+      <Section padding={0}>
         <Table>
           <Table.Thead>
             <Table.Tr>
@@ -134,9 +130,9 @@ function CustomersPage() {
             )}
           </Table.Tbody>
         </Table>
+      </Section>
 
-        <CustomerFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-      </Stack>
+      <CustomerFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </Container>
   )
 }

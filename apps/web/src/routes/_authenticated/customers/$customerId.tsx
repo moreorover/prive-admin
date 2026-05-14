@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Container,
-  Divider,
   Group,
   Modal,
   SimpleGrid,
@@ -30,6 +29,8 @@ import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair
 import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
 import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
+import { PageHeader } from "@/components/page-header"
+import { Section } from "@/components/section"
 import { getAppointmentsByCustomerId } from "@/functions/appointments"
 import { getCustomer, getCustomerSummary, updateCustomer } from "@/functions/customers"
 import { getHairAssignedByCustomer } from "@/functions/hair-assigned"
@@ -225,7 +226,7 @@ function CustomerDetailPage() {
 
   if (isLoading) {
     return (
-      <Container size="lg">
+      <Container size="xl">
         <Stack>
           <Skeleton h={24} w={200} />
           <Skeleton h={120} />
@@ -236,40 +237,43 @@ function CustomerDetailPage() {
 
   if (!customer) {
     return (
-      <Container size="lg">
+      <Container size="xl">
         <Text c="dimmed">Customer not found.</Text>
       </Container>
     )
   }
 
   return (
-    <Container size="lg">
-      <Stack>
-        <Group justify="space-between" align="flex-start">
-          <Stack gap="xs">
-            <Anchor component={Link} to="/customers" size="xs" c="dimmed">
-              <Group gap={4}>
-                <IconArrowLeft size={12} />
-                Back to customers
-              </Group>
-            </Anchor>
-            <Title order={2}>{customer.name}</Title>
-            {customer.phoneNumber && (
-              <Group gap={4} c="dimmed">
-                <IconPhone size={12} />
-                <Text size="sm">{customer.phoneNumber}</Text>
-              </Group>
-            )}
-          </Stack>
+    <Container size="xl">
+      <Anchor component={Link} to="/customers" size="xs" c="dimmed" mb="xs" display="inline-block">
+        <Group gap={4}>
+          <IconArrowLeft size={12} />
+          Back to customers
+        </Group>
+      </Anchor>
+      <PageHeader
+        title={customer.name}
+        description={
+          customer.phoneNumber ? (
+            <Group gap={4}>
+              <IconPhone size={12} />
+              <Text size="sm" c="dimmed">
+                {customer.phoneNumber}
+              </Text>
+            </Group>
+          ) : undefined
+        }
+        actions={
           <Button variant="default" leftSection={<IconPencil size={14} />} onClick={() => setEditOpen(true)}>
             Edit
           </Button>
-        </Group>
-
+        }
+      />
+      <Stack>
         {summary ? (
           <SimpleGrid cols={{ base: 2, sm: 3, lg: 4 }}>
             <StatCard label="Appointments" value={String(summary.appointmentCount)} />
-            <Card withBorder padding="md">
+            <Card padding="md">
               <Text size="xs" c="dimmed">
                 Transactions
               </Text>
@@ -282,11 +286,11 @@ function CustomerDetailPage() {
                 })()}
               </Title>
             </Card>
-            <StatCard label="Hair Profit" value={`£${summary.hairAssignedProfitSum.toFixed(2)}`} />
-            <StatCard label="Hair Sold For" value={`£${summary.hairAssignedSoldForSum.toFixed(2)}`} />
-            <StatCard label="Hair Weight" value={`${summary.hairAssignedWeightInGramsSum}g`} />
+            <StatCard label="Hair profit" value={`£${summary.hairAssignedProfitSum.toFixed(2)}`} />
+            <StatCard label="Hair sold for" value={`£${summary.hairAssignedSoldForSum.toFixed(2)}`} />
+            <StatCard label="Hair weight" value={`${summary.hairAssignedWeightInGramsSum}g`} />
             <StatCard label="Notes" value={String(summary.noteCount)} />
-            <Card withBorder padding="md">
+            <Card padding="md">
               <Text size="xs" c="dimmed">
                 Joined
               </Text>
@@ -303,8 +307,6 @@ function CustomerDetailPage() {
           </SimpleGrid>
         )}
 
-        <Divider />
-
         <Tabs defaultValue="appointments">
           <Tabs.List>
             <Tabs.Tab value="appointments">Appointments</Tabs.Tab>
@@ -313,18 +315,20 @@ function CustomerDetailPage() {
           </Tabs.List>
 
           <Tabs.Panel value="appointments" pt="md">
-            <Card withBorder>
-              <Group justify="space-between" mb="sm">
-                <Title order={5}>Appointments</Title>
+            <Section
+              title="Appointments"
+              actions={
                 <Button
-                  variant="subtle"
-                  size="xs"
+                  variant="default"
+                  size="sm"
                   leftSection={<IconPlus size={12} />}
                   onClick={() => setAppointmentCreateOpen(true)}
                 >
                   New
                 </Button>
-              </Group>
+              }
+              padding={appointments && appointments.length > 0 ? 0 : "lg"}
+            >
               {appointments && appointments.length > 0 ? (
                 <Table>
                   <Table.Thead>
@@ -358,26 +362,27 @@ function CustomerDetailPage() {
                   No appointments yet.
                 </Text>
               )}
-            </Card>
+            </Section>
           </Tabs.Panel>
 
           <Tabs.Panel value="notes" pt="md">
-            <Card withBorder>
-              <Group justify="space-between" mb="sm">
-                <Title order={5}>Notes</Title>
+            <Section
+              title="Notes"
+              actions={
                 <Button
-                  variant="subtle"
-                  size="xs"
+                  variant="default"
+                  size="sm"
                   leftSection={<IconPlus size={12} />}
                   onClick={() => setNoteOpen(true)}
                 >
                   Add
                 </Button>
-              </Group>
+              }
+            >
               {notes && notes.length > 0 ? (
                 <Stack gap="xs">
                   {notes.map((n) => (
-                    <Card key={n.id} withBorder padding="sm">
+                    <Card key={n.id} padding="sm">
                       <Group justify="space-between" align="flex-start">
                         <Stack gap={2}>
                           <Text size="sm">{n.note}</Text>
@@ -397,7 +402,7 @@ function CustomerDetailPage() {
                   No notes yet.
                 </Text>
               )}
-            </Card>
+            </Section>
           </Tabs.Panel>
 
           <Tabs.Panel value="hair-sales" pt="md">

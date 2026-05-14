@@ -1,4 +1,4 @@
-import { Button, Container, Group, Modal, Stack, TextInput, Title } from "@mantine/core"
+import { Button, Container, Group, Modal, Stack, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { useDisclosure } from "@mantine/hooks"
 import { notifications } from "@mantine/notifications"
@@ -7,8 +7,9 @@ import { Outlet, createFileRoute } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useEffect } from "react"
 
-import { LegalEntityTabs } from "@/components/legal-entity-tabs"
+import { PageHeader } from "@/components/page-header"
 import { getLegalEntity, updateLegalEntity } from "@/functions/legal-entities"
+import { COUNTRY_FLAGS, COUNTRY_LABELS, type Country } from "@/lib/legal-entity"
 import { legalEntityUpdateSchema } from "@/lib/schemas"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId")({
@@ -24,18 +25,23 @@ function LegalEntityLayout() {
     queryFn: () => getLegalEntity({ data: { id: legalEntityId } }),
   })
 
+  const country = q.data?.country as Country | undefined
+  const description = q.data
+    ? `${q.data.type}${country ? ` · ${COUNTRY_FLAGS[country]} ${COUNTRY_LABELS[country]}` : ""} · ${q.data.defaultCurrency}`
+    : undefined
+
   return (
-    <Container size="lg">
-      <Stack p="md">
-        <Group justify="space-between">
-          <Title order={3}>{q.data?.name ?? "Legal entity"}</Title>
-          <Button onClick={openEdit} disabled={!q.data}>
+    <Container size="xl">
+      <PageHeader
+        title={q.data?.name ?? "Legal entity"}
+        description={description}
+        actions={
+          <Button variant="default" onClick={openEdit} disabled={!q.data}>
             Edit
           </Button>
-        </Group>
-
-        <LegalEntityTabs legalEntityId={legalEntityId} />
-
+        }
+      />
+      <Stack>
         <Outlet />
       </Stack>
 

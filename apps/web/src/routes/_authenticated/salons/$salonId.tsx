@@ -1,4 +1,4 @@
-import { Button, Card, Container, Group, Stack, TextInput, Title } from "@mantine/core"
+import { Button, Container, Group, Stack, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -6,6 +6,8 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useEffect } from "react"
 
+import { PageHeader } from "@/components/page-header"
+import { Section } from "@/components/section"
 import { createSalon, getSalon, updateSalon } from "@/functions/salons"
 import { salonSchema } from "@/lib/schemas"
 
@@ -56,26 +58,24 @@ function SalonEdit() {
   })
 
   return (
-    <Container size="lg">
-      <Stack p="md">
-        <Title order={3}>{isNew ? "New salon" : "Edit salon"}</Title>
-        <Card withBorder>
-          <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
-            <Stack>
-              <TextInput label="Name" required {...form.getInputProps("name")} />
-              <TextInput label="Address" {...form.getInputProps("address")} />
-              <Group>
-                <Button type="submit" loading={save.isPending}>
-                  Save
-                </Button>
-                <Button renderRoot={(props) => <Link to="/salons" {...props} />} variant="subtle">
-                  Cancel
-                </Button>
-              </Group>
-            </Stack>
-          </form>
-        </Card>
-      </Stack>
+    <Container size="md">
+      <PageHeader title={isNew ? "New salon" : "Edit salon"} description="A location associated with a legal entity." />
+      <Section>
+        <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
+          <Stack>
+            <TextInput label="Name" required {...form.getInputProps("name")} />
+            <TextInput label="Address" {...form.getInputProps("address")} />
+            <Group justify="flex-end">
+              <Button renderRoot={(props) => <Link to="/salons" {...props} />} variant="subtle">
+                Cancel
+              </Button>
+              <Button type="submit" loading={save.isPending}>
+                Save
+              </Button>
+            </Group>
+          </Stack>
+        </form>
+      </Section>
     </Container>
   )
 }

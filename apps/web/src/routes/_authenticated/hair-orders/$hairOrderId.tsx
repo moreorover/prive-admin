@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Container,
-  Divider,
   Group,
   Modal,
   NativeSelect,
@@ -29,6 +28,8 @@ import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair
 import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
 import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
+import { PageHeader } from "@/components/page-header"
+import { Section } from "@/components/section"
 import { getHairOrder, recalculateHairOrderPrices, updateHairOrder } from "@/functions/hair-orders"
 import { listLegalEntities } from "@/functions/legal-entities"
 import { COUNTRY_FLAGS, type Country } from "@/lib/legal-entity"
@@ -72,7 +73,7 @@ function HairOrderDetailPage() {
 
   if (isLoading) {
     return (
-      <Container size="lg">
+      <Container size="xl">
         <Stack>
           <Skeleton h={24} w={200} />
           <Skeleton h={120} />
@@ -83,7 +84,7 @@ function HairOrderDetailPage() {
 
   if (!hairOrder) {
     return (
-      <Container size="lg">
+      <Container size="xl">
         <Text c="dimmed">Hair order not found.</Text>
       </Container>
     )
@@ -92,21 +93,23 @@ function HairOrderDetailPage() {
   const invalidateKeys = [{ queryKey: hairOrderKeys.detail(hairOrderId) }]
 
   return (
-    <Container size="lg">
-      <Stack>
-        <Group justify="space-between" align="flex-start">
-          <Stack gap="xs">
-            <Anchor component={Link} to="/hair-orders" size="xs" c="dimmed">
-              <Group gap={4}>
-                <IconArrowLeft size={12} />
-                Back to hair orders
-              </Group>
-            </Anchor>
-            <Group gap="md">
-              <Title order={2}>Hair Order #{hairOrder.uid}</Title>
-              <Badge variant={hairOrder.status === "COMPLETED" ? "light" : "outline"}>{hairOrder.status}</Badge>
-            </Group>
-            <Group gap="md" c="dimmed">
+    <Container size="xl">
+      <Anchor component={Link} to="/hair-orders" size="xs" c="dimmed" mb="xs" display="inline-block">
+        <Group gap={4}>
+          <IconArrowLeft size={12} />
+          Back to hair orders
+        </Group>
+      </Anchor>
+      <PageHeader
+        title={
+          <Group gap="sm">
+            <span>Hair order #{hairOrder.uid}</span>
+            <Badge variant={hairOrder.status === "COMPLETED" ? "light" : "outline"}>{hairOrder.status}</Badge>
+          </Group>
+        }
+        description={
+          <Stack gap={2}>
+            <Group gap="sm">
               <Group gap={4}>
                 <IconUser size={12} />
                 <Text
@@ -119,13 +122,17 @@ function HairOrderDetailPage() {
                   {hairOrder.customer.name}
                 </Text>
               </Group>
-              <Text size="sm">Created by {hairOrder.createdBy?.name ?? "Unknown"}</Text>
+              <Text size="sm" c="dimmed">
+                Created by {hairOrder.createdBy?.name ?? "Unknown"}
+              </Text>
             </Group>
-            <Group gap="md" c="dimmed">
+            <Group gap="sm" c="dimmed">
               <Text size="sm">Placed: {hairOrder.placedAt ? <ClientDate date={hairOrder.placedAt} /> : "—"}</Text>
               <Text size="sm">Arrived: {hairOrder.arrivedAt ? <ClientDate date={hairOrder.arrivedAt} /> : "—"}</Text>
             </Group>
           </Stack>
+        }
+        actions={
           <Group gap="xs">
             <Button
               variant="default"
@@ -139,30 +146,29 @@ function HairOrderDetailPage() {
               Edit
             </Button>
           </Group>
-        </Group>
-
-        <Divider />
-
+        }
+      />
+      <Stack>
         <SimpleGrid cols={{ base: 2, md: 4 }}>
-          <Card withBorder padding="md">
+          <Card padding="md">
             <Text size="xs" c="dimmed">
-              Weight Received
+              Weight received
             </Text>
             <Title order={4}>{hairOrder.weightReceived}g</Title>
           </Card>
-          <Card withBorder padding="md">
+          <Card padding="md">
             <Text size="xs" c="dimmed">
-              Weight Used
+              Weight used
             </Text>
             <Title order={4}>{hairOrder.weightUsed}g</Title>
           </Card>
-          <Card withBorder padding="md">
+          <Card padding="md">
             <Text size="xs" c="dimmed">
-              Price/Gram
+              Price/gram
             </Text>
             <Title order={4}>{formatCents(hairOrder.pricePerGram)}</Title>
           </Card>
-          <Card withBorder padding="md">
+          <Card padding="md">
             <Text size="xs" c="dimmed">
               Total
             </Text>
@@ -170,30 +176,29 @@ function HairOrderDetailPage() {
           </Card>
         </SimpleGrid>
 
-        <Group grow align="flex-start">
-          <Card withBorder>
-            <Group justify="space-between" mb="sm">
-              <Title order={5}>Hair Assigned</Title>
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+          <Section
+            title="Hair assigned"
+            actions={
               <Button
-                variant="subtle"
-                size="xs"
+                variant="default"
+                size="sm"
                 leftSection={<IconPlus size={12} />}
                 onClick={() => setCreateOpen(true)}
               >
                 Add
               </Button>
-            </Group>
+            }
+            padding={0}
+          >
             <HairAssignedTable items={hairOrder.hairAssigned ?? []} onEdit={setEditItem} onDelete={setDeleteItem} />
-          </Card>
+          </Section>
 
-          <Card withBorder>
-            <Title order={5} mb="sm">
-              Notes
-            </Title>
+          <Section title="Notes">
             {hairOrder.notes && hairOrder.notes.length > 0 ? (
               <Stack gap="xs">
                 {hairOrder.notes.map((n) => (
-                  <Card key={n.id} withBorder padding="sm">
+                  <Card key={n.id} padding="sm">
                     <Text size="sm">{n.note}</Text>
                     <Text size="xs" c="dimmed" mt={4}>
                       {n.createdBy?.name ?? "Unknown"} · <ClientDate date={n.createdAt} />
@@ -206,8 +211,8 @@ function HairOrderDetailPage() {
                 No notes.
               </Text>
             )}
-          </Card>
-        </Group>
+          </Section>
+        </SimpleGrid>
 
         <CreateHairAssignedDialog
           open={createOpen}

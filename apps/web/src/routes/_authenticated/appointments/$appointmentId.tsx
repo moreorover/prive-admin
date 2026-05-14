@@ -7,7 +7,6 @@ import {
   Card,
   Checkbox,
   Container,
-  Divider,
   Group,
   Menu,
   Modal,
@@ -39,6 +38,7 @@ import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair
 import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
 import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
+import { PageHeader } from "@/components/page-header"
 import { CreateTransactionDialog } from "@/components/transactions/create-transaction-dialog"
 import { DeleteTransactionDialog } from "@/components/transactions/delete-transaction-dialog"
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
@@ -141,7 +141,7 @@ function AppointmentDetailPage() {
 
   if (isLoading) {
     return (
-      <Container size="lg">
+      <Container size="xl">
         <Stack>
           <Skeleton h={24} w={200} />
           <Skeleton h={120} />
@@ -152,7 +152,7 @@ function AppointmentDetailPage() {
 
   if (!appointment) {
     return (
-      <Container size="lg">
+      <Container size="xl">
         <Text c="dimmed">Appointment not found.</Text>
       </Container>
     )
@@ -177,20 +177,20 @@ function AppointmentDetailPage() {
   }
 
   return (
-    <Container size="lg">
-      <Stack>
-        <Stack gap="xs">
-          <Anchor component={Link} to="/calendar" size="xs" c="dimmed">
-            <Group gap={4}>
-              <IconArrowLeft size={12} />
-              Back to calendar
-            </Group>
-          </Anchor>
-          <Title order={2}>{appointment.name}</Title>
-          <Group gap="md" c="dimmed">
+    <Container size="xl">
+      <Anchor component={Link} to="/calendar" size="xs" c="dimmed" mb="xs" display="inline-block">
+        <Group gap={4}>
+          <IconArrowLeft size={12} />
+          Back to calendar
+        </Group>
+      </Anchor>
+      <PageHeader
+        title={appointment.name}
+        description={
+          <Group gap="md">
             <Group gap={4}>
               <IconClock size={12} />
-              <Text size="sm">
+              <Text size="sm" c="dimmed">
                 <ClientDate date={appointment.startsAt} showTime />
               </Text>
             </Group>
@@ -207,10 +207,9 @@ function AppointmentDetailPage() {
               </Text>
             </Group>
           </Group>
-        </Stack>
-
-        <Divider />
-
+        }
+      />
+      <Stack>
         <Group grow align="flex-start">
           <Card withBorder>
             <Group justify="space-between" mb="sm">

@@ -1,4 +1,4 @@
-import { ActionIcon, Card, FileInput, Group, Select, Stack, Table, Text, Tooltip, UnstyledButton } from "@mantine/core"
+import { ActionIcon, FileInput, Select, Stack, Table, Text, Tooltip, UnstyledButton } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { IconTrash } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -6,6 +6,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
+import { Section } from "@/components/section"
 import {
   assignAttachmentToEntry,
   deleteAttachment,
@@ -88,26 +89,25 @@ function DocumentsTab() {
 
   return (
     <>
-      <Card withBorder>
-        <Stack>
-          <Group justify="space-between">
-            <Text fw={500}>Unassigned documents</Text>
-            <Text size="xs" c="dimmed">
-              {items.length} file{items.length === 1 ? "" : "s"}
-            </Text>
-          </Group>
-          <Group align="end">
-            <FileInput
-              key={fileInputKey}
-              placeholder="Upload document"
-              disabled={busy}
-              value={null}
-              onChange={(f) => {
-                if (f) void upload(f)
-              }}
-              w={400}
-            />
-          </Group>
+      <Section
+        title="Unassigned documents"
+        description={`${items.length} file${items.length === 1 ? "" : "s"} waiting to be matched to bank entries.`}
+        actions={
+          <FileInput
+            key={fileInputKey}
+            placeholder="Upload document"
+            disabled={busy}
+            value={null}
+            onChange={(f) => {
+              if (f) void upload(f)
+            }}
+            w={260}
+            size="sm"
+          />
+        }
+        padding={items.length > 0 ? 0 : "lg"}
+      >
+        <Stack gap="md">
           {items.length > 0 && (
             <Table>
               <Table.Thead>
@@ -168,8 +168,13 @@ function DocumentsTab() {
               </Table.Tbody>
             </Table>
           )}
+          {items.length === 0 && (
+            <Text size="sm" c="dimmed">
+              No unassigned documents.
+            </Text>
+          )}
         </Stack>
-      </Card>
+      </Section>
       <AttachmentPreviewDialog attachment={previewAttachment} onClose={() => setPreviewAttachment(null)} />
     </>
   )
