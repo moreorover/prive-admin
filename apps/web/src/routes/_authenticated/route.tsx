@@ -2,20 +2,19 @@ import type { ErrorComponentProps } from "@tanstack/react-router"
 
 import {
   ActionIcon,
+  AppShell,
   Avatar,
   Badge,
   Box,
   Burger,
   Button,
   Card,
-  Container,
-  Divider,
-  Drawer,
   Group,
   Menu,
+  NavLink as MantineNavLink,
   ScrollArea,
   Skeleton,
-  Tabs,
+  Stack,
   Text,
   Title,
   UnstyledButton,
@@ -25,13 +24,22 @@ import {
 import { useDisclosure } from "@mantine/hooks"
 import {
   IconAlertCircle,
+  IconBuildingBank,
+  IconCalendar,
   IconChevronDown,
   IconDeviceDesktop,
+  IconFileText,
+  IconLayoutDashboard,
   IconLogout,
   IconMoon,
   IconRefresh,
+  IconReportAnalytics,
+  IconScissors,
+  IconSettings,
   IconSun,
   IconUserCircle,
+  IconUsers,
+  IconWallet,
 } from "@tabler/icons-react"
 import { useQuery, useQueryErrorResetBoundary } from "@tanstack/react-query"
 import { Link, Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouter } from "@tanstack/react-router"
@@ -39,16 +47,37 @@ import { useState } from "react"
 
 import { listUnassignedAttachments } from "@/functions/bank-statement-attachments"
 import { getUser } from "@/functions/get-user"
+import { getLegalEntity } from "@/functions/legal-entities"
 import { authClient } from "@/lib/auth-client"
 
 import classes from "./route.module.css"
 
-const tabs = [
-  { value: "/customers", label: "Customers" },
-  { value: "/calendar", label: "Calendar" },
-  { value: "/hair-orders", label: "Hair Orders" },
-  { value: "/legal-entities", label: "Legal entities" },
-] as const
+type NavItem = {
+  to: string
+  label: string
+  icon: typeof IconUsers
+  badgeKey?: "unassigned"
+}
+
+const workspaceNav: NavItem[] = [
+  { to: "/customers", label: "Customers", icon: IconUsers },
+  { to: "/calendar", label: "Calendar", icon: IconCalendar },
+  { to: "/hair-orders", label: "Hair orders", icon: IconScissors },
+]
+
+const manageNav: NavItem[] = [
+  { to: "/legal-entities", label: "Legal entities", icon: IconBuildingBank, badgeKey: "unassigned" },
+]
+
+const footerNav: NavItem[] = [{ to: "/settings", label: "Settings", icon: IconSettings }]
+
+const LEGAL_ENTITY_TABS = [
+  { value: "overview", label: "Overview", icon: IconLayoutDashboard },
+  { value: "documents", label: "Documents", icon: IconFileText, badgeKey: "unassigned" as const },
+  { value: "bank-accounts", label: "Bank accounts", icon: IconWallet },
+  { value: "reports", label: "Reports", icon: IconReportAnalytics },
+  { value: "salons", label: "Salons", icon: IconScissors },
+]
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -66,109 +95,188 @@ export const Route = createFileRoute("/_authenticated")({
 })
 
 function AuthenticatedLayout() {
-  const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false)
-  const location = useLocation()
-
-  const activeTab =
-    tabs.find((t) => location.pathname === t.value || location.pathname.startsWith(`${t.value}/`))?.value ?? null
+  const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] = useDisclosure(false)
 
   const unassignedQuery = useQuery({
     queryKey: ["bank-statement-attachments", "unassigned"],
     queryFn: () => listUnassignedAttachments(),
   })
-  const unassignedCount = unassignedQuery.data?.length ?? 0
+  const badges = { unassigned: unassignedQuery.data?.length ?? 0 }
 
   return (
-    <Box>
-      <div className={classes.header}>
-        <Container className={classes.mainSection} size="lg">
-          <Group justify="space-between">
-            <Title order={3} fw={700}>
-              Privé
-            </Title>
-
+    <AppShell
+      layout="alt"
+      header={{ height: 64 }}
+      navbar={{ width: 248, breakpoint: "sm", collapsed: { mobile: !mobileOpened } }}
+      padding={0}
+    >
+      <AppShell.Header className={classes.headerSlot}>
+        <Box className={classes.cardTop}>
+          <Group gap="sm" wrap="nowrap">
             <Burger
-              opened={drawerOpened}
-              onClick={toggleDrawer}
-              hiddenFrom="xs"
+              opened={mobileOpened}
+              onClick={toggleMobile}
+              hiddenFrom="sm"
               size="sm"
               aria-label="Toggle navigation"
             />
-
-            <Group gap="xs" visibleFrom="xs" wrap="nowrap">
-              <ColorSchemeToggle />
-              <UserSection />
-            </Group>
           </Group>
-        </Container>
-
-        <Container size="lg">
-          <Tabs
-            value={activeTab}
-            variant="outline"
-            classNames={{
-              list: classes.tabsList,
-              tab: classes.tab,
-            }}
-            visibleFrom="xs"
-          >
-            <Tabs.List>
-              {tabs.map((tab) => (
-                <Tabs.Tab
-                  key={tab.value}
-                  value={tab.value}
-                  renderRoot={(props) => <Link to={tab.value} {...props} />}
-                  rightSection={
-                    tab.value === "/legal-entities" && unassignedCount > 0 ? (
-                      <Badge size="xs" variant="filled" color="orange" circle>
-                        {unassignedCount}
-                      </Badge>
-                    ) : undefined
-                  }
-                >
-                  {tab.label}
-                </Tabs.Tab>
-              ))}
-            </Tabs.List>
-          </Tabs>
-        </Container>
-      </div>
-
-      <Drawer
-        opened={drawerOpened}
-        onClose={closeDrawer}
-        size="100%"
-        padding="md"
-        title="Navigation"
-        hiddenFrom="xs"
-        zIndex={1000000}
-      >
-        <ScrollArea h="calc(100vh - 80px)" mx="-md">
-          <Divider my="sm" />
-          {tabs.map((tab) => (
-            <Link key={tab.value} to={tab.value} className={classes.drawerLink} onClick={closeDrawer}>
-              <Group gap={6} wrap="nowrap">
-                {tab.label}
-                {tab.value === "/legal-entities" && unassignedCount > 0 && (
-                  <Badge size="xs" variant="filled" color="orange" circle>
-                    {unassignedCount}
-                  </Badge>
-                )}
-              </Group>
-            </Link>
-          ))}
-          <Divider my="sm" />
-          <Group p="md">
+          <Group gap="xs" wrap="nowrap">
             <ColorSchemeToggle />
             <UserSection />
           </Group>
-        </ScrollArea>
-      </Drawer>
+        </Box>
+      </AppShell.Header>
 
-      <Box py="md">
-        <Outlet />
+      <AppShell.Navbar className={classes.navbar}>
+        <AppShell.Section className={classes.navBrand}>
+          <Group gap="sm" wrap="nowrap" px="sm" py="sm">
+            <Title order={4} fw={600} className={classes.brand}>
+              Privé
+            </Title>
+          </Group>
+        </AppShell.Section>
+        <AppShell.Section grow component={ScrollArea} px="xs" py="sm">
+          <SidebarNav badges={badges} onNavigate={closeMobile} />
+        </AppShell.Section>
+        <AppShell.Section px="xs" py="sm" className={classes.navFooter}>
+          <NavSectionLabel>Account</NavSectionLabel>
+          <Stack gap={2}>
+            {footerNav.map((item) => (
+              <TopLink key={item.to} item={item} badge={0} onNavigate={closeMobile} />
+            ))}
+          </Stack>
+        </AppShell.Section>
+      </AppShell.Navbar>
+
+      <AppShell.Main className={classes.mainSlot}>
+        <Box className={classes.cardBottom}>
+          <Outlet />
+        </Box>
+      </AppShell.Main>
+    </AppShell>
+  )
+}
+
+function SidebarNav({ badges, onNavigate }: { badges: { unassigned: number }; onNavigate: () => void }) {
+  const location = useLocation()
+  const entityMatch = location.pathname.match(/^\/legal-entities\/([^/]+)(?:\/([^/]+))?/)
+  const entityId = entityMatch?.[1]
+  const entityTab = entityMatch?.[2] ?? "overview"
+
+  const entityQ = useQuery({
+    queryKey: ["legal-entity", entityId],
+    queryFn: () => getLegalEntity({ data: { id: entityId! } }),
+    enabled: !!entityId,
+  })
+
+  return (
+    <Stack gap="md">
+      <Box>
+        <NavSectionLabel>Workspace</NavSectionLabel>
+        <Stack gap={2}>
+          {workspaceNav.map((item) => (
+            <TopLink
+              key={item.to}
+              item={item}
+              badge={item.badgeKey ? badges[item.badgeKey] : 0}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </Stack>
       </Box>
-    </Box>
+
+      <Box>
+        <NavSectionLabel>Manage</NavSectionLabel>
+        <Stack gap={2}>
+          {manageNav.map((item) => (
+            <TopLink
+              key={item.to}
+              item={item}
+              badge={item.badgeKey ? badges[item.badgeKey] : 0}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </Stack>
+
+        {entityId && (
+          <Box mt={6} className={classes.entitySubNav}>
+            <Text size="xs" fw={600} c="dimmed" px="sm" py={4} truncate>
+              {entityQ.data?.name ?? "…"}
+            </Text>
+            <Stack gap={2}>
+              {LEGAL_ENTITY_TABS.map((t) => {
+                const Icon = t.icon
+                const active = entityTab === t.value
+                const badge = t.badgeKey ? badges[t.badgeKey] : 0
+                return (
+                  <MantineNavLink
+                    key={t.value}
+                    renderRoot={(props) => (
+                      <Link
+                        to={`/legal-entities/$legalEntityId/${t.value}`}
+                        params={{ legalEntityId: entityId }}
+                        {...props}
+                      />
+                    )}
+                    label={t.label}
+                    leftSection={<Icon size={16} stroke={1.6} />}
+                    rightSection={
+                      badge > 0 ? (
+                        <Badge size="xs" variant="filled" color="orange" circle>
+                          {badge}
+                        </Badge>
+                      ) : null
+                    }
+                    active={active}
+                    onClick={onNavigate}
+                    className={classes.subNavLink}
+                  />
+                )
+              })}
+            </Stack>
+          </Box>
+        )}
+      </Box>
+    </Stack>
+  )
+}
+
+function NavSectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="sm" py={6} className={classes.sectionLabel}>
+      {children}
+    </Text>
+  )
+}
+
+function TopLink({ item, badge, onNavigate }: { item: NavItem; badge: number; onNavigate: () => void }) {
+  const location = useLocation()
+  const active = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)
+  const Icon = item.icon
+
+  return (
+    <UnstyledButton
+      component={Link}
+      to={item.to}
+      onClick={onNavigate}
+      data-active={active || undefined}
+      className={classes.navLink}
+    >
+      <Group gap="sm" wrap="nowrap" justify="space-between">
+        <Group gap="sm" wrap="nowrap">
+          <Icon size={18} stroke={1.6} />
+          <Text size="sm" fw={500}>
+            {item.label}
+          </Text>
+        </Group>
+        {badge > 0 ? (
+          <Badge size="xs" variant="filled" color="orange" circle>
+            {badge}
+          </Badge>
+        ) : null}
+      </Group>
+    </UnstyledButton>
   )
 }
 
@@ -179,7 +287,8 @@ function ColorSchemeToggle() {
 
   return (
     <ActionIcon
-      variant="default"
+      variant="subtle"
+      color="gray"
       size="lg"
       aria-label={`Color scheme: ${colorScheme}. Click to switch to ${next}.`}
       onClick={() => setColorScheme(next)}
@@ -214,8 +323,8 @@ function UserSection() {
       <Menu.Target>
         <UnstyledButton className={triggerClass}>
           <Group gap={7} wrap="nowrap">
-            <Avatar radius="xl" size={20} color="initials" name={user.name} />
-            <Text fw={500} size="sm" lh={1} mr={3}>
+            <Avatar radius="xl" size={24} color="initials" name={user.name} />
+            <Text fw={500} size="sm" lh={1} mr={3} visibleFrom="sm">
               {user.name}
             </Text>
             <IconChevronDown size={12} stroke={1.5} />
@@ -266,17 +375,19 @@ function AuthenticatedErrorComponent({ error, reset }: ErrorComponentProps) {
   }
 
   return (
-    <Card withBorder maw={420} mx="auto" mt="xl" p="lg">
-      <Group gap="xs" mb="xs">
-        <IconAlertCircle size={16} color="var(--mantine-color-red-6)" />
-        <Text fw={500}>Something went wrong</Text>
-      </Group>
-      <Text size="sm" c="dimmed" mb="md">
-        {error.message || "An unexpected error occurred."}
-      </Text>
-      <Button variant="default" size="sm" leftSection={<IconRefresh size={14} />} onClick={handleRetry}>
-        Try again
-      </Button>
-    </Card>
+    <Box p="md">
+      <Card maw={420} mx="auto" mt="xl" p="lg">
+        <Group gap="xs" mb="xs">
+          <IconAlertCircle size={16} color="var(--mantine-color-red-6)" />
+          <Text fw={500}>Something went wrong</Text>
+        </Group>
+        <Text size="sm" c="dimmed" mb="md">
+          {error.message || "An unexpected error occurred."}
+        </Text>
+        <Button variant="default" size="sm" leftSection={<IconRefresh size={14} />} onClick={handleRetry}>
+          Try again
+        </Button>
+      </Card>
+    </Box>
   )
 }

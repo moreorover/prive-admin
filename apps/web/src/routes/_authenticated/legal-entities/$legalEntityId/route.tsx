@@ -7,7 +7,6 @@ import { Outlet, createFileRoute } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useEffect } from "react"
 
-import { LegalEntityTabs } from "@/components/legal-entity-tabs"
 import { getLegalEntity, updateLegalEntity } from "@/functions/legal-entities"
 import { legalEntityUpdateSchema } from "@/lib/schemas"
 
@@ -33,8 +32,6 @@ function LegalEntityLayout() {
             Edit
           </Button>
         </Group>
-
-        <LegalEntityTabs legalEntityId={legalEntityId} />
 
         <Outlet />
       </Stack>
