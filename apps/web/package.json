@@ -11,8 +11,8 @@
     "dev": "vite dev"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1045.0",
-    "@aws-sdk/s3-request-presigner": "^3.1045.0",
+    "@aws-sdk/client-s3": "^3.1046.0",
+    "@aws-sdk/s3-request-presigner": "^3.1046.0",
     "@mantine/charts": "^9.2.0",
     "@mantine/core": "^9.2.0",
     "@mantine/dates": "^9.2.0",
