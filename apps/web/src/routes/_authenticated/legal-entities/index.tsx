@@ -1,7 +1,9 @@
-import { Anchor, Card, Container, Stack, Table, Title } from "@mantine/core"
+import { Anchor, Container, Stack, Table } from "@mantine/core"
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 
+import { PageHeader } from "@/components/page-header"
+import { Section } from "@/components/section"
 import { listLegalEntities } from "@/functions/legal-entities"
 import { COUNTRY_FLAGS, COUNTRY_LABELS, type Country } from "@/lib/legal-entity"
 
@@ -13,10 +15,10 @@ function LegalEntitiesIndex() {
   const q = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
 
   return (
-    <Container size="lg">
-      <Stack p="md">
-        <Title order={3}>Legal entities</Title>
-        <Card withBorder>
+    <Container size="xl">
+      <PageHeader title="Legal entities" description="Companies and sole-trader registrations." />
+      <Stack>
+        <Section padding={0}>
           <Table>
             <Table.Thead>
               <Table.Tr>
@@ -47,7 +49,7 @@ function LegalEntitiesIndex() {
               ))}
             </Table.Tbody>
           </Table>
-        </Card>
+        </Section>
       </Stack>
     </Container>
   )

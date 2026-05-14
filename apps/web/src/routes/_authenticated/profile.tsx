@@ -2,10 +2,8 @@ import {
   Alert,
   Avatar,
   Button,
-  Card,
   Checkbox,
   Container,
-  Divider,
   Group,
   Loader,
   Modal,
@@ -23,6 +21,8 @@ import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
 import Loader2 from "@/components/loader"
+import { PageHeader } from "@/components/page-header"
+import { Section } from "@/components/section"
 import { getUserSettings, updateUserSettings } from "@/functions/user-settings"
 import { authClient } from "@/lib/auth-client"
 import { CURRENCY_OPTIONS, type Currency } from "@/lib/currency"
@@ -89,114 +89,117 @@ function ProfilePage() {
   const currentSessionId = current.session.id
 
   return (
-    <Container size="xs">
-      <Card withBorder padding="lg">
-        <Stack gap="sm">
-          <Text fw={500}>User</Text>
-          <Group justify="space-between">
-            <Group gap="sm">
-              <Avatar name={user.name} color="initials" />
-              <Stack gap={0}>
-                <Text fz="sm" fw={500}>
-                  {user.name}
-                </Text>
-                <Text fz="xs" c="dimmed">
-                  {user.email}
-                </Text>
-                <Text fz="xs" c="dimmed">
-                  Preferred currency: {settings?.preferredCurrency ?? "GBP"}
-                </Text>
-              </Stack>
-            </Group>
+    <Container size="md">
+      <PageHeader title="Profile" description="Manage account details, password, and active sessions." />
+      <Stack>
+        <Section
+          title="Account"
+          description="Your display name, email and preferred currency."
+          actions={
             <Group gap="xs">
-              <Button variant="default" onClick={() => setEditOpen(true)}>
+              <Button variant="default" size="sm" onClick={() => setEditOpen(true)}>
                 Edit
               </Button>
-              <Button variant="default" onClick={() => setPwOpen(true)}>
-                Change Password
+              <Button variant="default" size="sm" onClick={() => setPwOpen(true)}>
+                Change password
               </Button>
             </Group>
+          }
+        >
+          <Group gap="md">
+            <Avatar name={user.name} color="initials" size="lg" />
+            <Stack gap={2}>
+              <Text fz="sm" fw={500}>
+                {user.name}
+              </Text>
+              <Text fz="sm" c="dimmed">
+                {user.email}
+              </Text>
+              <Text fz="xs" c="dimmed">
+                Preferred currency: {settings?.preferredCurrency ?? "GBP"}
+              </Text>
+            </Stack>
           </Group>
+        </Section>
 
-          <Divider />
-
-          {!user.emailVerified && (
-            <Alert variant="light" color="red" title="Verify Your Email Address" icon={<IconAlertCircle size={16} />}>
-              <Stack>
-                <Text size="sm">
-                  Please verify your email address. Check your inbox for the verification email. If you haven&rsquo;t
-                  received it, click below to resend.
-                </Text>
-                <Button
-                  variant="outline"
-                  color="red"
-                  loading={verifyPending}
-                  onClick={async () => {
-                    setVerifyPending(true)
-                    await authClient.sendVerificationEmail(
-                      { email: user.email },
-                      {
-                        onError: (error) => {
-                          notifications.show({ color: "red", message: error.error.message })
-                        },
-                        onSuccess: () => {
-                          notifications.show({ color: "green", message: "Verification email sent" })
-                        },
+        {!user.emailVerified && (
+          <Alert variant="light" color="red" title="Verify your email address" icon={<IconAlertCircle size={16} />}>
+            <Stack>
+              <Text size="sm">
+                Please verify your email address. Check your inbox for the verification email. If you haven&rsquo;t
+                received it, click below to resend.
+              </Text>
+              <Button
+                variant="outline"
+                color="red"
+                loading={verifyPending}
+                onClick={async () => {
+                  setVerifyPending(true)
+                  await authClient.sendVerificationEmail(
+                    { email: user.email },
+                    {
+                      onError: (error) => {
+                        notifications.show({ color: "red", message: error.error.message })
                       },
-                    )
-                    setVerifyPending(false)
-                  }}
-                >
-                  Resend Verification Email
-                </Button>
-              </Stack>
-            </Alert>
-          )}
+                      onSuccess: () => {
+                        notifications.show({ color: "green", message: "Verification email sent" })
+                      },
+                    },
+                  )
+                  setVerifyPending(false)
+                }}
+              >
+                Resend verification email
+              </Button>
+            </Stack>
+          </Alert>
+        )}
 
-          <Text size="xs">Sessions</Text>
-
+        <Section title="Active sessions" description="Devices currently signed in to your account.">
           {sessions.length === 0 ? (
             <Text size="sm" c="dimmed">
               No active sessions.
             </Text>
           ) : (
-            sessions
-              .filter((s) => s.userAgent)
-              .map((s) => {
-                const ua = parseUA(s.userAgent ?? "")
-                const isCurrent = s.id === currentSessionId
-                return (
-                  <Group key={s.id} gap="xs">
-                    {ua.isMobile ? <IconDeviceMobile size={16} /> : <IconDeviceLaptop size={16} />}
-                    <Text size="sm" style={{ flex: 1 }}>
-                      {s.ipAddress && `${s.ipAddress}, `}
-                      {ua.os}, {ua.browser}
-                    </Text>
-                    <Button
-                      size="xs"
-                      variant="subtle"
-                      color="red"
-                      disabled={revokeMutation.isPending && terminatingId === s.id}
-                      onClick={async () => {
-                        setTerminatingId(s.id)
-                        await revokeMutation.mutateAsync(s.token)
-                        setTerminatingId(undefined)
-                      }}
-                    >
-                      {revokeMutation.isPending && terminatingId === s.id ? (
-                        <Loader size={14} />
-                      ) : isCurrent ? (
-                        "Sign Out"
-                      ) : (
-                        "Terminate"
-                      )}
-                    </Button>
-                  </Group>
-                )
-              })
+            <Stack gap="xs">
+              {sessions
+                .filter((s) => s.userAgent)
+                .map((s) => {
+                  const ua = parseUA(s.userAgent ?? "")
+                  const isCurrent = s.id === currentSessionId
+                  return (
+                    <Group key={s.id} gap="xs">
+                      {ua.isMobile ? <IconDeviceMobile size={16} /> : <IconDeviceLaptop size={16} />}
+                      <Text size="sm" style={{ flex: 1 }}>
+                        {s.ipAddress && `${s.ipAddress}, `}
+                        {ua.os}, {ua.browser}
+                      </Text>
+                      <Button
+                        size="xs"
+                        variant="subtle"
+                        color="red"
+                        disabled={revokeMutation.isPending && terminatingId === s.id}
+                        onClick={async () => {
+                          setTerminatingId(s.id)
+                          await revokeMutation.mutateAsync(s.token)
+                          setTerminatingId(undefined)
+                        }}
+                      >
+                        {revokeMutation.isPending && terminatingId === s.id ? (
+                          <Loader size={14} />
+                        ) : isCurrent ? (
+                          "Sign out"
+                        ) : (
+                          "Terminate"
+                        )}
+                      </Button>
+                    </Group>
+                  )
+                })}
+            </Stack>
           )}
-        </Stack>
-      </Card>
+        </Section>
+      </Stack>
 
       <EditUserModal
         key={settings?.preferredCurrency ?? "loading"}

@@ -1,9 +1,10 @@
-import { Group, NumberInput, Stack, Text, Title } from "@mantine/core"
+import { NumberInput, Stack, Text } from "@mantine/core"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
 import { BankAccountReportCard, CashReportTable } from "@/components/reports-cards"
+import { Section } from "@/components/section"
 import { getBankAccountMonthlyBreakdown, getCashMonthlyBreakdown } from "@/functions/reports"
 
 const searchSchema = z.object({
@@ -33,38 +34,49 @@ function ReportsTab() {
     queryFn: () => getCashMonthlyBreakdown({ data: { year, legalEntityId } }),
   })
 
+  const yearInput = (
+    <NumberInput
+      value={year}
+      onChange={(v) => setYear(typeof v === "number" ? v : Number(v) || currentYear)}
+      min={2000}
+      max={3000}
+      allowDecimal={false}
+      w={110}
+      size="sm"
+      aria-label="Year"
+    />
+  )
+
   return (
     <Stack>
-      <Group justify="space-between">
-        <Title order={4}>Reports</Title>
-        <NumberInput
-          label="Year"
-          value={year}
-          onChange={(v) => setYear(typeof v === "number" ? v : Number(v) || currentYear)}
-          min={2000}
-          max={3000}
-          allowDecimal={false}
-          w={120}
-        />
-      </Group>
+      <Section
+        title="Bank accounts"
+        description="Monthly inflows and outflows per account."
+        actions={yearInput}
+        padding={(bankQuery.data ?? []).length === 0 ? "lg" : 0}
+      >
+        {(bankQuery.data ?? []).length === 0 ? (
+          <Text c="dimmed" size="sm">
+            No bank accounts.
+          </Text>
+        ) : (
+          <Stack p="lg" gap="md">
+            {(bankQuery.data ?? []).map((a) => (
+              <BankAccountReportCard key={a.bankAccountId} a={a} />
+            ))}
+          </Stack>
+        )}
+      </Section>
 
-      <Title order={5} mt="md">
-        Bank accounts
-      </Title>
-      {(bankQuery.data ?? []).length === 0 ? (
-        <Text c="dimmed">No bank accounts.</Text>
-      ) : (
-        (bankQuery.data ?? []).map((a) => <BankAccountReportCard key={a.bankAccountId} a={a} />)
-      )}
-
-      <Title order={5} mt="md">
-        Cash (manual transactions)
-      </Title>
-      {(cashQuery.data ?? []).length === 0 ? (
-        <Text c="dimmed">No cash transactions in {year}.</Text>
-      ) : (
-        <CashReportTable data={cashQuery.data ?? []} />
-      )}
+      <Section title="Cash" description="Manual cash transactions per month.">
+        {(cashQuery.data ?? []).length === 0 ? (
+          <Text c="dimmed" size="sm">
+            No cash transactions in {year}.
+          </Text>
+        ) : (
+          <CashReportTable data={cashQuery.data ?? []} />
+        )}
+      </Section>
     </Stack>
   )
 }

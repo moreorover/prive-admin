@@ -1,4 +1,4 @@
-import { Container, Stack, Title } from "@mantine/core"
+import { Container, Stack } from "@mantine/core"
 import { Schedule, type ScheduleEventData, type ScheduleViewLevel } from "@mantine/schedule"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
@@ -6,6 +6,8 @@ import dayjs from "dayjs"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
+import { PageHeader } from "@/components/page-header"
+import { Section } from "@/components/section"
 import { getAppointments } from "@/functions/appointments"
 import { appointmentKeys } from "@/lib/query-keys"
 
@@ -75,33 +77,35 @@ function CalendarPage() {
 
   return (
     <Container size="xl">
+      <PageHeader title="Calendar" description="Click a slot to book or open an existing appointment." />
       <Stack>
-        <Title order={2}>Calendar</Title>
-        <Schedule
-          events={events}
-          view={view}
-          onViewChange={setView}
-          date={date}
-          onDateChange={setDate}
-          layout="responsive"
-          onEventClick={(event) => goToAppointment(String(event.id))}
-          onTimeSlotClick={({ slotStart }) => openCreate(slotStart)}
-          onDayClick={(d) => openCreate(`${d} 09:00:00`)}
-          dayViewProps={{
-            startTime: "09:00:00",
-            endTime: "19:00:00",
-            intervalMinutes: 30,
-          }}
-          weekViewProps={{
-            startTime: "09:00:00",
-            endTime: "19:00:00",
-            intervalMinutes: 30,
-            withWeekendDays: true,
-          }}
-          monthViewProps={{
-            firstDayOfWeek: 1,
-          }}
-        />
+        <Section padding="md">
+          <Schedule
+            events={events}
+            view={view}
+            onViewChange={setView}
+            date={date}
+            onDateChange={setDate}
+            layout="responsive"
+            onEventClick={(event) => goToAppointment(String(event.id))}
+            onTimeSlotClick={({ slotStart }) => openCreate(slotStart)}
+            onDayClick={(d) => openCreate(`${d} 09:00:00`)}
+            dayViewProps={{
+              startTime: "09:00:00",
+              endTime: "19:00:00",
+              intervalMinutes: 30,
+            }}
+            weekViewProps={{
+              startTime: "09:00:00",
+              endTime: "19:00:00",
+              intervalMinutes: 30,
+              withWeekendDays: true,
+            }}
+            monthViewProps={{
+              firstDayOfWeek: 1,
+            }}
+          />
+        </Section>
         <CreateAppointmentDialog
           open={createOpen}
           onOpenChange={setCreateOpen}

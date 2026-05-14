@@ -1,8 +1,9 @@
-import { Group, NumberInput, Stack, Title } from "@mantine/core"
+import { NumberInput, Stack } from "@mantine/core"
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
 import { DashboardKpis } from "@/components/dashboard-kpis"
+import { Section } from "@/components/section"
 
 const searchSchema = z.object({
   year: z.number().int().min(2000).max(3000).optional(),
@@ -24,20 +25,24 @@ function OverviewTab() {
 
   return (
     <Stack>
-      <Group justify="space-between">
-        <Title order={4}>Overview</Title>
-        <NumberInput
-          label="Year"
-          value={year}
-          onChange={(v) => setYear(typeof v === "number" ? v : Number(v) || currentYear)}
-          min={2000}
-          max={3000}
-          allowDecimal={false}
-          w={120}
-        />
-      </Group>
-
-      <DashboardKpis year={year} legalEntityId={legalEntityId} />
+      <Section
+        title="Year overview"
+        description="Headline KPIs for the selected fiscal year."
+        actions={
+          <NumberInput
+            value={year}
+            onChange={(v) => setYear(typeof v === "number" ? v : Number(v) || currentYear)}
+            min={2000}
+            max={3000}
+            allowDecimal={false}
+            w={110}
+            size="sm"
+            aria-label="Year"
+          />
+        }
+      >
+        <DashboardKpis year={year} legalEntityId={legalEntityId} />
+      </Section>
     </Stack>
   )
 }

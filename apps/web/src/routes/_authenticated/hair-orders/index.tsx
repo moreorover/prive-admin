@@ -1,24 +1,14 @@
-import {
-  Button,
-  Container,
-  Group,
-  Modal,
-  NativeSelect,
-  NumberInput,
-  Select,
-  Stack,
-  Text,
-  TextInput,
-  Title,
-} from "@mantine/core"
+import { Button, Container, Group, Modal, NativeSelect, NumberInput, Select, Stack, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
-import { IconPlus, IconScissors } from "@tabler/icons-react"
+import { IconPlus } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { HairOrdersTable } from "@/components/hair-orders-table"
+import { PageHeader } from "@/components/page-header"
+import { Section } from "@/components/section"
 import { getCustomers } from "@/functions/customers"
 import { createHairOrder, getHairOrders } from "@/functions/hair-orders"
 import { listLegalEntities } from "@/functions/legal-entities"
@@ -127,40 +117,33 @@ function HairOrdersPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
-    <Container size="lg">
-      <Stack>
-        <Group justify="space-between" align="flex-end">
-          <Stack gap={4}>
-            <Group gap="xs" c="dimmed">
-              <IconScissors size={16} />
-              <Text size="xs" tt="uppercase">
-                Hair Orders
-              </Text>
-            </Group>
-            <Title order={2}>Hair Orders</Title>
-          </Stack>
-          <Button leftSection={<IconPlus size={14} />} onClick={() => setDialogOpen(true)}>
-            New Order
-          </Button>
-        </Group>
-
-        <Group mb="md">
-          <Select
-            label="Legal entity"
-            data={[
-              { value: "", label: "All" },
-              ...(legalEntitiesQuery.data ?? []).map((le) => ({ value: le.id, label: le.name })),
-            ]}
-            value={legalEntityFilter}
-            onChange={(v) => setLegalEntityFilter(v ?? "")}
-            w={240}
-          />
-        </Group>
-
+    <Container size="xl">
+      <PageHeader
+        title="Hair orders"
+        description="Track inbound hair stock by customer and legal entity."
+        actions={
+          <>
+            <Select
+              data={[
+                { value: "", label: "All entities" },
+                ...(legalEntitiesQuery.data ?? []).map((le) => ({ value: le.id, label: le.name })),
+              ]}
+              value={legalEntityFilter}
+              onChange={(v) => setLegalEntityFilter(v ?? "")}
+              w={200}
+              size="sm"
+            />
+            <Button leftSection={<IconPlus size={14} />} onClick={() => setDialogOpen(true)}>
+              New order
+            </Button>
+          </>
+        }
+      />
+      <Section padding="lg">
         <HairOrdersTable hairOrders={hairOrders} isLoading={isLoading} />
+      </Section>
 
-        <CreateHairOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} />
-      </Stack>
+      <CreateHairOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </Container>
   )
 }

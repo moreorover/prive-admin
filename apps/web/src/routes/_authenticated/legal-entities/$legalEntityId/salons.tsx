@@ -1,8 +1,9 @@
-import { Button, Card, Group, Stack, Title } from "@mantine/core"
+import { Button } from "@mantine/core"
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 
 import { SalonsTable } from "@/components/salons-table"
+import { Section } from "@/components/section"
 import { listSalons } from "@/functions/salons"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/salons")({
@@ -13,19 +14,20 @@ function SalonsTab() {
   const q = useQuery({ queryKey: ["salons"], queryFn: () => listSalons() })
 
   return (
-    <Card withBorder>
-      <Stack>
-        <Group justify="space-between">
-          <Title order={4}>Salons</Title>
-          <Button
-            size="xs"
-            renderRoot={(props) => <Link to="/salons/$salonId" params={{ salonId: "new" }} {...props} />}
-          >
-            New salon
-          </Button>
-        </Group>
-        <SalonsTable salons={q.data ?? []} />
-      </Stack>
-    </Card>
+    <Section
+      title="Salons"
+      description="Locations associated with this legal entity."
+      actions={
+        <Button
+          size="sm"
+          variant="default"
+          renderRoot={(props) => <Link to="/salons/$salonId" params={{ salonId: "new" }} {...props} />}
+        >
+          New salon
+        </Button>
+      }
+    >
+      <SalonsTable salons={q.data ?? []} />
+    </Section>
   )
 }

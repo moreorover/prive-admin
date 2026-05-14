@@ -106,12 +106,12 @@ function AuthenticatedLayout() {
   return (
     <AppShell
       layout="alt"
-      header={{ height: 64 }}
+      header={{ height: 56 }}
       navbar={{ width: 248, breakpoint: "sm", collapsed: { mobile: !mobileOpened } }}
-      padding={0}
+      padding="lg"
     >
-      <AppShell.Header className={classes.headerSlot}>
-        <Box className={classes.cardTop}>
+      <AppShell.Header className={classes.header}>
+        <Group h="100%" px="lg" justify="space-between" wrap="nowrap">
           <Group gap="sm" wrap="nowrap">
             <Burger
               opened={mobileOpened}
@@ -125,12 +125,12 @@ function AuthenticatedLayout() {
             <ColorSchemeToggle />
             <UserSection />
           </Group>
-        </Box>
+        </Group>
       </AppShell.Header>
 
       <AppShell.Navbar className={classes.navbar}>
         <AppShell.Section className={classes.navBrand}>
-          <Group gap="sm" wrap="nowrap" px="sm" py="sm">
+          <Group gap="sm" wrap="nowrap" px="md" py="md">
             <Title order={4} fw={600} className={classes.brand}>
               Privé
             </Title>
@@ -149,10 +149,8 @@ function AuthenticatedLayout() {
         </AppShell.Section>
       </AppShell.Navbar>
 
-      <AppShell.Main className={classes.mainSlot}>
-        <Box className={classes.cardBottom}>
-          <Outlet />
-        </Box>
+      <AppShell.Main className={classes.main}>
+        <Outlet />
       </AppShell.Main>
     </AppShell>
   )

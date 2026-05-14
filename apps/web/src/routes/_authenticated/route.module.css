@@ -3,16 +3,16 @@
 }
 
 .navBrand {
-  border-bottom: 1px solid transparent;
+  border-bottom: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
 }
 
 .navbar {
-  background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-9));
-  border-right: none;
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  border-right: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
 }
 
 .navFooter {
-  border-top: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-5));
+  border-top: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
 }
 
 .navLink {
@@ -25,52 +25,25 @@
     color 80ms ease;
 
   &:hover {
-    background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-6));
+    background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6));
     color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
   }
 
   &[data-active] {
-    background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+    background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6));
     color: light-dark(var(--mantine-color-black), var(--mantine-color-white));
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-    padding: 7px 9px;
+    font-weight: 600;
   }
 }
 
-.headerSlot {
-  background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-9));
-  border-bottom: none;
-}
-
-.cardTop {
-  height: calc(100% - var(--mantine-spacing-sm));
-  margin: var(--mantine-spacing-sm) var(--mantine-spacing-sm) 0 var(--mantine-spacing-sm);
-  padding: 0 var(--mantine-spacing-md);
+.header {
   background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
-  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-  border-bottom: none;
-  border-top-left-radius: var(--mantine-radius-lg);
-  border-top-right-radius: var(--mantine-radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  border-bottom: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
 }
 
-.mainSlot {
-  background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-9));
-}
-
-.cardBottom {
-  margin: 0 var(--mantine-spacing-sm) var(--mantine-spacing-sm) var(--mantine-spacing-sm);
-  padding: var(--mantine-spacing-lg);
-  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
-  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-  border-top: none;
-  border-bottom-left-radius: var(--mantine-radius-lg);
-  border-bottom-right-radius: var(--mantine-radius-lg);
-  min-height: calc(100vh - var(--app-shell-header-height) - var(--mantine-spacing-sm));
-  min-width: 0;
+.main {
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8));
+  min-height: 100vh;
 }
 
 .sectionLabel {
@@ -81,7 +54,7 @@
 .entitySubNav {
   margin-left: 16px;
   padding-left: 10px;
-  border-left: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-5));
+  border-left: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
 }
 
 .subNavLink {
@@ -97,10 +70,10 @@
   transition: background-color 100ms ease;
 
   &:hover {
-    background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-6));
+    background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6));
   }
 }
 
 .userActive {
-  background-color: light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-6));
+  background-color: light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-6));
 }
