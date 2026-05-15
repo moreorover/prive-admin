@@ -162,40 +162,39 @@ function ProfilePage() {
             </Text>
           ) : (
             <Stack gap="xs">
-              {sessions
-                .filter((s) => s.userAgent)
-                .map((s) => {
-                  const ua = parseUA(s.userAgent ?? "")
-                  const isCurrent = s.id === currentSessionId
-                  return (
-                    <Group key={s.id} gap="xs">
-                      {ua.isMobile ? <IconDeviceMobile size={16} /> : <IconDeviceLaptop size={16} />}
-                      <Text size="sm" style={{ flex: 1 }}>
-                        {s.ipAddress && `${s.ipAddress}, `}
-                        {ua.os}, {ua.browser}
-                      </Text>
-                      <Button
-                        size="xs"
-                        variant="subtle"
-                        color="red"
-                        disabled={revokeMutation.isPending && terminatingId === s.id}
-                        onClick={async () => {
-                          setTerminatingId(s.id)
-                          await revokeMutation.mutateAsync(s.token)
-                          setTerminatingId(undefined)
-                        }}
-                      >
-                        {revokeMutation.isPending && terminatingId === s.id ? (
-                          <Loader size={14} />
-                        ) : isCurrent ? (
-                          "Sign out"
-                        ) : (
-                          "Terminate"
-                        )}
-                      </Button>
-                    </Group>
-                  )
-                })}
+              {sessions.flatMap((s) => {
+                if (!s.userAgent) return []
+                const ua = parseUA(s.userAgent)
+                const isCurrent = s.id === currentSessionId
+                return [
+                  <Group key={s.id} gap="xs">
+                    {ua.isMobile ? <IconDeviceMobile size={16} /> : <IconDeviceLaptop size={16} />}
+                    <Text size="sm" style={{ flex: 1 }}>
+                      {s.ipAddress && `${s.ipAddress}, `}
+                      {ua.os}, {ua.browser}
+                    </Text>
+                    <Button
+                      size="xs"
+                      variant="subtle"
+                      color="red"
+                      disabled={revokeMutation.isPending && terminatingId === s.id}
+                      onClick={async () => {
+                        setTerminatingId(s.id)
+                        await revokeMutation.mutateAsync(s.token)
+                        setTerminatingId(undefined)
+                      }}
+                    >
+                      {revokeMutation.isPending && terminatingId === s.id ? (
+                        <Loader size={14} />
+                      ) : isCurrent ? (
+                        "Sign out"
+                      ) : (
+                        "Terminate"
+                      )}
+                    </Button>
+                  </Group>,
+                ]
+              })}
             </Stack>
           )}
         </Section>
@@ -228,6 +227,7 @@ function EditUserModal({ open, onOpenChange, initialName, initialCurrency }: Edi
 
   const settingsMutation = useMutation({
     mutationFn: (preferredCurrency: Currency) => updateUserSettings({ data: { preferredCurrency } }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: userSettingsKeys.all }),
   })
 
   const handleSubmit = async (values: { name: string; preferredCurrency: Currency }) => {

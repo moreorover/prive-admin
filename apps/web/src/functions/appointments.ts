@@ -62,22 +62,6 @@ export const createAppointment = createServerFn({ method: "POST" })
     return result
   })
 
-export const updateAppointment = createServerFn({ method: "POST" })
-  .middleware([requireAuthMiddleware])
-  .inputValidator(appointmentSchema.required({ id: true }))
-  .handler(async ({ data }) => {
-    const [result] = await db
-      .update(appointment)
-      .set({
-        name: data.name,
-        startsAt: new Date(data.startsAt),
-        salonId: data.salonId,
-      })
-      .where(eq(appointment.id, data.id!))
-      .returning()
-    return result
-  })
-
 export const linkPersonnel = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ appointmentId: z.string(), personnelIds: z.array(z.string()) }))

@@ -476,9 +476,11 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
   const available = useMemo(() => {
     const assigned = new Set(assignedPersonnelIds)
     const term = search.trim().toLowerCase()
-    return (customers ?? [])
-      .filter((c) => !assigned.has(c.id))
-      .filter((c) => (term ? c.name.toLowerCase().includes(term) : true))
+    return (customers ?? []).filter((c) => {
+      if (assigned.has(c.id)) return false
+      if (term && !c.name.toLowerCase().includes(term)) return false
+      return true
+    })
   }, [customers, assignedPersonnelIds, search])
 
   const mutation = useMutation({

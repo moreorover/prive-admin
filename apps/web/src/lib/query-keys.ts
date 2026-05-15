@@ -7,11 +7,6 @@ export const dashboardKeys = {
   hairSaleStats: (year: number) => [...dashboardKeys.all, "hair-sale-stats", year] as const,
 }
 
-export const fileKeys = {
-  all: ["files"] as const,
-  list: () => [...fileKeys.all, "list"] as const,
-}
-
 export const customerKeys = {
   all: ["customers"] as const,
   list: () => [...customerKeys.all, "list"] as const,

@@ -99,13 +99,15 @@ export const recalculateHairOrderPrices = createServerFn({ method: "POST" })
       await db.update(hairOrder).set({ pricePerGram }).where(eq(hairOrder.id, data.hairOrderId))
     }
 
-    for (const ha of order.hairAssigned) {
-      const total = pricePerGram === 0 ? 0 : Math.round(pricePerGram * ha.weightInGrams)
-      const profit = ha.soldFor - total
-      if (ha.profit !== profit) {
-        await db.update(hairAssigned).set({ profit }).where(eq(hairAssigned.id, ha.id))
-      }
-    }
+    await Promise.all(
+      order.hairAssigned.map(async (ha) => {
+        const total = pricePerGram === 0 ? 0 : Math.round(pricePerGram * ha.weightInGrams)
+        const profit = ha.soldFor - total
+        if (ha.profit !== profit) {
+          await db.update(hairAssigned).set({ profit }).where(eq(hairAssigned.id, ha.id))
+        }
+      }),
+    )
 
     return { pricePerGram }
   })

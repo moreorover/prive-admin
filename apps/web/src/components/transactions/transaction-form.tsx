@@ -49,7 +49,9 @@ export function TransactionForm({ initialValues, submitLabel, onSubmit, loading 
     },
   })
 
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [status, setStatus] = useState<TransactionFormValues["status"]>(initialValues.status)
+  // react-doctor-disable-next-line react-doctor/no-derived-useState
   const [currency, setCurrency] = useState<Currency>(initialValues.currency)
   const dateLabel = status === "COMPLETED" ? "When was it completed?" : "When should it be completed by?"
 

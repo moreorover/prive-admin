@@ -47,7 +47,7 @@ export const getTransactionStatsForDate = createServerFn({ method: "GET" })
     return buildCurrencyBuckets(rows)
   })
 
-export type HairMetricRow = { month: number; weight: number; soldFor: number; profit: number; pricePerGram: number }
+type HairMetricRow = { month: number; weight: number; soldFor: number; profit: number; pricePerGram: number }
 
 export type HairMonthlyBreakdown = {
   months: HairMetricRow[]

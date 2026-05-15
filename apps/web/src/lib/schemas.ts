@@ -13,8 +13,6 @@ export const customerSchema = z.object({
     .nullish(),
 })
 
-export type CustomerInput = z.infer<typeof customerSchema>
-
 export const appointmentSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "Name is required"),
@@ -22,7 +20,6 @@ export const appointmentSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
   salonId: z.string().min(1, "Salon is required"),
 })
-export type AppointmentInput = z.infer<typeof appointmentSchema>
 
 export const hairOrderSchema = z.object({
   id: z.string().optional(),
@@ -35,7 +32,6 @@ export const hairOrderSchema = z.object({
   weightUsed: z.number().min(0),
   total: z.number().min(0),
 })
-export type HairOrderInput = z.infer<typeof hairOrderSchema>
 
 export const noteSchema = z.object({
   id: z.string().optional(),
@@ -45,22 +41,18 @@ export const noteSchema = z.object({
   hairOrderId: z.string().nullish(),
 })
 
-export type NoteInput = z.infer<typeof noteSchema>
-
 export const legalEntityUpdateSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1, "Name is required").max(120),
   registrationNumber: z.string().max(40).nullish(),
   vatNumber: z.string().max(40).nullish(),
 })
-export type LegalEntityUpdateInput = z.infer<typeof legalEntityUpdateSchema>
 
 export const salonSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "Name is required").max(120),
   address: z.string().max(255).nullish(),
 })
-export type SalonInput = z.infer<typeof salonSchema>
 
 export const bankAccountSchema = z.object({
   id: z.string().optional(),
@@ -75,4 +67,3 @@ export const bankAccountSchema = z.object({
   swift: z.string().max(11).nullish(),
   displayName: z.string().min(1, "Display name is required").max(120),
 })
-export type BankAccountInput = z.infer<typeof bankAccountSchema>

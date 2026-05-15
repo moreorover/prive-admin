@@ -27,7 +27,7 @@ function CalendarPage() {
   const { data: appointments } = useQuery(appointmentsQueryOptions)
   const navigate = useNavigate()
   const [view, setView] = useState<ScheduleViewLevel>("month")
-  const [date, setDate] = useState<string>(dayjs().format("YYYY-MM-DD"))
+  const [date, setDate] = useState<string>(() => dayjs().format("YYYY-MM-DD"))
   const [createOpen, setCreateOpen] = useState(false)
   const [defaultStartsAt, setDefaultStartsAt] = useState<string | null>(null)
 
