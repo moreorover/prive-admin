@@ -10,10 +10,10 @@
     "catalog": {
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
-      "@types/node": "^25.7.0",
+      "@types/node": "^25.8.0",
       "react": "^19.2.6",
       "react-dom": "^19.2.6",
-      "better-auth": "1.5.5",
+      "better-auth": "^1.6.11",
       "@types/react": "^19.2.14",
       "@types/react-dom": "^19.2.3"
     }
@@ -39,9 +39,9 @@
     "@prive-admin-tanstack/env": "workspace:*",
     "@types/node": "catalog:",
     "dotenv": "catalog:",
-    "oxfmt": "^0.49.0",
-    "oxlint": "^1.64.0",
-    "turbo": "^2.9.12",
+    "oxfmt": "^0.50.0",
+    "oxlint": "^1.65.0",
+    "turbo": "^2.9.14",
     "typescript": "^6.0.3",
     "zod": "catalog:"
   },
