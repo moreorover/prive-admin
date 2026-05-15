@@ -13,7 +13,7 @@
       "@types/node": "^25.8.0",
       "react": "^19.2.6",
       "react-dom": "^19.2.6",
-      "better-auth": "^1.5.5",
+      "better-auth": "^1.6.11",
       "@types/react": "^19.2.14",
       "@types/react-dom": "^19.2.3"
     }
