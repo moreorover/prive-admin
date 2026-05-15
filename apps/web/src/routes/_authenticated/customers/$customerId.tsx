@@ -279,8 +279,8 @@ function CustomerDetailPage() {
               </Text>
               <Title order={4}>
                 {(() => {
-                  const parts = CURRENCIES.filter((c) => summary.transactionSumsMinor[c] !== 0).map((c) =>
-                    formatMinor(summary.transactionSumsMinor[c], c),
+                  const parts = CURRENCIES.flatMap((c) =>
+                    summary.transactionSumsMinor[c] !== 0 ? [formatMinor(summary.transactionSumsMinor[c], c)] : [],
                   )
                   return parts.length > 0 ? parts.join(" · ") : formatMinor(0, "GBP")
                 })()}

@@ -7,15 +7,6 @@ import { z } from "zod"
 import { bankAccountSchema } from "@/lib/schemas"
 import { requireAuthMiddleware } from "@/middleware/auth"
 
-export const listBankAccounts = createServerFn({ method: "GET" })
-  .middleware([requireAuthMiddleware])
-  .handler(async () => {
-    return db.query.bankAccount.findMany({
-      with: { legalEntity: true },
-      orderBy: (a, { asc }) => [asc(a.displayName)],
-    })
-  })
-
 export const getBankAccount = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ id: z.string().min(1) }))
