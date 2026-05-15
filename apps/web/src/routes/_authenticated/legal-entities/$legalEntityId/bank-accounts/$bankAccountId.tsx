@@ -840,9 +840,11 @@ function EditBankAccountModal({
     mutationFn: (values: typeof form.values) => updateBankAccount({ data: { ...values, id: bankAccountId } }),
     onSuccess: async (_, values) => {
       notifications.show({ color: "green", message: "Saved" })
-      await queryClient.invalidateQueries({ queryKey: ["bank-accounts"] })
-      await queryClient.invalidateQueries({ queryKey: ["bank-account", bankAccountId] })
-      await queryClient.invalidateQueries({ queryKey: ["legal-entity", values.legalEntityId] })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["bank-accounts"] }),
+        queryClient.invalidateQueries({ queryKey: ["bank-account", bankAccountId] }),
+        queryClient.invalidateQueries({ queryKey: ["legal-entity", values.legalEntityId] }),
+      ])
       onClose()
     },
     onError: (err: Error) => notifications.show({ color: "red", message: err.message }),

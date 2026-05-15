@@ -24,9 +24,9 @@ export type BankCsvParse = {
   rows: BankCsvRow[]
 }
 
-export type BankCsvFormat = "SEB" | "SWEDBANK"
+type BankCsvFormat = "SEB" | "SWEDBANK"
 
-export function detectBankCsvFormat(content: string): BankCsvFormat {
+function detectBankCsvFormat(content: string): BankCsvFormat {
   const stripped = content.charCodeAt(0) === 0xfeff ? content.slice(1) : content
   const firstLine = stripped.split(/\r?\n/, 1)[0] ?? ""
   if (firstLine.includes('"Account No"')) return "SWEDBANK"

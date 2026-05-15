@@ -6,16 +6,6 @@ import { z } from "zod"
 
 import { requireAuthMiddleware } from "@/middleware/auth"
 
-export const getHairAssignedByHairOrder = createServerFn({ method: "GET" })
-  .middleware([requireAuthMiddleware])
-  .inputValidator(z.object({ hairOrderId: z.string() }))
-  .handler(async ({ data }) => {
-    return db.query.hairAssigned.findMany({
-      where: eq(hairAssigned.hairOrderId, data.hairOrderId),
-      with: { client: true },
-    })
-  })
-
 export const getHairAssignedByAppointment = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ appointmentId: z.string() }))

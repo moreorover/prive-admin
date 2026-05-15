@@ -46,14 +46,6 @@ export const createNote = createServerFn({ method: "POST" })
     return result
   })
 
-export const updateNote = createServerFn({ method: "POST" })
-  .middleware([requireAuthMiddleware])
-  .inputValidator(noteSchema.required({ id: true }))
-  .handler(async ({ data }) => {
-    const [result] = await db.update(note).set({ note: data.note }).where(eq(note.id, data.id!)).returning()
-    return result
-  })
-
 export const deleteNote = createServerFn({ method: "POST" })
   .middleware([requireAuthMiddleware])
   .inputValidator(z.object({ id: z.string() }))
