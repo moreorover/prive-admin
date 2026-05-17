@@ -36,6 +36,9 @@ jobs:
       - name: Check Types
         run: bun run check-types
 
+      - name: Run Knip
+        run: bunx knip --reporter github-actions
+
       - name: Run Build
         run: bun run build
 
