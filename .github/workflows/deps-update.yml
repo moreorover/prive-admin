@@ -38,7 +38,7 @@ jobs:
           command: |
             set -o pipefail
             log=$(mktemp)
-            bunx taze major -r -w --concurrency 3 2>&1 | tee "$log"
+            bunx taze major -r -w --maturity-period 7 --concurrency 3 2>&1 | tee "$log"
             if grep -q 'Timeout requesting' "$log"; then
               echo "::warning::taze hit registry timeouts; failing step to trigger retry"
               exit 1
