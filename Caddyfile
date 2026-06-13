@@ -1,5 +1,32 @@
+{
+  admin 0.0.0.0:2019
+}
+
 {$DOMAIN_NAME} {
   encode zstd gzip
-  reverse_proxy web:8081
+  log {
+    output stdout
+    format json
+  }
+
+  @percent_encoded_path expression `{http.request.uri}.matches("^[^?]*%.*")`
+  respond @percent_encoded_path "Bad Request" 400
+
+  header {
+    X-Content-Type-Options nosniff
+    Referrer-Policy strict-origin-when-cross-origin
+    X-Frame-Options DENY
+    -Server
+  }
+
+  request_body {
+    max_size 25MB
+  }
+
+  reverse_proxy web:8081 {
+    header_up X-Real-IP {remote_host}
+    header_up X-Forwarded-Proto {scheme}
+  }
+
   tls {$ACME_EMAIL}
 }
