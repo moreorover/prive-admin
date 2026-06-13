@@ -1,10 +1,14 @@
-FROM oven/bun:alpine AS pruner
+FROM oven/bun:alpine AS base
+
+RUN apk add --no-cache --upgrade libcrypto3 libssl3
+
+FROM base AS pruner
 
 WORKDIR /app
 COPY . .
 RUN bunx turbo prune web --docker
 
-FROM oven/bun:alpine AS installer
+FROM base AS installer
 
 WORKDIR /app
 COPY --from=pruner /app/out/json/ .
@@ -16,7 +20,7 @@ RUN bun run build --filter=web
 # Bundle migration script with all deps inlined
 RUN bun build packages/db/src/migrate.ts --target=bun --outfile=packages/db/migrate.js
 
-FROM oven/bun:alpine AS runner
+FROM base AS runner
 
 WORKDIR /app
 
