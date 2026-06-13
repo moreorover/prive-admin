@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/moreorover/prive-admin/compare/v0.6.1...v0.6.2) (2026-06-13)
+
+
+### Bug Fixes
+
+* upgrade openssl packages in docker image ([#197](https://github.com/moreorover/prive-admin/issues/197)) ([2b16305](https://github.com/moreorover/prive-admin/commit/2b16305cecbb2a70601a08f30197e48375dfd45c))
+
 ## [0.6.1](https://github.com/moreorover/prive-admin/compare/v0.6.0...v0.6.1) (2026-06-13)
 
 
