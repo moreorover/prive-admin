@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.1](https://github.com/moreorover/prive-admin/compare/v0.6.0...v0.6.1) (2026-06-13)
+
+
+### Bug Fixes
+
+* **deps:** bump dependencies via taze major ([#193](https://github.com/moreorover/prive-admin/issues/193)) ([d3e0b36](https://github.com/moreorover/prive-admin/commit/d3e0b368da2eeb24d9a91f94eb299eaec60b25f3))
+* **deps:** nightly dependency updates ([#190](https://github.com/moreorover/prive-admin/issues/190)) ([5335a09](https://github.com/moreorover/prive-admin/commit/5335a0920814181a75cf9105ce70fc748786bbc9))
+
 ## [0.6.0](https://github.com/moreorover/prive-admin/compare/v0.5.1...v0.6.0) (2026-05-14)
 
 
