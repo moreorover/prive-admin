@@ -1,0 +1,36 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreBinaries": ["op"],
+  "tags": ["-lintignore"],
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/**/*.{ts,js,mjs,sh}"]
+    },
+    "apps/web": {
+      "entry": [
+        "src/router.tsx!",
+        "src/routes/**/*.{ts,tsx}!",
+        "src/functions/**/*.{ts,tsx}!",
+        "src/server/**/*.{ts,tsx}!",
+        "src/middleware/**/*.{ts,tsx}!",
+        "react-doctor.config.json"
+      ],
+      "project": ["src/**/*.{ts,tsx}!"]
+    },
+    "packages/auth": {
+      "project": ["src/**/*.ts!"]
+    },
+    "packages/db": {
+      "entry": ["src/schema/**/*.ts!"],
+      "project": ["src/**/*.ts!"]
+    },
+    "packages/env": {
+      "project": ["src/**/*.ts!"]
+    },
+    "packages/ui": {
+      "project": ["src/**/*.{ts,tsx}!"]
+    },
+    "packages/config": {},
+    "packages/api": {}
+  }
+}
