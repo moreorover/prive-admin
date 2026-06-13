@@ -7,6 +7,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "${TAILSCALE_IP}:2019:2019"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - /var/lib/prive-admin/caddy/data:/data
