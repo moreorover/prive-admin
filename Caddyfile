@@ -1,5 +1,13 @@
 {$DOMAIN_NAME} {
   encode zstd gzip
+  log {
+    output stdout
+    format console
+  }
+
+  @percent_encoded_path expression `{http.request.uri}.matches("^[^?]*%.*")`
+  respond @percent_encoded_path "Bad Request" 400
+
   reverse_proxy web:8081
   tls {$ACME_EMAIL}
 }
