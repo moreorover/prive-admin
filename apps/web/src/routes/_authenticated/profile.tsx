@@ -116,7 +116,7 @@ function ProfilePage() {
                 {user.email}
               </Text>
               <Text fz="xs" c="dimmed">
-                Preferred currency: {settings?.preferredCurrency ?? "GBP"}
+                Preferred currency: {settings?.preferredCurrency ?? "EUR"}
               </Text>
             </Stack>
           </Group>
@@ -205,7 +205,7 @@ function ProfilePage() {
         open={editOpen}
         onOpenChange={setEditOpen}
         initialName={user.name}
-        initialCurrency={settings?.preferredCurrency ?? "GBP"}
+        initialCurrency={settings?.preferredCurrency ?? "EUR"}
       />
       <ChangePasswordModal open={pwOpen} onOpenChange={setPwOpen} />
     </Container>
@@ -222,7 +222,7 @@ type EditUserModalProps = {
 function EditUserModal({ open, onOpenChange, initialName, initialCurrency }: EditUserModalProps) {
   const queryClient = useQueryClient()
   const [submitting, setSubmitting] = useState(false)
-  const safeInitialCurrency: Currency = initialCurrency === "GBP" || initialCurrency === "EUR" ? initialCurrency : "GBP"
+  const safeInitialCurrency: Currency = initialCurrency === "GBP" || initialCurrency === "EUR" ? initialCurrency : "EUR"
   const form = useForm({ initialValues: { name: initialName, preferredCurrency: safeInitialCurrency } })
 
   const settingsMutation = useMutation({

@@ -47,7 +47,7 @@ export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")
   },
 })
 
-const formatCents = (cents: number) => `$${(cents / 100).toFixed(2)}`
+const formatCents = (cents: number) => `€${(cents / 100).toFixed(2)}`
 
 function HairOrderDetailPage() {
   const { hairOrderId } = Route.useParams()

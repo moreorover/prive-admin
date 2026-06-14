@@ -43,7 +43,7 @@ export function EditTransactionDialog({ open, onOpenChange, transaction, invalid
   const initialStatus: "PENDING" | "COMPLETED" = transaction.status === "COMPLETED" ? "COMPLETED" : "PENDING"
   const initialCurrency: Currency = (CURRENCIES as readonly string[]).includes(transaction.currency)
     ? (transaction.currency as Currency)
-    : "GBP"
+    : "EUR"
 
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Transaction">
