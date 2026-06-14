@@ -17,15 +17,7 @@ import {
   Title,
 } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
-import {
-  IconArrowLeft,
-  IconCash,
-  IconClock,
-  IconDots,
-  IconPlus,
-  IconUser,
-  IconUsers,
-} from "@tabler/icons-react"
+import { IconArrowLeft, IconCash, IconClock, IconDots, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
