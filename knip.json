@@ -15,6 +15,7 @@
         "src/middleware/**/*.{ts,tsx}!",
         "react-doctor.config.json"
       ],
+      "ignoreDependencies": ["@mantine/charts"],
       "project": ["src/**/*.{ts,tsx}!"]
     },
     "packages/auth": {
