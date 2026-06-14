@@ -1,8 +1,6 @@
 import { db } from "@prive-admin-tanstack/db"
 import { bankAccount } from "@prive-admin-tanstack/db/schema/bank-account"
 import { bankStatementEntry } from "@prive-admin-tanstack/db/schema/bank-statement-entry"
-import { legalEntity } from "@prive-admin-tanstack/db/schema/legal-entity"
-import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
 import { createServerFn } from "@tanstack/react-start"
 import { and, eq, gte, inArray, lt, sql } from "drizzle-orm"
 import { z } from "zod"
@@ -101,79 +99,4 @@ export const getBankAccountMonthlyBreakdown = createServerFn({ method: "GET" })
         totalOut,
       }
     })
-  })
-
-export type CashMonthlyBreakdown = {
-  legalEntityId: string
-  legalEntityName: string
-  currency: string
-  months: { month: number; in: number; out: number }[]
-  totalIn: number
-  totalOut: number
-}
-
-export const getCashMonthlyBreakdown = createServerFn({ method: "GET" })
-  .middleware([requireAuthMiddleware])
-  .inputValidator(yearSchema)
-  .handler(async ({ data }): Promise<CashMonthlyBreakdown[]> => {
-    const yearStart = `${data.year}-01-01`
-    const yearEnd = `${data.year + 1}-01-01`
-
-    const rows = await db
-      .select({
-        legalEntityId: transaction.legalEntityId,
-        legalEntityName: legalEntity.name,
-        currency: transaction.currency,
-        month: sql<number>`extract(month from ${transaction.completedDateBy})::int`,
-        sumIn: sql<number>`coalesce(sum(case when ${transaction.amount} > 0 then ${transaction.amount} else 0 end), 0)::int`,
-        sumOut: sql<number>`coalesce(sum(case when ${transaction.amount} < 0 then -${transaction.amount} else 0 end), 0)::int`,
-      })
-      .from(transaction)
-      .innerJoin(legalEntity, eq(transaction.legalEntityId, legalEntity.id))
-      .where(
-        and(
-          eq(transaction.type, "CASH"),
-          eq(transaction.status, "COMPLETED"),
-          gte(transaction.completedDateBy, yearStart),
-          lt(transaction.completedDateBy, yearEnd),
-          data.legalEntityId ? eq(transaction.legalEntityId, data.legalEntityId) : undefined,
-        ),
-      )
-      .groupBy(
-        transaction.legalEntityId,
-        legalEntity.name,
-        transaction.currency,
-        sql`extract(month from ${transaction.completedDateBy})`,
-      )
-
-    const grouped = new Map<string, CashMonthlyBreakdown>()
-    for (const r of rows) {
-      const key = `${r.legalEntityId}::${r.currency}`
-      const existing = grouped.get(key) ?? {
-        legalEntityId: r.legalEntityId,
-        legalEntityName: r.legalEntityName,
-        currency: r.currency,
-        months: [],
-        totalIn: 0,
-        totalOut: 0,
-      }
-      existing.months.push({ month: r.month, in: Number(r.sumIn), out: Number(r.sumOut) })
-      existing.totalIn += Number(r.sumIn)
-      existing.totalOut += Number(r.sumOut)
-      grouped.set(key, existing)
-    }
-
-    // Backfill missing months with zero entries (consistent shape) and sort.
-    const result: CashMonthlyBreakdown[] = []
-    for (const v of grouped.values()) {
-      const monthMap = new Map(v.months.map((m) => [m.month, m]))
-      const months: { month: number; in: number; out: number }[] = []
-      for (let mo = 1; mo <= 12; mo++) {
-        const b = monthMap.get(mo)
-        months.push({ month: mo, in: b?.in ?? 0, out: b?.out ?? 0 })
-      }
-      result.push({ ...v, months })
-    }
-    result.sort((a, b) => a.legalEntityName.localeCompare(b.legalEntityName) || a.currency.localeCompare(b.currency))
-    return result
   })

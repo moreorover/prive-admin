@@ -3,9 +3,9 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
-import { BankAccountReportCard, CashReportTable } from "@/components/reports-cards"
+import { BankAccountReportCard } from "@/components/reports-cards"
 import { Section } from "@/components/section"
-import { getBankAccountMonthlyBreakdown, getCashMonthlyBreakdown } from "@/functions/reports"
+import { getBankAccountMonthlyBreakdown } from "@/functions/reports"
 
 const searchSchema = z.object({
   year: z.number().int().min(2000).max(3000).optional(),
@@ -29,11 +29,6 @@ function ReportsTab() {
     queryKey: ["reports", "bank", year, legalEntityId],
     queryFn: () => getBankAccountMonthlyBreakdown({ data: { year, legalEntityId } }),
   })
-  const cashQuery = useQuery({
-    queryKey: ["reports", "cash", year, legalEntityId],
-    queryFn: () => getCashMonthlyBreakdown({ data: { year, legalEntityId } }),
-  })
-
   const yearInput = (
     <NumberInput
       value={year}
@@ -65,16 +60,6 @@ function ReportsTab() {
               <BankAccountReportCard key={a.bankAccountId} a={a} />
             ))}
           </Stack>
-        )}
-      </Section>
-
-      <Section title="Cash" description="Manual cash transactions per month.">
-        {(cashQuery.data ?? []).length === 0 ? (
-          <Text c="dimmed" size="sm">
-            No cash transactions in {year}.
-          </Text>
-        ) : (
-          <CashReportTable data={cashQuery.data ?? []} />
         )}
       </Section>
     </Stack>

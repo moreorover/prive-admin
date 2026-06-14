@@ -2,7 +2,6 @@ import { createId } from "@paralleldrive/cuid2"
 import { pgTable, integer, text, timestamp, date, unique } from "drizzle-orm/pg-core"
 
 import { bankAccount } from "./bank-account"
-import { transaction } from "./transaction"
 
 export const bankStatementEntry = pgTable(
   "bank_statement_entry",
@@ -23,10 +22,7 @@ export const bankStatementEntry = pgTable(
     swift: text("swift"),
     purpose: text("purpose"),
     transactionType: text("transaction_type"),
-    status: text("status").notNull().default("PENDING"), // 'PENDING' | 'LINKED' | 'IGNORED'
-    linkedTransactionId: text("linked_transaction_id").references(() => transaction.id, {
-      onDelete: "set null",
-    }),
+    status: text("status").notNull().default("PENDING"), // 'PENDING' | 'IGNORED'
     importedAt: timestamp("imported_at", { withTimezone: true }).defaultNow().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true })

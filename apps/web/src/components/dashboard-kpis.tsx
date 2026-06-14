@@ -15,8 +15,8 @@ const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Se
 
 export function DashboardKpis({ year, legalEntityId }: { year: number; legalEntityId: string }) {
   const txQuery = useQuery({
-    queryKey: [...dashboardKeys.transactionStats(year), legalEntityId],
-    queryFn: () => getTransactionStatsForDate({ data: { year, legalEntityId: legalEntityId || undefined } }),
+    queryKey: dashboardKeys.transactionStats(year),
+    queryFn: () => getTransactionStatsForDate({ data: { year } }),
   })
   const hairAptQuery = useQuery({
     queryKey: [...dashboardKeys.hairAssignedStats(year), legalEntityId],

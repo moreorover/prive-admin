@@ -1,4 +1,4 @@
-import { db, whereActiveLegalEntity } from "@prive-admin-tanstack/db"
+import { db } from "@prive-admin-tanstack/db"
 import { appointment } from "@prive-admin-tanstack/db/schema/appointment"
 import { hairAssigned, hairOrder } from "@prive-admin-tanstack/db/schema/hair"
 import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
@@ -10,6 +10,9 @@ import { requireAuthMiddleware } from "@/middleware/auth"
 
 const yearSchema = z.object({
   year: z.number().int().min(2000).max(3000),
+})
+
+const scopedYearSchema = yearSchema.extend({
   legalEntityId: z.string().optional(),
 })
 
@@ -29,20 +32,19 @@ export const getTransactionStatsForDate = createServerFn({ method: "GET" })
     const rows = await db
       .select({
         currency: transaction.currency,
-        month: sql<number>`extract(month from ${transaction.completedDateBy})::int`,
+        month: sql<number>`extract(month from ${appointment.startsAt})::int`,
         sum: sql<number>`coalesce(sum(${transaction.amount}), 0)::int`,
       })
       .from(transaction)
+      .innerJoin(appointment, eq(transaction.appointmentId, appointment.id))
       .where(
         and(
-          gte(transaction.completedDateBy, yearStart),
-          lt(transaction.completedDateBy, yearEnd),
-          eq(transaction.status, "COMPLETED"),
+          gte(appointment.startsAt, new Date(`${yearStart}T00:00:00.000Z`)),
+          lt(appointment.startsAt, new Date(`${yearEnd}T00:00:00.000Z`)),
           isNotNull(transaction.appointmentId),
-          data.legalEntityId ? whereActiveLegalEntity(transaction.legalEntityId, data.legalEntityId) : undefined,
         ),
       )
-      .groupBy(transaction.currency, sql`extract(month from ${transaction.completedDateBy})`)
+      .groupBy(transaction.currency, sql`extract(month from ${appointment.startsAt})`)
 
     return buildCurrencyBuckets(rows)
   })
@@ -56,7 +58,7 @@ export type HairMonthlyBreakdown = {
 
 export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .inputValidator(yearSchema)
+  .inputValidator(scopedYearSchema)
   .handler(async ({ data }): Promise<HairMonthlyBreakdown> => {
     const { current } = yearlyRanges(data.year)
     const rows = await db
@@ -84,7 +86,7 @@ export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
 
 export const getHairAssignedThroughSaleStatsForDate = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .inputValidator(yearSchema)
+  .inputValidator(scopedYearSchema)
   .handler(async ({ data }): Promise<HairMonthlyBreakdown> => {
     const { current } = yearlyRanges(data.year)
     const rows = await db

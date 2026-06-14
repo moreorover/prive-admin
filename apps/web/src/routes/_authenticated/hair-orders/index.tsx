@@ -4,7 +4,7 @@ import { notifications } from "@mantine/notifications"
 import { IconPlus } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 import { HairOrdersTable } from "@/components/hair-orders-table"
 import { PageHeader } from "@/components/page-header"
@@ -115,6 +115,10 @@ function HairOrdersPage() {
     queryFn: () => getHairOrders({ data: { legalEntityId: legalEntityFilter || undefined } }),
   })
   const [dialogOpen, setDialogOpen] = useState(false)
+  const legalEntityNames = useMemo(
+    () => Object.fromEntries((legalEntitiesQuery.data ?? []).map((le) => [le.id, le.name])),
+    [legalEntitiesQuery.data],
+  )
 
   return (
     <Container size="xl">
@@ -140,7 +144,7 @@ function HairOrdersPage() {
         }
       />
       <Section padding="lg">
-        <HairOrdersTable hairOrders={hairOrders} isLoading={isLoading} />
+        <HairOrdersTable hairOrders={hairOrders} isLoading={isLoading} legalEntityNames={legalEntityNames} />
       </Section>
 
       <CreateHairOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} />

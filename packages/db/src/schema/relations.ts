@@ -86,14 +86,11 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
   customer: one(customer, { fields: [transaction.customerId], references: [customer.id] }),
   order: one(order, { fields: [transaction.orderId], references: [order.id] }),
   appointment: one(appointment, { fields: [transaction.appointmentId], references: [appointment.id] }),
-  legalEntity: one(legalEntity, { fields: [transaction.legalEntityId], references: [legalEntity.id] }),
-  bankAccount: one(bankAccount, { fields: [transaction.bankAccountId], references: [bankAccount.id] }),
 }))
 
 // Hair relations
 export const hairOrderRelations = relations(hairOrder, ({ one, many }) => ({
   customer: one(customer, { fields: [hairOrder.customerId], references: [customer.id] }),
-  legalEntity: one(legalEntity, { fields: [hairOrder.legalEntityId], references: [legalEntity.id] }),
   createdBy: one(user, { fields: [hairOrder.createdById], references: [user.id] }),
   hairAssigned: many(hairAssigned),
   notes: many(note),
@@ -122,7 +119,6 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
 // Legal entity relations
 export const legalEntityRelations = relations(legalEntity, ({ many }) => ({
   bankAccounts: many(bankAccount),
-  transactions: many(transaction),
   hairOrders: many(hairOrder),
 }))
 
@@ -138,7 +134,6 @@ export const bankAccountRelations = relations(bankAccount, ({ one, many }) => ({
     references: [legalEntity.id],
   }),
   statementEntries: many(bankStatementEntry),
-  transactions: many(transaction),
 }))
 
 // Bank statement entry relations
@@ -146,10 +141,6 @@ export const bankStatementEntryRelations = relations(bankStatementEntry, ({ one,
   bankAccount: one(bankAccount, {
     fields: [bankStatementEntry.bankAccountId],
     references: [bankAccount.id],
-  }),
-  linkedTransaction: one(transaction, {
-    fields: [bankStatementEntry.linkedTransactionId],
-    references: [transaction.id],
   }),
   attachments: many(bankStatementAttachment),
 }))
