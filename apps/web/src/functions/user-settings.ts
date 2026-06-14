@@ -17,7 +17,7 @@ export const getUserSettings = createServerFn({ method: "GET" })
     if (row) {
       return { userId: row.userId, preferredCurrency: row.preferredCurrency }
     }
-    return { userId, preferredCurrency: "GBP" as const }
+    return { userId, preferredCurrency: "EUR" as const }
   })
 
 export const updateUserSettings = createServerFn({ method: "POST" })

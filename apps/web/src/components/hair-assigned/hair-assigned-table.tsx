@@ -19,7 +19,7 @@ type HairAssignedTableProps = {
   onDelete: (item: HairAssignedRow) => void
 }
 
-const formatCents = (cents: number) => `$${(cents / 100).toFixed(2)}`
+const formatCents = (cents: number) => `€${(cents / 100).toFixed(2)}`
 
 export function HairAssignedTable({ items, showHairOrderColumn = false, onEdit, onDelete }: HairAssignedTableProps) {
   if (items.length === 0) {
@@ -39,7 +39,7 @@ export function HairAssignedTable({ items, showHairOrderColumn = false, onEdit, 
           <Table.Th>Weight</Table.Th>
           <Table.Th>Sold For</Table.Th>
           <Table.Th>Profit</Table.Th>
-          <Table.Th>$/g</Table.Th>
+          <Table.Th>€/g</Table.Th>
           <Table.Th />
         </Table.Tr>
       </Table.Thead>

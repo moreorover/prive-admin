@@ -1,4 +1,4 @@
-import { z } from "zod"
+import {z} from "zod"
 
 export const CURRENCIES = ["GBP", "EUR"] as const
 export type Currency = (typeof CURRENCIES)[number]

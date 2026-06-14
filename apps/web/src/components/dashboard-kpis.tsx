@@ -161,5 +161,5 @@ function HairCard({ title, data }: { title: string; data: HairMonthlyBreakdown |
 }
 
 function fmtCents(cents: number) {
-  return `$${(cents / 100).toFixed(2)}`
+  return `€${(cents / 100).toFixed(2)}`
 }

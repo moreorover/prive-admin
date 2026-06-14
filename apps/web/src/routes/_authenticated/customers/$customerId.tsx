@@ -282,12 +282,12 @@ function CustomerDetailPage() {
                   const parts = CURRENCIES.flatMap((c) =>
                     summary.transactionSumsMinor[c] !== 0 ? [formatMinor(summary.transactionSumsMinor[c], c)] : [],
                   )
-                  return parts.length > 0 ? parts.join(" · ") : formatMinor(0, "GBP")
+                  return parts.length > 0 ? parts.join(" · ") : formatMinor(0, "EUR")
                 })()}
               </Title>
             </Card>
-            <StatCard label="Hair profit" value={`£${summary.hairAssignedProfitSum.toFixed(2)}`} />
-            <StatCard label="Hair sold for" value={`£${summary.hairAssignedSoldForSum.toFixed(2)}`} />
+            <StatCard label="Hair profit" value={`€${summary.hairAssignedProfitSum.toFixed(2)}`} />
+            <StatCard label="Hair sold for" value={`€${summary.hairAssignedSoldForSum.toFixed(2)}`} />
             <StatCard label="Hair weight" value={`${summary.hairAssignedWeightInGramsSum}g`} />
             <StatCard label="Notes" value={String(summary.noteCount)} />
             <Card padding="md">

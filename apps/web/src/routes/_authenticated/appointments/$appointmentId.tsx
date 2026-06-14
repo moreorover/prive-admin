@@ -133,7 +133,7 @@ function AppointmentDetailPage() {
   const currenciesPresent = CURRENCIES.filter(
     (c) => totalsByCurrency[c].completed !== 0 || totalsByCurrency[c].pending !== 0,
   )
-  const chartCurrency: Currency = currenciesPresent[0] ?? "GBP"
+  const chartCurrency: Currency = currenciesPresent[0] ?? "EUR"
   const chartData = [
     { name: "Completed", value: Math.abs(totalsByCurrency[chartCurrency].completed), color: "green.4" },
     { name: "Pending", value: Math.abs(totalsByCurrency[chartCurrency].pending), color: "pink.6" },
@@ -168,7 +168,7 @@ function AppointmentDetailPage() {
   const txCustomerId = createTxCustomerId ?? appointment.client.id
   const txDefaultCurrency: Currency = (() => {
     const raw = userSettings?.preferredCurrency
-    return raw && (CURRENCIES as readonly string[]).includes(raw) ? (raw as Currency) : "GBP"
+    return raw && (CURRENCIES as readonly string[]).includes(raw) ? (raw as Currency) : "EUR"
   })()
 
   const openCreateTx = (customerId: string) => {
@@ -296,13 +296,13 @@ function AppointmentDetailPage() {
                 {currenciesPresent.length === 0 ? (
                   <Stack gap={2}>
                     <Text size="sm">
-                      Completed: <b>{formatMinor(0, "GBP")}</b>
+                      Completed: <b>{formatMinor(0, "EUR")}</b>
                     </Text>
                     <Text size="sm">
-                      Pending: <b>{formatMinor(0, "GBP")}</b>
+                      Pending: <b>{formatMinor(0, "EUR")}</b>
                     </Text>
                     <Text size="sm">
-                      Total: <b>{formatMinor(0, "GBP")}</b>
+                      Total: <b>{formatMinor(0, "EUR")}</b>
                     </Text>
                   </Stack>
                 ) : (
@@ -353,7 +353,7 @@ function AppointmentDetailPage() {
           {(() => {
             const txRows: TransactionRow[] = txList.map((t) => ({
               ...t,
-              currency: (CURRENCIES as readonly string[]).includes(t.currency) ? (t.currency as Currency) : "GBP",
+              currency: (CURRENCIES as readonly string[]).includes(t.currency) ? (t.currency as Currency) : "EUR",
               legalEntityId: t.legalEntityId,
               legalEntity: t.legalEntity ?? null,
             }))
