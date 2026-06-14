@@ -9,18 +9,20 @@ type HairOrderRow = {
   status: string
   weightReceived: number
   placedAt: string | null
+  legalEntityId: string
   customer: { name: string } | null
-  legalEntity: { name: string } | null
 }
 
 export function HairOrdersTable({
   hairOrders,
   isLoading,
   showLegalEntityColumn = true,
+  legalEntityNames,
 }: {
   hairOrders: HairOrderRow[] | undefined
   isLoading: boolean
   showLegalEntityColumn?: boolean
+  legalEntityNames?: Record<string, string>
 }) {
   return (
     <Table>
@@ -81,9 +83,9 @@ export function HairOrdersTable({
                 <Table.Td c="dimmed">{ho.placedAt ? <ClientDate date={ho.placedAt} /> : "—"}</Table.Td>
                 {showLegalEntityColumn && (
                   <Table.Td>
-                    {ho.legalEntity ? (
+                    {legalEntityNames?.[ho.legalEntityId] ? (
                       <Badge variant="light" size="sm">
-                        {ho.legalEntity.name}
+                        {legalEntityNames[ho.legalEntityId]}
                       </Badge>
                     ) : null}
                   </Table.Td>

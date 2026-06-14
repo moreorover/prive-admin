@@ -37,7 +37,6 @@ import { zodResolver } from "mantine-form-zod-resolver"
 import { useEffect, useState } from "react"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
-import { getAppointment, getAppointments } from "@/functions/appointments"
 import { createBankAccount, getBankAccount, updateBankAccount } from "@/functions/bank-accounts"
 import {
   assignAttachmentToEntry,
@@ -48,14 +47,11 @@ import {
   unassignAttachment,
 } from "@/functions/bank-statement-attachments"
 import {
-  getBankStatementEntry,
   ignoreStatementEntry,
   importBankCsv,
   listBankStatementEntries,
-  promoteEntryToTransaction,
   undoStatementEntry,
 } from "@/functions/bank-statement-entries"
-import { getCustomers } from "@/functions/customers"
 import { listLegalEntities } from "@/functions/legal-entities"
 import { CURRENCY_OPTIONS, type Currency, formatMinor } from "@/lib/currency"
 import { bankAccountSchema } from "@/lib/schemas"
@@ -69,7 +65,7 @@ function BankAccountRoute() {
   return bankAccountId === "new" ? <BankAccountNew /> : <BankAccountShow id={bankAccountId} />
 }
 
-type StatusFilter = "PENDING" | "LINKED" | "IGNORED" | "ALL"
+type StatusFilter = "PENDING" | "IGNORED" | "ALL"
 
 function BankAccountShow({ id }: { id: string }) {
   const queryClient = useQueryClient()
@@ -88,8 +84,6 @@ function BankAccountShow({ id }: { id: string }) {
     skipped: number
   } | null>(null)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("PENDING")
-  const [linkAppointmentEntryId, setLinkAppointmentEntryId] = useState<string | null>(null)
-  const [standaloneEntryId, setStandaloneEntryId] = useState<string | null>(null)
   const [exportMonth, setExportMonth] = useState<Date | null>(() => {
     const d = new Date()
     return new Date(d.getFullYear(), d.getMonth(), 1)
@@ -238,7 +232,6 @@ function BankAccountShow({ id }: { id: string }) {
             label="Status"
             data={[
               { value: "PENDING", label: "Pending" },
-              { value: "LINKED", label: "Linked" },
               { value: "IGNORED", label: "Ignored" },
               { value: "ALL", label: "All" },
             ]}
@@ -337,14 +330,9 @@ function BankAccountShow({ id }: { id: string }) {
                         </Menu.Target>
                         <Menu.Dropdown>
                           {e.status === "PENDING" ? (
-                            <>
-                              <Menu.Item onClick={() => setLinkAppointmentEntryId(e.id)}>Link to appointment</Menu.Item>
-                              <Menu.Item onClick={() => setStandaloneEntryId(e.id)}>Promote standalone</Menu.Item>
-                              <Menu.Divider />
-                              <Menu.Item color="gray" onClick={() => ignoreMutation.mutate(e.id)}>
-                                Ignore
-                              </Menu.Item>
-                            </>
+                            <Menu.Item color="gray" onClick={() => ignoreMutation.mutate(e.id)}>
+                              Ignore
+                            </Menu.Item>
                           ) : (
                             <Menu.Item onClick={() => undoMutation.mutate(e.id)}>Undo ({e.status})</Menu.Item>
                           )}
@@ -383,8 +371,6 @@ function BankAccountShow({ id }: { id: string }) {
             : null
         }
       />
-      <LinkToAppointmentModal entryId={linkAppointmentEntryId} onClose={() => setLinkAppointmentEntryId(null)} />
-      <PromoteStandaloneModal entryId={standaloneEntryId} onClose={() => setStandaloneEntryId(null)} />
       <AttachmentPreviewDialog attachment={previewAttachment} onClose={() => setPreviewAttachment(null)} />
     </>
   )
@@ -564,218 +550,6 @@ function AttachmentsCell({
         </Stack>
       </Popover.Dropdown>
     </Popover>
-  )
-}
-
-function EntrySummary({
-  entry,
-}: {
-  entry: {
-    date: string
-    amount: number
-    currency: string
-    direction: string
-    counterpartyName: string | null
-    purpose: string | null
-  }
-}) {
-  return (
-    <>
-      <Text size="sm">
-        <strong>Counterparty:</strong> {entry.counterpartyName ?? "—"}
-      </Text>
-      <Text size="sm">
-        <strong>Amount:</strong> {formatMinor(entry.amount, entry.currency as Currency)} (
-        {entry.direction === "C" ? "in" : "out"})
-      </Text>
-      <Text size="sm">
-        <strong>Date:</strong> {entry.date}
-      </Text>
-      <Text size="sm">
-        <strong>Purpose:</strong> {entry.purpose ?? "—"}
-      </Text>
-    </>
-  )
-}
-
-function LinkToAppointmentModal({ entryId, onClose }: { entryId: string | null; onClose: () => void }) {
-  const queryClient = useQueryClient()
-  const opened = entryId !== null
-
-  const entryQuery = useQuery({
-    queryKey: ["bank-statement-entry", entryId],
-    queryFn: () => getBankStatementEntry({ data: { id: entryId! } }),
-    enabled: opened,
-  })
-  const appointmentsQuery = useQuery({
-    queryKey: ["appointments", "all"],
-    queryFn: () => getAppointments({ data: {} }),
-    enabled: opened,
-  })
-
-  const [appointmentId, setAppointmentId] = useState<string>("")
-  const [customerId, setCustomerId] = useState<string>("")
-
-  useEffect(() => {
-    if (!opened) {
-      setAppointmentId("")
-      setCustomerId("")
-    }
-  }, [opened])
-
-  const selectedAppointment = appointmentsQuery.data?.find((a) => a.id === appointmentId) ?? null
-
-  useEffect(() => {
-    if (selectedAppointment) {
-      setCustomerId(selectedAppointment.clientId)
-    } else {
-      setCustomerId("")
-    }
-  }, [selectedAppointment])
-
-  const appointmentDetailQuery = useQuery({
-    queryKey: ["appointment", appointmentId],
-    queryFn: () => getAppointment({ data: { id: appointmentId } }),
-    enabled: opened && appointmentId !== "",
-  })
-
-  const customerOptions: { value: string; label: string }[] = (() => {
-    const options: { value: string; label: string }[] = []
-    if (appointmentDetailQuery.data) {
-      const a = appointmentDetailQuery.data
-      options.push({ value: a.clientId, label: `${a.client.name} (client)` })
-      for (const p of a.personnel ?? []) {
-        if (p.personnel.id !== a.clientId) {
-          options.push({ value: p.personnel.id, label: `${p.personnel.name} (personnel)` })
-        }
-      }
-    }
-    return options
-  })()
-
-  const promote = useMutation({
-    mutationFn: () =>
-      promoteEntryToTransaction({
-        data: { entryId: entryId!, customerId, appointmentId, notes: entryQuery.data?.purpose ?? undefined },
-      }),
-    onSuccess: async () => {
-      notifications.show({ color: "green", message: "Linked to appointment" })
-      await queryClient.invalidateQueries({ queryKey: ["bank-statement-entries"] })
-      onClose()
-    },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
-  })
-
-  return (
-    <Modal opened={opened} onClose={onClose} title="Link entry to appointment">
-      {entryQuery.data && (
-        <Stack>
-          <EntrySummary entry={entryQuery.data} />
-          <Select
-            label="Appointment"
-            required
-            searchable
-            data={(appointmentsQuery.data ?? []).map((a) => ({
-              value: a.id,
-              label: `${new Date(a.startsAt).toISOString().slice(0, 10)} — ${a.name} (${a.client?.name ?? "?"})`,
-            }))}
-            value={appointmentId}
-            onChange={(v) => setAppointmentId(v ?? "")}
-          />
-          <Select
-            label="Customer"
-            required
-            disabled={appointmentId === ""}
-            data={customerOptions}
-            value={customerId}
-            onChange={(v) => setCustomerId(v ?? "")}
-          />
-          <Group justify="flex-end">
-            <Button variant="subtle" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => promote.mutate()}
-              loading={promote.isPending}
-              disabled={!appointmentId || !customerId}
-            >
-              Link
-            </Button>
-          </Group>
-        </Stack>
-      )}
-    </Modal>
-  )
-}
-
-function PromoteStandaloneModal({ entryId, onClose }: { entryId: string | null; onClose: () => void }) {
-  const queryClient = useQueryClient()
-  const opened = entryId !== null
-
-  const entryQuery = useQuery({
-    queryKey: ["bank-statement-entry", entryId],
-    queryFn: () => getBankStatementEntry({ data: { id: entryId! } }),
-    enabled: opened,
-  })
-  const customersQuery = useQuery({
-    queryKey: ["customers"],
-    queryFn: () => getCustomers(),
-    enabled: opened,
-  })
-
-  const [customerId, setCustomerId] = useState<string>("")
-  const [name, setName] = useState<string>("")
-
-  useEffect(() => {
-    if (!opened) {
-      setCustomerId("")
-      setName("")
-    }
-  }, [opened])
-
-  const promote = useMutation({
-    mutationFn: () =>
-      promoteEntryToTransaction({
-        data: { entryId: entryId!, customerId, name: name || undefined, notes: entryQuery.data?.purpose ?? undefined },
-      }),
-    onSuccess: async () => {
-      notifications.show({ color: "green", message: "Promoted standalone" })
-      await queryClient.invalidateQueries({ queryKey: ["bank-statement-entries"] })
-      onClose()
-    },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
-  })
-
-  return (
-    <Modal opened={opened} onClose={onClose} title="Promote standalone">
-      {entryQuery.data && (
-        <Stack>
-          <EntrySummary entry={entryQuery.data} />
-          <Select
-            label="Customer"
-            required
-            searchable
-            data={(customersQuery.data ?? []).map((c) => ({ value: c.id, label: c.name }))}
-            value={customerId}
-            onChange={(v) => setCustomerId(v ?? "")}
-          />
-          <TextInput
-            label="Name (optional)"
-            placeholder="Leave blank to default"
-            value={name}
-            onChange={(e) => setName(e.currentTarget.value)}
-          />
-          <Group justify="flex-end">
-            <Button variant="subtle" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button onClick={() => promote.mutate()} loading={promote.isPending} disabled={!customerId}>
-              Promote
-            </Button>
-          </Group>
-        </Stack>
-      )}
-    </Modal>
   )
 }
 

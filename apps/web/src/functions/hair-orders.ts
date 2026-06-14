@@ -14,7 +14,7 @@ export const getHairOrders = createServerFn({ method: "GET" })
     const filter = data?.legalEntityId ? whereActiveLegalEntity(hairOrder.legalEntityId, data.legalEntityId) : undefined
     return db.query.hairOrder.findMany({
       where: filter,
-      with: { createdBy: true, customer: true, legalEntity: true },
+      with: { createdBy: true, customer: true },
       orderBy: (hairOrder, { asc }) => [asc(hairOrder.uid)],
     })
   })
@@ -28,7 +28,6 @@ export const getHairOrder = createServerFn({ method: "GET" })
       with: {
         createdBy: true,
         customer: true,
-        legalEntity: true,
         hairAssigned: { with: { client: true } },
         notes: { with: { createdBy: true } },
       },

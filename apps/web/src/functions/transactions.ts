@@ -8,19 +8,11 @@ import { z } from "zod"
 import { currencySchema } from "@/lib/currency"
 import { requireAuthMiddleware } from "@/middleware/auth"
 
-const transactionTypeSchema = z.enum(["BANK", "CASH", "PAYPAL"])
-const transactionStatusSchema = z.enum(["PENDING", "COMPLETED"])
-const dateStringSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD")
-
 const transactionFieldsSchema = z.object({
   name: z.string().nullish(),
   notes: z.string().nullish(),
   amount: z.number().int(),
   currency: currencySchema,
-  type: transactionTypeSchema,
-  status: transactionStatusSchema,
-  completedDateBy: dateStringSchema,
-  legalEntityId: z.string().min(1, "Legal entity is required"),
 })
 
 export const getTransactionsByAppointmentId = createServerFn({ method: "GET" })
@@ -31,9 +23,8 @@ export const getTransactionsByAppointmentId = createServerFn({ method: "GET" })
       where: eq(transaction.appointmentId, data.appointmentId),
       with: {
         customer: { columns: { id: true, name: true } },
-        legalEntity: { columns: { id: true, name: true, type: true, country: true } },
       },
-      orderBy: (tx, { asc }) => [asc(tx.completedDateBy)],
+      orderBy: (tx, { asc }) => [asc(tx.createdAt)],
     })
   })
 
@@ -76,10 +67,6 @@ export const createTransaction = createServerFn({ method: "POST" })
           notes: data.notes ?? null,
           amount: data.amount,
           currency: data.currency,
-          type: data.type,
-          status: data.status,
-          completedDateBy: data.completedDateBy,
-          legalEntityId: data.legalEntityId,
         })
         .returning()
       return result
@@ -104,10 +91,6 @@ export const updateTransaction = createServerFn({ method: "POST" })
         notes: data.notes ?? null,
         amount: data.amount,
         currency: data.currency,
-        type: data.type,
-        status: data.status,
-        completedDateBy: data.completedDateBy,
-        legalEntityId: data.legalEntityId,
       })
       .where(eq(transaction.id, data.id))
       .returning()

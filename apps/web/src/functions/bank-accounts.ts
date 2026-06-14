@@ -16,13 +16,6 @@ export const getBankAccount = createServerFn({ method: "GET" })
       with: {
         legalEntity: true,
         statementEntries: {
-          with: {
-            linkedTransaction: {
-              with: {
-                customer: { columns: { id: true, name: true } },
-              },
-            },
-          },
           orderBy: (e, { desc }) => [desc(e.date), desc(e.importedAt)],
         },
       },

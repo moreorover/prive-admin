@@ -15,10 +15,6 @@ type EditTransactionDialogProps = {
     notes: string | null
     amount: number
     currency: Currency | string
-    type: "BANK" | "CASH" | "PAYPAL" | string
-    status: "PENDING" | "COMPLETED" | string
-    completedDateBy: string
-    legalEntityId: string
   }
   invalidateKeys: { queryKey: readonly unknown[] }[]
 }
@@ -36,11 +32,6 @@ export function EditTransactionDialog({ open, onOpenChange, transaction, invalid
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
-  const initialType: "BANK" | "CASH" | "PAYPAL" =
-    transaction.type === "BANK" || transaction.type === "CASH" || transaction.type === "PAYPAL"
-      ? transaction.type
-      : "BANK"
-  const initialStatus: "PENDING" | "COMPLETED" = transaction.status === "COMPLETED" ? "COMPLETED" : "PENDING"
   const initialCurrency: Currency = (CURRENCIES as readonly string[]).includes(transaction.currency)
     ? (transaction.currency as Currency)
     : "EUR"
@@ -53,10 +44,6 @@ export function EditTransactionDialog({ open, onOpenChange, transaction, invalid
           notes: transaction.notes ?? "",
           amountMajor: transaction.amount / 100,
           currency: initialCurrency,
-          type: initialType,
-          status: initialStatus,
-          completedDateBy: transaction.completedDateBy,
-          legalEntityId: transaction.legalEntityId,
         }}
         submitLabel="Save Changes"
         loading={mutation.isPending}
