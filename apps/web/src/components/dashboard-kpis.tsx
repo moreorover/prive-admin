@@ -1,4 +1,6 @@
-import { Card, Group, Stack, Table, Text } from "@mantine/core"
+import type { ReactNode } from "react"
+
+import { Box, Card, Divider, Group, Stack, Table, Text } from "@mantine/core"
 import { useQuery } from "@tanstack/react-query"
 
 import {
@@ -29,7 +31,7 @@ export function DashboardKpis({ year, legalEntityId }: { year: number; legalEnti
   })
 
   return (
-    <Stack>
+    <Stack gap="md">
       <TransactionsCard data={txQuery.data ?? null} />
       <HairCard title="Hair assigned during appointments" data={hairAptQuery.data ?? null} />
       <HairCard title="Hair assigned during sale" data={hairSaleQuery.data ?? null} />
@@ -41,122 +43,141 @@ function TransactionsCard({ data }: { data: TransactionMonthlyByCurrency[] | nul
   const buckets = (data ?? []).filter((c) => c.total !== 0)
 
   return (
-    <Card withBorder>
-      <Group justify="space-between" mb="xs">
-        <Text fw={500}>Transactions</Text>
-      </Group>
-      {data === null && (
-        <Text size="sm" c="dimmed">
-          Loading…
-        </Text>
+    <KpiPanel title="Transactions">
+      {data === null ? (
+        <EmptyPanelText>Loading...</EmptyPanelText>
+      ) : buckets.length === 0 ? (
+        <EmptyPanelText>No transactions.</EmptyPanelText>
+      ) : (
+        <Stack gap={0}>
+          {buckets.map((c, index) => (
+            <Box key={c.currency}>
+              {index > 0 ? <Divider /> : null}
+              <Stack gap="xs" p="md">
+                <Group justify="space-between" gap="md">
+                  <Text size="sm" fw={600}>
+                    {c.currency}
+                  </Text>
+                  <Text size="sm" c={c.total >= 0 ? "teal" : "red"} fw={600}>
+                    Total {formatMinor(c.total, c.currency as Currency)}
+                  </Text>
+                </Group>
+                <Table.ScrollContainer minWidth={360}>
+                  <Table striped highlightOnHover>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Month</Table.Th>
+                        <Table.Th ta="right">Total</Table.Th>
+                      </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {c.months.map((m) => (
+                        <Table.Tr key={m.month}>
+                          <Table.Td>{MONTH_NAMES[m.month - 1]}</Table.Td>
+                          <Table.Td ta="right" c={m.total > 0 ? "teal" : m.total < 0 ? "red" : "dimmed"}>
+                            {formatMinor(m.total, c.currency as Currency)}
+                          </Table.Td>
+                        </Table.Tr>
+                      ))}
+                      <Table.Tr>
+                        <Table.Td fw={600}>Total</Table.Td>
+                        <Table.Td ta="right" fw={700} c={c.total >= 0 ? "teal" : "red"}>
+                          {formatMinor(c.total, c.currency as Currency)}
+                        </Table.Td>
+                      </Table.Tr>
+                    </Table.Tbody>
+                  </Table>
+                </Table.ScrollContainer>
+              </Stack>
+            </Box>
+          ))}
+        </Stack>
       )}
-      {data !== null && buckets.length === 0 && (
-        <Text size="sm" c="dimmed">
-          No transactions.
-        </Text>
-      )}
-      {buckets.map((c) => (
-        <Card key={c.currency} mt="sm" p="sm" radius="sm">
-          <Group justify="space-between" mb={4}>
-            <Text size="sm" fw={500}>
-              {c.currency}
-            </Text>
-            <Text size="sm" c={c.total >= 0 ? "teal" : "red"} fw={500}>
-              Total {formatMinor(c.total, c.currency as Currency)}
-            </Text>
-          </Group>
-          <Table striped>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Month</Table.Th>
-                <Table.Th ta="right">Total</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {c.months.map((m) => (
-                <Table.Tr key={m.month}>
-                  <Table.Td>{MONTH_NAMES[m.month - 1]}</Table.Td>
-                  <Table.Td ta="right" c={m.total > 0 ? "teal" : m.total < 0 ? "red" : "dimmed"}>
-                    {formatMinor(m.total, c.currency as Currency)}
-                  </Table.Td>
-                </Table.Tr>
-              ))}
-              <Table.Tr>
-                <Table.Td fw={600}>Total</Table.Td>
-                <Table.Td ta="right" fw={700} c={c.total >= 0 ? "teal" : "red"}>
-                  {formatMinor(c.total, c.currency as Currency)}
-                </Table.Td>
-              </Table.Tr>
-            </Table.Tbody>
-          </Table>
-        </Card>
-      ))}
-    </Card>
+    </KpiPanel>
   )
 }
 
 function HairCard({ title, data }: { title: string; data: HairMonthlyBreakdown | null }) {
   return (
-    <Card withBorder>
-      <Group justify="space-between" mb="xs">
-        <Text fw={500}>{title}</Text>
-      </Group>
+    <KpiPanel title={title}>
       {data === null ? (
-        <Text size="sm" c="dimmed">
-          Loading…
-        </Text>
+        <EmptyPanelText>Loading...</EmptyPanelText>
       ) : (
-        <Table striped>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Month</Table.Th>
-              <Table.Th ta="right">Weight (g)</Table.Th>
-              <Table.Th ta="right">Sold for</Table.Th>
-              <Table.Th ta="right">Profit</Table.Th>
-              <Table.Th ta="right">Price per gram</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {data.months.map((m) => (
-              <Table.Tr key={m.month}>
-                <Table.Td>{MONTH_NAMES[m.month - 1]}</Table.Td>
-                <Table.Td ta="right" c={m.weight > 0 ? undefined : "dimmed"}>
-                  {m.weight}g
-                </Table.Td>
-                <Table.Td ta="right" c={m.soldFor > 0 ? undefined : "dimmed"}>
-                  {fmtCents(m.soldFor)}
-                </Table.Td>
-                <Table.Td ta="right" c={m.profit > 0 ? "teal" : m.profit < 0 ? "red" : "dimmed"}>
-                  {fmtCents(m.profit)}
-                </Table.Td>
-                <Table.Td ta="right" c={m.pricePerGram > 0 ? undefined : "dimmed"}>
-                  {fmtCents(m.pricePerGram)}
-                </Table.Td>
-              </Table.Tr>
-            ))}
-            <Table.Tr>
-              <Table.Td fw={600}>Total</Table.Td>
-              <Table.Td ta="right" fw={700}>
-                {data.totals.weight}g
-              </Table.Td>
-              <Table.Td ta="right" fw={700}>
-                {fmtCents(data.totals.soldFor)}
-              </Table.Td>
-              <Table.Td
-                ta="right"
-                fw={700}
-                c={data.totals.profit > 0 ? "teal" : data.totals.profit < 0 ? "red" : undefined}
-              >
-                {fmtCents(data.totals.profit)}
-              </Table.Td>
-              <Table.Td ta="right" fw={700}>
-                {fmtCents(data.totals.pricePerGramAvg)}
-              </Table.Td>
-            </Table.Tr>
-          </Table.Tbody>
-        </Table>
+        <Box p="md">
+          <Table.ScrollContainer minWidth={680}>
+            <Table striped highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Month</Table.Th>
+                  <Table.Th ta="right">Weight (g)</Table.Th>
+                  <Table.Th ta="right">Sold for</Table.Th>
+                  <Table.Th ta="right">Profit</Table.Th>
+                  <Table.Th ta="right">Price per gram</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {data.months.map((m) => (
+                  <Table.Tr key={m.month}>
+                    <Table.Td>{MONTH_NAMES[m.month - 1]}</Table.Td>
+                    <Table.Td ta="right" c={m.weight > 0 ? undefined : "dimmed"}>
+                      {m.weight}g
+                    </Table.Td>
+                    <Table.Td ta="right" c={m.soldFor > 0 ? undefined : "dimmed"}>
+                      {fmtCents(m.soldFor)}
+                    </Table.Td>
+                    <Table.Td ta="right" c={m.profit > 0 ? "teal" : m.profit < 0 ? "red" : "dimmed"}>
+                      {fmtCents(m.profit)}
+                    </Table.Td>
+                    <Table.Td ta="right" c={m.pricePerGram > 0 ? undefined : "dimmed"}>
+                      {fmtCents(m.pricePerGram)}
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+                <Table.Tr>
+                  <Table.Td fw={600}>Total</Table.Td>
+                  <Table.Td ta="right" fw={700}>
+                    {data.totals.weight}g
+                  </Table.Td>
+                  <Table.Td ta="right" fw={700}>
+                    {fmtCents(data.totals.soldFor)}
+                  </Table.Td>
+                  <Table.Td
+                    ta="right"
+                    fw={700}
+                    c={data.totals.profit > 0 ? "teal" : data.totals.profit < 0 ? "red" : undefined}
+                  >
+                    {fmtCents(data.totals.profit)}
+                  </Table.Td>
+                  <Table.Td ta="right" fw={700}>
+                    {fmtCents(data.totals.pricePerGramAvg)}
+                  </Table.Td>
+                </Table.Tr>
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
+        </Box>
       )}
+    </KpiPanel>
+  )
+}
+
+function KpiPanel({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <Card padding={0}>
+      <Group justify="space-between" px="md" py="sm">
+        <Text fw={600}>{title}</Text>
+      </Group>
+      <Divider />
+      {children}
     </Card>
+  )
+}
+
+function EmptyPanelText({ children }: { children: ReactNode }) {
+  return (
+    <Text size="sm" c="dimmed" p="md">
+      {children}
+    </Text>
   )
 }
 
