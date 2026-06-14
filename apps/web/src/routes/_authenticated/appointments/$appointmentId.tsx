@@ -40,6 +40,11 @@ import { getUserSettings } from "@/functions/user-settings"
 import { CURRENCIES, type Currency, formatMinor } from "@/lib/currency"
 import { appointmentKeys, customerKeys, hairAssignedKeys, transactionKeys, userSettingsKeys } from "@/lib/query-keys"
 
+const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
+  Currency,
+  number
+>
+
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
   loader: async ({ context, params }) => {
@@ -104,16 +109,13 @@ function AppointmentDetailPage() {
   })
 
   const txList = transactions ?? []
-  const totalsByCurrency: Record<Currency, { total: number }> = {
-    GBP: { total: 0 },
-    EUR: { total: 0 },
-  }
+  const totalsByCurrency = { ...ZERO_TRANSACTION_TOTALS }
   for (const t of txList) {
     const c = t.currency as Currency
     if (!(c in totalsByCurrency)) continue
-    totalsByCurrency[c].total += t.amount
+    totalsByCurrency[c] += t.amount
   }
-  const currenciesPresent = CURRENCIES.filter((c) => totalsByCurrency[c].total !== 0)
+  const currenciesPresent = CURRENCIES.filter((c) => totalsByCurrency[c] !== 0)
 
   if (isLoading) {
     return (
@@ -281,7 +283,7 @@ function AppointmentDetailPage() {
                         {c}
                       </Text>
                       <Text size="sm">
-                        Total: <b>{formatMinor(totalsByCurrency[c].total, c)}</b>
+                        Total: <b>{formatMinor(totalsByCurrency[c], c)}</b>
                       </Text>
                     </Stack>
                   ))
