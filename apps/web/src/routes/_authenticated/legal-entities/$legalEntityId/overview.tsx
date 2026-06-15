@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
-import { DashboardKpis } from "@/components/dashboard-kpis"
 import { BankAccountReportCard } from "@/components/reports-cards"
 import { Section } from "@/components/section"
 import { getBankAccountMonthlyBreakdown } from "@/functions/reports"
@@ -53,7 +52,6 @@ function OverviewTab() {
           aria-label="Year"
         />
       </Group>
-      <DashboardKpis year={year} legalEntityId={legalEntityId} />
       <Section
         title="Bank accounts"
         description="Monthly inflows and outflows per account."
