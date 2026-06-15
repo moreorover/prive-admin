@@ -1,8 +1,12 @@
 import { Group, NumberInput, Stack, Text, Title } from "@mantine/core"
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
 import { DashboardKpis } from "@/components/dashboard-kpis"
+import { BankAccountReportCard } from "@/components/reports-cards"
+import { Section } from "@/components/section"
+import { getBankAccountMonthlyBreakdown } from "@/functions/reports"
 
 const searchSchema = z.object({
   year: z.number().int().min(2000).max(3000).optional(),
@@ -21,6 +25,11 @@ function OverviewTab() {
   const year = search.year ?? currentYear
 
   const setYear = (next: number) => navigate({ search: { year: next } })
+
+  const bankQuery = useQuery({
+    queryKey: ["reports", "bank", year, legalEntityId],
+    queryFn: () => getBankAccountMonthlyBreakdown({ data: { year, legalEntityId } }),
+  })
 
   return (
     <Stack gap="lg">
@@ -45,6 +54,23 @@ function OverviewTab() {
         />
       </Group>
       <DashboardKpis year={year} legalEntityId={legalEntityId} />
+      <Section
+        title="Bank accounts"
+        description="Monthly inflows and outflows per account."
+        padding={(bankQuery.data ?? []).length === 0 ? "lg" : 0}
+      >
+        {(bankQuery.data ?? []).length === 0 ? (
+          <Text c="dimmed" size="sm">
+            No bank accounts.
+          </Text>
+        ) : (
+          <Stack p="lg" gap="md">
+            {(bankQuery.data ?? []).map((a) => (
+              <BankAccountReportCard key={a.bankAccountId} a={a} />
+            ))}
+          </Stack>
+        )}
+      </Section>
     </Stack>
   )
 }

@@ -1,18 +1,16 @@
-import { Button, Container, Group, Modal, NativeSelect, NumberInput, Select, Stack, TextInput } from "@mantine/core"
+import { Button, Container, Group, Modal, NativeSelect, NumberInput, Stack, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconPlus } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 
 import { HairOrdersTable } from "@/components/hair-orders-table"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { getCustomers } from "@/functions/customers"
 import { createHairOrder, getHairOrders } from "@/functions/hair-orders"
-import { listLegalEntities } from "@/functions/legal-entities"
-import { COUNTRY_FLAGS, type Country } from "@/lib/legal-entity"
 import { customerKeys, hairOrderKeys } from "@/lib/query-keys"
 
 export const Route = createFileRoute("/_authenticated/hair-orders/")({
@@ -27,8 +25,6 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     queryFn: () => getCustomers(),
   })
 
-  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
-
   const mutation = useMutation({
     mutationFn: (data: {
       customerId: string
@@ -38,7 +34,6 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
       weightReceived: number
       weightUsed: number
       total: number
-      legalEntityId: string
     }) => createHairOrder({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
@@ -49,7 +44,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   })
 
   const form = useForm({
-    initialValues: { customerId: "", placedAt: "", weightReceived: 0, total: 0, legalEntityId: "" },
+    initialValues: { customerId: "", placedAt: "", weightReceived: 0, total: 0 },
   })
 
   const handleSubmit = async (values: {
@@ -57,7 +52,6 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     placedAt: string
     weightReceived: number
     total: number
-    legalEntityId: string
   }) => {
     await mutation.mutateAsync({
       customerId: values.customerId,
@@ -67,7 +61,6 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
       weightReceived: values.weightReceived,
       weightUsed: 0,
       total: Math.round(values.total * 100),
-      legalEntityId: values.legalEntityId,
     })
   }
 
@@ -88,16 +81,6 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
             <NumberInput label="Weight (g)" min={0} {...form.getInputProps("weightReceived")} />
             <NumberInput label="Total" min={0} decimalScale={2} step={0.01} {...form.getInputProps("total")} />
           </Group>
-          <Select
-            label="Legal entity (payer)"
-            required
-            data={(legalEntitiesQuery.data ?? []).map((le) => ({
-              value: le.id,
-              label: `${COUNTRY_FLAGS[le.country as Country] ?? ""} ${le.name}`,
-            }))}
-            value={form.values.legalEntityId}
-            onChange={(v) => form.setFieldValue("legalEntityId", v ?? "")}
-          />
           <Button type="submit" loading={mutation.isPending}>
             Create Hair Order
           </Button>
@@ -108,43 +91,25 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 }
 
 function HairOrdersPage() {
-  const [legalEntityFilter, setLegalEntityFilter] = useState<string>("")
-  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
   const { data: hairOrders, isLoading } = useQuery({
-    queryKey: ["hair-orders", legalEntityFilter],
-    queryFn: () => getHairOrders({ data: { legalEntityId: legalEntityFilter || undefined } }),
+    queryKey: hairOrderKeys.list(),
+    queryFn: () => getHairOrders(),
   })
   const [dialogOpen, setDialogOpen] = useState(false)
-  const legalEntityNames = useMemo(
-    () => Object.fromEntries((legalEntitiesQuery.data ?? []).map((le) => [le.id, le.name])),
-    [legalEntitiesQuery.data],
-  )
 
   return (
     <Container size="xl">
       <PageHeader
         title="Hair orders"
-        description="Track inbound hair stock by customer and legal entity."
+        description="Track inbound hair stock by customer."
         actions={
-          <>
-            <Select
-              data={[
-                { value: "", label: "All entities" },
-                ...(legalEntitiesQuery.data ?? []).map((le) => ({ value: le.id, label: le.name })),
-              ]}
-              value={legalEntityFilter}
-              onChange={(v) => setLegalEntityFilter(v ?? "")}
-              w={200}
-              size="sm"
-            />
-            <Button leftSection={<IconPlus size={14} />} onClick={() => setDialogOpen(true)}>
-              New order
-            </Button>
-          </>
+          <Button leftSection={<IconPlus size={14} />} onClick={() => setDialogOpen(true)}>
+            New order
+          </Button>
         }
       />
       <Section padding="lg">
-        <HairOrdersTable hairOrders={hairOrders} isLoading={isLoading} legalEntityNames={legalEntityNames} />
+        <HairOrdersTable hairOrders={hairOrders} isLoading={isLoading} />
       </Section>
 
       <CreateHairOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} />

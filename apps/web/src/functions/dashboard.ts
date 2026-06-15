@@ -2,7 +2,7 @@ import { db } from "@prive-admin-tanstack/db"
 import { appointment } from "@prive-admin-tanstack/db/schema/appointment"
 import { bankAccount } from "@prive-admin-tanstack/db/schema/bank-account"
 import { bankStatementEntry } from "@prive-admin-tanstack/db/schema/bank-statement-entry"
-import { hairAssigned, hairOrder } from "@prive-admin-tanstack/db/schema/hair"
+import { hairAssigned } from "@prive-admin-tanstack/db/schema/hair"
 import { createServerFn } from "@tanstack/react-start"
 import { and, eq, gte, isNull, lt, sql } from "drizzle-orm"
 import { z } from "zod"
@@ -65,7 +65,7 @@ export type HairMonthlyBreakdown = {
 
 export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .inputValidator(scopedYearSchema)
+  .inputValidator(yearSchema)
   .handler(async ({ data }): Promise<HairMonthlyBreakdown> => {
     const { current } = yearlyRanges(data.year)
     const rows = await db
@@ -78,14 +78,7 @@ export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
       })
       .from(hairAssigned)
       .innerJoin(appointment, eq(hairAssigned.appointmentId, appointment.id))
-      .innerJoin(hairOrder, eq(hairAssigned.hairOrderId, hairOrder.id))
-      .where(
-        and(
-          gte(appointment.startsAt, current.start),
-          lt(appointment.startsAt, current.end),
-          data.legalEntityId ? eq(hairOrder.legalEntityId, data.legalEntityId) : undefined,
-        ),
-      )
+      .where(and(gte(appointment.startsAt, current.start), lt(appointment.startsAt, current.end)))
       .groupBy(sql`extract(month from ${appointment.startsAt})`)
 
     return buildHairBuckets(rows)
@@ -93,7 +86,7 @@ export const getHairAssignedStatsForDate = createServerFn({ method: "GET" })
 
 export const getHairAssignedThroughSaleStatsForDate = createServerFn({ method: "GET" })
   .middleware([requireAuthMiddleware])
-  .inputValidator(scopedYearSchema)
+  .inputValidator(yearSchema)
   .handler(async ({ data }): Promise<HairMonthlyBreakdown> => {
     const { current } = yearlyRanges(data.year)
     const rows = await db
@@ -105,13 +98,11 @@ export const getHairAssignedThroughSaleStatsForDate = createServerFn({ method: "
         pricePerGram: sql<number>`coalesce(avg(${hairAssigned.pricePerGram}), 0)::int`,
       })
       .from(hairAssigned)
-      .innerJoin(hairOrder, eq(hairAssigned.hairOrderId, hairOrder.id))
       .where(
         and(
           isNull(hairAssigned.appointmentId),
           gte(hairAssigned.createdAt, current.start),
           lt(hairAssigned.createdAt, current.end),
-          data.legalEntityId ? eq(hairOrder.legalEntityId, data.legalEntityId) : undefined,
         ),
       )
       .groupBy(sql`extract(month from ${hairAssigned.createdAt})`)

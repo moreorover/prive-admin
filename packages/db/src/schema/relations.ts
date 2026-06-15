@@ -119,7 +119,6 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
 // Legal entity relations
 export const legalEntityRelations = relations(legalEntity, ({ many }) => ({
   bankAccounts: many(bankAccount),
-  hairOrders: many(hairOrder),
 }))
 
 // Salon relations
