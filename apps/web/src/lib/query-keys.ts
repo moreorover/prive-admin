@@ -2,7 +2,8 @@ export const dashboardKeys = {
   all: ["dashboard"] as const,
   data: () => [...dashboardKeys.all, "data"] as const,
   capabilityDetails: (title: string) => [...dashboardKeys.all, "capability-details", title] as const,
-  transactionStats: (year: number) => [...dashboardKeys.all, "transaction-stats", year] as const,
+  transactionStats: (year: number, legalEntityId?: string) =>
+    [...dashboardKeys.all, "transaction-stats", year, legalEntityId] as const,
   hairAssignedStats: (year: number) => [...dashboardKeys.all, "hair-assigned-stats", year] as const,
   hairSaleStats: (year: number) => [...dashboardKeys.all, "hair-sale-stats", year] as const,
 }

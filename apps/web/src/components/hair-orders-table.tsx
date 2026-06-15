@@ -9,20 +9,15 @@ type HairOrderRow = {
   status: string
   weightReceived: number
   placedAt: string | null
-  legalEntityId: string
   customer: { name: string } | null
 }
 
 export function HairOrdersTable({
   hairOrders,
   isLoading,
-  showLegalEntityColumn = true,
-  legalEntityNames,
 }: {
   hairOrders: HairOrderRow[] | undefined
   isLoading: boolean
-  showLegalEntityColumn?: boolean
-  legalEntityNames?: Record<string, string>
 }) {
   return (
     <Table>
@@ -33,7 +28,6 @@ export function HairOrdersTable({
           <Table.Th>Status</Table.Th>
           <Table.Th>Weight (g)</Table.Th>
           <Table.Th>Placed</Table.Th>
-          {showLegalEntityColumn && <Table.Th>Legal Entity</Table.Th>}
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
@@ -55,11 +49,6 @@ export function HairOrdersTable({
                 <Table.Td>
                   <Skeleton h={14} w={70} />
                 </Table.Td>
-                {showLegalEntityColumn && (
-                  <Table.Td>
-                    <Skeleton h={14} w={80} />
-                  </Table.Td>
-                )}
               </Table.Tr>
             ))
           : hairOrders?.map((ho) => (
@@ -81,20 +70,11 @@ export function HairOrdersTable({
                 </Table.Td>
                 <Table.Td c="dimmed">{ho.weightReceived}g</Table.Td>
                 <Table.Td c="dimmed">{ho.placedAt ? <ClientDate date={ho.placedAt} /> : "—"}</Table.Td>
-                {showLegalEntityColumn && (
-                  <Table.Td>
-                    {legalEntityNames?.[ho.legalEntityId] ? (
-                      <Badge variant="light" size="sm">
-                        {legalEntityNames[ho.legalEntityId]}
-                      </Badge>
-                    ) : null}
-                  </Table.Td>
-                )}
               </Table.Tr>
             ))}
         {!isLoading && hairOrders?.length === 0 && (
           <Table.Tr>
-            <Table.Td colSpan={showLegalEntityColumn ? 6 : 5} ta="center" c="dimmed">
+            <Table.Td colSpan={5} ta="center" c="dimmed">
               No hair orders yet.
             </Table.Td>
           </Table.Tr>

@@ -26,7 +26,6 @@ export const hairOrderSchema = z.object({
   placedAt: z.union([z.string(), z.date(), z.null()]),
   arrivedAt: z.union([z.string(), z.date(), z.null()]),
   customerId: z.string().min(1, "Customer is required"),
-  legalEntityId: z.string().min(1, "Legal entity is required"),
   status: z.enum(["PENDING", "COMPLETED"]).default("PENDING"),
   weightReceived: z.number().min(0),
   weightUsed: z.number().min(0),

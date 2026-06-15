@@ -29,6 +29,13 @@
       "when": 1781464805882,
       "tag": "0003_drop_transaction_linking",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1781539200000,
+      "tag": "0004_drop_hair_order_legal_entity",
+      "breakpoints": true
     }
   ]
 }
