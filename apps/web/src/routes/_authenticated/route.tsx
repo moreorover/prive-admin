@@ -33,7 +33,6 @@ import {
   IconLogout,
   IconMoon,
   IconRefresh,
-  IconReportAnalytics,
   IconScissors,
   IconSettings,
   IconSun,
@@ -60,6 +59,7 @@ type NavItem = {
 }
 
 const workspaceNav: NavItem[] = [
+  { to: "/dashboard", label: "Dashboard", icon: IconLayoutDashboard },
   { to: "/customers", label: "Customers", icon: IconUsers },
   { to: "/calendar", label: "Calendar", icon: IconCalendar },
   { to: "/hair-orders", label: "Hair orders", icon: IconScissors },
@@ -75,7 +75,6 @@ const LEGAL_ENTITY_TABS = [
   { value: "overview", label: "Overview", icon: IconLayoutDashboard },
   { value: "documents", label: "Documents", icon: IconFileText, badgeKey: "unassigned" as const },
   { value: "bank-accounts", label: "Bank accounts", icon: IconWallet },
-  { value: "reports", label: "Reports", icon: IconReportAnalytics },
   { value: "salons", label: "Salons", icon: IconScissors },
 ]
 
