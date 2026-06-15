@@ -3,8 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
-import { BankAccountReportCard } from "@/components/reports-cards"
-import { Section } from "@/components/section"
+import { BankAccountReportBlock } from "@/components/reports-cards"
 import { getBankAccountMonthlyBreakdown } from "@/functions/reports"
 
 const searchSchema = z.object({
@@ -52,23 +51,19 @@ function OverviewTab() {
           aria-label="Year"
         />
       </Group>
-      <Section
-        title="Bank accounts"
-        description="Monthly inflows and outflows per account."
-        padding={(bankQuery.data ?? []).length === 0 ? "lg" : 0}
-      >
+      <Stack gap="md">
         {(bankQuery.data ?? []).length === 0 ? (
           <Text c="dimmed" size="sm">
             No bank accounts.
           </Text>
         ) : (
-          <Stack p="lg" gap="md">
+          <Stack gap="xl">
             {(bankQuery.data ?? []).map((a) => (
-              <BankAccountReportCard key={a.bankAccountId} a={a} />
+              <BankAccountReportBlock key={a.bankAccountId} a={a} />
             ))}
           </Stack>
         )}
-      </Section>
+      </Stack>
     </Stack>
   )
 }
