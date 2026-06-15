@@ -59,6 +59,7 @@ type NavItem = {
 }
 
 const workspaceNav: NavItem[] = [
+  { to: "/dashboard", label: "Dashboard", icon: IconLayoutDashboard },
   { to: "/customers", label: "Customers", icon: IconUsers },
   { to: "/calendar", label: "Calendar", icon: IconCalendar },
   { to: "/hair-orders", label: "Hair orders", icon: IconScissors },
