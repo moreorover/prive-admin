@@ -9,6 +9,7 @@ import {
   getHairAssignedThroughSaleStatsForDate,
 } from "@/functions/dashboard"
 import { formatMinor } from "@/lib/currency"
+import { dashboardKeys } from "@/lib/query-keys"
 
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -28,11 +29,11 @@ function DashboardPage() {
   const year = search.year ?? currentYear
 
   const appointmentsQuery = useQuery({
-    queryKey: ["dashboard", "hair-assigned", "appointments", year],
+    queryKey: dashboardKeys.hairAssignedStats(year),
     queryFn: () => getHairAssignedStatsForDate({ data: { year } }),
   })
   const salesQuery = useQuery({
-    queryKey: ["dashboard", "hair-assigned", "sales", year],
+    queryKey: dashboardKeys.hairSaleStats(year),
     queryFn: () => getHairAssignedThroughSaleStatsForDate({ data: { year } }),
   })
 
