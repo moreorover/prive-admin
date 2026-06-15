@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.0](https://github.com/moreorover/prive-admin/compare/v0.6.2...v0.7.0) (2026-06-15)
+
+
+### Features
+
+* improve legal entity overview layout ([#203](https://github.com/moreorover/prive-admin/issues/203)) ([4cc2cf9](https://github.com/moreorover/prive-admin/commit/4cc2cf94e593279c0c3b8e26fff07d9a4e614efa))
+
+
+### Bug Fixes
+
+* **deps:** bump dependencies via taze major ([#199](https://github.com/moreorover/prive-admin/issues/199)) ([4357ebb](https://github.com/moreorover/prive-admin/commit/4357ebb8dc3e48aae755db1c833a70c5c6c27732))
+* display currency amounts in euros ([#200](https://github.com/moreorover/prive-admin/issues/200)) ([a281448](https://github.com/moreorover/prive-admin/commit/a28144825c023e99928287fa314236e6be0c66be))
+
 ## [0.6.2](https://github.com/moreorover/prive-admin/compare/v0.6.1...v0.6.2) (2026-06-13)
 
 
