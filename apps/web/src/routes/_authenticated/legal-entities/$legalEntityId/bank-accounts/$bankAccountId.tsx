@@ -34,7 +34,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
 import { createBankAccount, getBankAccount, updateBankAccount } from "@/functions/bank-accounts"
@@ -354,23 +354,22 @@ function BankAccountShow({ id }: { id: string }) {
         </Card>
       </Stack>
 
-      <EditBankAccountModal
-        opened={editOpened}
-        onClose={closeEdit}
-        bankAccountId={id}
-        initial={
-          q.data
-            ? {
-                legalEntityId: q.data.legalEntityId,
-                iban: q.data.iban,
-                currency: q.data.currency as Currency,
-                bankName: q.data.bankName ?? "",
-                swift: q.data.swift ?? "",
-                displayName: q.data.displayName,
-              }
-            : null
-        }
-      />
+      {editOpened && q.data && (
+        <EditBankAccountModal
+          key={q.data.id}
+          opened={editOpened}
+          onClose={closeEdit}
+          bankAccountId={id}
+          initial={{
+            legalEntityId: q.data.legalEntityId,
+            iban: q.data.iban,
+            currency: q.data.currency as Currency,
+            bankName: q.data.bankName ?? "",
+            swift: q.data.swift ?? "",
+            displayName: q.data.displayName,
+          }}
+        />
+      )}
       <AttachmentPreviewDialog attachment={previewAttachment} onClose={() => setPreviewAttachment(null)} />
     </>
   )
@@ -584,7 +583,7 @@ function EditBankAccountModal({
   opened: boolean
   onClose: () => void
   bankAccountId: string
-  initial: FormValues | null
+  initial: FormValues
 }) {
   const queryClient = useQueryClient()
   const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
@@ -592,23 +591,10 @@ function EditBankAccountModal({
   const form = useForm<FormValues & { id: string | undefined }>({
     initialValues: {
       id: bankAccountId,
-      legalEntityId: "",
-      iban: "",
-      currency: "EUR",
-      bankName: "",
-      swift: "",
-      displayName: "",
+      ...initial,
     },
     validate: zodResolver(bankAccountSchema),
   })
-
-  useEffect(() => {
-    if (opened && initial) {
-      form.setValues({ id: bankAccountId, ...initial })
-      form.resetDirty()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [opened, initial, bankAccountId])
 
   const save = useMutation({
     mutationFn: (values: typeof form.values) => updateBankAccount({ data: { ...values, id: bankAccountId } }),

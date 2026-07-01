@@ -18,6 +18,7 @@ export const appointmentSchema = z.object({
   name: z.string().min(1, "Name is required"),
   startsAt: z.union([z.string(), z.date()]),
   clientId: z.string().min(1, "Client is required"),
+  masterId: z.string().min(1, "Master is required"),
   salonId: z.string().min(1, "Salon is required"),
 })
 

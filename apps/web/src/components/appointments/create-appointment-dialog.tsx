@@ -25,6 +25,7 @@ type FormValues = {
   name: string
   startsAt: string | null
   clientId: string
+  masterId: string
   salonId: string
 }
 
@@ -46,12 +47,14 @@ export function CreateAppointmentDialog({
       name: "",
       startsAt: defaultStartsAt ?? defaultStartsAtString(),
       clientId: defaultClientId ?? "",
+      masterId: "",
       salonId: "",
     },
     validate: {
       name: (v) => (v.trim() ? null : "Name is required"),
       startsAt: (v) => (v ? null : "Start time is required"),
       clientId: (v) => (v ? null : "Client is required"),
+      masterId: (v) => (v ? null : "Master is required"),
       salonId: (v) => (v ? null : "Salon is required"),
     },
   })
@@ -62,6 +65,7 @@ export function CreateAppointmentDialog({
         name: "",
         startsAt: defaultStartsAt ?? defaultStartsAtString(),
         clientId: defaultClientId ?? "",
+        masterId: "",
         salonId: "",
       })
       form.resetDirty()
@@ -72,7 +76,7 @@ export function CreateAppointmentDialog({
   const { data: customers } = useQuery({
     queryKey: customerKeys.list(),
     queryFn: () => getCustomers(),
-    enabled: open && !defaultClientId,
+    enabled: open,
   })
 
   const { data: salons } = useQuery({
@@ -88,6 +92,7 @@ export function CreateAppointmentDialog({
           name: values.name.trim(),
           startsAt: dayjs(values.startsAt!).toISOString(),
           clientId: values.clientId,
+          masterId: values.masterId,
           salonId: values.salonId,
         },
       }),
@@ -125,6 +130,13 @@ export function CreateAppointmentDialog({
               {...form.getInputProps("clientId")}
             />
           )}
+          <Select
+            label="Master"
+            required
+            searchable
+            data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
+            {...form.getInputProps("masterId")}
+          />
           <Select
             label="Salon"
             required

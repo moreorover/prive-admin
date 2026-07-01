@@ -43,6 +43,13 @@
       "when": 1782935417468,
       "tag": "0005_flaky_maestro",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782936085139,
+      "tag": "0006_deep_lilith",
+      "breakpoints": true
     }
   ]
 }

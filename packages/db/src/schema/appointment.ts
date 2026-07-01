@@ -11,7 +11,9 @@ export const appointment = pgTable("appointment", {
   clientId: text("client_id")
     .notNull()
     .references(() => customer.id, { onDelete: "cascade" }),
-  masterId: text("master_id").references(() => customer.id, { onDelete: "set null" }),
+  masterId: text("master_id")
+    .notNull()
+    .references(() => customer.id, { onDelete: "restrict" }),
   salonId: text("salon_id")
     .notNull()
     .references(() => salon.id, { onDelete: "restrict" }),
