@@ -9,6 +9,7 @@ import {
   Menu,
   Modal,
   ScrollArea,
+  Select,
   Skeleton,
   Stack,
   Table,
@@ -32,7 +33,7 @@ import { CreateTransactionDialog } from "@/components/transactions/create-transa
 import { DeleteTransactionDialog } from "@/components/transactions/delete-transaction-dialog"
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
-import { getAppointment, linkPersonnel } from "@/functions/appointments"
+import { getAppointment, linkPersonnel, updateAppointmentMaster } from "@/functions/appointments"
 import { getCustomers } from "@/functions/customers"
 import { getHairAssignedByAppointment } from "@/functions/hair-assigned"
 import { getTransactionsByAppointmentId } from "@/functions/transactions"
@@ -83,6 +84,7 @@ function AppointmentDetailPage() {
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
   const [pickPersonnelOpen, setPickPersonnelOpen] = useState(false)
+  const [changeMasterOpen, setChangeMasterOpen] = useState(false)
   const [createTxOpen, setCreateTxOpen] = useState(false)
   const [createTxCustomerId, setCreateTxCustomerId] = useState<string | null>(null)
   const [editTx, setEditTx] = useState<TransactionRow | null>(null)
@@ -143,7 +145,7 @@ function AppointmentDetailPage() {
 
   const txInvalidateKeys = [{ queryKey: transactionKeys.byAppointment(appointmentId) }]
 
-  const txCustomerId = createTxCustomerId ?? appointment.client.id
+  const txCustomerId = createTxCustomerId ?? appointment.master.id
   const txDefaultCurrency: Currency = (() => {
     const raw = userSettings?.preferredCurrency
     return raw && (CURRENCIES as readonly string[]).includes(raw) ? (raw as Currency) : "EUR"
@@ -189,6 +191,48 @@ function AppointmentDetailPage() {
       />
       <Stack>
         <Group grow align="flex-start">
+          <Card withBorder>
+            <Group justify="space-between" mb="sm">
+              <Title order={5}>Master</Title>
+              <Button
+                variant="subtle"
+                size="xs"
+                leftSection={<IconUser size={12} />}
+                onClick={() => setChangeMasterOpen(true)}
+              >
+                Change
+              </Button>
+            </Group>
+            <Card withBorder padding="xs">
+              <Group justify="space-between" gap="xs">
+                <Group gap="xs">
+                  <IconUser size={12} />
+                  <Text
+                    renderRoot={(props) => (
+                      <Link to="/customers/$customerId" params={{ customerId: appointment.master.id }} {...props} />
+                    )}
+                    c="blue"
+                    size="sm"
+                  >
+                    {appointment.master.name}
+                  </Text>
+                </Group>
+                <Menu shadow="md" width={180} position="bottom-end">
+                  <Menu.Target>
+                    <ActionIcon variant="subtle" size="sm" aria-label="Master actions">
+                      <IconDots size={14} />
+                    </ActionIcon>
+                  </Menu.Target>
+                  <Menu.Dropdown>
+                    <Menu.Item leftSection={<IconCash size={14} />} onClick={() => openCreateTx(appointment.master.id)}>
+                      New transaction
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              </Group>
+            </Card>
+          </Card>
+
           <Card withBorder>
             <Group justify="space-between" mb="sm">
               <Title order={5}>Personnel</Title>
@@ -365,6 +409,15 @@ function AppointmentDetailPage() {
           appointmentId={appointmentId}
           assignedPersonnelIds={appointment.personnel?.map((p) => p.personnelId) ?? []}
         />
+        {changeMasterOpen && (
+          <ChangeMasterModal
+            key={`${appointmentId}-${appointment.master.id}`}
+            open={changeMasterOpen}
+            onOpenChange={setChangeMasterOpen}
+            appointmentId={appointmentId}
+            currentMasterId={appointment.master.id}
+          />
+        )}
         <CreateTransactionDialog
           open={createTxOpen}
           onOpenChange={(open) => {
@@ -402,6 +455,61 @@ type PickPersonnelModalProps = {
   onOpenChange: (open: boolean) => void
   appointmentId: string
   assignedPersonnelIds: string[]
+}
+
+type ChangeMasterModalProps = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  appointmentId: string
+  currentMasterId: string
+}
+
+function ChangeMasterModal({ open, onOpenChange, appointmentId, currentMasterId }: ChangeMasterModalProps) {
+  const queryClient = useQueryClient()
+  const [masterId, setMasterId] = useState(currentMasterId)
+
+  const { data: customers } = useQuery({
+    queryKey: customerKeys.list(),
+    queryFn: () => getCustomers(),
+    enabled: open,
+  })
+
+  const mutation = useMutation({
+    mutationFn: (nextMasterId: string) => updateAppointmentMaster({ data: { appointmentId, masterId: nextMasterId } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: appointmentKeys.detail(appointmentId) })
+      notifications.show({ color: "green", message: "Master updated." })
+      onOpenChange(false)
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+
+  return (
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="Change master">
+      <Stack>
+        <Select
+          label="Master"
+          required
+          searchable
+          value={masterId}
+          onChange={(value) => setMasterId(value ?? "")}
+          data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
+        />
+        <Group justify="flex-end" gap="xs">
+          <Button variant="default" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            disabled={!masterId || masterId === currentMasterId}
+            loading={mutation.isPending}
+            onClick={() => mutation.mutate(masterId)}
+          >
+            Save
+          </Button>
+        </Group>
+      </Stack>
+    </Modal>
+  )
 }
 
 function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonnelIds }: PickPersonnelModalProps) {

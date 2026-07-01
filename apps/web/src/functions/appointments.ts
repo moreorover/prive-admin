@@ -57,6 +57,7 @@ export const createAppointment = createServerFn({ method: "POST" })
         name: data.name,
         startsAt: new Date(data.startsAt),
         clientId: data.clientId,
+        masterId: data.masterId,
         salonId: data.salonId,
       })
       .returning()
@@ -72,6 +73,21 @@ export const linkPersonnel = createServerFn({ method: "POST" })
       personnelId,
     }))
     await db.insert(personnelOnAppointments).values(values)
+  })
+
+export const updateAppointmentMaster = createServerFn({ method: "POST" })
+  .middleware([requireAuthMiddleware])
+  .inputValidator(z.object({ appointmentId: z.string(), masterId: z.string().min(1) }))
+  .handler(async ({ data }) => {
+    const [result] = await db
+      .update(appointment)
+      .set({ masterId: data.masterId })
+      .where(eq(appointment.id, data.appointmentId))
+      .returning()
+    if (!result) {
+      throw new Error("Appointment not found")
+    }
+    return result
   })
 
 export const getAppointmentsByCustomerId = createServerFn({ method: "GET" })

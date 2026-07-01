@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest"
 import { appointment } from "./schema/appointment"
 
 describe("appointment schema", () => {
-  it("stores an optional master customer reference", () => {
+  it("requires a master customer reference", () => {
     expect(appointment.masterId.name).toBe("master_id")
-    expect(appointment.masterId.notNull).toBe(false)
+    expect(appointment.masterId.notNull).toBe(true)
   })
 })
