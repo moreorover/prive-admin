@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/moreorover/prive-admin/compare/v0.8.0...v0.9.0) (2026-07-01)
+
+
+### Features
+
+* require appointment master in UI ([#208](https://github.com/moreorover/prive-admin/issues/208)) ([260c95c](https://github.com/moreorover/prive-admin/commit/260c95c4a1b43b83a2dfe3e1866cd3057664b75f))
+
 ## [0.8.0](https://github.com/moreorover/prive-admin/compare/v0.7.0...v0.8.0) (2026-07-01)
 
 
