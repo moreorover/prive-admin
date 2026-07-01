@@ -22,7 +22,7 @@ export const getAppointments = createServerFn({ method: "GET" })
 
     return db.query.appointment.findMany({
       where: conditions.length > 0 ? and(...conditions) : undefined,
-      with: { client: true, salon: true },
+      with: { client: true, master: true, salon: true },
       orderBy: (appointment, { asc }) => [asc(appointment.startsAt)],
     })
   })
@@ -35,6 +35,7 @@ export const getAppointment = createServerFn({ method: "GET" })
       where: eq(appointment.id, data.id),
       with: {
         client: true,
+        master: true,
         salon: true,
         personnel: { with: { personnel: true } },
         notes: { with: { createdBy: true } },
@@ -79,7 +80,7 @@ export const getAppointmentsByCustomerId = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     return db.query.appointment.findMany({
       where: eq(appointment.clientId, data.customerId),
-      with: { salon: true },
+      with: { master: true, salon: true },
       orderBy: (appointment, { desc }) => [desc(appointment.startsAt)],
     })
   })

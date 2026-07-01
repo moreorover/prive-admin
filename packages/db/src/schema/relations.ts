@@ -37,7 +37,8 @@ export const accountRelations = relations(account, ({ one }) => ({
 export const customerRelations = relations(customer, ({ many }) => ({
   orders: many(order),
   transactions: many(transaction),
-  appointmentsAsCustomer: many(appointment),
+  appointmentsAsCustomer: many(appointment, { relationName: "appointmentClient" }),
+  appointmentsAsMaster: many(appointment, { relationName: "appointmentMaster" }),
   appointmentsAsPersonnel: many(personnelOnAppointments),
   hairOrders: many(hairOrder),
   hairAssigned: many(hairAssigned),
@@ -68,7 +69,16 @@ export const orderItemRelations = relations(orderItem, ({ one }) => ({
 
 // Appointment relations
 export const appointmentRelations = relations(appointment, ({ one, many }) => ({
-  client: one(customer, { fields: [appointment.clientId], references: [customer.id] }),
+  client: one(customer, {
+    fields: [appointment.clientId],
+    references: [customer.id],
+    relationName: "appointmentClient",
+  }),
+  master: one(customer, {
+    fields: [appointment.masterId],
+    references: [customer.id],
+    relationName: "appointmentMaster",
+  }),
   salon: one(salon, { fields: [appointment.salonId], references: [salon.id] }),
   personnel: many(personnelOnAppointments),
   transactions: many(transaction),
