@@ -1,0 +1,2 @@
+ALTER TABLE "appointment" ADD COLUMN "master_id" text;--> statement-breakpoint
+ALTER TABLE "appointment" ADD CONSTRAINT "appointment_master_id_customer_id_fk" FOREIGN KEY ("master_id") REFERENCES "public"."customer"("id") ON DELETE set null ON UPDATE no action;

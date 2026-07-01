@@ -36,6 +36,13 @@
       "when": 1781539200000,
       "tag": "0004_drop_hair_order_legal_entity",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1782935417468,
+      "tag": "0005_flaky_maestro",
+      "breakpoints": true
     }
   ]
 }
