@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/moreorover/prive-admin/compare/v0.7.0...v0.8.0) (2026-07-01)
+
+
+### Features
+
+* add appointment master relation ([#206](https://github.com/moreorover/prive-admin/issues/206)) ([c5fd125](https://github.com/moreorover/prive-admin/commit/c5fd125a6281d76dc50614067489d8f601489df7))
+
 ## [0.7.0](https://github.com/moreorover/prive-admin/compare/v0.6.2...v0.7.0) (2026-06-15)
 
 
