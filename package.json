@@ -10,10 +10,10 @@
     "catalog": {
       "dotenv": "^17.4.2",
       "zod": "^4.4.3",
-      "@types/node": "^25.9.3",
+      "@types/node": "^26.0.0",
       "react": "^19.2.7",
       "react-dom": "^19.2.7",
-      "better-auth": "^1.6.18",
+      "better-auth": "^1.6.20",
       "@types/react": "^19.2.17",
       "@types/react-dom": "^19.2.3"
     }
@@ -37,9 +37,9 @@
   "devDependencies": {
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
-    "knip": "^6.16.1",
-    "oxfmt": "^0.54.0",
-    "oxlint": "^1.69.0",
+    "knip": "^6.18.0",
+    "oxfmt": "^0.56.0",
+    "oxlint": "^1.71.0",
     "turbo": "^2.9.18",
     "typescript": "^6.0.3"
   },
