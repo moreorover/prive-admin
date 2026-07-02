@@ -16,7 +16,7 @@ export const cashTransaction = pgTable("cash_transaction", {
     .references(() => customer.id, { onDelete: "restrict" }),
   createdById: text("created_by_id")
     .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+    .references(() => user.id, { onDelete: "restrict" }),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .$onUpdate(() => new Date())
     .notNull(),
