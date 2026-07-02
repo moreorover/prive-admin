@@ -39,4 +39,16 @@ describe("cashTransaction schema", () => {
     expect(cashTransaction.updatedAt.columnType).toBe("PgTimestamp")
     expect(cashTransaction.updatedAt.getSQLType()).toBe("timestamp with time zone")
   })
+
+  it("indexes list access patterns", () => {
+    expect(migrationSql).toContain(
+      'CREATE INDEX "cash_transaction_created_at_id_idx" ON "cash_transaction" USING btree ("created_at","id");',
+    )
+    expect(migrationSql).toContain(
+      'CREATE INDEX "cash_transaction_customer_id_idx" ON "cash_transaction" USING btree ("customer_id");',
+    )
+    expect(migrationSql).toContain(
+      'CREATE INDEX "cash_transaction_currency_created_at_idx" ON "cash_transaction" USING btree ("currency","created_at");',
+    )
+  })
 })

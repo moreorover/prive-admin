@@ -2,6 +2,8 @@ import { z } from "zod"
 
 import { currencySchema } from "./currency"
 
+const pgIntegerSchema = z.number().int().min(-2147483648).max(2147483647)
+
 export const customerSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(5, "Name must be at least 5 characters long").max(50, "Name cannot exceed 50 characters"),
@@ -71,9 +73,9 @@ export const bankAccountSchema = z.object({
 export const cashTransactionSchema = z.object({
   id: z.string().optional(),
   customerId: z.string().min(1, "Customer is required"),
-  createdAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date is required"),
+  createdAt: z.iso.date("Date is required"),
   description: z.string().max(120).nullish(),
   notes: z.string().max(1000).nullish(),
-  amount: z.number().int().refine((value) => value !== 0, "Amount cannot be zero"),
+  amount: pgIntegerSchema.refine((value) => value !== 0, "Amount cannot be zero"),
   currency: currencySchema.default("EUR"),
 })

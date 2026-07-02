@@ -3,21 +3,21 @@ import { user } from "@prive-admin-tanstack/db/schema/auth"
 import { cashTransaction } from "@prive-admin-tanstack/db/schema/cash-transaction"
 import { customer } from "@prive-admin-tanstack/db/schema/customer"
 import { createServerFn } from "@tanstack/react-start"
-import { and, count, desc, eq, gt, ilike, lt, or, sql } from "drizzle-orm"
+import { and, count, desc, eq, gt, gte, ilike, lt, lte, or, type SQL } from "drizzle-orm"
 import { z } from "zod"
 
 import { cashTransactionSchema } from "@/lib/schemas"
 import { requireAuthMiddleware } from "@/middleware/auth"
 
 const listSchema = z.object({
-  page: z.number().int().min(1).default(1),
+  page: z.number().int().min(1).max(1000).default(1),
   pageSize: z.number().int().min(1).max(100).default(25),
   search: z.string().trim().max(120).optional(),
   customerId: z.string().optional(),
   currency: z.enum(["EUR", "GBP"]).optional(),
   direction: z.enum(["all", "received", "paid"]).default("all"),
-  dateFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  dateTo: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  dateFrom: z.iso.date().optional(),
+  dateTo: z.iso.date().optional(),
 })
 
 function nullableText(value: string | null | undefined) {
@@ -25,20 +25,27 @@ function nullableText(value: string | null | undefined) {
   return trimmed ? trimmed : null
 }
 
+function escapeLikePattern(value: string) {
+  return value.replace(/[\\%_]/g, "\\$&")
+}
+
 function buildWhere(data: z.infer<typeof listSchema>) {
-  const clauses = []
+  const clauses: SQL[] = []
   if (data.search) {
-    const pattern = `%${data.search}%`
-    clauses.push(
-      or(ilike(cashTransaction.description, pattern), ilike(cashTransaction.notes, pattern), ilike(customer.name, pattern)),
+    const pattern = `%${escapeLikePattern(data.search)}%`
+    const searchClause = or(
+      ilike(cashTransaction.description, pattern),
+      ilike(cashTransaction.notes, pattern),
+      ilike(customer.name, pattern),
     )
+    if (searchClause) clauses.push(searchClause)
   }
   if (data.customerId) clauses.push(eq(cashTransaction.customerId, data.customerId))
   if (data.currency) clauses.push(eq(cashTransaction.currency, data.currency))
   if (data.direction === "received") clauses.push(gt(cashTransaction.amount, 0))
   if (data.direction === "paid") clauses.push(lt(cashTransaction.amount, 0))
-  if (data.dateFrom) clauses.push(sql`${cashTransaction.createdAt} >= ${data.dateFrom}`)
-  if (data.dateTo) clauses.push(sql`${cashTransaction.createdAt} <= ${data.dateTo}`)
+  if (data.dateFrom) clauses.push(gte(cashTransaction.createdAt, data.dateFrom))
+  if (data.dateTo) clauses.push(lte(cashTransaction.createdAt, data.dateTo))
   return clauses.length ? and(...clauses) : undefined
 }
 
