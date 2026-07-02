@@ -5,6 +5,7 @@ import { user, session, account } from "./auth"
 import { bankAccount } from "./bank-account"
 import { bankStatementAttachment } from "./bank-statement-attachment"
 import { bankStatementEntry } from "./bank-statement-entry"
+import { cashTransaction } from "./cash-transaction"
 import { customer } from "./customer"
 import { hairAssigned, hairOrder } from "./hair"
 import { legalEntity } from "./legal-entity"
@@ -22,6 +23,7 @@ export const userRelations = relations(user, ({ one, many }) => ({
   hairOrdersCreated: many(hairOrder),
   hairAssignedCreated: many(hairAssigned),
   notesCreated: many(note),
+  cashTransactionsCreated: many(cashTransaction),
   settings: one(userSettings, { fields: [user.id], references: [userSettings.userId] }),
 }))
 
@@ -43,6 +45,7 @@ export const customerRelations = relations(customer, ({ many }) => ({
   hairOrders: many(hairOrder),
   hairAssigned: many(hairAssigned),
   notes: many(note),
+  cashTransactions: many(cashTransaction),
 }))
 
 // Product relations
@@ -96,6 +99,11 @@ export const transactionRelations = relations(transaction, ({ one }) => ({
   customer: one(customer, { fields: [transaction.customerId], references: [customer.id] }),
   order: one(order, { fields: [transaction.orderId], references: [order.id] }),
   appointment: one(appointment, { fields: [transaction.appointmentId], references: [appointment.id] }),
+}))
+
+export const cashTransactionRelations = relations(cashTransaction, ({ one }) => ({
+  customer: one(customer, { fields: [cashTransaction.customerId], references: [customer.id] }),
+  createdBy: one(user, { fields: [cashTransaction.createdById], references: [user.id] }),
 }))
 
 // Hair relations
