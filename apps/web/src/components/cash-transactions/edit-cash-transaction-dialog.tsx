@@ -8,8 +8,8 @@ import {
   type CashTransactionFormCustomer,
   type CashTransactionFormSubmit,
 } from "@/components/cash-transactions/cash-transaction-form"
-import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
 import { type CashTransactionRow } from "@/components/cash-transactions/cash-transactions-table"
+import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
 import { updateCashTransaction } from "@/functions/cash-transactions"
 import { cashTransactionKeys } from "@/lib/query-keys"
 

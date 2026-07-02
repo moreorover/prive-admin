@@ -54,8 +54,7 @@ export function CashTransactionForm({
     validate: {
       customerId: (value) => (value ? null : "Customer is required"),
       createdAt: (value) => (value ? null : "Date is required"),
-      description: (value) =>
-        value.trim().length <= 120 ? null : "Description must be 120 characters or less",
+      description: (value) => (value.trim().length <= 120 ? null : "Description must be 120 characters or less"),
       notes: (value) => (value.trim().length <= 1000 ? null : "Notes must be 1000 characters or less"),
       amountMajor: (value) => {
         if (!Number.isFinite(value)) return "Amount is required"

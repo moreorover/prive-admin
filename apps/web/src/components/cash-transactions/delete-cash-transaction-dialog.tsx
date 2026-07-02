@@ -2,8 +2,8 @@ import { Button, Group, Modal, Stack, Text } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
 import { type CashTransactionRow } from "@/components/cash-transactions/cash-transactions-table"
+import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
 import { deleteCashTransaction } from "@/functions/cash-transactions"
 import { formatMinor } from "@/lib/currency"
 import { cashTransactionKeys } from "@/lib/query-keys"
@@ -14,11 +14,7 @@ type DeleteCashTransactionDialogProps = {
   transaction: CashTransactionRow
 }
 
-export function DeleteCashTransactionDialog({
-  open,
-  onOpenChange,
-  transaction,
-}: DeleteCashTransactionDialogProps) {
+export function DeleteCashTransactionDialog({ open, onOpenChange, transaction }: DeleteCashTransactionDialogProps) {
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
