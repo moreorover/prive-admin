@@ -34,7 +34,7 @@ Fields:
 - `description`: optional short text.
 - `notes`: optional longer text.
 - `customerId`: required FK to `customer.id`, with `onDelete: restrict`.
-- `createdById`: required FK to `users.id`, set from the authenticated session, with the existing user relation pattern.
+- `createdById`: required FK to `users.id`, set from the authenticated session, with `onDelete: restrict` to preserve cash history.
 - `updatedAt`: timestamp with timezone, maintained on update.
 
 The user-facing transaction date is intentionally day-level only. The field is named `createdAt` to match the requested model, but it is a Postgres `date`, not a timestamp. If a future audit timestamp is needed, add a separately named system field such as `recordedAt`.
