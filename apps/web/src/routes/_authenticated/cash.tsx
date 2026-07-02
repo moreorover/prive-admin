@@ -12,11 +12,13 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { listCashTransactions } from "@/functions/cash-transactions"
 import { getCustomers } from "@/functions/customers"
+import { type Currency } from "@/lib/currency"
 import { cashTransactionKeys, customerKeys } from "@/lib/query-keys"
 
 const PAGE_SIZE = 25
 
 type CashTransactionDirection = "all" | "received" | "paid"
+type CashTransactionCurrencyFilter = Currency | ""
 
 export const Route = createFileRoute("/_authenticated/cash")({
   component: CashPage,
@@ -26,7 +28,7 @@ function CashPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
   const [customerId, setCustomerId] = useState("")
-  const [currency, setCurrency] = useState("")
+  const [currency, setCurrency] = useState<CashTransactionCurrencyFilter>("")
   const [direction, setDirection] = useState<CashTransactionDirection>("all")
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
@@ -117,7 +119,7 @@ function CashPage() {
             ]}
             value={currency}
             onChange={(event) => {
-              setCurrency(event.currentTarget.value)
+              setCurrency(event.currentTarget.value as CashTransactionCurrencyFilter)
               resetPage()
             }}
           />
