@@ -3,7 +3,7 @@ import { user } from "@prive-admin-tanstack/db/schema/auth"
 import { cashTransaction } from "@prive-admin-tanstack/db/schema/cash-transaction"
 import { customer } from "@prive-admin-tanstack/db/schema/customer"
 import { createServerFn } from "@tanstack/react-start"
-import { and, count, desc, eq, gt, gte, ilike, lt, lte, or, type SQL } from "drizzle-orm"
+import { and, count, desc, eq, gt, gte, ilike, lt, or, type SQL } from "drizzle-orm"
 import { z } from "zod"
 
 import { cashTransactionSchema } from "@/lib/schemas"
@@ -30,11 +30,13 @@ function escapeLikePattern(value: string) {
 }
 
 function dateToTimestampStart(value: string) {
-  return `${value}T00:00:00.000Z`
+  return value
 }
 
-function dateToTimestampEnd(value: string) {
-  return `${value}T23:59:59.999Z`
+function dayAfter(value: string) {
+  const date = new Date(`${value}T00:00:00.000Z`)
+  date.setUTCDate(date.getUTCDate() + 1)
+  return date.toISOString().slice(0, 10)
 }
 
 function buildWhere(data: z.infer<typeof listSchema>) {
@@ -53,7 +55,7 @@ function buildWhere(data: z.infer<typeof listSchema>) {
   if (data.direction === "received") clauses.push(gt(cashTransaction.amount, 0))
   if (data.direction === "paid") clauses.push(lt(cashTransaction.amount, 0))
   if (data.dateFrom) clauses.push(gte(cashTransaction.createdAt, dateToTimestampStart(data.dateFrom)))
-  if (data.dateTo) clauses.push(lte(cashTransaction.createdAt, dateToTimestampEnd(data.dateTo)))
+  if (data.dateTo) clauses.push(lt(cashTransaction.createdAt, dayAfter(data.dateTo)))
   return clauses.length ? and(...clauses) : undefined
 }
 

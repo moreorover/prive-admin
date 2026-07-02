@@ -44,8 +44,8 @@ export function CreateCashTransactionDialog({ open, onOpenChange, customers }: C
         }}
         submitLabel="Create"
         loading={mutation.isPending}
-        onSubmit={async (values) => {
-          await mutation.mutateAsync(values)
+        onSubmit={(values) => {
+          mutation.mutate(values)
         }}
       />
     </Modal>

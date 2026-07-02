@@ -56,8 +56,8 @@ export function EditCashTransactionDialog({
         }}
         submitLabel="Save Changes"
         loading={mutation.isPending}
-        onSubmit={async (values) => {
-          await mutation.mutateAsync(values)
+        onSubmit={(values) => {
+          mutation.mutate(values)
         }}
       />
     </Modal>
