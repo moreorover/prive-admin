@@ -7,15 +7,15 @@ import {
   type CashTransactionFormCustomer,
   type CashTransactionFormSubmit,
 } from "@/components/cash-transactions/cash-transaction-form"
+import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
 import { type CashTransactionRow } from "@/components/cash-transactions/cash-transactions-table"
 import { updateCashTransaction } from "@/functions/cash-transactions"
-import { CURRENCIES, type Currency } from "@/lib/currency"
 import { cashTransactionKeys } from "@/lib/query-keys"
 
 type EditCashTransactionDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  transaction: Omit<CashTransactionRow, "currency"> & { currency: Currency | string }
+  transaction: CashTransactionRow
   customers: CashTransactionFormCustomer[]
 }
 
@@ -38,9 +38,7 @@ export function EditCashTransactionDialog({
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
-  const initialCurrency: Currency = (CURRENCIES as readonly string[]).includes(transaction.currency)
-    ? (transaction.currency as Currency)
-    : "EUR"
+  const initialCurrency = coerceCashTransactionCurrency(transaction.currency)
 
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Cash Transaction">

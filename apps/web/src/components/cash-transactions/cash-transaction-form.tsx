@@ -4,6 +4,11 @@ import { useState } from "react"
 
 import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
 
+const MIN_MINOR_AMOUNT = -2147483648
+const MAX_MINOR_AMOUNT = 2147483647
+const MIN_MAJOR_AMOUNT = MIN_MINOR_AMOUNT / 100
+const MAX_MAJOR_AMOUNT = MAX_MINOR_AMOUNT / 100
+
 export type CashTransactionFormCustomer = {
   id: string
   name: string
@@ -48,11 +53,16 @@ export function CashTransactionForm({
     validate: {
       customerId: (value) => (value ? null : "Customer is required"),
       createdAt: (value) => (value ? null : "Date is required"),
-      description: (value) => (value.length <= 120 ? null : "Description must be 120 characters or less"),
-      notes: (value) => (value.length <= 1000 ? null : "Notes must be 1000 characters or less"),
+      description: (value) =>
+        value.trim().length <= 120 ? null : "Description must be 120 characters or less",
+      notes: (value) => (value.trim().length <= 1000 ? null : "Notes must be 1000 characters or less"),
       amountMajor: (value) => {
         if (!Number.isFinite(value)) return "Amount is required"
-        if (value === 0) return "Amount cannot be zero"
+        const minorAmount = Math.round(value * 100)
+        if (minorAmount === 0) return "Amount cannot be zero"
+        if (minorAmount < MIN_MINOR_AMOUNT || minorAmount > MAX_MINOR_AMOUNT) {
+          return "Amount is outside the supported range"
+        }
         return null
       },
     },
@@ -115,6 +125,8 @@ export function CashTransactionForm({
           fixedDecimalScale
           step={0.01}
           allowNegative
+          min={MIN_MAJOR_AMOUNT}
+          max={MAX_MAJOR_AMOUNT}
           {...form.getInputProps("amountMajor")}
         />
         <Group justify="flex-end">

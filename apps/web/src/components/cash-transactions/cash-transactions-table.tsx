@@ -2,12 +2,13 @@ import { ActionIcon, Menu, Table, Text } from "@mantine/core"
 import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 
-import { type Currency, formatMinor } from "@/lib/currency"
+import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
+import { formatMinor } from "@/lib/currency"
 
 export type CashTransactionRow = {
   id: string
   amount: number
-  currency: Currency
+  currency: string
   createdAt: string
   description: string | null
   notes: string | null
@@ -59,7 +60,7 @@ export function CashTransactionsTable({ items, onEdit, onDelete }: CashTransacti
               </Text>
             </Table.Td>
             <Table.Td>{tx.description ?? <Text c="dimmed">—</Text>}</Table.Td>
-            <Table.Td ta="right">{formatMinor(tx.amount, tx.currency)}</Table.Td>
+            <Table.Td ta="right">{formatMinor(tx.amount, coerceCashTransactionCurrency(tx.currency))}</Table.Td>
             <Table.Td>{tx.createdBy.name}</Table.Td>
             <Table.Td>
               <Menu shadow="md" width={140} position="bottom-end">

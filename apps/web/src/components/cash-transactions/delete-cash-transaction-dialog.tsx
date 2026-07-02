@@ -2,6 +2,7 @@ import { Button, Group, Modal, Stack, Text } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
+import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
 import { type CashTransactionRow } from "@/components/cash-transactions/cash-transactions-table"
 import { deleteCashTransaction } from "@/functions/cash-transactions"
 import { formatMinor } from "@/lib/currency"
@@ -34,7 +35,8 @@ export function DeleteCashTransactionDialog({
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Delete Cash Transaction">
       <Stack>
         <Text size="sm">
-          This will permanently remove the cash transaction of {formatMinor(transaction.amount, transaction.currency)}
+          This will permanently remove the cash transaction of{" "}
+          {formatMinor(transaction.amount, coerceCashTransactionCurrency(transaction.currency))}
           {" for "}
           {transaction.customer.name}. This action cannot be undone.
         </Text>
