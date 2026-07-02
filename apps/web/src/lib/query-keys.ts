@@ -51,6 +51,11 @@ export const transactionKeys = {
   byAppointment: (appointmentId: string) => [...transactionKeys.all, "by-appointment", appointmentId] as const,
 }
 
+export const cashTransactionKeys = {
+  all: ["cash-transactions"] as const,
+  list: (filter: Record<string, unknown>) => [...cashTransactionKeys.all, "list", filter] as const,
+}
+
 export const userSettingsKeys = {
   all: ["user-settings"] as const,
   current: () => [...userSettingsKeys.all, "current"] as const,
