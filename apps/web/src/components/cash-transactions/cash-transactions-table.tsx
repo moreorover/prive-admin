@@ -39,7 +39,7 @@ export function CashTransactionsTable({ items, onEdit, onDelete }: CashTransacti
           <Table.Th>Date</Table.Th>
           <Table.Th>Customer</Table.Th>
           <Table.Th>Description</Table.Th>
-          <Table.Th>Amount</Table.Th>
+          <Table.Th ta="right">Amount</Table.Th>
           <Table.Th>Created by</Table.Th>
           <Table.Th>Actions</Table.Th>
         </Table.Tr>
@@ -59,7 +59,7 @@ export function CashTransactionsTable({ items, onEdit, onDelete }: CashTransacti
               </Text>
             </Table.Td>
             <Table.Td>{tx.description ?? <Text c="dimmed">—</Text>}</Table.Td>
-            <Table.Td>{formatMinor(tx.amount, tx.currency)}</Table.Td>
+            <Table.Td ta="right">{formatMinor(tx.amount, tx.currency)}</Table.Td>
             <Table.Td>{tx.createdBy.name}</Table.Td>
             <Table.Td>
               <Menu shadow="md" width={140} position="bottom-end">

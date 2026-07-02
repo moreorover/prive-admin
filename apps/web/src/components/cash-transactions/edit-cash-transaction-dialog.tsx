@@ -45,6 +45,7 @@ export function EditCashTransactionDialog({
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Cash Transaction">
       <CashTransactionForm
+        key={transaction.id}
         customers={customers}
         initialValues={{
           customerId: transaction.customerId,

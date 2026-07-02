@@ -48,6 +48,8 @@ export function CashTransactionForm({
     validate: {
       customerId: (value) => (value ? null : "Customer is required"),
       createdAt: (value) => (value ? null : "Date is required"),
+      description: (value) => (value.length <= 120 ? null : "Description must be 120 characters or less"),
+      notes: (value) => (value.length <= 1000 ? null : "Notes must be 1000 characters or less"),
       amountMajor: (value) => {
         if (!Number.isFinite(value)) return "Amount is required"
         if (value === 0) return "Amount cannot be zero"
@@ -82,8 +84,20 @@ export function CashTransactionForm({
           {...form.getInputProps("customerId")}
         />
         <TextInput label="Date" type="date" {...form.getInputProps("createdAt")} />
-        <TextInput label="Description" placeholder="Description (optional)" {...form.getInputProps("description")} />
-        <Textarea label="Notes" placeholder="Notes (optional)" autosize minRows={2} {...form.getInputProps("notes")} />
+        <TextInput
+          label="Description"
+          placeholder="Description (optional)"
+          maxLength={120}
+          {...form.getInputProps("description")}
+        />
+        <Textarea
+          label="Notes"
+          placeholder="Notes (optional)"
+          autosize
+          minRows={2}
+          maxLength={1000}
+          {...form.getInputProps("notes")}
+        />
         <NativeSelect
           label="Currency"
           data={CURRENCY_OPTIONS}
@@ -95,7 +109,7 @@ export function CashTransactionForm({
           }}
         />
         <NumberInput
-          label="Amount"
+          label="Signed amount"
           prefix={currencySymbol(currency)}
           decimalScale={2}
           fixedDecimalScale
