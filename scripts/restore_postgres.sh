@@ -16,6 +16,7 @@
 #   PG_PASSWORD       Postgres password. Default: password
 #   PG_DATABASE       Local database to restore into. Default: prive_admin
 #   PG_SCHEMA         Schema whose tables should be dropped. Default: public
+#   PG_DROP_SCHEMAS   Extra schemas to drop before restore. Default: drizzle
 #   R2_PREFIX         Limit listing to this key prefix. Default: postgres_backup/
 #   KEEP_DOWNLOAD     If set, keep the downloaded dump file after restore.
 #
@@ -29,6 +30,7 @@ PG_SUPERUSER="${PG_SUPERUSER:-postgres}"
 PG_PASSWORD="${PG_PASSWORD:-password}"
 PG_DATABASE="${PG_DATABASE:-prive_admin}"
 PG_SCHEMA="${PG_SCHEMA:-public}"
+PG_DROP_SCHEMAS="${PG_DROP_SCHEMAS:-drizzle}"
 
 err() { printf 'error: %s\n' "$*" >&2; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1 || err "missing dependency: $1"; }
@@ -160,6 +162,9 @@ fi
 validate_pg_identifier "PROD_PG_USER" "${PROD_PG_USER}"
 validate_pg_identifier "PG_DATABASE" "${PG_DATABASE}"
 validate_pg_identifier "PG_SCHEMA" "${PG_SCHEMA}"
+for schema in ${PG_DROP_SCHEMAS}; do
+  validate_pg_identifier "PG_DROP_SCHEMAS item" "${schema}"
+done
 
 # Pre-create the prod role inside the local container so the dump's
 # `ALTER ... OWNER TO ${PROD_PG_USER}` statements don't fail.
@@ -180,11 +185,13 @@ SQL
 cat <<WARN
 
 ABOUT TO RESTORE
-  source : ${S3_KEY}
-  target : container=${PG_CONTAINER} database=${PG_DATABASE} schema=${PG_SCHEMA} superuser=${PG_SUPERUSER}
+  source       : ${S3_KEY}
+  target       : container=${PG_CONTAINER} database=${PG_DATABASE} schema=${PG_SCHEMA} superuser=${PG_SUPERUSER}
+  drop schemas : ${PG_DROP_SCHEMAS:-none}
 
 This will DROP all tables in schema "${PG_SCHEMA}" inside database
-"${PG_DATABASE}" before restoring the selected dump.
+"${PG_DATABASE}" and DROP the extra schemas listed above before restoring
+the selected dump.
 
 WARN
 printf "type 'yes' to proceed: "
@@ -213,6 +220,16 @@ BEGIN
 END
 \$\$;
 SQL
+
+for schema in ${PG_DROP_SCHEMAS}; do
+  printf 'dropping schema %s.%s\n' "${PG_DATABASE}" "${schema}"
+  docker exec -i \
+      -e PGPASSWORD="${PG_PASSWORD}" \
+      "${PG_CONTAINER}" \
+      psql -v ON_ERROR_STOP=1 -U "${PG_SUPERUSER}" -d "${PG_DATABASE}" <<SQL
+DROP SCHEMA IF EXISTS "${schema}" CASCADE;
+SQL
+done
 
 # Restore into the existing local database. Backups are generated with
 # pg_dump --clean --create, so skip database-level commands and clean-up
