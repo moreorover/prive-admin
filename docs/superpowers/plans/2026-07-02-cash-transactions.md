@@ -190,7 +190,7 @@ export const cashTransactionSchema = z.object({
   description: z.string().max(120).nullish(),
   notes: z.string().max(1000).nullish(),
   amount: z.number().int().refine((value) => value !== 0, "Amount cannot be zero"),
-  currency: currencySchema.default("EUR"),
+  currency: currencySchema,
 })
 ```
 
