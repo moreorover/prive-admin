@@ -26,6 +26,7 @@ import {
   IconAlertCircle,
   IconBuildingBank,
   IconCalendar,
+  IconCash,
   IconChevronDown,
   IconDeviceDesktop,
   IconFileText,
@@ -63,6 +64,7 @@ const workspaceNav: NavItem[] = [
   { to: "/customers", label: "Customers", icon: IconUsers },
   { to: "/calendar", label: "Calendar", icon: IconCalendar },
   { to: "/hair-orders", label: "Hair orders", icon: IconScissors },
+  { to: "/cash", label: "Cash", icon: IconCash },
 ]
 
 const manageNav: NavItem[] = [

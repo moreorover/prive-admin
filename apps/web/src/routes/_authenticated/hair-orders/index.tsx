@@ -1,4 +1,5 @@
-import { Button, Container, Group, Modal, NativeSelect, NumberInput, Stack, TextInput } from "@mantine/core"
+import { Button, Container, Group, Modal, NumberInput, Select, Stack } from "@mantine/core"
+import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconPlus } from "@tabler/icons-react"
@@ -68,15 +69,14 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     <Modal opened={open} onClose={() => onOpenChange(false)} title="New Hair Order">
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack>
-          <NativeSelect
+          <Select
             label="Customer"
-            data={[
-              { value: "", label: "Select a customer…" },
-              ...(customers?.map((c) => ({ value: c.id, label: c.name })) ?? []),
-            ]}
+            placeholder="Select a customer..."
+            searchable
+            data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
             {...form.getInputProps("customerId")}
           />
-          <TextInput label="Placed At" type="date" {...form.getInputProps("placedAt")} />
+          <DateInput label="Placed At" valueFormat="DD MMM YYYY" {...form.getInputProps("placedAt")} />
           <Group grow>
             <NumberInput label="Weight (g)" min={0} {...form.getInputProps("weightReceived")} />
             <NumberInput label="Total" min={0} decimalScale={2} step={0.01} {...form.getInputProps("total")} />

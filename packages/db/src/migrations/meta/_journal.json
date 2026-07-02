@@ -50,6 +50,13 @@
       "when": 1782936085139,
       "tag": "0006_deep_lilith",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783001514529,
+      "tag": "0007_parched_shiva",
+      "breakpoints": true
     }
   ]
 }
