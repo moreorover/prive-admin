@@ -1,4 +1,5 @@
-import { Button, Group, NativeSelect, NumberInput, Stack, Textarea, TextInput } from "@mantine/core"
+import { Button, Group, NativeSelect, NumberInput, Select, Stack, Textarea, TextInput } from "@mantine/core"
+import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
 import { useState } from "react"
 
@@ -85,15 +86,14 @@ export function CashTransactionForm({
       })}
     >
       <Stack>
-        <NativeSelect
+        <Select
           label="Customer"
-          data={[
-            { value: "", label: "Select a customer..." },
-            ...customers.map((customer) => ({ value: customer.id, label: customer.name })),
-          ]}
+          placeholder="Select a customer..."
+          searchable
+          data={customers.map((customer) => ({ value: customer.id, label: customer.name }))}
           {...form.getInputProps("customerId")}
         />
-        <TextInput label="Date" type="date" {...form.getInputProps("createdAt")} />
+        <DateInput label="Date" valueFormat="DD MMM YYYY" {...form.getInputProps("createdAt")} />
         <TextInput
           label="Description"
           placeholder="Description (optional)"
