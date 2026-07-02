@@ -1,4 +1,5 @@
-import { Box, Button, Container, Group, LoadingOverlay, NativeSelect, Pagination, TextInput } from "@mantine/core"
+import { Box, Button, Container, Group, LoadingOverlay, NativeSelect, Pagination, Select, TextInput } from "@mantine/core"
+import { DateInput } from "@mantine/dates"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
@@ -98,15 +99,15 @@ function CashPage() {
             miw={260}
             flex={1}
           />
-          <NativeSelect
+          <Select
             label="Customer"
-            data={[
-              { value: "", label: "All customers" },
-              ...customers.map((customer) => ({ value: customer.id, label: customer.name })),
-            ]}
+            placeholder="All customers"
+            searchable
+            clearable
+            data={customers.map((customer) => ({ value: customer.id, label: customer.name }))}
             value={customerId}
-            onChange={(event) => {
-              setCustomerId(event.currentTarget.value)
+            onChange={(value) => {
+              setCustomerId(value ?? "")
               resetPage()
             }}
           />
@@ -136,21 +137,23 @@ function CashPage() {
               resetPage()
             }}
           />
-          <TextInput
+          <DateInput
             label="From"
-            type="date"
+            valueFormat="DD MMM YYYY"
+            clearable
             value={dateFrom}
-            onChange={(event) => {
-              setDateFrom(event.currentTarget.value)
+            onChange={(value) => {
+              setDateFrom(value ?? "")
               resetPage()
             }}
           />
-          <TextInput
+          <DateInput
             label="To"
-            type="date"
+            valueFormat="DD MMM YYYY"
+            clearable
             value={dateTo}
-            onChange={(event) => {
-              setDateTo(event.currentTarget.value)
+            onChange={(value) => {
+              setDateTo(value ?? "")
               resetPage()
             }}
           />

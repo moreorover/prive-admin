@@ -12,9 +12,9 @@ import {
   Skeleton,
   Stack,
   Text,
-  TextInput,
   Title,
 } from "@mantine/core"
+import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconArrowLeft, IconCalculator, IconPencil, IconPlus, IconUser } from "@tabler/icons-react"
@@ -299,8 +299,8 @@ function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModa
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Hair Order">
       <form onSubmit={form.onSubmit((values) => mutation.mutate(values))}>
         <Stack>
-          <TextInput label="Placed At" type="date" {...form.getInputProps("placedAt")} />
-          <TextInput label="Arrived At" type="date" {...form.getInputProps("arrivedAt")} />
+          <DateInput label="Placed At" valueFormat="DD MMM YYYY" {...form.getInputProps("placedAt")} />
+          <DateInput label="Arrived At" valueFormat="DD MMM YYYY" {...form.getInputProps("arrivedAt")} />
           <NativeSelect
             label="Status"
             data={[
