@@ -1,6 +1,7 @@
 import { Modal } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import dayjs from "dayjs"
 
 import {
   CashTransactionForm,
@@ -47,7 +48,7 @@ export function EditCashTransactionDialog({
         customers={customers}
         initialValues={{
           customerId: transaction.customerId,
-          createdAt: transaction.createdAt,
+          createdAt: dayjs(transaction.createdAt).format("YYYY-MM-DD"),
           description: transaction.description ?? "",
           notes: transaction.notes ?? "",
           amountMajor: transaction.amount / 100,

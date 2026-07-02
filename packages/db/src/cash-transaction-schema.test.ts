@@ -5,6 +5,10 @@ import { describe, expect, it } from "vitest"
 import { cashTransaction } from "./schema/cash-transaction"
 
 const migrationSql = readFileSync(new URL("./migrations/0007_parched_shiva.sql", import.meta.url), "utf8")
+const timestampMigrationSql = readFileSync(
+  new URL("./migrations/0008_parallel_logan.sql", import.meta.url),
+  "utf8",
+)
 
 describe("cashTransaction schema", () => {
   it("uses a required restricted customer relation and required creator relation", () => {
@@ -25,11 +29,14 @@ describe("cashTransaction schema", () => {
     expect(cashTransaction.amount.getSQLType()).toBe("integer")
   })
 
-  it("stores day-level createdAt dates", () => {
+  it("stores createdAt as timestamps while the UI collects only dates", () => {
     expect(cashTransaction.createdAt.notNull).toBe(true)
     expect(cashTransaction.createdAt.dataType).toBe("string")
-    expect(cashTransaction.createdAt.columnType).toBe("PgDateString")
-    expect(cashTransaction.createdAt.getSQLType()).toBe("date")
+    expect(cashTransaction.createdAt.columnType).toBe("PgTimestampString")
+    expect(cashTransaction.createdAt.getSQLType()).toBe("timestamp with time zone")
+    expect(timestampMigrationSql).toContain(
+      'ALTER TABLE "cash_transaction" ALTER COLUMN "created_at" SET DATA TYPE timestamp with time zone;',
+    )
   })
 
   it("defaults to EUR currency and requires updatedAt timestamps", () => {

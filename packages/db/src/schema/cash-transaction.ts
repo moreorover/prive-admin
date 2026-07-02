@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2"
-import { date, index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core"
+import { index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core"
 
 import { user } from "./auth"
 import { customer } from "./customer"
@@ -10,7 +10,7 @@ export const cashTransaction = pgTable(
     id: text("id").primaryKey().$defaultFn(createId),
     amount: integer("amount").notNull(),
     currency: text("currency").notNull().default("EUR"),
-    createdAt: date("created_at").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
     description: text("description"),
     notes: text("notes"),
     customerId: text("customer_id")

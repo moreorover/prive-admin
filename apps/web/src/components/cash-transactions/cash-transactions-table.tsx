@@ -1,6 +1,7 @@
 import { ActionIcon, Menu, Table, Text } from "@mantine/core"
 import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
+import dayjs from "dayjs"
 
 import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
 import { formatMinor } from "@/lib/currency"
@@ -48,7 +49,7 @@ export function CashTransactionsTable({ items, onEdit, onDelete }: CashTransacti
       <Table.Tbody>
         {items.map((tx) => (
           <Table.Tr key={tx.id}>
-            <Table.Td>{tx.createdAt}</Table.Td>
+            <Table.Td>{dayjs(tx.createdAt).format("YYYY-MM-DD")}</Table.Td>
             <Table.Td>
               <Text
                 renderRoot={(props) => (

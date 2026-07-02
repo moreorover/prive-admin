@@ -29,6 +29,14 @@ function escapeLikePattern(value: string) {
   return value.replace(/[\\%_]/g, "\\$&")
 }
 
+function dateToTimestampStart(value: string) {
+  return `${value}T00:00:00.000Z`
+}
+
+function dateToTimestampEnd(value: string) {
+  return `${value}T23:59:59.999Z`
+}
+
 function buildWhere(data: z.infer<typeof listSchema>) {
   const clauses: SQL[] = []
   if (data.search) {
@@ -44,8 +52,8 @@ function buildWhere(data: z.infer<typeof listSchema>) {
   if (data.currency) clauses.push(eq(cashTransaction.currency, data.currency))
   if (data.direction === "received") clauses.push(gt(cashTransaction.amount, 0))
   if (data.direction === "paid") clauses.push(lt(cashTransaction.amount, 0))
-  if (data.dateFrom) clauses.push(gte(cashTransaction.createdAt, data.dateFrom))
-  if (data.dateTo) clauses.push(lte(cashTransaction.createdAt, data.dateTo))
+  if (data.dateFrom) clauses.push(gte(cashTransaction.createdAt, dateToTimestampStart(data.dateFrom)))
+  if (data.dateTo) clauses.push(lte(cashTransaction.createdAt, dateToTimestampEnd(data.dateTo)))
   return clauses.length ? and(...clauses) : undefined
 }
 
@@ -100,7 +108,7 @@ export const createCashTransaction = createServerFn({ method: "POST" })
       .values({
         customerId: data.customerId,
         createdById: context.session.user.id,
-        createdAt: data.createdAt,
+        createdAt: dateToTimestampStart(data.createdAt),
         description: nullableText(data.description),
         notes: nullableText(data.notes),
         amount: data.amount,
@@ -130,7 +138,7 @@ export const updateCashTransaction = createServerFn({ method: "POST" })
       .update(cashTransaction)
       .set({
         customerId: data.customerId,
-        createdAt: data.createdAt,
+        createdAt: dateToTimestampStart(data.createdAt),
         description: nullableText(data.description),
         notes: nullableText(data.notes),
         amount: data.amount,
