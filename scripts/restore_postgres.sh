@@ -11,9 +11,11 @@
 #   eval "$(op signin)"
 #
 # Env overrides (any pre-set R2_* var skips the corresponding `op read`):
-#   PG_CONTAINER      Local postgres container name. Default: prive-admin
+#   PG_CONTAINER      Local postgres container name. Default: postgres
 #   PG_SUPERUSER      Postgres superuser inside the container. Default: postgres
 #   PG_PASSWORD       Postgres password. Default: password
+#   PG_DATABASE       Local database to restore into. Default: prive_admin
+#   PG_SCHEMA         Schema whose tables should be dropped. Default: public
 #   R2_PREFIX         Limit listing to this key prefix. Default: postgres_backup/
 #   KEEP_DOWNLOAD     If set, keep the downloaded dump file after restore.
 #
@@ -25,6 +27,8 @@ umask 077
 PG_CONTAINER="${PG_CONTAINER:-postgres}"
 PG_SUPERUSER="${PG_SUPERUSER:-postgres}"
 PG_PASSWORD="${PG_PASSWORD:-password}"
+PG_DATABASE="${PG_DATABASE:-prive_admin}"
+PG_SCHEMA="${PG_SCHEMA:-public}"
 
 err() { printf 'error: %s\n' "$*" >&2; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1 || err "missing dependency: $1"; }
@@ -32,6 +36,30 @@ need() { command -v "$1" >/dev/null 2>&1 || err "missing dependency: $1"; }
 need op
 need s3cmd
 need docker
+
+validate_pg_identifier() {
+  local name="$1"
+  local value="$2"
+  if ! [[ "${value}" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+    err "${name} '${value}' is not a valid Postgres identifier"
+  fi
+}
+
+filter_database_commands() {
+  local schema="$1"
+  awk -v schema="${schema}" '
+    BEGIN { quoted_schema = "\"" schema "\"" }
+    /^DROP DATABASE / { next }
+    /^CREATE DATABASE / { next }
+    /^ALTER DATABASE / { next }
+    /^\\connect / { next }
+    /^DROP / { next }
+    $0 == "CREATE SCHEMA " schema ";" { next }
+    $0 == "CREATE SCHEMA " quoted_schema ";" { next }
+    $0 ~ "^ALTER SCHEMA (" schema "|" quoted_schema ") OWNER TO " { next }
+    { print }
+  '
+}
 
 # Verify the op CLI has an active session. `op whoami` exits non-zero when
 # not signed in. Surface a clear hint instead of letting `op read` fail later.
@@ -129,9 +157,9 @@ fi
 
 # Validate the production role name we'll create locally — guards against
 # SQL injection through a stray op secret value and rejects empty input.
-if ! [[ "${PROD_PG_USER}" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
-  err "PROD_PG_USER '${PROD_PG_USER}' is not a valid Postgres identifier"
-fi
+validate_pg_identifier "PROD_PG_USER" "${PROD_PG_USER}"
+validate_pg_identifier "PG_DATABASE" "${PG_DATABASE}"
+validate_pg_identifier "PG_SCHEMA" "${PG_SCHEMA}"
 
 # Pre-create the prod role inside the local container so the dump's
 # `ALTER ... OWNER TO ${PROD_PG_USER}` statements don't fail.
@@ -153,10 +181,10 @@ cat <<WARN
 
 ABOUT TO RESTORE
   source : ${S3_KEY}
-  target : container=${PG_CONTAINER} superuser=${PG_SUPERUSER}
+  target : container=${PG_CONTAINER} database=${PG_DATABASE} schema=${PG_SCHEMA} superuser=${PG_SUPERUSER}
 
-The dump was produced with 'pg_dump --clean --create' and will DROP
-and recreate the target database inside the local container.
+This will DROP all tables in schema "${PG_SCHEMA}" inside database
+"${PG_DATABASE}" before restoring the selected dump.
 
 WARN
 printf "type 'yes' to proceed: "
@@ -165,23 +193,46 @@ if [[ "${confirm}" != "yes" ]]; then
   printf 'aborted\n'; exit 0
 fi
 
-# Connect to the 'postgres' maintenance DB so the dump can DROP/CREATE
-# the target database listed inside it.
+printf 'dropping tables in %s.%s\n' "${PG_DATABASE}" "${PG_SCHEMA}"
+docker exec -i \
+    -e PGPASSWORD="${PG_PASSWORD}" \
+    "${PG_CONTAINER}" \
+    psql -v ON_ERROR_STOP=1 -U "${PG_SUPERUSER}" -d "${PG_DATABASE}" <<SQL
+DO \$\$
+DECLARE
+  drop_sql text;
+BEGIN
+  SELECT string_agg(format('DROP TABLE IF EXISTS %I.%I CASCADE', schemaname, tablename), '; ')
+  INTO drop_sql
+  FROM pg_tables
+  WHERE schemaname = '${PG_SCHEMA}';
+
+  IF drop_sql IS NOT NULL THEN
+    EXECUTE drop_sql;
+  END IF;
+END
+\$\$;
+SQL
+
+# Restore into the existing local database. Backups are generated with
+# pg_dump --clean --create, so skip database-level commands and clean-up
+# statements that are redundant after the explicit table drop above.
 case "${FILE_NAME}" in
   *.gz)
     need gzip
     gzip -dc "${LOCAL_PATH}" \
+      | filter_database_commands "${PG_SCHEMA}" \
       | docker exec -i \
           -e PGPASSWORD="${PG_PASSWORD}" \
           "${PG_CONTAINER}" \
-          psql -v ON_ERROR_STOP=1 -U "${PG_SUPERUSER}" -d postgres
+          psql -v ON_ERROR_STOP=1 -U "${PG_SUPERUSER}" -d "${PG_DATABASE}"
     ;;
   *)
-    docker exec -i \
-        -e PGPASSWORD="${PG_PASSWORD}" \
-        "${PG_CONTAINER}" \
-        psql -v ON_ERROR_STOP=1 -U "${PG_SUPERUSER}" -d postgres \
-      < "${LOCAL_PATH}"
+    filter_database_commands "${PG_SCHEMA}" < "${LOCAL_PATH}" \
+      | docker exec -i \
+          -e PGPASSWORD="${PG_PASSWORD}" \
+          "${PG_CONTAINER}" \
+          psql -v ON_ERROR_STOP=1 -U "${PG_SUPERUSER}" -d "${PG_DATABASE}"
     ;;
 esac
 
