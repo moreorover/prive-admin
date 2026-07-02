@@ -2,7 +2,7 @@ CREATE TABLE "cash_transaction" (
 	"id" text PRIMARY KEY NOT NULL,
 	"amount" integer NOT NULL,
 	"currency" text DEFAULT 'EUR' NOT NULL,
-	"created_at" date NOT NULL,
+	"created_at" timestamp with time zone NOT NULL,
 	"description" text,
 	"notes" text,
 	"customer_id" text NOT NULL,
