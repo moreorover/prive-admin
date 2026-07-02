@@ -3,7 +3,7 @@ import { DateInput } from "@mantine/dates"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { useEffect, useMemo, useState } from "react"
+import { useState } from "react"
 
 import { CashTransactionsTable, type CashTransactionRow } from "@/components/cash-transactions/cash-transactions-table"
 import { CreateCashTransactionDialog } from "@/components/cash-transactions/create-cash-transaction-dialog"
@@ -20,6 +20,14 @@ const PAGE_SIZE = 25
 
 type CashTransactionDirection = "all" | "received" | "paid"
 type CashTransactionCurrencyFilter = Currency | ""
+type CashTransactionFilters = {
+  search: string
+  customerId: string
+  currency: CashTransactionCurrencyFilter
+  direction: CashTransactionDirection
+  dateFrom: string
+  dateTo: string
+}
 
 export const Route = createFileRoute("/_authenticated/cash")({
   component: CashPage,
@@ -27,51 +35,49 @@ export const Route = createFileRoute("/_authenticated/cash")({
 
 function CashPage() {
   const [page, setPage] = useState(1)
-  const [search, setSearch] = useState("")
-  const [customerId, setCustomerId] = useState("")
-  const [currency, setCurrency] = useState<CashTransactionCurrencyFilter>("")
-  const [direction, setDirection] = useState<CashTransactionDirection>("all")
-  const [dateFrom, setDateFrom] = useState("")
-  const [dateTo, setDateTo] = useState("")
+  const [filters, setFilters] = useState<CashTransactionFilters>({
+    search: "",
+    customerId: "",
+    currency: "",
+    direction: "all",
+    dateFrom: "",
+    dateTo: "",
+  })
   const [createOpen, setCreateOpen] = useState(false)
   const [editing, setEditing] = useState<CashTransactionRow | null>(null)
   const [deleting, setDeleting] = useState<CashTransactionRow | null>(null)
 
-  const customersQuery = useQuery({
+  const { data: customersData } = useQuery({
     queryKey: customerKeys.list(),
     queryFn: () => getCustomers(),
   })
 
-  const filter = useMemo(
-    () => ({
-      page,
-      pageSize: PAGE_SIZE,
-      search: search.trim() || undefined,
-      customerId: customerId || undefined,
-      currency: currency || undefined,
-      direction,
-      dateFrom: dateFrom || undefined,
-      dateTo: dateTo || undefined,
-    }),
-    [customerId, currency, dateFrom, dateTo, direction, page, search],
-  )
+  const queryFilter = {
+    page,
+    pageSize: PAGE_SIZE,
+    search: filters.search.trim() || undefined,
+    customerId: filters.customerId || undefined,
+    currency: filters.currency || undefined,
+    direction: filters.direction,
+    dateFrom: filters.dateFrom || undefined,
+    dateTo: filters.dateTo || undefined,
+  }
 
-  const cashTransactionsQuery = useQuery({
-    queryKey: cashTransactionKeys.list(filter),
-    queryFn: () => listCashTransactions({ data: filter }),
+  const { data: result, isFetching } = useQuery({
+    queryKey: cashTransactionKeys.list(queryFilter),
+    queryFn: () => listCashTransactions({ data: queryFilter }),
     placeholderData: keepPreviousData,
   })
 
-  const customers = customersQuery.data ?? []
-  const result = cashTransactionsQuery.data
+  const customers = customersData ?? []
   const totalCount = result?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages)
-  }, [page, totalPages])
-
   const resetPage = () => setPage(1)
+  const updateFilters = (nextFilters: Partial<CashTransactionFilters>) => {
+    setFilters((current) => ({ ...current, ...nextFilters }))
+    resetPage()
+  }
 
   return (
     <Container size="xl">
@@ -91,10 +97,9 @@ function CashPage() {
             label="Search"
             placeholder="Description, notes, or customer"
             leftSection={<IconSearch size={16} />}
-            value={search}
+            value={filters.search}
             onChange={(event) => {
-              setSearch(event.currentTarget.value)
-              resetPage()
+              updateFilters({ search: event.currentTarget.value })
             }}
             miw={260}
             flex={1}
@@ -105,10 +110,9 @@ function CashPage() {
             searchable
             clearable
             data={customers.map((customer) => ({ value: customer.id, label: customer.name }))}
-            value={customerId}
+            value={filters.customerId}
             onChange={(value) => {
-              setCustomerId(value ?? "")
-              resetPage()
+              updateFilters({ customerId: value ?? "" })
             }}
           />
           <NativeSelect
@@ -118,10 +122,9 @@ function CashPage() {
               { value: "EUR", label: "EUR" },
               { value: "GBP", label: "GBP" },
             ]}
-            value={currency}
+            value={filters.currency}
             onChange={(event) => {
-              setCurrency(event.currentTarget.value as CashTransactionCurrencyFilter)
-              resetPage()
+              updateFilters({ currency: event.currentTarget.value as CashTransactionCurrencyFilter })
             }}
           />
           <NativeSelect
@@ -131,41 +134,38 @@ function CashPage() {
               { value: "received", label: "Received" },
               { value: "paid", label: "Paid" },
             ]}
-            value={direction}
+            value={filters.direction}
             onChange={(event) => {
-              setDirection(event.currentTarget.value as CashTransactionDirection)
-              resetPage()
+              updateFilters({ direction: event.currentTarget.value as CashTransactionDirection })
             }}
           />
           <DateInput
             label="From"
             valueFormat="DD MMM YYYY"
             clearable
-            value={dateFrom}
+            value={filters.dateFrom}
             onChange={(value) => {
-              setDateFrom(value ?? "")
-              resetPage()
+              updateFilters({ dateFrom: value ?? "" })
             }}
           />
           <DateInput
             label="To"
             valueFormat="DD MMM YYYY"
             clearable
-            value={dateTo}
+            value={filters.dateTo}
             onChange={(value) => {
-              setDateTo(value ?? "")
-              resetPage()
+              updateFilters({ dateTo: value ?? "" })
             }}
           />
         </Group>
 
         <Box pos="relative">
-          <LoadingOverlay visible={cashTransactionsQuery.isFetching} />
+          <LoadingOverlay visible={isFetching} />
           <CashTransactionsTable items={result?.items ?? []} onEdit={setEditing} onDelete={setDeleting} />
         </Box>
 
         <Group justify="flex-end" mt="md">
-          <Pagination total={totalPages} value={page} onChange={setPage} />
+          <Pagination total={totalPages} value={Math.min(page, totalPages)} onChange={setPage} />
         </Group>
       </Section>
 
