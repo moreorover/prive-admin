@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.10.0](https://github.com/moreorover/prive-admin/compare/v0.9.0...v0.10.0) (2026-07-02)
+
+
+### Features
+
+* add cash transactions ([#210](https://github.com/moreorover/prive-admin/issues/210)) ([138af47](https://github.com/moreorover/prive-admin/commit/138af4727161cc3c0a767e3d02b897ee235af427))
+
 ## [0.9.0](https://github.com/moreorover/prive-admin/compare/v0.8.0...v0.9.0) (2026-07-01)
 
 
