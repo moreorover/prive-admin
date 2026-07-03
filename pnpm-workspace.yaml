@@ -8,6 +8,8 @@ onlyBuiltDependencies:
 catalogMode: prefer
 
 catalog:
+  "@hono/node-server": ^1.14.4
+  "@hono/trpc-server": ^0.4.0
   "@trpc/server": ^11.16.0
   "@types/node": ^25.9.3
   "@types/react": ^19.2.17
@@ -17,6 +19,8 @@ catalog:
   hono: ^4.8.2
   react: ^19.2.7
   react-dom: ^19.2.7
+  tsdown: ^0.21.9
+  tsx: ^4.19.2
   typescript: ^6.0.3
   vite: npm:@voidzero-dev/vite-plus-core@0.2.2
   vite-plus: 0.2.2
