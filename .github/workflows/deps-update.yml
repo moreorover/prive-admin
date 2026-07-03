@@ -18,8 +18,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24"
+          cache: true
 
       - name: Load PAT from 1Password
         uses: 1password/load-secrets-action@v2
@@ -38,14 +41,14 @@ jobs:
           command: |
             set -o pipefail
             log=$(mktemp)
-            bunx taze major -r -w --maturity-period 7 --concurrency 3 2>&1 | tee "$log"
+            pnpm dlx taze major -r -w --maturity-period 7 --concurrency 3 2>&1 | tee "$log"
             if grep -q 'Timeout requesting' "$log"; then
               echo "::warning::taze hit registry timeouts; failing step to trigger retry"
               exit 1
             fi
 
       - name: Update Lockfile
-        run: bun install
+        run: vp install
 
       - name: Create or Update Pull Request
         uses: peter-evans/create-pull-request@v7
@@ -56,7 +59,7 @@ jobs:
           commit-message: "fix(deps): bump dependencies via taze major"
           title: "fix(deps): nightly dependency updates"
           body: |
-            Automated nightly run of `bunx taze major -r -w` followed by `bun install`.
+            Automated nightly run of `pnpm dlx taze major -r -w` followed by `vp install`.
 
             This PR is updated each night with any newly outdated packages until merged or closed.
           labels: dependencies

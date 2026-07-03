@@ -45,4 +45,4 @@ dependencies:
   - changed-files:
       - any-glob-to-any-file:
           - "**/package.json"
-          - bun.lock
+          - pnpm-lock.yaml

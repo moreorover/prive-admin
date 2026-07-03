@@ -4,7 +4,7 @@ import { nitro } from "nitro/vite"
 import { defineConfig, lazyPlugins } from "vite-plus"
 
 export default defineConfig({
-  plugins: lazyPlugins(() => [tanstackStart(), nitro({ preset: "bun" }), viteReact()]),
+  plugins: lazyPlugins(() => [tanstackStart(), nitro({ preset: "node" }), viteReact()]),
   server: {
     port: 3001,
   },
