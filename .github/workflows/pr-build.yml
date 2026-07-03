@@ -18,26 +18,26 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24"
+          cache: true
 
       - name: Install Dependencies
-        run: bun install --frozen-lockfile
+        run: vp install --frozen-lockfile
 
-      - name: Lint
-        run: bunx oxlint
-
-      - name: Check Formatting
-        run: bunx oxfmt --check
+      - name: Check
+        run: vp check
 
       - name: Check Types
-        run: bun run check-types
+        run: vp run check-types
 
       - name: Run Knip
-        run: bunx knip --reporter github-actions
+        run: vp exec knip --reporter github-actions
 
       - name: Run Build
-        run: bun run build
+        run: vp run build
 
   docker-build:
     name: Docker Image Build

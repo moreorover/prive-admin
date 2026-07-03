@@ -9,8 +9,7 @@
 - **Drizzle** - TypeScript-first ORM
 - **PostgreSQL** - Database engine
 - **Authentication** - Better-Auth
-- **Oxlint** - Oxlint + Oxfmt (linting & formatting)
-- **Turborepo** - Optimized monorepo build system
+- **Vite+** - Unified runtime, package, build, lint, format, and test tooling
 - **Changesets** - Versioning and changelog automation
 
 ## Getting Started
@@ -18,7 +17,7 @@
 First, install the dependencies:
 
 ```bash
-bun install
+vp install
 ```
 
 ## Database Setup
@@ -31,13 +30,13 @@ This project uses PostgreSQL with Drizzle ORM.
 3. Apply the schema to your database:
 
 ```bash
-bun run db:push
+vp run db:push
 ```
 
 Then, run the development server:
 
 ```bash
-bun run dev
+vp run dev
 ```
 
 Open [http://localhost:3001](http://localhost:3001) in your browser to see the fullstack application.
@@ -67,7 +66,7 @@ import { Button } from "@mantine/core"
 
 ## Git Hooks and Formatting
 
-- Format and lint fix: `bun run check`
+- Format and lint fix: `vp run check`
 
 ## Project Structure
 
@@ -86,16 +85,16 @@ prive-admin-tanstack/
 
 ## Available Scripts
 
-- `bun run dev`: Start all applications in development mode
-- `bun run build`: Build all applications
-- `bun run dev:web`: Start only the web application
-- `bun run check-types`: Check TypeScript types across all apps
-- `bun run db:push`: Push schema changes to database
-- `bun run db:generate`: Generate database client/types
-- `bun run db:migrate`: Run database migrations
-- `bun run db:studio`: Open database studio UI
-- `bun run compose:up` / `compose:stop` / `compose:down` / `compose:watch`: Manage local dev compose stack (Postgres + MinIO)
-- `bun run check`: Run Oxlint and Oxfmt
+- `vp run dev`: Start all applications in development mode
+- `vp run build`: Build all applications
+- `vp run dev:web`: Start only the web application
+- `vp run check-types`: Check TypeScript types across all apps
+- `vp run db:push`: Push schema changes to database
+- `vp run db:generate`: Generate database client/types
+- `vp run db:migrate`: Run database migrations
+- `vp run db:studio`: Open database studio UI
+- `vp run compose:up` / `compose:stop` / `compose:down` / `compose:watch`: Manage local dev compose stack (Postgres + MinIO)
+- `vp run check`: Run Oxlint and Oxfmt
 
 ## Deployment
 

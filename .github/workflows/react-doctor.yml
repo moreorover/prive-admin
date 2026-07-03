@@ -11,6 +11,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  statuses: write
 
 jobs:
   react-doctor:
@@ -24,7 +25,3 @@ jobs:
 
       - name: Run React Doctor
         uses: millionco/react-doctor@main
-        with:
-          diff: main
-          fail-on: error
-          github-token: ${{ secrets.GITHUB_TOKEN }}

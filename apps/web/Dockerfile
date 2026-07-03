@@ -1,41 +1,56 @@
-FROM oven/bun:alpine AS base
-
-RUN apk add --no-cache --upgrade libcrypto3 libssl3
-
-FROM base AS pruner
-
+# --- build stage: the official Vite+ toolchain image ---
+FROM ghcr.io/voidzero-dev/vite-plus:latest AS build
 WORKDIR /app
-COPY . .
-RUN bunx turbo prune web --docker
+ENV CI=true
+ENV VITE_GIT_HOOKS=0
+COPY --chown=vp:vp package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY --chown=vp:vp apps/web/package.json apps/web/package.json
+COPY --chown=vp:vp packages/auth/package.json packages/auth/package.json
+COPY --chown=vp:vp packages/config/package.json packages/config/package.json
+COPY --chown=vp:vp packages/db/package.json packages/db/package.json
+COPY --chown=vp:vp packages/env/package.json packages/env/package.json
+COPY --chown=vp:vp packages/ui/package.json packages/ui/package.json
+RUN vp install --frozen-lockfile
 
-FROM base AS installer
+COPY --chown=vp:vp . .
+RUN vp run --filter web build
 
+RUN cp "$(vp env which node | head -1)" /tmp/vite-plus-node && /tmp/vite-plus-node --version
+
+FROM ghcr.io/voidzero-dev/vite-plus:latest AS deps
 WORKDIR /app
-COPY --from=pruner /app/out/json/ .
-RUN bun install --frozen-lockfile
+ENV CI=true
+ENV VITE_GIT_HOOKS=0
+COPY --chown=vp:vp package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY --chown=vp:vp apps/web/package.json apps/web/package.json
+COPY --chown=vp:vp packages/auth/package.json packages/auth/package.json
+COPY --chown=vp:vp packages/config/package.json packages/config/package.json
+COPY --chown=vp:vp packages/db/package.json packages/db/package.json
+COPY --chown=vp:vp packages/env/package.json packages/env/package.json
+COPY --chown=vp:vp packages/ui/package.json packages/ui/package.json
+RUN vp install --frozen-lockfile --prod
 
-COPY --from=pruner /app/out/full/ .
-RUN bun run build --filter=web
-
-# Bundle migration script with all deps inlined
-RUN bun build packages/db/src/migrate.ts --target=bun --outfile=packages/db/migrate.js
-
-FROM base AS runner
+FROM debian:bookworm-slim AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV PORT=8081
 
+COPY --from=build /tmp/vite-plus-node /usr/local/bin/node
+RUN node --version
+
 # Copy nitro output (server + static assets bundled together)
-COPY --from=installer --chown=bun:bun /app/apps/web/.output ./.output
+COPY --from=build /app/apps/web/.output ./.output
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
 
-# Copy bundled migration script and migration files
-COPY --from=installer --chown=bun:bun /app/packages/db/migrate.js ./migrate.js
-COPY --from=installer --chown=bun:bun /app/packages/db/src/migrations ./migrations
+# Copy migration script and migration files
+COPY --from=build /app/packages/db/src/migrate.ts ./packages/db/src/migrate.ts
+COPY --from=build /app/packages/db/src/migrations ./packages/db/src/migrations
 
-USER bun
+USER nobody
 
 EXPOSE 8081
 
-CMD ["sh", "-c", "bun run ./migrate.js && bun run .output/server/index.mjs"]
+CMD ["sh", "-c", "node --experimental-strip-types ./packages/db/src/migrate.ts && node .output/server/index.mjs"]
