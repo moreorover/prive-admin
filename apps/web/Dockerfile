@@ -15,7 +15,7 @@ RUN vp install --frozen-lockfile
 COPY --chown=vp:vp . .
 RUN vp run --filter web build
 
-RUN cp "$(vp env which node | head -1)" /tmp/node
+RUN cp "$(vp env which node | head -1)" /tmp/vite-plus-node && /tmp/vite-plus-node --version
 
 FROM ghcr.io/voidzero-dev/vite-plus:latest AS deps
 WORKDIR /app
@@ -37,18 +37,20 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8081
 
-COPY --from=build /tmp/node /usr/local/bin/node
+COPY --from=build /tmp/vite-plus-node /usr/local/bin/node
+RUN node --version
 
 # Copy nitro output (server + static assets bundled together)
 COPY --from=build /app/apps/web/.output ./.output
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
 
 # Copy migration script and migration files
-COPY --from=build /app/packages/db/src/migrate.ts ./migrate.ts
-COPY --from=build /app/packages/db/src/migrations ./migrations
+COPY --from=build /app/packages/db/src/migrate.ts ./packages/db/src/migrate.ts
+COPY --from=build /app/packages/db/src/migrations ./packages/db/src/migrations
 
 USER nobody
 
 EXPOSE 8081
 
-CMD ["sh", "-c", "node --experimental-strip-types ./migrate.ts && node .output/server/index.mjs"]
+CMD ["sh", "-c", "node --experimental-strip-types ./packages/db/src/migrate.ts && node .output/server/index.mjs"]
