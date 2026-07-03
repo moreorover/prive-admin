@@ -2,20 +2,20 @@ FROM oven/bun:alpine AS base
 
 RUN apk add --no-cache --upgrade libcrypto3 libssl3
 
-FROM base AS pruner
-
-WORKDIR /app
-COPY . .
-RUN bunx turbo prune web --docker
-
 FROM base AS installer
 
 WORKDIR /app
-COPY --from=pruner /app/out/json/ .
+COPY package.json bun.lock ./
+COPY apps/web/package.json apps/web/package.json
+COPY packages/auth/package.json packages/auth/package.json
+COPY packages/config/package.json packages/config/package.json
+COPY packages/db/package.json packages/db/package.json
+COPY packages/env/package.json packages/env/package.json
+COPY packages/ui/package.json packages/ui/package.json
 RUN bun install --frozen-lockfile
 
-COPY --from=pruner /app/out/full/ .
-RUN bun run build --filter=web
+COPY . .
+RUN bun run build
 
 # Bundle migration script with all deps inlined
 RUN bun build packages/db/src/migrate.ts --target=bun --outfile=packages/db/migrate.js
