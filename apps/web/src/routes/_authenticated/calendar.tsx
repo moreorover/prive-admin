@@ -1,6 +1,6 @@
 import { Container, Stack } from "@mantine/core"
 import { Schedule, type ScheduleEventData, type ScheduleViewLevel } from "@mantine/schedule"
-import { queryOptions, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -8,13 +8,9 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { getAppointments } from "@/functions/appointments"
-import { appointmentKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
-const appointmentsQueryOptions = queryOptions({
-  queryKey: appointmentKeys.list(),
-  queryFn: () => getAppointments({ data: {} }),
-})
+const appointmentsQueryOptions = trpc.appointments.list.queryOptions({})
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   component: CalendarPage,
@@ -110,7 +106,7 @@ function CalendarPage() {
           open={createOpen}
           onOpenChange={setCreateOpen}
           defaultStartsAt={defaultStartsAt}
-          invalidateKeys={[{ queryKey: appointmentKeys.list() }]}
+          invalidateKeys={[{ queryKey: appointmentsQueryOptions.queryKey }]}
           navigateOnSuccess
         />
       </Stack>

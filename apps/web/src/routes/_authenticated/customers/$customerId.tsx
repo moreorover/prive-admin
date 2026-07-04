@@ -31,11 +31,10 @@ import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-ass
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { getAppointmentsByCustomerId } from "@/functions/appointments"
 import { getHairAssignedByCustomer } from "@/functions/hair-assigned"
 import { createNote, deleteNote, getNotes } from "@/functions/notes"
 import { CURRENCIES, formatMinor } from "@/lib/currency"
-import { appointmentKeys, hairAssignedKeys, noteKeys } from "@/lib/query-keys"
+import { hairAssignedKeys, noteKeys } from "@/lib/query-keys"
 import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
@@ -44,12 +43,7 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
     await Promise.all([
       context.queryClient.prefetchQuery(trpc.customers.byId.queryOptions({ id: params.customerId })),
       context.queryClient.prefetchQuery(trpc.customers.summary.queryOptions({ id: params.customerId })),
-      context.queryClient.prefetchQuery(
-        queryOptions({
-          queryKey: appointmentKeys.byCustomer(params.customerId),
-          queryFn: () => getAppointmentsByCustomerId({ data: { customerId: params.customerId } }),
-        }),
-      ),
+      context.queryClient.prefetchQuery(trpc.appointments.byCustomerId.queryOptions({ customerId: params.customerId })),
       context.queryClient.prefetchQuery(
         queryOptions({
           queryKey: noteKeys.list({ customerId: params.customerId }),
@@ -75,6 +69,13 @@ function StatCard({ label, value }: { label: string; value: string }) {
       <Title order={4}>{value}</Title>
     </Card>
   )
+}
+
+type CustomerNote = {
+  id: string
+  note: string
+  createdAt: Date | string
+  createdBy?: { name: string | null } | null
 }
 
 function EditCustomerDialog({
@@ -184,13 +185,11 @@ function CustomerDetailPage() {
   const [hairDeleteItem, setHairDeleteItem] = useState<HairAssignedRow | null>(null)
   const queryClient = useQueryClient()
   const customerSummaryQueryOptions = trpc.customers.summary.queryOptions({ id: customerId })
+  const customerAppointmentsQueryOptions = trpc.appointments.byCustomerId.queryOptions({ customerId })
 
   const { data: customer, isLoading } = useQuery(trpc.customers.byId.queryOptions({ id: customerId }))
 
-  const { data: appointments } = useQuery({
-    queryKey: appointmentKeys.byCustomer(customerId),
-    queryFn: () => getAppointmentsByCustomerId({ data: { customerId } }),
-  })
+  const { data: appointments } = useQuery(customerAppointmentsQueryOptions)
 
   const { data: notes } = useQuery({
     queryKey: noteKeys.list({ customerId }),
@@ -370,7 +369,7 @@ function CustomerDetailPage() {
             >
               {notes && notes.length > 0 ? (
                 <Stack gap="xs">
-                  {notes.map((n) => (
+                  {notes.map((n: CustomerNote) => (
                     <Card key={n.id} padding="sm">
                       <Group justify="space-between" align="flex-start">
                         <Stack gap={2}>
@@ -412,7 +411,7 @@ function CustomerDetailPage() {
           onOpenChange={setAppointmentCreateOpen}
           defaultClientId={customerId}
           invalidateKeys={[
-            { queryKey: appointmentKeys.byCustomer(customerId) },
+            { queryKey: customerAppointmentsQueryOptions.queryKey },
             { queryKey: customerSummaryQueryOptions.queryKey },
           ]}
           navigateOnSuccess

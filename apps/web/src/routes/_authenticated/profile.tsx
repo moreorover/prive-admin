@@ -23,10 +23,9 @@ import { useState } from "react"
 import Loader2 from "@/components/loader"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { getUserSettings, updateUserSettings } from "@/functions/user-settings"
 import { authClient } from "@/lib/auth-client"
 import { CURRENCY_OPTIONS, type Currency } from "@/lib/currency"
-import { userSettingsKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
@@ -66,10 +65,8 @@ function ProfilePage() {
   })
   const sessions = sessionsResult?.data ?? []
 
-  const { data: settings } = useQuery({
-    queryKey: userSettingsKeys.current(),
-    queryFn: () => getUserSettings(),
-  })
+  const userSettingsQueryOptions = trpc.userSettings.get.queryOptions()
+  const { data: settings } = useQuery(userSettingsQueryOptions)
 
   const revokeMutation = useMutation({
     mutationFn: (token: string) => authClient.revokeSession({ token }),
@@ -222,12 +219,13 @@ type EditUserModalProps = {
 function EditUserModal({ open, onOpenChange, initialName, initialCurrency }: EditUserModalProps) {
   const queryClient = useQueryClient()
   const [submitting, setSubmitting] = useState(false)
+  const userSettingsQueryOptions = trpc.userSettings.get.queryOptions()
   const safeInitialCurrency: Currency = initialCurrency === "GBP" || initialCurrency === "EUR" ? initialCurrency : "EUR"
   const form = useForm({ initialValues: { name: initialName, preferredCurrency: safeInitialCurrency } })
 
   const settingsMutation = useMutation({
-    mutationFn: (preferredCurrency: Currency) => updateUserSettings({ data: { preferredCurrency } }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: userSettingsKeys.all }),
+    ...trpc.userSettings.update.mutationOptions(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: userSettingsQueryOptions.queryKey }),
   })
 
   const handleSubmit = async (values: { name: string; preferredCurrency: Currency }) => {
@@ -248,11 +246,11 @@ function EditUserModal({ open, onOpenChange, initialName, initialCurrency }: Edi
         )
       }
       if (values.preferredCurrency !== safeInitialCurrency) {
-        tasks.push(settingsMutation.mutateAsync(values.preferredCurrency))
+        tasks.push(settingsMutation.mutateAsync({ preferredCurrency: values.preferredCurrency }))
       }
       await Promise.all(tasks)
       queryClient.invalidateQueries({ queryKey: ["auth"] })
-      queryClient.invalidateQueries({ queryKey: userSettingsKeys.all })
+      queryClient.invalidateQueries({ queryKey: userSettingsQueryOptions.queryKey })
       notifications.show({ color: "green", message: "Profile updated" })
       onOpenChange(false)
     } catch (error) {
