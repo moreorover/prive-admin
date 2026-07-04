@@ -449,15 +449,24 @@ importers:
 
   packages/api:
     dependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.1068.0
+        version: 3.1079.0
       '@prive-admin-tanstack/auth':
         specifier: workspace:*
         version: link:../auth
       '@prive-admin-tanstack/db':
         specifier: workspace:*
         version: link:../db
+      '@prive-admin-tanstack/env':
+        specifier: workspace:*
+        version: link:../env
       '@trpc/server':
         specifier: 'catalog:'
         version: 11.18.0(typescript@6.0.3)
+      csv-parse:
+        specifier: ^6.2.1
+        version: 6.2.1
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@types/pg@8.20.0)(kysely@0.29.2)(pg@8.22.0)

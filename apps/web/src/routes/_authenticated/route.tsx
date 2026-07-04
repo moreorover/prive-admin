@@ -45,7 +45,6 @@ import { useQuery, useQueryErrorResetBoundary } from "@tanstack/react-query"
 import { Link, Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { listUnassignedAttachments } from "@/functions/bank-statement-attachments"
 import { authClient } from "@/lib/auth-client"
 import { trpc } from "@/utils/trpc"
 
@@ -100,10 +99,7 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] = useDisclosure(false)
 
-  const unassignedQuery = useQuery({
-    queryKey: ["bank-statement-attachments", "unassigned"],
-    queryFn: () => listUnassignedAttachments(),
-  })
+  const unassignedQuery = useQuery(trpc.bankStatementAttachments.unassigned.queryOptions())
   const badges = { unassigned: unassignedQuery.data?.length ?? 0 }
 
   return (
