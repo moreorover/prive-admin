@@ -46,7 +46,6 @@ import { Link, Outlet, createFileRoute, redirect, useLocation, useNavigate, useR
 import { useState } from "react"
 
 import { listUnassignedAttachments } from "@/functions/bank-statement-attachments"
-import { getUser } from "@/functions/get-user"
 import { getLegalEntity } from "@/functions/legal-entities"
 import { authClient } from "@/lib/auth-client"
 
@@ -84,14 +83,14 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
   errorComponent: AuthenticatedErrorComponent,
   beforeLoad: async ({ location }) => {
-    const session = await getUser()
-    if (!session) {
+    const session = await authClient.getSession()
+    if (!session.data) {
       throw redirect({
         to: "/login",
         search: { redirect: location.href },
       })
     }
-    return { session }
+    return { session: session.data }
   },
 })
 
