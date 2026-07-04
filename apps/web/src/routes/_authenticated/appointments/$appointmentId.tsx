@@ -41,17 +41,21 @@ const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => 
   number
 >
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
+const defaultAppointmentTransactionsListInput = { page: 1, pageSize: 25 }
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
   loader: async ({ context, params }) => {
     await Promise.all([
-      context.queryClient.prefetchQuery(trpc.appointments.byId.queryOptions({ id: params.appointmentId })),
+      context.queryClient.prefetchQuery(trpc.appointments.get.queryOptions({ id: params.appointmentId })),
       context.queryClient.prefetchQuery(
         trpc.hairAssigned.byAppointment.queryOptions({ appointmentId: params.appointmentId }),
       ),
       context.queryClient.prefetchQuery(
-        trpc.transactions.byAppointmentId.queryOptions({ appointmentId: params.appointmentId }),
+        trpc.transactions.list.queryOptions({
+          ...defaultAppointmentTransactionsListInput,
+          appointmentId: params.appointmentId,
+        }),
       ),
       context.queryClient.prefetchQuery(trpc.userSettings.get.queryOptions()),
     ])
@@ -70,19 +74,22 @@ function AppointmentDetailPage() {
   const [editTx, setEditTx] = useState<TransactionRow | null>(null)
   const [deleteTx, setDeleteTx] = useState<TransactionRow | null>(null)
 
-  const appointmentQueryOptions = trpc.appointments.byId.queryOptions({ id: appointmentId })
+  const appointmentQueryOptions = trpc.appointments.get.queryOptions({ id: appointmentId })
   const hairAssignedQueryOptions = trpc.hairAssigned.byAppointment.queryOptions({ appointmentId })
-  const transactionsQueryOptions = trpc.transactions.byAppointmentId.queryOptions({ appointmentId })
+  const transactionsQueryOptions = trpc.transactions.list.queryOptions({
+    ...defaultAppointmentTransactionsListInput,
+    appointmentId,
+  })
 
   const { data: appointment, isLoading } = useQuery(appointmentQueryOptions)
 
   const { data: hairAssigned } = useQuery(hairAssignedQueryOptions)
 
-  const { data: transactions } = useQuery(transactionsQueryOptions)
+  const { data: transactionsData } = useQuery(transactionsQueryOptions)
 
   const { data: userSettings } = useQuery(trpc.userSettings.get.queryOptions())
 
-  const txList = transactions ?? []
+  const txList = transactionsData?.items ?? []
   const totalsByCurrency = { ...ZERO_TRANSACTION_TOTALS }
   for (const t of txList) {
     const c = t.currency as Currency
@@ -478,9 +485,9 @@ function ChangeMasterForm({
   const customers = customersData?.items ?? []
 
   const mutation = useMutation({
-    ...trpc.appointments.updateMaster.mutationOptions(),
+    ...trpc.appointments.update.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.appointments.byId.queryOptions({ id: appointmentId }).queryKey })
+      queryClient.invalidateQueries({ queryKey: trpc.appointments.get.queryOptions({ id: appointmentId }).queryKey })
       notifications.show({ color: "green", message: "Master updated." })
       onClose()
     },
@@ -504,7 +511,7 @@ function ChangeMasterForm({
         <Button
           disabled={!masterId || masterId === currentMasterId}
           loading={mutation.isPending}
-          onClick={() => mutation.mutate({ appointmentId, masterId })}
+          onClick={() => mutation.mutate({ id: appointmentId, masterId })}
         >
           Save
         </Button>
@@ -537,7 +544,7 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
   const mutation = useMutation({
     ...trpc.appointments.linkPersonnel.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.appointments.byId.queryOptions({ id: appointmentId }).queryKey })
+      queryClient.invalidateQueries({ queryKey: trpc.appointments.get.queryOptions({ id: appointmentId }).queryKey })
       handleClose()
       notifications.show({ color: "green", message: "Personnel picked." })
     },

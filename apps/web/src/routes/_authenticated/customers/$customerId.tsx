@@ -40,7 +40,9 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
     await Promise.all([
       context.queryClient.prefetchQuery(trpc.customers.get.queryOptions({ id: params.customerId })),
       context.queryClient.prefetchQuery(trpc.customers.summary.queryOptions({ id: params.customerId })),
-      context.queryClient.prefetchQuery(trpc.appointments.byCustomerId.queryOptions({ customerId: params.customerId })),
+      context.queryClient.prefetchQuery(
+        trpc.appointments.list.queryOptions({ page: 1, pageSize: 25, customerId: params.customerId }),
+      ),
       context.queryClient.prefetchQuery(trpc.notes.list.queryOptions({ customerId: params.customerId })),
       context.queryClient.prefetchQuery(trpc.hairAssigned.byCustomer.queryOptions({ customerId: params.customerId })),
     ])
@@ -174,12 +176,13 @@ function CustomerDetailPage() {
   const [hairDeleteItem, setHairDeleteItem] = useState<HairAssignedRow | null>(null)
   const queryClient = useQueryClient()
   const customerSummaryQueryOptions = trpc.customers.summary.queryOptions({ id: customerId })
-  const customerAppointmentsQueryOptions = trpc.appointments.byCustomerId.queryOptions({ customerId })
+  const customerAppointmentsQueryOptions = trpc.appointments.list.queryOptions({ page: 1, pageSize: 25, customerId })
   const hairAssignedQueryOptions = trpc.hairAssigned.byCustomer.queryOptions({ customerId })
 
   const { data: customer, isLoading } = useQuery(trpc.customers.get.queryOptions({ id: customerId }))
 
-  const { data: appointments } = useQuery(customerAppointmentsQueryOptions)
+  const { data: appointmentsData } = useQuery(customerAppointmentsQueryOptions)
+  const appointments = appointmentsData?.items ?? []
 
   const notesQueryOptions = trpc.notes.list.queryOptions({ customerId })
   const { data: notes } = useQuery(notesQueryOptions)

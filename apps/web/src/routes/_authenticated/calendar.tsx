@@ -10,7 +10,7 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
-const appointmentsQueryOptions = trpc.appointments.list.queryOptions({})
+const appointmentsQueryOptions = trpc.appointments.list.queryOptions({ page: 1, pageSize: 100 })
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   component: CalendarPage,
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/calendar")({
 })
 
 function CalendarPage() {
-  const { data: appointments } = useQuery(appointmentsQueryOptions)
+  const { data: appointmentsData } = useQuery(appointmentsQueryOptions)
   const navigate = useNavigate()
   const [view, setView] = useState<ScheduleViewLevel>("month")
   const [date, setDate] = useState<string>(() => dayjs().format("YYYY-MM-DD"))
@@ -33,6 +33,7 @@ function CalendarPage() {
   }, [])
 
   const events = useMemo<ScheduleEventData[]>(() => {
+    const appointments = appointmentsData?.items ?? []
     return (appointments ?? []).map((a) => {
       const start = dayjs(a.startsAt)
       const end = start.add(1, "hour")
@@ -44,7 +45,7 @@ function CalendarPage() {
         color: "blue",
       }
     })
-  }, [appointments])
+  }, [appointmentsData])
 
   const goToAppointment = useCallback(
     (id: string) => {

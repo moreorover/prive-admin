@@ -32,6 +32,7 @@ type SalonOption = {
 
 const defaultStartsAtString = () => dayjs().startOf("hour").add(1, "hour").format("YYYY-MM-DD HH:mm:ss")
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
+const defaultAppointmentsListInput = { page: 1, pageSize: 100 }
 
 export function CreateAppointmentDialog({
   open,
@@ -65,7 +66,7 @@ function CreateAppointmentForm({
 }: Omit<CreateAppointmentDialogProps, "open" | "onOpenChange"> & { onClose: () => void }) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const appointmentListQueryOptions = trpc.appointments.list.queryOptions({})
+  const appointmentListQueryOptions = trpc.appointments.list.queryOptions(defaultAppointmentsListInput)
   const salonsQueryOptions = trpc.salons.list.queryOptions()
 
   const form = useForm<FormValues>({
