@@ -6,12 +6,10 @@ import dayjs from "dayjs"
 import {
   CashTransactionForm,
   type CashTransactionFormCustomer,
-  type CashTransactionFormSubmit,
 } from "@/components/cash-transactions/cash-transaction-form"
 import { type CashTransactionRow } from "@/components/cash-transactions/cash-transactions-table"
 import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
-import { updateCashTransaction } from "@/functions/cash-transactions"
-import { cashTransactionKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 type EditCashTransactionDialogProps = {
   open: boolean
@@ -29,10 +27,9 @@ export function EditCashTransactionDialog({
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (values: CashTransactionFormSubmit) =>
-      updateCashTransaction({ data: { ...values, id: transaction.id } }),
+    ...trpc.cashTransactions.update.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: cashTransactionKeys.all })
+      queryClient.invalidateQueries({ queryKey: trpc.cashTransactions.list.queryKey() })
       onOpenChange(false)
       notifications.show({ color: "green", message: "Cash transaction updated" })
     },
@@ -57,7 +54,7 @@ export function EditCashTransactionDialog({
         submitLabel="Save Changes"
         loading={mutation.isPending}
         onSubmit={(values) => {
-          mutation.mutate(values)
+          mutation.mutate({ ...values, id: transaction.id })
         }}
       />
     </Modal>

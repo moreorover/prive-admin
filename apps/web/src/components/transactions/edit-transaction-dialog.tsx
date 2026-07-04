@@ -2,9 +2,9 @@ import { Modal } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
-import { updateTransaction } from "@/functions/transactions"
+import { TransactionForm } from "@/components/transactions/transaction-form"
 import { CURRENCIES, type Currency } from "@/lib/currency"
+import { trpc } from "@/utils/trpc"
 
 type EditTransactionDialogProps = {
   open: boolean
@@ -23,7 +23,7 @@ export function EditTransactionDialog({ open, onOpenChange, transaction, invalid
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (values: TransactionFormSubmit) => updateTransaction({ data: { ...values, id: transaction.id } }),
+    ...trpc.transactions.update.mutationOptions(),
     onSuccess: () => {
       for (const key of invalidateKeys) queryClient.invalidateQueries(key)
       onOpenChange(false)
@@ -48,7 +48,7 @@ export function EditTransactionDialog({ open, onOpenChange, transaction, invalid
         submitLabel="Save Changes"
         loading={mutation.isPending}
         onSubmit={async (values) => {
-          await mutation.mutateAsync(values)
+          await mutation.mutateAsync({ ...values, id: transaction.id })
         }}
       />
     </Modal>

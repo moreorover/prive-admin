@@ -4,7 +4,7 @@ import { Link, createFileRoute, redirect } from "@tanstack/react-router"
 import { z } from "zod"
 
 import SignInForm from "@/components/sign-in-form"
-import { getUser } from "@/functions/get-user"
+import { authClient } from "@/lib/auth-client"
 
 export const Route = createFileRoute("/login")({
   component: RouteComponent,
@@ -12,8 +12,11 @@ export const Route = createFileRoute("/login")({
     redirect: z.string().optional(),
   }),
   beforeLoad: async () => {
-    const session = await getUser()
-    if (session) {
+    const session = await authClient.getSession()
+    if (session.error) {
+      throw new Error(session.error.message || "Failed to load session")
+    }
+    if (session.data) {
       throw redirect({ to: "/customers" })
     }
   },

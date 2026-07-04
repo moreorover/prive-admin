@@ -2,8 +2,7 @@ import { Button, Group, Modal, Stack, Text } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { deleteHairAssigned } from "@/functions/hair-assigned"
-import { hairOrderKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 type DeleteHairAssignedDialogProps = {
   open: boolean
@@ -12,7 +11,7 @@ type DeleteHairAssignedDialogProps = {
     id: string
     weightInGrams: number
     client?: { name: string } | null
-    hairOrder?: { uid: number } | null
+    hairOrder?: { id: string; uid: number } | null
   }
   invalidateKeys: { queryKey: readonly unknown[] }[]
 }
@@ -24,12 +23,20 @@ export function DeleteHairAssignedDialog({
   invalidateKeys,
 }: DeleteHairAssignedDialogProps) {
   const queryClient = useQueryClient()
+  const availableOrdersQueryOptions = trpc.hairAssigned.availableOrders.queryOptions()
+  const hairOrdersListQueryOptions = trpc.hairOrders.list.queryOptions()
 
   const mutation = useMutation({
-    mutationFn: () => deleteHairAssigned({ data: { id: hairAssigned.id } }),
+    ...trpc.hairAssigned.delete.mutationOptions(),
     onSuccess: () => {
       for (const key of invalidateKeys) queryClient.invalidateQueries(key)
-      queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
+      queryClient.invalidateQueries({ queryKey: availableOrdersQueryOptions.queryKey })
+      queryClient.invalidateQueries({ queryKey: hairOrdersListQueryOptions.queryKey })
+      if (hairAssigned.hairOrder) {
+        queryClient.invalidateQueries({
+          queryKey: trpc.hairOrders.byId.queryOptions({ id: hairAssigned.hairOrder.id }).queryKey,
+        })
+      }
       onOpenChange(false)
       notifications.show({ color: "green", message: "Hair assigned deleted" })
     },
@@ -48,7 +55,7 @@ export function DeleteHairAssignedDialog({
           <Button variant="default" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button color="red" loading={mutation.isPending} onClick={() => mutation.mutate()}>
+          <Button color="red" loading={mutation.isPending} onClick={() => mutation.mutate({ id: hairAssigned.id })}>
             Delete
           </Button>
         </Group>

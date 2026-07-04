@@ -8,8 +8,8 @@ import { useEffect } from "react"
 
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { createSalon, getSalon, updateSalon } from "@/functions/salons"
 import { salonSchema } from "@/lib/schemas"
+import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/salons/$salonId")({
   component: SalonEdit,
@@ -20,10 +20,11 @@ function SalonEdit() {
   const isNew = salonId === "new"
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const salonsQueryOptions = trpc.salons.list.queryOptions()
+  const salonQueryOptions = trpc.salons.byId.queryOptions({ id: salonId })
 
   const salonQuery = useQuery({
-    queryKey: ["salon", salonId],
-    queryFn: () => getSalon({ data: { id: salonId } }),
+    ...salonQueryOptions,
     enabled: !isNew,
   })
 
@@ -44,24 +45,40 @@ function SalonEdit() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNew, salonQuery.data])
 
-  const save = useMutation({
-    mutationFn: async (values: typeof form.values) => {
-      if (isNew) return createSalon({ data: values })
-      return updateSalon({ data: { ...values, id: salonId } })
-    },
-    onSuccess: async () => {
-      notifications.show({ color: "green", message: "Saved" })
-      await queryClient.invalidateQueries({ queryKey: ["salons"] })
-      navigate({ to: "/salons" })
-    },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+  const onSaveSuccess = async () => {
+    notifications.show({ color: "green", message: "Saved" })
+    await queryClient.invalidateQueries({ queryKey: salonsQueryOptions.queryKey })
+    if (!isNew) await queryClient.invalidateQueries({ queryKey: salonQueryOptions.queryKey })
+    navigate({ to: "/salons" })
+  }
+
+  const create = useMutation({
+    ...trpc.salons.create.mutationOptions(),
+    onSuccess: onSaveSuccess,
+    onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
+
+  const update = useMutation({
+    ...trpc.salons.update.mutationOptions(),
+    onSuccess: onSaveSuccess,
+    onError: (err) => notifications.show({ color: "red", message: err.message }),
+  })
+
+  const handleSubmit = (values: typeof form.values) => {
+    if (isNew) {
+      create.mutate(values)
+      return
+    }
+    update.mutate({ ...values, id: salonId })
+  }
+
+  const isSaving = create.isPending || update.isPending
 
   return (
     <Container size="md">
       <PageHeader title={isNew ? "New salon" : "Edit salon"} description="A location associated with a legal entity." />
       <Section>
-        <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
+        <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack>
             <TextInput label="Name" required {...form.getInputProps("name")} />
             <TextInput label="Address" {...form.getInputProps("address")} />
@@ -69,7 +86,7 @@ function SalonEdit() {
               <Button renderRoot={(props) => <Link to="/salons" {...props} />} variant="subtle">
                 Cancel
               </Button>
-              <Button type="submit" loading={save.isPending}>
+              <Button type="submit" loading={isSaving}>
                 Save
               </Button>
             </Group>

@@ -3,7 +3,6 @@ import * as schema from "@prive-admin-tanstack/db/schema/auth"
 import { env } from "@prive-admin-tanstack/env/server"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { tanstackStartCookies } from "better-auth/tanstack-start"
 
 export function createAuth() {
   const db = createDb()
@@ -23,7 +22,6 @@ export function createAuth() {
     logger: {
       level: "debug",
     },
-    plugins: [tanstackStartCookies()],
   })
 }
 

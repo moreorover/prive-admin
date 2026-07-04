@@ -11,6 +11,8 @@
     }
   },
   "scripts": {
+    "build": "tsdown",
+    "check-types": "tsc --noEmit",
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
@@ -30,6 +32,7 @@
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/pg": "^8.20.0",
     "drizzle-kit": "^0.31.10",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
   }

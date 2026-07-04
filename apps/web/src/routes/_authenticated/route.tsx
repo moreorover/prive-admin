@@ -45,10 +45,8 @@ import { useQuery, useQueryErrorResetBoundary } from "@tanstack/react-query"
 import { Link, Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { listUnassignedAttachments } from "@/functions/bank-statement-attachments"
-import { getUser } from "@/functions/get-user"
-import { getLegalEntity } from "@/functions/legal-entities"
 import { authClient } from "@/lib/auth-client"
+import { trpc } from "@/utils/trpc"
 
 import classes from "./route.module.css"
 
@@ -84,25 +82,25 @@ export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
   errorComponent: AuthenticatedErrorComponent,
   beforeLoad: async ({ location }) => {
-    const session = await getUser()
-    if (!session) {
+    const session = await authClient.getSession()
+    if (session.error) {
+      throw new Error(session.error.message || "Failed to load session")
+    }
+    if (!session.data) {
       throw redirect({
         to: "/login",
         search: { redirect: location.href },
       })
     }
-    return { session }
+    return { session: session.data }
   },
 })
 
 function AuthenticatedLayout() {
   const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] = useDisclosure(false)
 
-  const unassignedQuery = useQuery({
-    queryKey: ["bank-statement-attachments", "unassigned"],
-    queryFn: () => listUnassignedAttachments(),
-  })
-  const badges = { unassigned: unassignedQuery.data?.length ?? 0 }
+  const { data: unassignedAttachments = [] } = useQuery(trpc.bankStatementAttachments.unassigned.queryOptions())
+  const badges = { unassigned: unassignedAttachments.length }
 
   return (
     <AppShell
@@ -163,9 +161,8 @@ function SidebarNav({ badges, onNavigate }: { badges: { unassigned: number }; on
   const entityId = entityMatch?.[1]
   const entityTab = entityMatch?.[2] ?? "overview"
 
-  const entityQ = useQuery({
-    queryKey: ["legal-entity", entityId],
-    queryFn: () => getLegalEntity({ data: { id: entityId! } }),
+  const { data: entity } = useQuery({
+    ...trpc.legalEntities.byId.queryOptions({ id: entityId ?? "" }),
     enabled: !!entityId,
   })
 
@@ -201,7 +198,7 @@ function SidebarNav({ badges, onNavigate }: { badges: { unassigned: number }; on
         {entityId && (
           <Box mt={6} className={classes.entitySubNav}>
             <Text size="xs" fw={600} c="dimmed" px="sm" py={4} truncate>
-              {entityQ.data?.name ?? "…"}
+              {entity?.name ?? "…"}
             </Text>
             <Stack gap={2}>
               {LEGAL_ENTITY_TABS.map((t) => {

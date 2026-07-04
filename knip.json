@@ -7,16 +7,12 @@
       "entry": ["scripts/**/*.{ts,js,mjs,sh}"]
     },
     "apps/web": {
-      "entry": [
-        "src/router.tsx!",
-        "src/routes/**/*.{ts,tsx}!",
-        "src/functions/**/*.{ts,tsx}!",
-        "src/server/**/*.{ts,tsx}!",
-        "src/middleware/**/*.{ts,tsx}!",
-        "react-doctor.config.json"
-      ],
+      "entry": ["src/router.tsx!", "src/routes/**/*.{ts,tsx}!", "react-doctor.config.json"],
       "ignoreDependencies": ["@mantine/charts"],
       "project": ["src/**/*.{ts,tsx}!"]
+    },
+    "apps/server": {
+      "project": ["src/**/*.ts!"]
     },
     "packages/auth": {
       "project": ["src/**/*.ts!"]

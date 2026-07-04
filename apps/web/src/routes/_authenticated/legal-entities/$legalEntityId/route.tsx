@@ -8,9 +8,9 @@ import { zodResolver } from "mantine-form-zod-resolver"
 import { useEffect } from "react"
 
 import { PageHeader } from "@/components/page-header"
-import { getLegalEntity, updateLegalEntity } from "@/functions/legal-entities"
 import { COUNTRY_FLAGS, COUNTRY_LABELS, type Country } from "@/lib/legal-entity"
 import { legalEntityUpdateSchema } from "@/lib/schemas"
+import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId")({
   component: LegalEntityLayout,
@@ -20,23 +20,20 @@ function LegalEntityLayout() {
   const { legalEntityId } = Route.useParams()
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
 
-  const q = useQuery({
-    queryKey: ["legal-entity", legalEntityId],
-    queryFn: () => getLegalEntity({ data: { id: legalEntityId } }),
-  })
+  const { data: legalEntity } = useQuery(trpc.legalEntities.byId.queryOptions({ id: legalEntityId }))
 
-  const country = q.data?.country as Country | undefined
-  const description = q.data
-    ? `${q.data.type}${country ? ` · ${COUNTRY_FLAGS[country]} ${COUNTRY_LABELS[country]}` : ""} · ${q.data.defaultCurrency}`
+  const country = legalEntity?.country as Country | undefined
+  const description = legalEntity
+    ? `${legalEntity.type}${country ? ` · ${COUNTRY_FLAGS[country]} ${COUNTRY_LABELS[country]}` : ""} · ${legalEntity.defaultCurrency}`
     : undefined
 
   return (
     <Container size="xl">
       <PageHeader
-        title={q.data?.name ?? "Legal entity"}
+        title={legalEntity?.name ?? "Legal entity"}
         description={description}
         actions={
-          <Button variant="default" onClick={openEdit} disabled={!q.data}>
+          <Button variant="default" onClick={openEdit} disabled={!legalEntity}>
             Edit
           </Button>
         }
@@ -50,11 +47,11 @@ function LegalEntityLayout() {
         onClose={closeEdit}
         legalEntityId={legalEntityId}
         initial={
-          q.data
+          legalEntity
             ? {
-                name: q.data.name,
-                registrationNumber: q.data.registrationNumber ?? "",
-                vatNumber: q.data.vatNumber ?? "",
+                name: legalEntity.name,
+                registrationNumber: legalEntity.registrationNumber ?? "",
+                vatNumber: legalEntity.vatNumber ?? "",
               }
             : null
         }
@@ -81,6 +78,8 @@ function EditLegalEntityModal({
   initial: EditValues | null
 }) {
   const queryClient = useQueryClient()
+  const legalEntitiesQueryOptions = trpc.legalEntities.list.queryOptions()
+  const legalEntityQueryOptions = trpc.legalEntities.byId.queryOptions({ id: legalEntityId })
 
   const form = useForm<EditValues & { id: string }>({
     initialValues: { id: legalEntityId, name: "", registrationNumber: "", vatNumber: "" },
@@ -96,14 +95,14 @@ function EditLegalEntityModal({
   }, [opened, initial, legalEntityId])
 
   const save = useMutation({
-    mutationFn: (input: typeof form.values) => updateLegalEntity({ data: input }),
+    ...trpc.legalEntities.update.mutationOptions(),
     onSuccess: async () => {
       notifications.show({ color: "green", message: "Saved" })
-      await queryClient.invalidateQueries({ queryKey: ["legal-entities"] })
-      await queryClient.invalidateQueries({ queryKey: ["legal-entity", legalEntityId] })
+      await queryClient.invalidateQueries({ queryKey: legalEntitiesQueryOptions.queryKey })
+      await queryClient.invalidateQueries({ queryKey: legalEntityQueryOptions.queryKey })
       onClose()
     },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+    onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
 
   return (

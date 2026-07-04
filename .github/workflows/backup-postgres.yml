@@ -24,8 +24,8 @@ jobs:
           export-env: true
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          POSTGRES_DB: op://prive-admin/prive-admin-prod/postgres/POSTGRES_DB
-          POSTGRES_USER: op://prive-admin/prive-admin-prod/postgres/POSTGRES_USER
+          POSTGRES_DB: op://prive-admin/prive-admin-prod/server/POSTGRES_DB
+          POSTGRES_USER: op://prive-admin/prive-admin-prod/server/POSTGRES_USER
           R2_ACCOUNT_ID: op://prive-admin/Cloudflare R2/account-id
           R2_ACCESS_KEY_ID: op://prive-admin/Cloudflare R2/access-key-id
           R2_SECRET_ACCESS_KEY: op://prive-admin/Cloudflare R2/secret-access-key

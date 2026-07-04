@@ -10,7 +10,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/${{ github.repository }}
+  IMAGE_NAME_BASE: ghcr.io/${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -34,7 +34,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push
+      - name: Build and push web
         uses: docker/build-push-action@v6
         with:
           file: apps/web/Dockerfile
@@ -42,28 +42,90 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.IMAGE_NAME }}:${{ github.ref_name }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+            ${{ env.IMAGE_NAME_BASE }}-web:latest
+            ${{ env.IMAGE_NAME_BASE }}-web:${{ github.sha }}
+            ${{ env.IMAGE_NAME_BASE }}-web:${{ github.ref_name }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
 
-      - name: Scan image with Trivy
+      - name: Build and push server
+        uses: docker/build-push-action@v6
+        with:
+          file: apps/server/Dockerfile
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME_BASE }}-server:latest
+            ${{ env.IMAGE_NAME_BASE }}-server:${{ github.sha }}
+            ${{ env.IMAGE_NAME_BASE }}-server:${{ github.ref_name }}
+          cache-from: type=gha,scope=server
+          cache-to: type=gha,mode=max,scope=server
+
+      - name: Build and push migrate
+        uses: docker/build-push-action@v6
+        with:
+          file: packages/db/Dockerfile
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME_BASE }}-migrate:latest
+            ${{ env.IMAGE_NAME_BASE }}-migrate:${{ github.sha }}
+            ${{ env.IMAGE_NAME_BASE }}-migrate:${{ github.ref_name }}
+          cache-from: type=gha,scope=migrate
+          cache-to: type=gha,mode=max,scope=migrate
+
+      - name: Scan web image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          image-ref: ${{ env.IMAGE_NAME_BASE }}-web:${{ github.sha }}
           format: sarif
-          output: trivy-results.sarif
+          output: trivy-web-results.sarif
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           exit-code: "1"
 
-      - name: Upload Trivy SARIF
+      - name: Upload web Trivy SARIF
         if: always()
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: trivy-results.sarif
-          category: trivy
+          sarif_file: trivy-web-results.sarif
+          category: trivy-web
+
+      - name: Scan server image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE_NAME_BASE }}-server:${{ github.sha }}
+          format: sarif
+          output: trivy-server-results.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Upload server Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-server-results.sarif
+          category: trivy-server
+
+      - name: Scan migrate image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE_NAME_BASE }}-migrate:${{ github.sha }}
+          format: sarif
+          output: trivy-migrate-results.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Upload migrate Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-migrate-results.sarif
+          category: trivy-migrate
 
   pre-deploy-backup:
     name: Pre-deploy Postgres Backup
@@ -85,8 +147,8 @@ jobs:
           export-env: true
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          POSTGRES_DB: op://prive-admin/prive-admin-prod/postgres/POSTGRES_DB
-          POSTGRES_USER: op://prive-admin/prive-admin-prod/postgres/POSTGRES_USER
+          POSTGRES_DB: op://prive-admin/prive-admin-prod/server/POSTGRES_DB
+          POSTGRES_USER: op://prive-admin/prive-admin-prod/server/POSTGRES_USER
           R2_ACCOUNT_ID: op://prive-admin/Cloudflare R2/account-id
           R2_ACCESS_KEY_ID: op://prive-admin/Cloudflare R2/access-key-id
           R2_SECRET_ACCESS_KEY: op://prive-admin/Cloudflare R2/secret-access-key
@@ -167,19 +229,19 @@ jobs:
           export-env: true
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          POSTGRES_DB: op://prive-admin/prive-admin-prod/postgres/POSTGRES_DB
-          POSTGRES_USER: op://prive-admin/prive-admin-prod/postgres/POSTGRES_USER
-          POSTGRES_PASSWORD: op://prive-admin/prive-admin-prod/postgres/POSTGRES_PASSWORD
-          DATABASE_URL: op://prive-admin/prive-admin-prod/app/DATABASE_URL
-          BETTER_AUTH_SECRET: op://prive-admin/prive-admin-prod/app/BETTER_AUTH_SECRET
-          BETTER_AUTH_URL: op://prive-admin/prive-admin-prod/app/BETTER_AUTH_URL
-          CORS_ORIGIN: op://prive-admin/prive-admin-prod/app/CORS_ORIGIN
+          POSTGRES_DB: op://prive-admin/prive-admin-prod/server/POSTGRES_DB
+          POSTGRES_USER: op://prive-admin/prive-admin-prod/server/POSTGRES_USER
+          POSTGRES_PASSWORD: op://prive-admin/prive-admin-prod/server/POSTGRES_PASSWORD
+          DATABASE_URL: op://prive-admin/prive-admin-prod/server/DATABASE_URL
+          BETTER_AUTH_SECRET: op://prive-admin/prive-admin-prod/server/BETTER_AUTH_SECRET
+          BETTER_AUTH_URL: op://prive-admin/prive-admin-prod/server/BETTER_AUTH_URL
+          CORS_ORIGIN: op://prive-admin/prive-admin-prod/server/CORS_ORIGIN
           R2_ENDPOINT: op://prive-admin/Cloudflare R2/endpoint
           R2_ACCESS_KEY_ID: op://prive-admin/Cloudflare R2/access-key-id
           R2_SECRET_ACCESS_KEY: op://prive-admin/Cloudflare R2/secret-access-key
           R2_BUCKET_NAME: op://prive-admin/Cloudflare R2/bucket-name
-          DOMAIN_NAME: op://prive-admin/prive-admin-prod/infra/DOMAIN_NAME
-          ACME_EMAIL: op://prive-admin/prive-admin-prod/infra/ACME_EMAIL
+          DOMAIN_NAME: op://prive-admin/prive-admin-prod/server/DOMAIN_NAME
+          ACME_EMAIL: op://prive-admin/prive-admin-prod/server/ACME_EMAIL
           TS_OAUTH_CLIENT_ID: op://prive-admin/tailscale-oauth/client-id
           TS_OAUTH_CLIENT_SECRET: op://prive-admin/tailscale-oauth/client-secret
 

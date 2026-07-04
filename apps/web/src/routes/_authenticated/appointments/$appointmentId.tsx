@@ -19,7 +19,7 @@ import {
 } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { IconArrowLeft, IconCash, IconClock, IconDots, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 
@@ -33,13 +33,8 @@ import { CreateTransactionDialog } from "@/components/transactions/create-transa
 import { DeleteTransactionDialog } from "@/components/transactions/delete-transaction-dialog"
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
-import { getAppointment, linkPersonnel, updateAppointmentMaster } from "@/functions/appointments"
-import { getCustomers } from "@/functions/customers"
-import { getHairAssignedByAppointment } from "@/functions/hair-assigned"
-import { getTransactionsByAppointmentId } from "@/functions/transactions"
-import { getUserSettings } from "@/functions/user-settings"
 import { CURRENCIES, type Currency, formatMinor } from "@/lib/currency"
-import { appointmentKeys, customerKeys, hairAssignedKeys, transactionKeys, userSettingsKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
   Currency,
@@ -50,30 +45,14 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
   component: AppointmentDetailPage,
   loader: async ({ context, params }) => {
     await Promise.all([
+      context.queryClient.prefetchQuery(trpc.appointments.byId.queryOptions({ id: params.appointmentId })),
       context.queryClient.prefetchQuery(
-        queryOptions({
-          queryKey: appointmentKeys.detail(params.appointmentId),
-          queryFn: () => getAppointment({ data: { id: params.appointmentId } }),
-        }),
+        trpc.hairAssigned.byAppointment.queryOptions({ appointmentId: params.appointmentId }),
       ),
       context.queryClient.prefetchQuery(
-        queryOptions({
-          queryKey: hairAssignedKeys.byAppointment(params.appointmentId),
-          queryFn: () => getHairAssignedByAppointment({ data: { appointmentId: params.appointmentId } }),
-        }),
+        trpc.transactions.byAppointmentId.queryOptions({ appointmentId: params.appointmentId }),
       ),
-      context.queryClient.prefetchQuery(
-        queryOptions({
-          queryKey: transactionKeys.byAppointment(params.appointmentId),
-          queryFn: () => getTransactionsByAppointmentId({ data: { appointmentId: params.appointmentId } }),
-        }),
-      ),
-      context.queryClient.prefetchQuery(
-        queryOptions({
-          queryKey: userSettingsKeys.current(),
-          queryFn: () => getUserSettings(),
-        }),
-      ),
+      context.queryClient.prefetchQuery(trpc.userSettings.get.queryOptions()),
     ])
   },
 })
@@ -90,25 +69,17 @@ function AppointmentDetailPage() {
   const [editTx, setEditTx] = useState<TransactionRow | null>(null)
   const [deleteTx, setDeleteTx] = useState<TransactionRow | null>(null)
 
-  const { data: appointment, isLoading } = useQuery({
-    queryKey: appointmentKeys.detail(appointmentId),
-    queryFn: () => getAppointment({ data: { id: appointmentId } }),
-  })
+  const appointmentQueryOptions = trpc.appointments.byId.queryOptions({ id: appointmentId })
+  const hairAssignedQueryOptions = trpc.hairAssigned.byAppointment.queryOptions({ appointmentId })
+  const transactionsQueryOptions = trpc.transactions.byAppointmentId.queryOptions({ appointmentId })
 
-  const { data: hairAssigned } = useQuery({
-    queryKey: hairAssignedKeys.byAppointment(appointmentId),
-    queryFn: () => getHairAssignedByAppointment({ data: { appointmentId } }),
-  })
+  const { data: appointment, isLoading } = useQuery(appointmentQueryOptions)
 
-  const { data: transactions } = useQuery({
-    queryKey: transactionKeys.byAppointment(appointmentId),
-    queryFn: () => getTransactionsByAppointmentId({ data: { appointmentId } }),
-  })
+  const { data: hairAssigned } = useQuery(hairAssignedQueryOptions)
 
-  const { data: userSettings } = useQuery({
-    queryKey: userSettingsKeys.current(),
-    queryFn: () => getUserSettings(),
-  })
+  const { data: transactions } = useQuery(transactionsQueryOptions)
+
+  const { data: userSettings } = useQuery(trpc.userSettings.get.queryOptions())
 
   const txList = transactions ?? []
   const totalsByCurrency = { ...ZERO_TRANSACTION_TOTALS }
@@ -139,11 +110,22 @@ function AppointmentDetailPage() {
   }
 
   const invalidateKeys = [
-    { queryKey: appointmentKeys.detail(appointmentId) },
-    { queryKey: hairAssignedKeys.byAppointment(appointmentId) },
+    { queryKey: appointmentQueryOptions.queryKey },
+    { queryKey: hairAssignedQueryOptions.queryKey },
+    { queryKey: trpc.customers.summary.queryOptions({ id: appointment.client.id }).queryKey },
   ]
 
-  const txInvalidateKeys = [{ queryKey: transactionKeys.byAppointment(appointmentId) }]
+  const transactionCustomerIds = Array.from(
+    new Set([
+      appointment.client.id,
+      appointment.master.id,
+      ...(appointment.personnel?.map((person) => person.personnelId) ?? []),
+    ]),
+  )
+  const txInvalidateKeys = [
+    { queryKey: transactionsQueryOptions.queryKey },
+    ...transactionCustomerIds.map((id) => ({ queryKey: trpc.customers.summary.queryOptions({ id }).queryKey })),
+  ]
 
   const txCustomerId = createTxCustomerId ?? appointment.master.id
   const txDefaultCurrency: Currency = (() => {
@@ -469,15 +451,14 @@ function ChangeMasterModal({ open, onOpenChange, appointmentId, currentMasterId 
   const [masterId, setMasterId] = useState(currentMasterId)
 
   const { data: customers } = useQuery({
-    queryKey: customerKeys.list(),
-    queryFn: () => getCustomers(),
+    ...trpc.customers.list.queryOptions(),
     enabled: open,
   })
 
   const mutation = useMutation({
-    mutationFn: (nextMasterId: string) => updateAppointmentMaster({ data: { appointmentId, masterId: nextMasterId } }),
+    ...trpc.appointments.updateMaster.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: appointmentKeys.detail(appointmentId) })
+      queryClient.invalidateQueries({ queryKey: trpc.appointments.byId.queryOptions({ id: appointmentId }).queryKey })
       notifications.show({ color: "green", message: "Master updated." })
       onOpenChange(false)
     },
@@ -502,7 +483,7 @@ function ChangeMasterModal({ open, onOpenChange, appointmentId, currentMasterId 
           <Button
             disabled={!masterId || masterId === currentMasterId}
             loading={mutation.isPending}
-            onClick={() => mutation.mutate(masterId)}
+            onClick={() => mutation.mutate({ appointmentId, masterId })}
           >
             Save
           </Button>
@@ -518,8 +499,7 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
   const [search, setSearch] = useState("")
 
   const { data: customers } = useQuery({
-    queryKey: customerKeys.list(),
-    queryFn: () => getCustomers(),
+    ...trpc.customers.list.queryOptions(),
     enabled: open,
   })
 
@@ -534,9 +514,9 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
   }, [customers, assignedPersonnelIds, search])
 
   const mutation = useMutation({
-    mutationFn: (personnelIds: string[]) => linkPersonnel({ data: { appointmentId, personnelIds } }),
+    ...trpc.appointments.linkPersonnel.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: appointmentKeys.detail(appointmentId) })
+      queryClient.invalidateQueries({ queryKey: trpc.appointments.byId.queryOptions({ id: appointmentId }).queryKey })
       handleClose()
       notifications.show({ color: "green", message: "Personnel picked." })
     },
@@ -610,7 +590,7 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
           <Button
             disabled={selected.length === 0}
             loading={mutation.isPending}
-            onClick={() => mutation.mutate(selected)}
+            onClick={() => mutation.mutate({ appointmentId, personnelIds: selected })}
           >
             Confirm
           </Button>

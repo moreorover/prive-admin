@@ -3,13 +3,12 @@ import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { updateHairAssigned } from "@/functions/hair-assigned"
-import { hairOrderKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 type EditHairAssignedDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  hairAssigned: { id: string; weightInGrams: number; soldFor: number }
+  hairAssigned: { id: string; weightInGrams: number; soldFor: number; hairOrder?: { id: string } | null }
   invalidateKeys: { queryKey: readonly unknown[] }[]
 }
 
@@ -20,12 +19,20 @@ export function EditHairAssignedDialog({
   invalidateKeys,
 }: EditHairAssignedDialogProps) {
   const queryClient = useQueryClient()
+  const availableOrdersQueryOptions = trpc.hairAssigned.availableOrders.queryOptions()
+  const hairOrdersListQueryOptions = trpc.hairOrders.list.queryOptions()
 
   const mutation = useMutation({
-    mutationFn: (data: { id: string; weightInGrams: number; soldFor: number }) => updateHairAssigned({ data }),
+    ...trpc.hairAssigned.update.mutationOptions(),
     onSuccess: () => {
       for (const key of invalidateKeys) queryClient.invalidateQueries(key)
-      queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
+      queryClient.invalidateQueries({ queryKey: availableOrdersQueryOptions.queryKey })
+      queryClient.invalidateQueries({ queryKey: hairOrdersListQueryOptions.queryKey })
+      if (hairAssigned.hairOrder) {
+        queryClient.invalidateQueries({
+          queryKey: trpc.hairOrders.byId.queryOptions({ id: hairAssigned.hairOrder.id }).queryKey,
+        })
+      }
       onOpenChange(false)
       notifications.show({ color: "green", message: "Hair assigned updated" })
     },

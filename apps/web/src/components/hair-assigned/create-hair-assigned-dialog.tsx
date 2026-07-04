@@ -3,8 +3,7 @@ import { notifications } from "@mantine/notifications"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 
-import { createHairAssigned, getAvailableHairOrders } from "@/functions/hair-assigned"
-import { hairOrderKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 type CreateHairAssignedDialogProps = {
   open: boolean
@@ -23,19 +22,23 @@ export function CreateHairAssignedDialog({
 }: CreateHairAssignedDialogProps) {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const queryClient = useQueryClient()
+  const availableOrdersQueryOptions = trpc.hairAssigned.availableOrders.queryOptions()
+  const hairOrdersListQueryOptions = trpc.hairOrders.list.queryOptions()
 
   const { data: availableOrders, isLoading } = useQuery({
-    queryKey: [...hairOrderKeys.all, "available"],
-    queryFn: () => getAvailableHairOrders(),
+    ...availableOrdersQueryOptions,
     enabled: open,
   })
 
   const mutation = useMutation({
-    mutationFn: (hairOrderId: string) =>
-      createHairAssigned({ data: { hairOrderId, clientId, appointmentId: appointmentId ?? null } }),
+    ...trpc.hairAssigned.create.mutationOptions(),
     onSuccess: () => {
       for (const key of invalidateKeys) queryClient.invalidateQueries(key)
-      queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
+      queryClient.invalidateQueries({ queryKey: availableOrdersQueryOptions.queryKey })
+      queryClient.invalidateQueries({ queryKey: hairOrdersListQueryOptions.queryKey })
+      if (selectedOrderId) {
+        queryClient.invalidateQueries({ queryKey: trpc.hairOrders.byId.queryOptions({ id: selectedOrderId }).queryKey })
+      }
       onOpenChange(false)
       setSelectedOrderId(null)
       notifications.show({ color: "green", message: "Hair assigned created" })
@@ -97,7 +100,10 @@ export function CreateHairAssignedDialog({
           <Button
             disabled={!selectedOrderId}
             loading={mutation.isPending}
-            onClick={() => selectedOrderId && mutation.mutate(selectedOrderId)}
+            onClick={() =>
+              selectedOrderId &&
+              mutation.mutate({ hairOrderId: selectedOrderId, clientId, appointmentId: appointmentId ?? null })
+            }
           >
             Assign
           </Button>

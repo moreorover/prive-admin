@@ -4,7 +4,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
 import { BankAccountReportBlock } from "@/components/reports-cards"
-import { getBankAccountMonthlyBreakdown } from "@/functions/reports"
+import { trpc } from "@/utils/trpc"
 
 const searchSchema = z.object({
   year: z.number().int().min(2000).max(3000).optional(),
@@ -24,10 +24,9 @@ function OverviewTab() {
 
   const setYear = (next: number) => navigate({ search: { year: next } })
 
-  const bankQuery = useQuery({
-    queryKey: ["reports", "bank", year, legalEntityId],
-    queryFn: () => getBankAccountMonthlyBreakdown({ data: { year, legalEntityId } }),
-  })
+  const { data: bankAccounts = [] } = useQuery(
+    trpc.reports.bankAccountMonthlyBreakdown.queryOptions({ year, legalEntityId }),
+  )
 
   return (
     <Stack gap="lg">
@@ -52,13 +51,13 @@ function OverviewTab() {
         />
       </Group>
       <Stack gap="md">
-        {(bankQuery.data ?? []).length === 0 ? (
+        {bankAccounts.length === 0 ? (
           <Text c="dimmed" size="sm">
             No bank accounts.
           </Text>
         ) : (
           <Stack gap="xl">
-            {(bankQuery.data ?? []).map((a) => (
+            {bankAccounts.map((a) => (
               <BankAccountReportBlock key={a.bankAccountId} a={a} />
             ))}
           </Stack>

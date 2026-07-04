@@ -19,7 +19,7 @@ import {
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconArrowLeft, IconPencil, IconPhone, IconPlus, IconTrash } from "@tabler/icons-react"
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -31,47 +31,18 @@ import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-ass
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { getAppointmentsByCustomerId } from "@/functions/appointments"
-import { getCustomer, getCustomerSummary, updateCustomer } from "@/functions/customers"
-import { getHairAssignedByCustomer } from "@/functions/hair-assigned"
-import { createNote, deleteNote, getNotes } from "@/functions/notes"
 import { CURRENCIES, formatMinor } from "@/lib/currency"
-import { appointmentKeys, customerKeys, hairAssignedKeys, noteKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetailPage,
   loader: async ({ context, params }) => {
     await Promise.all([
-      context.queryClient.prefetchQuery(
-        queryOptions({
-          queryKey: customerKeys.detail(params.customerId),
-          queryFn: () => getCustomer({ data: { id: params.customerId } }),
-        }),
-      ),
-      context.queryClient.prefetchQuery(
-        queryOptions({
-          queryKey: customerKeys.summary(params.customerId),
-          queryFn: () => getCustomerSummary({ data: { id: params.customerId } }),
-        }),
-      ),
-      context.queryClient.prefetchQuery(
-        queryOptions({
-          queryKey: appointmentKeys.byCustomer(params.customerId),
-          queryFn: () => getAppointmentsByCustomerId({ data: { customerId: params.customerId } }),
-        }),
-      ),
-      context.queryClient.prefetchQuery(
-        queryOptions({
-          queryKey: noteKeys.list({ customerId: params.customerId }),
-          queryFn: () => getNotes({ data: { customerId: params.customerId } }),
-        }),
-      ),
-      context.queryClient.prefetchQuery(
-        queryOptions({
-          queryKey: hairAssignedKeys.byCustomer(params.customerId),
-          queryFn: () => getHairAssignedByCustomer({ data: { customerId: params.customerId } }),
-        }),
-      ),
+      context.queryClient.prefetchQuery(trpc.customers.byId.queryOptions({ id: params.customerId })),
+      context.queryClient.prefetchQuery(trpc.customers.summary.queryOptions({ id: params.customerId })),
+      context.queryClient.prefetchQuery(trpc.appointments.byCustomerId.queryOptions({ customerId: params.customerId })),
+      context.queryClient.prefetchQuery(trpc.notes.list.queryOptions({ customerId: params.customerId })),
+      context.queryClient.prefetchQuery(trpc.hairAssigned.byCustomer.queryOptions({ customerId: params.customerId })),
     ])
   },
 })
@@ -87,6 +58,13 @@ function StatCard({ label, value }: { label: string; value: string }) {
   )
 }
 
+type CustomerNote = {
+  id: string
+  note: string
+  createdAt: Date | string
+  createdBy?: { name: string | null } | null
+}
+
 function EditCustomerDialog({
   customer,
   open,
@@ -99,9 +77,13 @@ function EditCustomerDialog({
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (data: { id: string; name: string; phoneNumber?: string | null }) => updateCustomer({ data }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: customerKeys.all })
+    ...trpc.customers.update.mutationOptions(),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: trpc.customers.list.queryOptions().queryKey }),
+        queryClient.invalidateQueries({ queryKey: trpc.customers.byId.queryOptions({ id: customer.id }).queryKey }),
+        queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id: customer.id }).queryKey }),
+      ])
       onOpenChange(false)
       notifications.show({ color: "green", message: "Customer updated" })
     },
@@ -150,10 +132,10 @@ function AddNoteDialog({
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (data: { note: string; customerId: string }) => createNote({ data }),
+    ...trpc.notes.create.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: noteKeys.all })
-      queryClient.invalidateQueries({ queryKey: customerKeys.summary(customerId) })
+      queryClient.invalidateQueries({ queryKey: trpc.notes.list.queryKey({ customerId }) })
+      queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey })
       onOpenChange(false)
       notifications.show({ color: "green", message: "Note added" })
     },
@@ -189,37 +171,26 @@ function CustomerDetailPage() {
   const [hairEditItem, setHairEditItem] = useState<HairAssignedRow | null>(null)
   const [hairDeleteItem, setHairDeleteItem] = useState<HairAssignedRow | null>(null)
   const queryClient = useQueryClient()
+  const customerSummaryQueryOptions = trpc.customers.summary.queryOptions({ id: customerId })
+  const customerAppointmentsQueryOptions = trpc.appointments.byCustomerId.queryOptions({ customerId })
+  const hairAssignedQueryOptions = trpc.hairAssigned.byCustomer.queryOptions({ customerId })
 
-  const { data: customer, isLoading } = useQuery({
-    queryKey: customerKeys.detail(customerId),
-    queryFn: () => getCustomer({ data: { id: customerId } }),
-  })
+  const { data: customer, isLoading } = useQuery(trpc.customers.byId.queryOptions({ id: customerId }))
 
-  const { data: appointments } = useQuery({
-    queryKey: appointmentKeys.byCustomer(customerId),
-    queryFn: () => getAppointmentsByCustomerId({ data: { customerId } }),
-  })
+  const { data: appointments } = useQuery(customerAppointmentsQueryOptions)
 
-  const { data: notes } = useQuery({
-    queryKey: noteKeys.list({ customerId }),
-    queryFn: () => getNotes({ data: { customerId } }),
-  })
+  const notesQueryOptions = trpc.notes.list.queryOptions({ customerId })
+  const { data: notes } = useQuery(notesQueryOptions)
 
-  const { data: summary } = useQuery({
-    queryKey: customerKeys.summary(customerId),
-    queryFn: () => getCustomerSummary({ data: { id: customerId } }),
-  })
+  const { data: summary } = useQuery(customerSummaryQueryOptions)
 
-  const { data: hairAssigned } = useQuery({
-    queryKey: hairAssignedKeys.byCustomer(customerId),
-    queryFn: () => getHairAssignedByCustomer({ data: { customerId } }),
-  })
+  const { data: hairAssigned } = useQuery(hairAssignedQueryOptions)
 
   const deleteNoteMutation = useMutation({
-    mutationFn: (id: string) => deleteNote({ data: { id } }),
+    ...trpc.notes.delete.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: noteKeys.all })
-      queryClient.invalidateQueries({ queryKey: customerKeys.summary(customerId) })
+      queryClient.invalidateQueries({ queryKey: notesQueryOptions.queryKey })
+      queryClient.invalidateQueries({ queryKey: customerSummaryQueryOptions.queryKey })
       notifications.show({ color: "green", message: "Note deleted" })
     },
   })
@@ -381,7 +352,7 @@ function CustomerDetailPage() {
             >
               {notes && notes.length > 0 ? (
                 <Stack gap="xs">
-                  {notes.map((n) => (
+                  {notes.map((n: CustomerNote) => (
                     <Card key={n.id} padding="sm">
                       <Group justify="space-between" align="flex-start">
                         <Stack gap={2}>
@@ -390,7 +361,11 @@ function CustomerDetailPage() {
                             {n.createdBy?.name ?? "Unknown"} · <ClientDate date={n.createdAt} />
                           </Text>
                         </Stack>
-                        <ActionIcon variant="subtle" color="red" onClick={() => deleteNoteMutation.mutate(n.id)}>
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          onClick={() => deleteNoteMutation.mutate({ id: n.id })}
+                        >
                           <IconTrash size={14} />
                         </ActionIcon>
                       </Group>
@@ -423,8 +398,8 @@ function CustomerDetailPage() {
           onOpenChange={setAppointmentCreateOpen}
           defaultClientId={customerId}
           invalidateKeys={[
-            { queryKey: appointmentKeys.byCustomer(customerId) },
-            { queryKey: customerKeys.summary(customerId) },
+            { queryKey: customerAppointmentsQueryOptions.queryKey },
+            { queryKey: customerSummaryQueryOptions.queryKey },
           ]}
           navigateOnSuccess
         />
@@ -434,8 +409,8 @@ function CustomerDetailPage() {
           clientId={customerId}
           appointmentId={null}
           invalidateKeys={[
-            { queryKey: hairAssignedKeys.byCustomer(customerId) },
-            { queryKey: customerKeys.summary(customerId) },
+            { queryKey: hairAssignedQueryOptions.queryKey },
+            { queryKey: customerSummaryQueryOptions.queryKey },
           ]}
         />
         {hairEditItem && (
@@ -444,8 +419,8 @@ function CustomerDetailPage() {
             onOpenChange={(open) => !open && setHairEditItem(null)}
             hairAssigned={hairEditItem}
             invalidateKeys={[
-              { queryKey: hairAssignedKeys.byCustomer(customerId) },
-              { queryKey: customerKeys.summary(customerId) },
+              { queryKey: hairAssignedQueryOptions.queryKey },
+              { queryKey: customerSummaryQueryOptions.queryKey },
             ]}
           />
         )}
@@ -455,8 +430,8 @@ function CustomerDetailPage() {
             onOpenChange={(open) => !open && setHairDeleteItem(null)}
             hairAssigned={hairDeleteItem}
             invalidateKeys={[
-              { queryKey: hairAssignedKeys.byCustomer(customerId) },
-              { queryKey: customerKeys.summary(customerId) },
+              { queryKey: hairAssignedQueryOptions.queryKey },
+              { queryKey: customerSummaryQueryOptions.queryKey },
             ]}
           />
         )}

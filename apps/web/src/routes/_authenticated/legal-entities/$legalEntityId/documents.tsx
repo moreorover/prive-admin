@@ -7,13 +7,8 @@ import { useState } from "react"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
 import { Section } from "@/components/section"
-import {
-  assignAttachmentToEntry,
-  deleteAttachment,
-  listUnassignedAttachments,
-} from "@/functions/bank-statement-attachments"
-import { listBankStatementEntries } from "@/functions/bank-statement-entries"
 import { type Currency, formatMinor } from "@/lib/currency"
+import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/documents")({
   component: DocumentsTab,
@@ -25,19 +20,13 @@ function DocumentsTab() {
   const [fileInputKey, setFileInputKey] = useState(0)
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
 
-  const unassignedQuery = useQuery({
-    queryKey: ["bank-statement-attachments", "unassigned"],
-    queryFn: () => listUnassignedAttachments(),
-  })
+  const { data: unassignedDocuments = [] } = useQuery(trpc.bankStatementAttachments.unassigned.queryOptions())
 
-  const assignableEntriesQuery = useQuery({
-    queryKey: ["bank-statement-entries", "all-pending"],
-    queryFn: () => listBankStatementEntries({ data: { status: "PENDING" } }),
-  })
+  const { data: assignableEntries = [] } = useQuery(trpc.bankStatementEntries.list.queryOptions({ status: "PENDING" }))
 
   const invalidate = async () => {
-    await queryClient.invalidateQueries({ queryKey: ["bank-statement-attachments"] })
-    await queryClient.invalidateQueries({ queryKey: ["bank-statement-attachment-counts"] })
+    await queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.unassigned.queryKey() })
+    await queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.counts.queryKey() })
   }
 
   const upload = async (file: File) => {
@@ -61,31 +50,31 @@ function DocumentsTab() {
   }
 
   const assign = useMutation({
-    mutationFn: (vars: { id: string; entryId: string }) => assignAttachmentToEntry({ data: vars }),
+    ...trpc.bankStatementAttachments.assign.mutationOptions(),
     onSuccess: async () => {
       notifications.show({ color: "green", message: "Assigned" })
       await invalidate()
     },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+    onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
 
   const remove = useMutation({
-    mutationFn: (id: string) => deleteAttachment({ data: { id } }),
+    ...trpc.bankStatementAttachments.delete.mutationOptions(),
     onSuccess: async () => {
       notifications.show({ color: "green", message: "Deleted" })
       await invalidate()
     },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+    onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
 
-  const entryOptions = (assignableEntriesQuery.data ?? []).map((e) => ({
+  const entryOptions = assignableEntries.map((e) => ({
     value: e.id,
     label: `${e.date} · ${e.direction === "C" ? "+" : "−"}${formatMinor(e.amount, e.currency as Currency)} · ${
       e.counterpartyName ?? "—"
     }`,
   }))
 
-  const items = unassignedQuery.data ?? []
+  const items = unassignedDocuments
 
   return (
     <>
@@ -155,7 +144,7 @@ function DocumentsTab() {
                         <ActionIcon
                           variant="subtle"
                           color="red"
-                          onClick={() => remove.mutate(a.id)}
+                          onClick={() => remove.mutate({ id: a.id })}
                           loading={remove.isPending}
                           aria-label="Delete"
                         >

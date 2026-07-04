@@ -1,10 +1,19 @@
 import { Box, Group, Paper, Stack, Table, Text } from "@mantine/core"
 
-import type { BankAccountMonthlyBreakdown } from "@/functions/reports"
-
 import { type Currency, formatMinor } from "@/lib/currency"
 
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+type BankAccountMonthlyBreakdown = {
+  bankAccountId: string
+  displayName: string
+  iban: string
+  currency: string
+  legalEntityName: string
+  months: { month: number; in: number; out: number }[]
+  totalIn: number
+  totalOut: number
+}
 
 export function BankAccountReportBlock({ a }: { a: BankAccountMonthlyBreakdown }) {
   return (

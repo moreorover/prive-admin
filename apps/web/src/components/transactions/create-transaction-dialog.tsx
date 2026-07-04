@@ -4,8 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import type { Currency } from "@/lib/currency"
 
-import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
-import { createTransaction } from "@/functions/transactions"
+import { TransactionForm } from "@/components/transactions/transaction-form"
+import { trpc } from "@/utils/trpc"
 
 type CreateTransactionDialogProps = {
   open: boolean
@@ -27,8 +27,7 @@ export function CreateTransactionDialog({
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (values: TransactionFormSubmit) =>
-      createTransaction({ data: { ...values, appointmentId, customerId } }),
+    ...trpc.transactions.create.mutationOptions(),
     onSuccess: () => {
       for (const key of invalidateKeys) queryClient.invalidateQueries(key)
       onOpenChange(false)
@@ -49,7 +48,7 @@ export function CreateTransactionDialog({
         submitLabel="Create"
         loading={mutation.isPending}
         onSubmit={async (values) => {
-          await mutation.mutateAsync(values)
+          await mutation.mutateAsync({ ...values, appointmentId, customerId })
         }}
       />
     </Modal>

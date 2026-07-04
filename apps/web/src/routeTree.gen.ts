@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -25,10 +24,6 @@ import { Route as AuthenticatedSalonsIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedLegalEntitiesIndexRouteImport } from './routes/_authenticated/legal-entities/index'
 import { Route as AuthenticatedHairOrdersIndexRouteImport } from './routes/_authenticated/hair-orders/index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
-import { Route as ApiStatementAttachmentsUploadRouteImport } from './routes/api/statement-attachments.upload'
-import { Route as ApiStatementAttachmentsPreviewRouteImport } from './routes/api/statement-attachments.preview'
-import { Route as ApiStatementAttachmentsExportRouteImport } from './routes/api/statement-attachments.export'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthenticatedSalonsSalonIdRouteImport } from './routes/_authenticated/salons/$salonId'
 import { Route as AuthenticatedHairOrdersHairOrderIdRouteImport } from './routes/_authenticated/hair-orders/$hairOrderId'
 import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
@@ -54,11 +49,6 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiUploadRoute = ApiUploadRouteImport.update({
-  id: '/api/upload',
-  path: '/api/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -128,29 +118,6 @@ const AuthenticatedCustomersIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedCustomersRouteRoute,
   } as any)
-const ApiStatementAttachmentsUploadRoute =
-  ApiStatementAttachmentsUploadRouteImport.update({
-    id: '/api/statement-attachments/upload',
-    path: '/api/statement-attachments/upload',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiStatementAttachmentsPreviewRoute =
-  ApiStatementAttachmentsPreviewRouteImport.update({
-    id: '/api/statement-attachments/preview',
-    path: '/api/statement-attachments/preview',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiStatementAttachmentsExportRoute =
-  ApiStatementAttachmentsExportRouteImport.update({
-    id: '/api/statement-attachments/export',
-    path: '/api/statement-attachments/export',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedSalonsSalonIdRoute =
   AuthenticatedSalonsSalonIdRouteImport.update({
     id: '/salons/$salonId',
@@ -237,16 +204,11 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/api/upload': typeof ApiUploadRoute
   '/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/statement-attachments/export': typeof ApiStatementAttachmentsExportRoute
-  '/api/statement-attachments/preview': typeof ApiStatementAttachmentsPreviewRoute
-  '/api/statement-attachments/upload': typeof ApiStatementAttachmentsUploadRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
   '/legal-entities/': typeof AuthenticatedLegalEntitiesIndexRoute
@@ -268,15 +230,10 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/api/upload': typeof ApiUploadRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/statement-attachments/export': typeof ApiStatementAttachmentsExportRoute
-  '/api/statement-attachments/preview': typeof ApiStatementAttachmentsPreviewRoute
-  '/api/statement-attachments/upload': typeof ApiStatementAttachmentsUploadRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders': typeof AuthenticatedHairOrdersIndexRoute
   '/legal-entities': typeof AuthenticatedLegalEntitiesIndexRoute
@@ -302,16 +259,11 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/api/upload': typeof ApiUploadRoute
   '/_authenticated/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren
   '/_authenticated/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/_authenticated/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
-  '/api/statement-attachments/export': typeof ApiStatementAttachmentsExportRoute
-  '/api/statement-attachments/preview': typeof ApiStatementAttachmentsPreviewRoute
-  '/api/statement-attachments/upload': typeof ApiStatementAttachmentsUploadRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
   '/_authenticated/legal-entities/': typeof AuthenticatedLegalEntitiesIndexRoute
@@ -337,16 +289,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/profile'
     | '/settings'
-    | '/api/upload'
     | '/legal-entities/$legalEntityId'
     | '/appointments/$appointmentId'
     | '/customers/$customerId'
     | '/hair-orders/$hairOrderId'
     | '/salons/$salonId'
-    | '/api/auth/$'
-    | '/api/statement-attachments/export'
-    | '/api/statement-attachments/preview'
-    | '/api/statement-attachments/upload'
     | '/customers/'
     | '/hair-orders/'
     | '/legal-entities/'
@@ -368,15 +315,10 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/profile'
     | '/settings'
-    | '/api/upload'
     | '/appointments/$appointmentId'
     | '/customers/$customerId'
     | '/hair-orders/$hairOrderId'
     | '/salons/$salonId'
-    | '/api/auth/$'
-    | '/api/statement-attachments/export'
-    | '/api/statement-attachments/preview'
-    | '/api/statement-attachments/upload'
     | '/customers'
     | '/hair-orders'
     | '/legal-entities'
@@ -401,16 +343,11 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/profile'
     | '/_authenticated/settings'
-    | '/api/upload'
     | '/_authenticated/legal-entities/$legalEntityId'
     | '/_authenticated/appointments/$appointmentId'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/hair-orders/$hairOrderId'
     | '/_authenticated/salons/$salonId'
-    | '/api/auth/$'
-    | '/api/statement-attachments/export'
-    | '/api/statement-attachments/preview'
-    | '/api/statement-attachments/upload'
     | '/_authenticated/customers/'
     | '/_authenticated/hair-orders/'
     | '/_authenticated/legal-entities/'
@@ -428,11 +365,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
-  ApiUploadRoute: typeof ApiUploadRoute
-  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
-  ApiStatementAttachmentsExportRoute: typeof ApiStatementAttachmentsExportRoute
-  ApiStatementAttachmentsPreviewRoute: typeof ApiStatementAttachmentsPreviewRoute
-  ApiStatementAttachmentsUploadRoute: typeof ApiStatementAttachmentsUploadRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -456,13 +388,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/upload': {
-      id: '/api/upload'
-      path: '/api/upload'
-      fullPath: '/api/upload'
-      preLoaderRoute: typeof ApiUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings': {
@@ -548,34 +473,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/customers/'
       preLoaderRoute: typeof AuthenticatedCustomersIndexRouteImport
       parentRoute: typeof AuthenticatedCustomersRouteRoute
-    }
-    '/api/statement-attachments/upload': {
-      id: '/api/statement-attachments/upload'
-      path: '/api/statement-attachments/upload'
-      fullPath: '/api/statement-attachments/upload'
-      preLoaderRoute: typeof ApiStatementAttachmentsUploadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/statement-attachments/preview': {
-      id: '/api/statement-attachments/preview'
-      path: '/api/statement-attachments/preview'
-      fullPath: '/api/statement-attachments/preview'
-      preLoaderRoute: typeof ApiStatementAttachmentsPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/statement-attachments/export': {
-      id: '/api/statement-attachments/export'
-      path: '/api/statement-attachments/export'
-      fullPath: '/api/statement-attachments/export'
-      preLoaderRoute: typeof ApiStatementAttachmentsExportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/salons/$salonId': {
       id: '/_authenticated/salons/$salonId'
@@ -787,21 +684,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LoginRoute: LoginRoute,
-  ApiUploadRoute: ApiUploadRoute,
-  ApiAuthSplatRoute: ApiAuthSplatRoute,
-  ApiStatementAttachmentsExportRoute: ApiStatementAttachmentsExportRoute,
-  ApiStatementAttachmentsPreviewRoute: ApiStatementAttachmentsPreviewRoute,
-  ApiStatementAttachmentsUploadRoute: ApiStatementAttachmentsUploadRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

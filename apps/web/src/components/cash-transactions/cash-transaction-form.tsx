@@ -24,7 +24,7 @@ export type CashTransactionFormValues = {
   currency: Currency
 }
 
-export type CashTransactionFormSubmit = {
+type CashTransactionFormSubmit = {
   customerId: string
   createdAt: string
   description: string | null

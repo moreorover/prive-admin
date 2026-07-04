@@ -7,10 +7,7 @@ import { useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
 import { useEffect } from "react"
 
-import { createAppointment } from "@/functions/appointments"
-import { getCustomers } from "@/functions/customers"
-import { listSalons } from "@/functions/salons"
-import { appointmentKeys, customerKeys, salonKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 type CreateAppointmentDialogProps = {
   open: boolean
@@ -29,6 +26,11 @@ type FormValues = {
   salonId: string
 }
 
+type SalonOption = {
+  id: string
+  name: string
+}
+
 const defaultStartsAtString = () => dayjs().startOf("hour").add(1, "hour").format("YYYY-MM-DD HH:mm:ss")
 
 export function CreateAppointmentDialog({
@@ -41,6 +43,8 @@ export function CreateAppointmentDialog({
 }: CreateAppointmentDialogProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const appointmentListQueryOptions = trpc.appointments.list.queryOptions({})
+  const salonsQueryOptions = trpc.salons.list.queryOptions()
 
   const form = useForm<FormValues>({
     initialValues: {
@@ -74,30 +78,19 @@ export function CreateAppointmentDialog({
   }, [open, defaultClientId, defaultStartsAt])
 
   const { data: customers } = useQuery({
-    queryKey: customerKeys.list(),
-    queryFn: () => getCustomers(),
+    ...trpc.customers.list.queryOptions(),
     enabled: open,
   })
 
   const { data: salons } = useQuery({
-    queryKey: salonKeys.list(),
-    queryFn: () => listSalons(),
+    ...salonsQueryOptions,
     enabled: open,
   })
 
   const mutation = useMutation({
-    mutationFn: (values: FormValues) =>
-      createAppointment({
-        data: {
-          name: values.name.trim(),
-          startsAt: dayjs(values.startsAt!).toISOString(),
-          clientId: values.clientId,
-          masterId: values.masterId,
-          salonId: values.salonId,
-        },
-      }),
+    ...trpc.appointments.create.mutationOptions(),
     onSuccess: (created) => {
-      queryClient.invalidateQueries({ queryKey: appointmentKeys.all })
+      queryClient.invalidateQueries({ queryKey: appointmentListQueryOptions.queryKey })
       for (const key of invalidateKeys ?? []) queryClient.invalidateQueries(key)
       notifications.show({ color: "green", message: "Appointment created" })
       onOpenChange(false)
@@ -108,7 +101,14 @@ export function CreateAppointmentDialog({
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
-  const handleSubmit = (values: FormValues) => mutation.mutate(values)
+  const handleSubmit = (values: FormValues) =>
+    mutation.mutate({
+      name: values.name.trim(),
+      startsAt: dayjs(values.startsAt!).toISOString(),
+      clientId: values.clientId,
+      masterId: values.masterId,
+      salonId: values.salonId,
+    })
 
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="New Appointment">
@@ -140,7 +140,7 @@ export function CreateAppointmentDialog({
           <Select
             label="Salon"
             required
-            data={(salons ?? []).map((s) => ({ value: s.id, label: s.name }))}
+            data={(salons ?? []).map((s: SalonOption) => ({ value: s.id, label: s.name }))}
             {...form.getInputProps("salonId")}
           />
           <Group justify="flex-end" gap="xs">

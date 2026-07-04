@@ -37,24 +37,9 @@ import { zodResolver } from "mantine-form-zod-resolver"
 import { useState } from "react"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
-import { createBankAccount, getBankAccount, updateBankAccount } from "@/functions/bank-accounts"
-import {
-  assignAttachmentToEntry,
-  deleteAttachment,
-  listAttachmentCounts,
-  listAttachments,
-  listUnassignedAttachments,
-  unassignAttachment,
-} from "@/functions/bank-statement-attachments"
-import {
-  ignoreStatementEntry,
-  importBankCsv,
-  listBankStatementEntries,
-  undoStatementEntry,
-} from "@/functions/bank-statement-entries"
-import { listLegalEntities } from "@/functions/legal-entities"
 import { CURRENCY_OPTIONS, type Currency, formatMinor } from "@/lib/currency"
 import { bankAccountSchema } from "@/lib/schemas"
+import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/bank-accounts/$bankAccountId")({
   component: BankAccountRoute,
@@ -70,12 +55,6 @@ type StatusFilter = "PENDING" | "IGNORED" | "ALL"
 function BankAccountShow({ id }: { id: string }) {
   const queryClient = useQueryClient()
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
-
-  const q = useQuery({
-    queryKey: ["bank-account", id],
-    queryFn: () => getBankAccount({ data: { id } }),
-  })
-
   const [file, setFile] = useState<File | null>(null)
   const [importResult, setImportResult] = useState<{
     accountIban: string
@@ -90,24 +69,19 @@ function BankAccountShow({ id }: { id: string }) {
   })
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
 
-  const entriesQuery = useQuery({
-    queryKey: ["bank-statement-entries", id, statusFilter],
-    queryFn: () =>
-      listBankStatementEntries({
-        data: {
-          bankAccountId: id,
-          status: statusFilter === "ALL" ? undefined : statusFilter,
-        },
-      }),
+  const bankAccountQueryOptions = trpc.bankAccounts.byId.queryOptions({ id })
+  const statementEntriesQueryOptions = trpc.bankStatementEntries.list.queryOptions({
+    bankAccountId: id,
+    status: statusFilter === "ALL" ? undefined : statusFilter,
   })
+  const { data: bankAccount } = useQuery(bankAccountQueryOptions)
 
-  const attachmentCountsQuery = useQuery({
-    queryKey: ["bank-statement-attachment-counts"],
-    queryFn: () => listAttachmentCounts(),
-  })
+  const { data: entries = [] } = useQuery(statementEntriesQueryOptions)
+
+  const { data: attachmentCounts } = useQuery(trpc.bankStatementAttachments.counts.queryOptions())
 
   const importMutation = useMutation({
-    mutationFn: async (csv: string) => importBankCsv({ data: { csv } }),
+    ...trpc.bankStatementEntries.importCsv.mutationOptions(),
     onSuccess: async (result) => {
       setImportResult(result)
       setFile(null)
@@ -115,44 +89,44 @@ function BankAccountShow({ id }: { id: string }) {
         color: "green",
         message: `Imported ${result.inserted} new entries (${result.skipped} duplicates skipped)`,
       })
-      await queryClient.invalidateQueries({ queryKey: ["bank-statement-entries"] })
+      await queryClient.invalidateQueries({ queryKey: trpc.bankStatementEntries.list.queryKey() })
     },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+    onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
 
   const ignoreMutation = useMutation({
-    mutationFn: (entryId: string) => ignoreStatementEntry({ data: { id: entryId } }),
+    ...trpc.bankStatementEntries.ignore.mutationOptions(),
     onSuccess: async () => {
       notifications.show({ color: "yellow", message: "Marked as ignored" })
-      await queryClient.invalidateQueries({ queryKey: ["bank-statement-entries"] })
+      await queryClient.invalidateQueries({ queryKey: trpc.bankStatementEntries.list.queryKey() })
     },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+    onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
 
   const undoMutation = useMutation({
-    mutationFn: (entryId: string) => undoStatementEntry({ data: { id: entryId } }),
+    ...trpc.bankStatementEntries.undo.mutationOptions(),
     onSuccess: async () => {
       notifications.show({ color: "green", message: "Restored to pending" })
-      await queryClient.invalidateQueries({ queryKey: ["bank-statement-entries"] })
+      await queryClient.invalidateQueries({ queryKey: trpc.bankStatementEntries.list.queryKey() })
     },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+    onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
 
   const handleUpload = async () => {
     if (!file) return
     const text = await file.text()
-    importMutation.mutate(text)
+    importMutation.mutate({ csv: text })
   }
 
   return (
     <>
       <Stack>
-        {q.data?.legalEntity && (
+        {bankAccount?.legalEntity && (
           <Anchor
             renderRoot={(props) => (
               <Link
                 to="/legal-entities/$legalEntityId/bank-accounts"
-                params={{ legalEntityId: q.data!.legalEntity!.id }}
+                params={{ legalEntityId: bankAccount.legalEntity!.id }}
                 {...props}
               />
             )}
@@ -161,45 +135,45 @@ function BankAccountShow({ id }: { id: string }) {
           >
             <Group gap={4}>
               <IconArrowLeft size={12} />
-              Back to {q.data.legalEntity.name}
+              Back to {bankAccount.legalEntity.name}
             </Group>
           </Anchor>
         )}
 
         <Group justify="space-between">
-          <Title order={3}>{q.data?.displayName ?? "Bank account"}</Title>
-          <Button onClick={openEdit} disabled={!q.data}>
+          <Title order={3}>{bankAccount?.displayName ?? "Bank account"}</Title>
+          <Button onClick={openEdit} disabled={!bankAccount}>
             Edit
           </Button>
         </Group>
 
         <Card withBorder>
           <Stack gap="xs">
-            <Field label="Display name" value={q.data?.displayName} />
+            <Field label="Display name" value={bankAccount?.displayName} />
             <Field
               label="Legal entity"
               value={
-                q.data?.legalEntity ? (
+                bankAccount?.legalEntity ? (
                   <Anchor
                     renderRoot={(props) => (
                       <Link
                         to="/legal-entities/$legalEntityId"
-                        params={{ legalEntityId: q.data!.legalEntity!.id }}
+                        params={{ legalEntityId: bankAccount.legalEntity!.id }}
                         {...props}
                       />
                     )}
                   >
-                    {q.data.legalEntity.name}
+                    {bankAccount.legalEntity.name}
                   </Anchor>
                 ) : (
                   "—"
                 )
               }
             />
-            <Field label="IBAN" value={q.data ? <code>{q.data.iban}</code> : undefined} />
-            <Field label="Currency" value={q.data?.currency} />
-            <Field label="Bank" value={q.data?.bankName ?? "—"} />
-            <Field label="SWIFT" value={q.data?.swift ?? "—"} />
+            <Field label="IBAN" value={bankAccount ? <code>{bankAccount.iban}</code> : undefined} />
+            <Field label="Currency" value={bankAccount?.currency} />
+            <Field label="Bank" value={bankAccount?.bankName ?? "—"} />
+            <Field label="SWIFT" value={bankAccount?.swift ?? "—"} />
           </Stack>
         </Card>
 
@@ -291,7 +265,7 @@ function BankAccountShow({ id }: { id: string }) {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {(entriesQuery.data ?? []).map((e) => {
+              {entries.map((e) => {
                 const sign = e.direction === "C" ? "+" : "−"
                 const color = e.direction === "C" ? "teal" : "red"
                 return (
@@ -317,7 +291,7 @@ function BankAccountShow({ id }: { id: string }) {
                     <Table.Td ta="center">
                       <AttachmentsCell
                         entryId={e.id}
-                        count={attachmentCountsQuery.data?.[e.id] ?? 0}
+                        count={attachmentCounts?.[e.id] ?? 0}
                         onPreview={setPreviewAttachment}
                       />
                     </Table.Td>
@@ -330,11 +304,11 @@ function BankAccountShow({ id }: { id: string }) {
                         </Menu.Target>
                         <Menu.Dropdown>
                           {e.status === "PENDING" ? (
-                            <Menu.Item color="gray" onClick={() => ignoreMutation.mutate(e.id)}>
+                            <Menu.Item color="gray" onClick={() => ignoreMutation.mutate({ id: e.id })}>
                               Ignore
                             </Menu.Item>
                           ) : (
-                            <Menu.Item onClick={() => undoMutation.mutate(e.id)}>Undo ({e.status})</Menu.Item>
+                            <Menu.Item onClick={() => undoMutation.mutate({ id: e.id })}>Undo ({e.status})</Menu.Item>
                           )}
                         </Menu.Dropdown>
                       </Menu>
@@ -342,7 +316,7 @@ function BankAccountShow({ id }: { id: string }) {
                   </Table.Tr>
                 )
               })}
-              {entriesQuery.data?.length === 0 && (
+              {entries.length === 0 && (
                 <Table.Tr>
                   <Table.Td colSpan={6} ta="center" c="dimmed">
                     No entries.
@@ -354,19 +328,19 @@ function BankAccountShow({ id }: { id: string }) {
         </Card>
       </Stack>
 
-      {editOpened && q.data && (
+      {editOpened && bankAccount && (
         <EditBankAccountModal
-          key={q.data.id}
+          key={bankAccount.id}
           opened={editOpened}
           onClose={closeEdit}
           bankAccountId={id}
           initial={{
-            legalEntityId: q.data.legalEntityId,
-            iban: q.data.iban,
-            currency: q.data.currency as Currency,
-            bankName: q.data.bankName ?? "",
-            swift: q.data.swift ?? "",
-            displayName: q.data.displayName,
+            legalEntityId: bankAccount.legalEntityId,
+            iban: bankAccount.iban,
+            currency: bankAccount.currency as Currency,
+            bankName: bankAccount.bankName ?? "",
+            swift: bankAccount.swift ?? "",
+            displayName: bankAccount.displayName,
           }}
         />
       )}
@@ -389,48 +363,50 @@ function AttachmentsCell({
   const [busy, setBusy] = useState(false)
   const [fileInputKey, setFileInputKey] = useState(0)
 
-  const listQuery = useQuery({
-    queryKey: ["bank-statement-attachments", entryId],
-    queryFn: () => listAttachments({ data: { entryId } }),
+  const listQueryOptions = trpc.bankStatementAttachments.list.queryOptions({ entryId })
+  const { data: attachments = [], isLoading: attachmentsLoading } = useQuery({
+    ...listQueryOptions,
     enabled: opened,
   })
 
-  const unassignedQuery = useQuery({
-    queryKey: ["bank-statement-attachments", "unassigned"],
-    queryFn: () => listUnassignedAttachments(),
+  const { data: unassignedAttachments = [] } = useQuery({
+    ...trpc.bankStatementAttachments.unassigned.queryOptions(),
     enabled: opened,
   })
 
   const invalidate = async () => {
-    await queryClient.invalidateQueries({ queryKey: ["bank-statement-attachments"] })
-    await queryClient.invalidateQueries({ queryKey: ["bank-statement-attachment-counts"] })
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.list.queryKey() }),
+      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.unassigned.queryKey() }),
+      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.counts.queryKey() }),
+    ])
   }
 
   const remove = useMutation({
-    mutationFn: (id: string) => deleteAttachment({ data: { id } }),
+    ...trpc.bankStatementAttachments.delete.mutationOptions(),
     onSuccess: async () => {
       notifications.show({ color: "green", message: "Deleted" })
       await invalidate()
     },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+    onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
 
   const unassign = useMutation({
-    mutationFn: (id: string) => unassignAttachment({ data: { id } }),
+    ...trpc.bankStatementAttachments.unassign.mutationOptions(),
     onSuccess: async () => {
       notifications.show({ color: "green", message: "Unassigned" })
       await invalidate()
     },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+    onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
 
   const assign = useMutation({
-    mutationFn: (attachmentId: string) => assignAttachmentToEntry({ data: { id: attachmentId, entryId } }),
+    ...trpc.bankStatementAttachments.assign.mutationOptions(),
     onSuccess: async () => {
       notifications.show({ color: "green", message: "Attached" })
       await invalidate()
     },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+    onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
 
   const upload = async (file: File) => {
@@ -474,12 +450,12 @@ function AttachmentsCell({
           <Text fw={500} size="sm">
             Attachments
           </Text>
-          {opened && listQuery.isLoading && (
+          {opened && attachmentsLoading && (
             <Text size="xs" c="dimmed">
               Loading…
             </Text>
           )}
-          {(listQuery.data ?? []).map((a) => (
+          {attachments.map((a) => (
             <Group key={a.id} justify="space-between" wrap="nowrap" gap="xs">
               <UnstyledButton
                 onClick={() => {
@@ -497,7 +473,7 @@ function AttachmentsCell({
                   <ActionIcon
                     size="sm"
                     variant="subtle"
-                    onClick={() => unassign.mutate(a.id)}
+                    onClick={() => unassign.mutate({ id: a.id })}
                     loading={unassign.isPending}
                     aria-label="Unassign"
                   >
@@ -508,7 +484,7 @@ function AttachmentsCell({
                   size="sm"
                   variant="subtle"
                   color="red"
-                  onClick={() => remove.mutate(a.id)}
+                  onClick={() => remove.mutate({ id: a.id })}
                   loading={remove.isPending}
                   aria-label="Delete"
                 >
@@ -517,20 +493,20 @@ function AttachmentsCell({
               </Group>
             </Group>
           ))}
-          {opened && listQuery.data?.length === 0 && (
+          {opened && attachments.length === 0 && (
             <Text size="xs" c="dimmed">
               No files yet.
             </Text>
           )}
-          {(unassignedQuery.data ?? []).length > 0 && (
+          {unassignedAttachments.length > 0 && (
             <Select
               placeholder="Attach existing…"
               size="xs"
               searchable
-              data={(unassignedQuery.data ?? []).map((a) => ({ value: a.id, label: a.originalName }))}
+              data={unassignedAttachments.map((a) => ({ value: a.id, label: a.originalName }))}
               value={null}
               onChange={(v) => {
-                if (v) assign.mutate(v)
+                if (v) assign.mutate({ id: v, entryId })
               }}
               disabled={assign.isPending}
               comboboxProps={{ withinPortal: false }}
@@ -586,9 +562,9 @@ function EditBankAccountModal({
   initial: FormValues
 }) {
   const queryClient = useQueryClient()
-  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
+  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions())
 
-  const form = useForm<FormValues & { id: string | undefined }>({
+  const form = useForm<FormValues & { id: string }>({
     initialValues: {
       id: bankAccountId,
       ...initial,
@@ -597,28 +573,31 @@ function EditBankAccountModal({
   })
 
   const save = useMutation({
-    mutationFn: (values: typeof form.values) => updateBankAccount({ data: { ...values, id: bankAccountId } }),
+    ...trpc.bankAccounts.update.mutationOptions(),
     onSuccess: async (_, values) => {
       notifications.show({ color: "green", message: "Saved" })
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["bank-accounts"] }),
-        queryClient.invalidateQueries({ queryKey: ["bank-account", bankAccountId] }),
-        queryClient.invalidateQueries({ queryKey: ["legal-entity", values.legalEntityId] }),
+        queryClient.invalidateQueries({
+          queryKey: trpc.bankAccounts.byId.queryOptions({ id: bankAccountId }).queryKey,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: trpc.legalEntities.byId.queryOptions({ id: values.legalEntityId }).queryKey,
+        }),
       ])
       onClose()
     },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+    onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
 
   return (
     <Modal opened={opened} onClose={onClose} title="Edit bank account">
-      <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
+      <form onSubmit={form.onSubmit((values) => save.mutate({ ...values, id: bankAccountId }))}>
         <Stack>
           <TextInput label="Display name" required {...form.getInputProps("displayName")} />
           <Select
             label="Legal entity"
             required
-            data={(legalEntitiesQuery.data ?? []).map((le) => ({ value: le.id, label: le.name }))}
+            data={legalEntities.map((le) => ({ value: le.id, label: le.name }))}
             value={form.values.legalEntityId}
             onChange={(v) => form.setFieldValue("legalEntityId", v ?? "")}
           />
@@ -656,11 +635,10 @@ function BankAccountNew() {
   const { legalEntityId: pathLegalEntityId } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const legalEntitiesQuery = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
+  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions())
 
-  const form = useForm<FormValues & { id: undefined }>({
+  const form = useForm<FormValues>({
     initialValues: {
-      id: undefined,
       legalEntityId: pathLegalEntityId,
       iban: "",
       currency: "EUR",
@@ -672,17 +650,18 @@ function BankAccountNew() {
   })
 
   const save = useMutation({
-    mutationFn: (values: typeof form.values) => createBankAccount({ data: values }),
+    ...trpc.bankAccounts.create.mutationOptions(),
     onSuccess: async (_, values) => {
       notifications.show({ color: "green", message: "Saved" })
-      await queryClient.invalidateQueries({ queryKey: ["bank-accounts"] })
-      await queryClient.invalidateQueries({ queryKey: ["legal-entity", values.legalEntityId] })
+      await queryClient.invalidateQueries({
+        queryKey: trpc.legalEntities.byId.queryOptions({ id: values.legalEntityId }).queryKey,
+      })
       navigate({
         to: "/legal-entities/$legalEntityId/bank-accounts",
         params: { legalEntityId: values.legalEntityId },
       })
     },
-    onError: (err: Error) => notifications.show({ color: "red", message: err.message }),
+    onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
 
   const cancelTarget = form.values.legalEntityId || pathLegalEntityId
@@ -697,7 +676,7 @@ function BankAccountNew() {
             <Select
               label="Legal entity"
               required
-              data={(legalEntitiesQuery.data ?? []).map((le) => ({ value: le.id, label: le.name }))}
+              data={legalEntities.map((le) => ({ value: le.id, label: le.name }))}
               value={form.values.legalEntityId}
               onChange={(v) => form.setFieldValue("legalEntityId", v ?? "")}
             />
