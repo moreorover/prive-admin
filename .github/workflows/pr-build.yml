@@ -59,7 +59,8 @@ jobs:
           file: apps/web/Dockerfile
           context: .
           platforms: linux/amd64
-          push: false
+          load: true
+          tags: prive-admin-web:pr-${{ github.sha }}
           cache-from: type=gha,scope=web
           cache-to: type=gha,mode=max,scope=web
 
@@ -69,9 +70,10 @@ jobs:
           file: apps/server/Dockerfile
           context: .
           platforms: linux/amd64
-          push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          load: true
+          tags: prive-admin-server:pr-${{ github.sha }}
+          cache-from: type=gha,scope=server
+          cache-to: type=gha,mode=max,scope=server
 
       - name: Build migrate image (no push)
         uses: docker/build-push-action@v6
@@ -79,6 +81,7 @@ jobs:
           file: packages/db/Dockerfile
           context: .
           platforms: linux/amd64
-          push: false
+          load: true
+          tags: prive-admin-migrate:pr-${{ github.sha }}
           cache-from: type=gha,scope=migrate
           cache-to: type=gha,mode=max,scope=migrate

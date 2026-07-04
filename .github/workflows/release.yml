@@ -1,9 +1,9 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  release:
+    types:
+      - published
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -12,13 +12,13 @@ env:
   IMAGE_NAME_BASE: ghcr.io/${{ github.repository }}
 
 jobs:
-  build-and-push:
-    name: Build and Push Image
+  validate-release:
+    name: Validate Release
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
-      security-events: write
+    outputs:
+      commit: ${{ steps.release.outputs.commit }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,6 +43,23 @@ jobs:
 
           echo "commit=${RELEASE_COMMIT}" >> "${GITHUB_OUTPUT}"
 
+  promote-release:
+    name: Promote ${{ matrix.image }} Release Image
+    needs: validate-release
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - web
+          - server
+          - migrate
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -50,105 +67,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push web
-        uses: docker/build-push-action@v6
-        with:
-          file: apps/web/Dockerfile
-          context: .
-          platforms: linux/amd64
-          push: true
-          tags: |
-            ${{ env.IMAGE_NAME_BASE }}-web:latest
-            ${{ env.IMAGE_NAME_BASE }}-web:${{ steps.release.outputs.commit }}
-            ${{ env.IMAGE_NAME_BASE }}-web:${{ github.ref_name }}
-          cache-from: type=gha,scope=web
-          cache-to: type=gha,mode=max,scope=web
-
-      - name: Build and push server
-        uses: docker/build-push-action@v6
-        with:
-          file: apps/server/Dockerfile
-          context: .
-          platforms: linux/amd64
-          push: true
-          tags: |
-            ${{ env.IMAGE_NAME_BASE }}-server:latest
-            ${{ env.IMAGE_NAME_BASE }}-server:${{ steps.release.outputs.commit }}
-            ${{ env.IMAGE_NAME_BASE }}-server:${{ github.ref_name }}
-          cache-from: type=gha,scope=server
-          cache-to: type=gha,mode=max,scope=server
-
-      - name: Build and push migrate
-        uses: docker/build-push-action@v6
-        with:
-          file: packages/db/Dockerfile
-          context: .
-          platforms: linux/amd64
-          push: true
-          tags: |
-            ${{ env.IMAGE_NAME_BASE }}-migrate:latest
-            ${{ env.IMAGE_NAME_BASE }}-migrate:${{ steps.release.outputs.commit }}
-            ${{ env.IMAGE_NAME_BASE }}-migrate:${{ github.ref_name }}
-          cache-from: type=gha,scope=migrate
-          cache-to: type=gha,mode=max,scope=migrate
-
-      - name: Scan web image with Trivy
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ${{ env.IMAGE_NAME_BASE }}-web:${{ steps.release.outputs.commit }}
-          format: sarif
-          output: trivy-web-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "1"
-
-      - name: Upload web Trivy SARIF
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy-web-results.sarif
-          category: trivy-web
-
-      - name: Scan server image with Trivy
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ${{ env.IMAGE_NAME_BASE }}-server:${{ steps.release.outputs.commit }}
-          format: sarif
-          output: trivy-server-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "1"
-
-      - name: Upload server Trivy SARIF
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy-server-results.sarif
-          category: trivy-server
-
-      - name: Scan migrate image with Trivy
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ${{ env.IMAGE_NAME_BASE }}-migrate:${{ steps.release.outputs.commit }}
-          format: sarif
-          output: trivy-migrate-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "1"
-
-      - name: Upload migrate Trivy SARIF
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy-migrate-results.sarif
-          category: trivy-migrate
+      - name: Promote commit images
+        run: |
+          set -euo pipefail
+          image="${{ matrix.image }}"
+          source_image="${IMAGE_NAME_BASE}-${image}:${{ needs.validate-release.outputs.commit }}"
+          for attempt in $(seq 1 20); do
+            if docker buildx imagetools inspect "${source_image}" > /dev/null; then
+              break
+            fi
+            if [ "${attempt}" -eq 20 ]; then
+              echo "Image ${source_image} was not found in GHCR after waiting" >&2
+              exit 1
+            fi
+            echo "Waiting for ${source_image} to be available in GHCR (${attempt}/20)"
+            sleep 15
+          done
+          docker buildx imagetools create \
+            -t "${IMAGE_NAME_BASE}-${image}:${GITHUB_REF_NAME}" \
+            -t "${IMAGE_NAME_BASE}-${image}:latest" \
+            "${source_image}"
 
   pre-deploy-backup:
     name: Pre-deploy Postgres Backup
-    needs: build-and-push
+    needs: promote-release
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -230,7 +172,7 @@ jobs:
 
   deploy:
     name: Deploy to prive
-    needs: [build-and-push, pre-deploy-backup]
+    needs: [promote-release, pre-deploy-backup]
     runs-on: ubuntu-latest
     environment:
       name: production
