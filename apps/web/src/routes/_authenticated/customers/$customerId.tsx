@@ -21,7 +21,7 @@ import { notifications } from "@mantine/notifications"
 import { IconArrowLeft, IconPencil, IconPhone, IconPlus, IconTrash } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
 import { ClientDate } from "@/components/client-date"
@@ -196,6 +196,8 @@ function CustomerDetailPage() {
   const appointments = appointmentsData?.items ?? []
   const appointmentsTotalCount = appointmentsData?.totalCount ?? 0
   const appointmentsTotalPages = Math.max(1, Math.ceil(appointmentsTotalCount / CUSTOMER_APPOINTMENTS_PAGE_SIZE))
+  const hasAppointmentsOnCurrentPage = appointments.length > 0
+  const showAppointmentsPagination = appointmentsTotalCount > CUSTOMER_APPOINTMENTS_PAGE_SIZE
 
   const notesQueryOptions = trpc.notes.list.queryOptions({ customerId })
   const { data: notes } = useQuery(notesQueryOptions)
@@ -203,6 +205,16 @@ function CustomerDetailPage() {
   const { data: summary } = useQuery(customerSummaryQueryOptions)
 
   const { data: hairAssigned } = useQuery(hairAssignedQueryOptions)
+
+  useEffect(() => {
+    setAppointmentsPage(1)
+  }, [customerId])
+
+  useEffect(() => {
+    if (appointmentsData && appointmentsPage > appointmentsTotalPages) {
+      setAppointmentsPage(appointmentsTotalPages)
+    }
+  }, [appointmentsData, appointmentsPage, appointmentsTotalPages])
 
   const deleteNoteMutation = useMutation({
     ...trpc.notes.delete.mutationOptions(),
@@ -316,59 +328,67 @@ function CustomerDetailPage() {
                   New
                 </Button>
               }
-              padding={appointments && appointments.length > 0 ? 0 : "lg"}
+              padding={hasAppointmentsOnCurrentPage || showAppointmentsPagination ? 0 : "lg"}
             >
-              {appointments && appointments.length > 0 ? (
+              {hasAppointmentsOnCurrentPage || showAppointmentsPagination ? (
                 <>
-                  <Table>
-                    <Table.Thead>
-                      <Table.Tr>
-                        <Table.Th>Name</Table.Th>
-                        <Table.Th>Date</Table.Th>
-                      </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                      {appointments.map((a) => (
-                        <Table.Tr key={a.id}>
-                          <Table.Td>
-                            <Text
-                              renderRoot={(props) => (
-                                <Link to="/appointments/$appointmentId" params={{ appointmentId: a.id }} {...props} />
-                              )}
-                              c="blue"
-                            >
-                              {a.name}
-                            </Text>
-                          </Table.Td>
-                          <Table.Td c="dimmed">
-                            <ClientDate date={a.startsAt} />
-                          </Table.Td>
+                  {hasAppointmentsOnCurrentPage ? (
+                    <Table>
+                      <Table.Thead>
+                        <Table.Tr>
+                          <Table.Th>Name</Table.Th>
+                          <Table.Th>Date</Table.Th>
                         </Table.Tr>
-                      ))}
-                    </Table.Tbody>
-                  </Table>
-                  <Group justify="space-between" p="md">
-                    <Text size="sm" c="dimmed">
-                      {appointmentsTotalCount} appointment{appointmentsTotalCount === 1 ? "" : "s"} · Page{" "}
-                      {Math.min(appointmentsPage, appointmentsTotalPages)} of {appointmentsTotalPages}
+                      </Table.Thead>
+                      <Table.Tbody>
+                        {appointments.map((a) => (
+                          <Table.Tr key={a.id}>
+                            <Table.Td>
+                              <Text
+                                renderRoot={(props) => (
+                                  <Link to="/appointments/$appointmentId" params={{ appointmentId: a.id }} {...props} />
+                                )}
+                                c="blue"
+                              >
+                                {a.name}
+                              </Text>
+                            </Table.Td>
+                            <Table.Td c="dimmed">
+                              <ClientDate date={a.startsAt} />
+                            </Table.Td>
+                          </Table.Tr>
+                        ))}
+                      </Table.Tbody>
+                    </Table>
+                  ) : (
+                    <Text size="sm" c="dimmed" p="lg">
+                      No appointments on this page.
                     </Text>
-                    <Group gap="xs">
-                      <Button
-                        variant="default"
-                        disabled={appointmentsPage <= 1}
-                        onClick={() => setAppointmentsPage((current) => Math.max(1, current - 1))}
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        variant="default"
-                        disabled={appointmentsPage >= appointmentsTotalPages}
-                        onClick={() => setAppointmentsPage((current) => current + 1)}
-                      >
-                        Next
-                      </Button>
+                  )}
+                  {showAppointmentsPagination && (
+                    <Group justify="space-between" p="md">
+                      <Text size="sm" c="dimmed">
+                        {appointmentsTotalCount} appointment{appointmentsTotalCount === 1 ? "" : "s"} · Page{" "}
+                        {Math.min(appointmentsPage, appointmentsTotalPages)} of {appointmentsTotalPages}
+                      </Text>
+                      <Group gap="xs">
+                        <Button
+                          variant="default"
+                          disabled={appointmentsPage <= 1}
+                          onClick={() => setAppointmentsPage((current) => Math.max(1, current - 1))}
+                        >
+                          Previous
+                        </Button>
+                        <Button
+                          variant="default"
+                          disabled={appointmentsPage >= appointmentsTotalPages}
+                          onClick={() => setAppointmentsPage((current) => current + 1)}
+                        >
+                          Next
+                        </Button>
+                      </Group>
                     </Group>
-                  </Group>
+                  )}
                 </>
               ) : (
                 <Text size="sm" c="dimmed">
@@ -440,7 +460,7 @@ function CustomerDetailPage() {
           onOpenChange={setAppointmentCreateOpen}
           defaultClientId={customerId}
           invalidateKeys={[
-            { queryKey: customerAppointmentsQueryOptions.queryKey },
+            { queryKey: trpc.appointments.list.queryKey() },
             { queryKey: customerSummaryQueryOptions.queryKey },
           ]}
           navigateOnSuccess
