@@ -1,6 +1,5 @@
 import { Button, Group, NativeSelect, NumberInput, Stack, Textarea, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
-import { useState } from "react"
 
 import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
 
@@ -27,15 +26,11 @@ type TransactionFormProps = {
 
 export function TransactionForm({ initialValues, submitLabel, onSubmit, loading }: TransactionFormProps) {
   const form = useForm<TransactionFormValues>({
-    mode: "uncontrolled",
     initialValues,
     validate: {
       amountMajor: (value) => (Number.isFinite(value) ? null : "Amount is required"),
     },
   })
-
-  // react-doctor-disable-next-line react-doctor/no-derived-useState
-  const [currency, setCurrency] = useState<Currency>(initialValues.currency)
 
   return (
     <form
@@ -52,20 +47,11 @@ export function TransactionForm({ initialValues, submitLabel, onSubmit, loading 
         <TextInput label="Name" placeholder="Transaction name" {...form.getInputProps("name")} />
         <Textarea label="Notes" placeholder="Notes (optional)" autosize minRows={2} {...form.getInputProps("notes")} />
         <Group grow>
-          <NativeSelect
-            label="Currency"
-            data={CURRENCY_OPTIONS}
-            {...form.getInputProps("currency")}
-            onChange={(event) => {
-              const next = event.currentTarget.value as Currency
-              form.setFieldValue("currency", next)
-              setCurrency(next)
-            }}
-          />
+          <NativeSelect label="Currency" data={CURRENCY_OPTIONS} {...form.getInputProps("currency")} />
         </Group>
         <NumberInput
           label="Amount"
-          prefix={currencySymbol(currency)}
+          prefix={currencySymbol(form.values.currency)}
           decimalScale={2}
           fixedDecimalScale
           step={0.01}

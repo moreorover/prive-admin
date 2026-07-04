@@ -447,49 +447,67 @@ type ChangeMasterModalProps = {
 }
 
 function ChangeMasterModal({ open, onOpenChange, appointmentId, currentMasterId }: ChangeMasterModalProps) {
-  const queryClient = useQueryClient()
-  const [masterId, setMasterId] = useState(currentMasterId)
+  return (
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="Change master">
+      {open && (
+        <ChangeMasterForm
+          appointmentId={appointmentId}
+          currentMasterId={currentMasterId}
+          onClose={() => onOpenChange(false)}
+        />
+      )}
+    </Modal>
+  )
+}
 
-  const { data: customers } = useQuery({
-    ...trpc.customers.list.queryOptions(),
-    enabled: open,
-  })
+function ChangeMasterForm({
+  appointmentId,
+  currentMasterId,
+  onClose,
+}: {
+  appointmentId: string
+  currentMasterId: string
+  onClose: () => void
+}) {
+  const queryClient = useQueryClient()
+  const [draftMasterId, setDraftMasterId] = useState<string | null>(null)
+  const masterId = draftMasterId ?? currentMasterId
+
+  const { data: customers } = useQuery(trpc.customers.list.queryOptions())
 
   const mutation = useMutation({
     ...trpc.appointments.updateMaster.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: trpc.appointments.byId.queryOptions({ id: appointmentId }).queryKey })
       notifications.show({ color: "green", message: "Master updated." })
-      onOpenChange(false)
+      onClose()
     },
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
   return (
-    <Modal opened={open} onClose={() => onOpenChange(false)} title="Change master">
-      <Stack>
-        <Select
-          label="Master"
-          required
-          searchable
-          value={masterId}
-          onChange={(value) => setMasterId(value ?? "")}
-          data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
-        />
-        <Group justify="flex-end" gap="xs">
-          <Button variant="default" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            disabled={!masterId || masterId === currentMasterId}
-            loading={mutation.isPending}
-            onClick={() => mutation.mutate({ appointmentId, masterId })}
-          >
-            Save
-          </Button>
-        </Group>
-      </Stack>
-    </Modal>
+    <Stack>
+      <Select
+        label="Master"
+        required
+        searchable
+        value={masterId}
+        onChange={setDraftMasterId}
+        data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
+      />
+      <Group justify="flex-end" gap="xs">
+        <Button variant="default" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          disabled={!masterId || masterId === currentMasterId}
+          loading={mutation.isPending}
+          onClick={() => mutation.mutate({ appointmentId, masterId })}
+        >
+          Save
+        </Button>
+      </Group>
+    </Stack>
   )
 }
 
