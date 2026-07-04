@@ -60,8 +60,6 @@ jobs:
           context: .
           platforms: linux/amd64
           push: false
-          build-args: |
-            VITE_SERVER_URL=http://localhost:3000
           cache-from: type=gha,scope=web
           cache-to: type=gha,mode=max,scope=web
 

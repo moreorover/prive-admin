@@ -370,9 +370,6 @@ importers:
       '@prive-admin-tanstack/api':
         specifier: workspace:*
         version: link:../../packages/api
-      '@prive-admin-tanstack/env':
-        specifier: workspace:*
-        version: link:../../packages/env
       '@prive-admin-tanstack/ui':
         specifier: workspace:*
         version: link:../../packages/ui

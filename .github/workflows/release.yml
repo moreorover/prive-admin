@@ -34,14 +34,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Load web build config from 1Password
-        uses: 1password/load-secrets-action@v2
-        with:
-          export-env: true
-        env:
-          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          VITE_SERVER_URL: op://prive-admin/prive-admin-prod/web/VITE_SERVER_URL
-
       - name: Build and push web
         uses: docker/build-push-action@v6
         with:
@@ -49,8 +41,6 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          build-args: |
-            VITE_SERVER_URL=${{ env.VITE_SERVER_URL }}
           tags: |
             ${{ env.IMAGE_NAME_BASE }}-web:latest
             ${{ env.IMAGE_NAME_BASE }}-web:${{ github.sha }}

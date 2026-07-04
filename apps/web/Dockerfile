@@ -17,9 +17,6 @@ RUN vp install --frozen-lockfile
 
 COPY --chown=vp:vp . .
 
-ARG VITE_SERVER_URL=http://localhost:3000
-ENV VITE_SERVER_URL=${VITE_SERVER_URL}
-
 RUN vp run --filter web build
 
 FROM nginx:alpine AS runtime
