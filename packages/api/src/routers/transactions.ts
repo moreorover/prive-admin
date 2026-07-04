@@ -1,5 +1,5 @@
 import { db } from "@prive-admin-tanstack/db"
-import { personnelOnAppointments } from "@prive-admin-tanstack/db/schema/appointment"
+import { appointment, personnelOnAppointments } from "@prive-admin-tanstack/db/schema/appointment"
 import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
 import { TRPCError } from "@trpc/server"
 import { eq } from "drizzle-orm"
@@ -17,7 +17,15 @@ const transactionFieldsSchema = z.object({
 })
 
 export const transactionsRouter = router({
-  byAppointmentId: protectedProcedure.input(z.object({ appointmentId: z.string() })).query(({ input }) => {
+  byAppointmentId: protectedProcedure.input(z.object({ appointmentId: z.string() })).query(async ({ input }) => {
+    const appointmentRow = await db.query.appointment.findFirst({
+      where: eq(appointment.id, input.appointmentId),
+      columns: { id: true },
+    })
+    if (!appointmentRow) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" })
+    }
+
     return db.query.transaction.findMany({
       where: eq(transaction.appointmentId, input.appointmentId),
       with: {
