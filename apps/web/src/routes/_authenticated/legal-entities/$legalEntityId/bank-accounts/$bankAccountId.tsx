@@ -35,7 +35,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
 import { CURRENCY_OPTIONS, type Currency, formatMinor } from "@/lib/currency"
@@ -87,6 +87,16 @@ function BankAccountShow({ id }: { id: string }) {
   const entriesTotalCount = statementEntriesData?.totalCount ?? 0
   const entriesTotalPages = Math.max(1, Math.ceil(entriesTotalCount / STATEMENT_ENTRIES_PAGE_SIZE))
   const showEntriesPagination = entriesTotalCount > STATEMENT_ENTRIES_PAGE_SIZE
+
+  useEffect(() => {
+    setEntriesPage(1)
+  }, [id, statusFilter])
+
+  useEffect(() => {
+    if (statementEntriesData && entriesPage > entriesTotalPages) {
+      setEntriesPage(entriesTotalPages)
+    }
+  }, [statementEntriesData, entriesPage, entriesTotalPages])
 
   const { data: attachmentCounts } = useQuery(trpc.bankStatementAttachments.counts.queryOptions())
 

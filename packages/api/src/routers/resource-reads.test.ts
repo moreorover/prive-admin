@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server"
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import { appointmentsRouter } from "./appointments"
+import { bankAccountsRouter } from "./bank-accounts"
 import { transactionsRouter } from "./transactions"
 
 const dbMock = vi.hoisted(() => ({
@@ -12,6 +13,9 @@ const dbMock = vi.hoisted(() => ({
     },
     transaction: {
       findMany: vi.fn(),
+    },
+    bankAccount: {
+      findFirst: vi.fn(),
     },
   },
   select: vi.fn(),
@@ -69,6 +73,19 @@ describe("resource read routers", () => {
     await expect(caller.get({ id: "appointment-1" })).resolves.toBe(appointmentRow)
     await expect(caller.get({ id: "missing" })).rejects.toMatchObject(
       new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" }),
+    )
+  })
+
+  it("gets a bank account with legal entity only", async () => {
+    const caller = bankAccountsRouter.createCaller(ctx)
+    const bankAccountRow = { id: "bank-account-1", legalEntity: { id: "legal-entity-1" } }
+    dbMock.query.bankAccount.findFirst.mockResolvedValue(bankAccountRow)
+
+    await expect(caller.get({ id: "bank-account-1" })).resolves.toBe(bankAccountRow)
+    expect(dbMock.query.bankAccount.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        with: { legalEntity: true },
+      }),
     )
   })
 

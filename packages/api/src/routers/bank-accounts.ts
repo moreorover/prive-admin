@@ -28,9 +28,6 @@ export const bankAccountsRouter = router({
       where: eq(bankAccount.id, input.id),
       with: {
         legalEntity: true,
-        statementEntries: {
-          orderBy: (e, { desc }) => [desc(e.date), desc(e.importedAt)],
-        },
       },
     })
     if (!row) throw new TRPCError({ code: "NOT_FOUND", message: "Bank account not found" })
