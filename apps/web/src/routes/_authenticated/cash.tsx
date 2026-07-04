@@ -11,7 +11,7 @@ import {
 } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
-import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -21,9 +21,7 @@ import { DeleteCashTransactionDialog } from "@/components/cash-transactions/dele
 import { EditCashTransactionDialog } from "@/components/cash-transactions/edit-cash-transaction-dialog"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { listCashTransactions } from "@/functions/cash-transactions"
 import { type Currency } from "@/lib/currency"
-import { cashTransactionKeys } from "@/lib/query-keys"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
@@ -70,11 +68,9 @@ function CashPage() {
     dateTo: filters.dateTo || undefined,
   }
 
-  const { data: result, isFetching } = useQuery({
-    queryKey: cashTransactionKeys.list(queryFilter),
-    queryFn: () => listCashTransactions({ data: queryFilter }),
-    placeholderData: keepPreviousData,
-  })
+  const { data: result, isFetching } = useQuery(
+    trpc.cashTransactions.list.queryOptions(queryFilter, { placeholderData: (previousData) => previousData }),
+  )
 
   const customers = customersData ?? []
   const totalCount = result?.totalCount ?? 0

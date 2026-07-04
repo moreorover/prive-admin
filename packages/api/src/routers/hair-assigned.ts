@@ -61,21 +61,26 @@ export const hairAssignedRouter = router({
     )
     .mutation(async ({ input }) => {
       return await db.transaction(async (tx) => {
-        const existing = await tx.query.hairAssigned.findFirst({
+        const unlockedExisting = await tx.query.hairAssigned.findFirst({
           where: eq(hairAssigned.id, input.id),
-          with: { hairOrder: true },
+          columns: { hairOrderId: true },
         })
-        if (!existing) {
+        if (!unlockedExisting) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Hair assigned not found" })
         }
 
         const [parentOrder] = await tx
           .select()
           .from(hairOrder)
-          .where(eq(hairOrder.id, existing.hairOrderId))
+          .where(eq(hairOrder.id, unlockedExisting.hairOrderId))
           .for("update")
         if (!parentOrder) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Hair order not found" })
+        }
+
+        const [existing] = await tx.select().from(hairAssigned).where(eq(hairAssigned.id, input.id)).for("update")
+        if (!existing) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Hair assigned not found" })
         }
 
         const availableWeight = parentOrder.weightReceived - parentOrder.weightUsed + existing.weightInGrams

@@ -109,31 +109,34 @@ export const hairOrdersRouter = router({
   }),
 
   recalculatePrices: protectedProcedure.input(z.object({ hairOrderId: z.string() })).mutation(async ({ input }) => {
-    const order = await db.query.hairOrder.findFirst({
-      where: eq(hairOrder.id, input.hairOrderId),
-      with: { hairAssigned: true },
-    })
-    if (!order) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Hair order not found" })
-    }
+    return await db.transaction(async (tx) => {
+      const [order] = await tx.select().from(hairOrder).where(eq(hairOrder.id, input.hairOrderId)).for("update")
+      if (!order) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Hair order not found" })
+      }
 
-    const pricePerGram =
-      order.total === 0 || order.weightReceived === 0 ? 0 : Math.abs(Math.round(order.total / order.weightReceived))
+      const assignments = await tx
+        .select()
+        .from(hairAssigned)
+        .where(eq(hairAssigned.hairOrderId, input.hairOrderId))
+        .for("update")
 
-    if (order.pricePerGram !== pricePerGram) {
-      await db.update(hairOrder).set({ pricePerGram }).where(eq(hairOrder.id, input.hairOrderId))
-    }
+      const pricePerGram =
+        order.total === 0 || order.weightReceived === 0 ? 0 : Math.abs(Math.round(order.total / order.weightReceived))
 
-    await Promise.all(
-      order.hairAssigned.map(async (ha) => {
+      if (order.pricePerGram !== pricePerGram) {
+        await tx.update(hairOrder).set({ pricePerGram }).where(eq(hairOrder.id, input.hairOrderId))
+      }
+
+      for (const ha of assignments) {
         const total = pricePerGram === 0 ? 0 : Math.round(pricePerGram * ha.weightInGrams)
         const profit = ha.soldFor - total
         if (ha.profit !== profit) {
-          await db.update(hairAssigned).set({ profit }).where(eq(hairAssigned.id, ha.id))
+          await tx.update(hairAssigned).set({ profit }).where(eq(hairAssigned.id, ha.id))
         }
-      }),
-    )
+      }
 
-    return { pricePerGram }
+      return { pricePerGram }
+    })
   }),
 })

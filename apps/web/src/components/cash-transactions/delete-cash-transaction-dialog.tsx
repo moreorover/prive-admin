@@ -4,9 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { type CashTransactionRow } from "@/components/cash-transactions/cash-transactions-table"
 import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
-import { deleteCashTransaction } from "@/functions/cash-transactions"
 import { formatMinor } from "@/lib/currency"
-import { cashTransactionKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 type DeleteCashTransactionDialogProps = {
   open: boolean
@@ -18,9 +17,9 @@ export function DeleteCashTransactionDialog({ open, onOpenChange, transaction }:
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: () => deleteCashTransaction({ data: { id: transaction.id } }),
+    ...trpc.cashTransactions.delete.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: cashTransactionKeys.all })
+      queryClient.invalidateQueries({ queryKey: trpc.cashTransactions.list.queryKey() })
       onOpenChange(false)
       notifications.show({ color: "green", message: "Cash transaction deleted" })
     },
@@ -40,7 +39,7 @@ export function DeleteCashTransactionDialog({ open, onOpenChange, transaction }:
           <Button variant="default" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button color="red" loading={mutation.isPending} onClick={() => mutation.mutate()}>
+          <Button color="red" loading={mutation.isPending} onClick={() => mutation.mutate({ id: transaction.id })}>
             Delete
           </Button>
         </Group>

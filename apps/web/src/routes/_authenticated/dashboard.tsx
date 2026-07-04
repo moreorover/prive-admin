@@ -3,13 +3,8 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
-import {
-  type HairMonthlyBreakdown,
-  getHairAssignedStatsForDate,
-  getHairAssignedThroughSaleStatsForDate,
-} from "@/functions/dashboard"
 import { formatMinor } from "@/lib/currency"
-import { dashboardKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -28,14 +23,8 @@ function DashboardPage() {
   const currentYear = new Date().getFullYear()
   const year = search.year ?? currentYear
 
-  const appointmentsQuery = useQuery({
-    queryKey: dashboardKeys.hairAssignedStats(year),
-    queryFn: () => getHairAssignedStatsForDate({ data: { year } }),
-  })
-  const salesQuery = useQuery({
-    queryKey: dashboardKeys.hairSaleStats(year),
-    queryFn: () => getHairAssignedThroughSaleStatsForDate({ data: { year } }),
-  })
+  const appointmentsQuery = useQuery(trpc.dashboard.hairAssignedStats.queryOptions({ year }))
+  const salesQuery = useQuery(trpc.dashboard.hairAssignedThroughSaleStats.queryOptions({ year }))
 
   const setYear = (next: number) => navigate({ search: { year: next } })
 
@@ -86,7 +75,12 @@ function HairReportTable({
 }: {
   title: string
   description: string
-  data: HairMonthlyBreakdown | undefined
+  data:
+    | {
+        months: { month: number; weight: number; soldFor: number; profit: number; pricePerGram: number }[]
+        totals: { weight: number; soldFor: number; profit: number; pricePerGramAvg: number }
+      }
+    | undefined
   isLoading: boolean
 }) {
   return (

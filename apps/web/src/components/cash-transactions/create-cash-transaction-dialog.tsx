@@ -6,10 +6,8 @@ import dayjs from "dayjs"
 import {
   CashTransactionForm,
   type CashTransactionFormCustomer,
-  type CashTransactionFormSubmit,
 } from "@/components/cash-transactions/cash-transaction-form"
-import { createCashTransaction } from "@/functions/cash-transactions"
-import { cashTransactionKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 type CreateCashTransactionDialogProps = {
   open: boolean
@@ -21,9 +19,9 @@ export function CreateCashTransactionDialog({ open, onOpenChange, customers }: C
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (values: CashTransactionFormSubmit) => createCashTransaction({ data: values }),
+    ...trpc.cashTransactions.create.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: cashTransactionKeys.all })
+      queryClient.invalidateQueries({ queryKey: trpc.cashTransactions.list.queryKey() })
       onOpenChange(false)
       notifications.show({ color: "green", message: "Cash transaction created" })
     },

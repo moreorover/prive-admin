@@ -115,7 +115,17 @@ function AppointmentDetailPage() {
     { queryKey: trpc.customers.summary.queryOptions({ id: appointment.client.id }).queryKey },
   ]
 
-  const txInvalidateKeys = [{ queryKey: transactionsQueryOptions.queryKey }]
+  const transactionCustomerIds = Array.from(
+    new Set([
+      appointment.client.id,
+      appointment.master.id,
+      ...(appointment.personnel?.map((person) => person.personnelId) ?? []),
+    ]),
+  )
+  const txInvalidateKeys = [
+    { queryKey: transactionsQueryOptions.queryKey },
+    ...transactionCustomerIds.map((id) => ({ queryKey: trpc.customers.summary.queryOptions({ id }).queryKey })),
+  ]
 
   const txCustomerId = createTxCustomerId ?? appointment.master.id
   const txDefaultCurrency: Currency = (() => {
