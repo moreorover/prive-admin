@@ -88,18 +88,29 @@ ephemeral `GITHUB_TOKEN`. No manual login is required.
 
 ## First deploy
 
-Push (or merge) to `main` and watch the `Release` workflow run. The
-`deploy` job ends with a `curl` smoke check against
-`https://prive.salon/`; a passing job means the stack is up.
+Create a semver tag from a commit on `main`, push it, and watch the
+`Release` workflow run:
+
+```bash
+git switch main
+git pull --ff-only
+git tag v1.4.0
+git push origin v1.4.0
+```
+
+The release workflow validates that the tag matches `vMAJOR.MINOR.PATCH`
+and points to a commit on `main`. The `deploy` job ends with a `curl`
+smoke check against `https://prive.salon/`; a passing job means the stack
+is up.
 
 ## Rollback
 
 ```bash
-ssh root@prive 'cd ~/prive-admin && IMAGE_TAG=<old-sha> docker compose up -d web'
+ssh root@prive 'cd ~/prive-admin && IMAGE_TAG=<old-tag-or-sha> docker compose up -d web'
 ```
 
-GHCR retains older `:<sha>` tags by default. Pick a known-good sha
-from the GitHub Actions history.
+GHCR retains older release and commit tags by default. Pick a known-good
+tag or commit sha from the GitHub Actions history.
 
 ## Routine operations
 
