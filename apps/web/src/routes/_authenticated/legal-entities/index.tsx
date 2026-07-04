@@ -4,15 +4,15 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { listLegalEntities } from "@/functions/legal-entities"
 import { COUNTRY_FLAGS, COUNTRY_LABELS, type Country } from "@/lib/legal-entity"
+import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/")({
   component: LegalEntitiesIndex,
 })
 
 function LegalEntitiesIndex() {
-  const q = useQuery({ queryKey: ["legal-entities"], queryFn: () => listLegalEntities() })
+  const q = useQuery(trpc.legalEntities.list.queryOptions())
 
   return (
     <Container size="xl">

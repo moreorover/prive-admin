@@ -4,14 +4,14 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 
 import { SalonsTable } from "@/components/salons-table"
 import { Section } from "@/components/section"
-import { listSalons } from "@/functions/salons"
+import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/salons")({
   component: SalonsTab,
 })
 
 function SalonsTab() {
-  const q = useQuery({ queryKey: ["salons"], queryFn: () => listSalons() })
+  const q = useQuery(trpc.salons.list.queryOptions())
 
   return (
     <Section

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 
 import { Section } from "@/components/section"
-import { getLegalEntity } from "@/functions/legal-entities"
+import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/bank-accounts/")({
   component: BankAccountsTab,
@@ -11,10 +11,7 @@ export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntit
 
 function BankAccountsTab() {
   const { legalEntityId } = Route.useParams()
-  const q = useQuery({
-    queryKey: ["legal-entity", legalEntityId],
-    queryFn: () => getLegalEntity({ data: { id: legalEntityId } }),
-  })
+  const q = useQuery(trpc.legalEntities.byId.queryOptions({ id: legalEntityId }))
 
   return (
     <Section

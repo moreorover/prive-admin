@@ -7,8 +7,6 @@ import { useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
 import { useEffect } from "react"
 
-import { listSalons } from "@/functions/salons"
-import { salonKeys } from "@/lib/query-keys"
 import { trpc } from "@/utils/trpc"
 
 type CreateAppointmentDialogProps = {
@@ -46,6 +44,7 @@ export function CreateAppointmentDialog({
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const appointmentListQueryOptions = trpc.appointments.list.queryOptions({})
+  const salonsQueryOptions = trpc.salons.list.queryOptions()
 
   const form = useForm<FormValues>({
     initialValues: {
@@ -84,8 +83,7 @@ export function CreateAppointmentDialog({
   })
 
   const { data: salons } = useQuery({
-    queryKey: salonKeys.list(),
-    queryFn: () => listSalons(),
+    ...salonsQueryOptions,
     enabled: open,
   })
 

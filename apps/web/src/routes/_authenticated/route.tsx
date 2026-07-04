@@ -46,8 +46,8 @@ import { Link, Outlet, createFileRoute, redirect, useLocation, useNavigate, useR
 import { useState } from "react"
 
 import { listUnassignedAttachments } from "@/functions/bank-statement-attachments"
-import { getLegalEntity } from "@/functions/legal-entities"
 import { authClient } from "@/lib/auth-client"
+import { trpc } from "@/utils/trpc"
 
 import classes from "./route.module.css"
 
@@ -166,8 +166,7 @@ function SidebarNav({ badges, onNavigate }: { badges: { unassigned: number }; on
   const entityTab = entityMatch?.[2] ?? "overview"
 
   const entityQ = useQuery({
-    queryKey: ["legal-entity", entityId],
-    queryFn: () => getLegalEntity({ data: { id: entityId! } }),
+    ...trpc.legalEntities.byId.queryOptions({ id: entityId ?? "" }),
     enabled: !!entityId,
   })
 
