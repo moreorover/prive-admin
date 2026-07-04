@@ -34,8 +34,6 @@ import { Section } from "@/components/section"
 import { CURRENCIES, formatMinor } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
-const defaultCustomersListInput = { page: 1, pageSize: 25, search: undefined as string | undefined }
-
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetailPage,
   loader: async ({ context, params }) => {
@@ -83,7 +81,7 @@ function EditCustomerDialog({
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: trpc.customers.list.queryOptions(defaultCustomersListInput).queryKey,
+          queryKey: trpc.customers.list.queryKey(),
         }),
         queryClient.invalidateQueries({ queryKey: trpc.customers.get.queryOptions({ id: customer.id }).queryKey }),
         queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id: customer.id }).queryKey }),

@@ -31,7 +31,7 @@ type SalonOption = {
 }
 
 const defaultStartsAtString = () => dayjs().startOf("hour").add(1, "hour").format("YYYY-MM-DD HH:mm:ss")
-const defaultCustomersListInput = { page: 1, pageSize: 25, search: undefined as string | undefined }
+const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 
 export function CreateAppointmentDialog({
   open,

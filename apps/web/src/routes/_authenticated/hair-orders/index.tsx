@@ -12,7 +12,7 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
-const defaultCustomersListInput = { page: 1, pageSize: 25, search: undefined as string | undefined }
+const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 
 export const Route = createFileRoute("/_authenticated/hair-orders/")({
   component: HairOrdersPage,

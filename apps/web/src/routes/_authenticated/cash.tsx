@@ -25,7 +25,7 @@ import { type Currency } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
-const defaultCustomersListInput = { page: 1, pageSize: 25, search: undefined as string | undefined }
+const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 
 type CashTransactionDirection = "all" | "received" | "paid"
 type CashTransactionCurrencyFilter = Currency | ""

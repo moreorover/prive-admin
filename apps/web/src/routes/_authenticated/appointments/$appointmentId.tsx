@@ -40,7 +40,7 @@ const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => 
   Currency,
   number
 >
-const defaultCustomersListInput = { page: 1, pageSize: 25, search: undefined as string | undefined }
+const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
