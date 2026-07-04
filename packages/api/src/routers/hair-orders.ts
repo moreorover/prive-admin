@@ -102,7 +102,7 @@ export const hairOrdersRouter = router({
           arrivedAt: dateValue(input.arrivedAt),
           status: input.status,
           weightReceived: input.weightReceived,
-          weightUsed: input.weightUsed,
+          weightUsed: assignedTotal,
           total: input.total,
         })
         .where(eq(hairOrder.id, input.id))
