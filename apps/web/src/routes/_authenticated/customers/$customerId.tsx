@@ -34,6 +34,8 @@ import { Section } from "@/components/section"
 import { CURRENCIES, formatMinor } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
+const CUSTOMER_APPOINTMENTS_PAGE_SIZE = 25
+
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetailPage,
   loader: async ({ context, params }) => {
@@ -41,7 +43,11 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
       context.queryClient.prefetchQuery(trpc.customers.get.queryOptions({ id: params.customerId })),
       context.queryClient.prefetchQuery(trpc.customers.summary.queryOptions({ id: params.customerId })),
       context.queryClient.prefetchQuery(
-        trpc.appointments.list.queryOptions({ page: 1, pageSize: 25, customerId: params.customerId }),
+        trpc.appointments.list.queryOptions({
+          page: 1,
+          pageSize: CUSTOMER_APPOINTMENTS_PAGE_SIZE,
+          customerId: params.customerId,
+        }),
       ),
       context.queryClient.prefetchQuery(trpc.notes.list.queryOptions({ customerId: params.customerId })),
       context.queryClient.prefetchQuery(trpc.hairAssigned.byCustomer.queryOptions({ customerId: params.customerId })),
@@ -174,15 +180,22 @@ function CustomerDetailPage() {
   const [hairCreateOpen, setHairCreateOpen] = useState(false)
   const [hairEditItem, setHairEditItem] = useState<HairAssignedRow | null>(null)
   const [hairDeleteItem, setHairDeleteItem] = useState<HairAssignedRow | null>(null)
+  const [appointmentsPage, setAppointmentsPage] = useState(1)
   const queryClient = useQueryClient()
   const customerSummaryQueryOptions = trpc.customers.summary.queryOptions({ id: customerId })
-  const customerAppointmentsQueryOptions = trpc.appointments.list.queryOptions({ page: 1, pageSize: 25, customerId })
+  const customerAppointmentsQueryOptions = trpc.appointments.list.queryOptions({
+    page: appointmentsPage,
+    pageSize: CUSTOMER_APPOINTMENTS_PAGE_SIZE,
+    customerId,
+  })
   const hairAssignedQueryOptions = trpc.hairAssigned.byCustomer.queryOptions({ customerId })
 
   const { data: customer, isLoading } = useQuery(trpc.customers.get.queryOptions({ id: customerId }))
 
   const { data: appointmentsData } = useQuery(customerAppointmentsQueryOptions)
   const appointments = appointmentsData?.items ?? []
+  const appointmentsTotalCount = appointmentsData?.totalCount ?? 0
+  const appointmentsTotalPages = Math.max(1, Math.ceil(appointmentsTotalCount / CUSTOMER_APPOINTMENTS_PAGE_SIZE))
 
   const notesQueryOptions = trpc.notes.list.queryOptions({ customerId })
   const { data: notes } = useQuery(notesQueryOptions)
@@ -306,33 +319,57 @@ function CustomerDetailPage() {
               padding={appointments && appointments.length > 0 ? 0 : "lg"}
             >
               {appointments && appointments.length > 0 ? (
-                <Table>
-                  <Table.Thead>
-                    <Table.Tr>
-                      <Table.Th>Name</Table.Th>
-                      <Table.Th>Date</Table.Th>
-                    </Table.Tr>
-                  </Table.Thead>
-                  <Table.Tbody>
-                    {appointments.map((a) => (
-                      <Table.Tr key={a.id}>
-                        <Table.Td>
-                          <Text
-                            renderRoot={(props) => (
-                              <Link to="/appointments/$appointmentId" params={{ appointmentId: a.id }} {...props} />
-                            )}
-                            c="blue"
-                          >
-                            {a.name}
-                          </Text>
-                        </Table.Td>
-                        <Table.Td c="dimmed">
-                          <ClientDate date={a.startsAt} />
-                        </Table.Td>
+                <>
+                  <Table>
+                    <Table.Thead>
+                      <Table.Tr>
+                        <Table.Th>Name</Table.Th>
+                        <Table.Th>Date</Table.Th>
                       </Table.Tr>
-                    ))}
-                  </Table.Tbody>
-                </Table>
+                    </Table.Thead>
+                    <Table.Tbody>
+                      {appointments.map((a) => (
+                        <Table.Tr key={a.id}>
+                          <Table.Td>
+                            <Text
+                              renderRoot={(props) => (
+                                <Link to="/appointments/$appointmentId" params={{ appointmentId: a.id }} {...props} />
+                              )}
+                              c="blue"
+                            >
+                              {a.name}
+                            </Text>
+                          </Table.Td>
+                          <Table.Td c="dimmed">
+                            <ClientDate date={a.startsAt} />
+                          </Table.Td>
+                        </Table.Tr>
+                      ))}
+                    </Table.Tbody>
+                  </Table>
+                  <Group justify="space-between" p="md">
+                    <Text size="sm" c="dimmed">
+                      {appointmentsTotalCount} appointment{appointmentsTotalCount === 1 ? "" : "s"} · Page{" "}
+                      {Math.min(appointmentsPage, appointmentsTotalPages)} of {appointmentsTotalPages}
+                    </Text>
+                    <Group gap="xs">
+                      <Button
+                        variant="default"
+                        disabled={appointmentsPage <= 1}
+                        onClick={() => setAppointmentsPage((current) => Math.max(1, current - 1))}
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        variant="default"
+                        disabled={appointmentsPage >= appointmentsTotalPages}
+                        onClick={() => setAppointmentsPage((current) => current + 1)}
+                      >
+                        Next
+                      </Button>
+                    </Group>
+                  </Group>
+                </>
               ) : (
                 <Text size="sm" c="dimmed">
                   No appointments yet.

@@ -10,22 +10,54 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
-const appointmentsQueryOptions = trpc.appointments.list.queryOptions({ page: 1, pageSize: 100 })
+const CALENDAR_APPOINTMENTS_PAGE_SIZE = 100
+
+function getVisibleDateRange(date: string, view: ScheduleViewLevel) {
+  const current = dayjs(date)
+  if (view === "day") {
+    return {
+      startDate: current.startOf("day").toISOString(),
+      endDate: current.endOf("day").toISOString(),
+    }
+  }
+
+  if (view === "week") {
+    const start = current.startOf("day").subtract((current.day() + 6) % 7, "day")
+    return {
+      startDate: start.toISOString(),
+      endDate: start.add(6, "day").endOf("day").toISOString(),
+    }
+  }
+
+  return {
+    startDate: current.startOf("month").toISOString(),
+    endDate: current.endOf("month").toISOString(),
+  }
+}
+
+function calendarAppointmentsQueryOptions(date: string, view: ScheduleViewLevel) {
+  return trpc.appointments.list.queryOptions({
+    page: 1,
+    pageSize: CALENDAR_APPOINTMENTS_PAGE_SIZE,
+    ...getVisibleDateRange(date, view),
+  })
+}
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   component: CalendarPage,
   loader: async ({ context }) => {
-    await context.queryClient.prefetchQuery(appointmentsQueryOptions)
+    await context.queryClient.prefetchQuery(calendarAppointmentsQueryOptions(dayjs().format("YYYY-MM-DD"), "month"))
   },
 })
 
 function CalendarPage() {
-  const { data: appointmentsData } = useQuery(appointmentsQueryOptions)
   const navigate = useNavigate()
   const [view, setView] = useState<ScheduleViewLevel>("month")
   const [date, setDate] = useState<string>(() => dayjs().format("YYYY-MM-DD"))
   const [createOpen, setCreateOpen] = useState(false)
   const [defaultStartsAt, setDefaultStartsAt] = useState<string | null>(null)
+  const appointmentsQueryOptions = calendarAppointmentsQueryOptions(date, view)
+  const { data: appointmentsData } = useQuery(appointmentsQueryOptions)
 
   const openCreate = useCallback((startsAt: string | null) => {
     setDefaultStartsAt(startsAt)

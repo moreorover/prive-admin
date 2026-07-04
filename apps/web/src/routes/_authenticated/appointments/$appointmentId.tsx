@@ -41,7 +41,7 @@ const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => 
   number
 >
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
-const defaultAppointmentTransactionsListInput = { page: 1, pageSize: 25 }
+const boundedAppointmentDetailTransactionsListInput = { page: 1, pageSize: 100 }
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
@@ -53,7 +53,7 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
       ),
       context.queryClient.prefetchQuery(
         trpc.transactions.list.queryOptions({
-          ...defaultAppointmentTransactionsListInput,
+          ...boundedAppointmentDetailTransactionsListInput,
           appointmentId: params.appointmentId,
         }),
       ),
@@ -77,7 +77,7 @@ function AppointmentDetailPage() {
   const appointmentQueryOptions = trpc.appointments.get.queryOptions({ id: appointmentId })
   const hairAssignedQueryOptions = trpc.hairAssigned.byAppointment.queryOptions({ appointmentId })
   const transactionsQueryOptions = trpc.transactions.list.queryOptions({
-    ...defaultAppointmentTransactionsListInput,
+    ...boundedAppointmentDetailTransactionsListInput,
     appointmentId,
   })
 
