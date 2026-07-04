@@ -52,6 +52,9 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME_BASE }}-${{ matrix.image }}:${{ github.sha }}
             ${{ env.IMAGE_NAME_BASE }}-${{ matrix.image }}:main
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
 
