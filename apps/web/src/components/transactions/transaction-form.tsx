@@ -11,7 +11,7 @@ export type TransactionFormValues = {
   currency: Currency
 }
 
-export type TransactionFormSubmit = {
+type TransactionFormSubmit = {
   name: string | null
   notes: string | null
   amount: number

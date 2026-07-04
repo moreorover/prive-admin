@@ -1,6 +1,6 @@
 import { parse as parseCsv } from "csv-parse/sync"
 
-export type BankCsvRow = {
+type BankCsvRow = {
   docNumber: string
   date: string
   currency: string
