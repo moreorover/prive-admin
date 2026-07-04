@@ -40,7 +40,7 @@ jobs:
           export-env: true
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          VITE_SERVER_URL: op://prive-admin/prive-admin-prod/app/VITE_SERVER_URL
+          VITE_SERVER_URL: op://prive-admin/prive-admin-prod/web/VITE_SERVER_URL
 
       - name: Build and push web
         uses: docker/build-push-action@v6
@@ -126,8 +126,8 @@ jobs:
           export-env: true
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          POSTGRES_DB: op://prive-admin/prive-admin-prod/postgres/POSTGRES_DB
-          POSTGRES_USER: op://prive-admin/prive-admin-prod/postgres/POSTGRES_USER
+          POSTGRES_DB: op://prive-admin/prive-admin-prod/server/POSTGRES_DB
+          POSTGRES_USER: op://prive-admin/prive-admin-prod/server/POSTGRES_USER
           R2_ACCOUNT_ID: op://prive-admin/Cloudflare R2/account-id
           R2_ACCESS_KEY_ID: op://prive-admin/Cloudflare R2/access-key-id
           R2_SECRET_ACCESS_KEY: op://prive-admin/Cloudflare R2/secret-access-key
@@ -208,19 +208,19 @@ jobs:
           export-env: true
         env:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          POSTGRES_DB: op://prive-admin/prive-admin-prod/postgres/POSTGRES_DB
-          POSTGRES_USER: op://prive-admin/prive-admin-prod/postgres/POSTGRES_USER
-          POSTGRES_PASSWORD: op://prive-admin/prive-admin-prod/postgres/POSTGRES_PASSWORD
-          DATABASE_URL: op://prive-admin/prive-admin-prod/app/DATABASE_URL
-          BETTER_AUTH_SECRET: op://prive-admin/prive-admin-prod/app/BETTER_AUTH_SECRET
-          BETTER_AUTH_URL: op://prive-admin/prive-admin-prod/app/BETTER_AUTH_URL
-          CORS_ORIGIN: op://prive-admin/prive-admin-prod/app/CORS_ORIGIN
+          POSTGRES_DB: op://prive-admin/prive-admin-prod/server/POSTGRES_DB
+          POSTGRES_USER: op://prive-admin/prive-admin-prod/server/POSTGRES_USER
+          POSTGRES_PASSWORD: op://prive-admin/prive-admin-prod/server/POSTGRES_PASSWORD
+          DATABASE_URL: op://prive-admin/prive-admin-prod/server/DATABASE_URL
+          BETTER_AUTH_SECRET: op://prive-admin/prive-admin-prod/server/BETTER_AUTH_SECRET
+          BETTER_AUTH_URL: op://prive-admin/prive-admin-prod/server/BETTER_AUTH_URL
+          CORS_ORIGIN: op://prive-admin/prive-admin-prod/server/CORS_ORIGIN
           R2_ENDPOINT: op://prive-admin/Cloudflare R2/endpoint
           R2_ACCESS_KEY_ID: op://prive-admin/Cloudflare R2/access-key-id
           R2_SECRET_ACCESS_KEY: op://prive-admin/Cloudflare R2/secret-access-key
           R2_BUCKET_NAME: op://prive-admin/Cloudflare R2/bucket-name
-          DOMAIN_NAME: op://prive-admin/prive-admin-prod/infra/DOMAIN_NAME
-          ACME_EMAIL: op://prive-admin/prive-admin-prod/infra/ACME_EMAIL
+          DOMAIN_NAME: op://prive-admin/prive-admin-prod/server/DOMAIN_NAME
+          ACME_EMAIL: op://prive-admin/prive-admin-prod/server/ACME_EMAIL
           TS_OAUTH_CLIENT_ID: op://prive-admin/tailscale-oauth/client-id
           TS_OAUTH_CLIENT_SECRET: op://prive-admin/tailscale-oauth/client-secret
 
