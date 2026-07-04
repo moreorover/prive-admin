@@ -75,10 +75,7 @@ export const hairOrdersRouter = router({
     assertWeightUsedWithinReceived(input.weightUsed, input.weightReceived)
 
     return await db.transaction(async (tx) => {
-      const existing = await tx.query.hairOrder.findFirst({
-        where: eq(hairOrder.id, input.id),
-        columns: { id: true },
-      })
+      const [existing] = await tx.select().from(hairOrder).where(eq(hairOrder.id, input.id)).for("update")
       if (!existing) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Hair order not found" })
       }

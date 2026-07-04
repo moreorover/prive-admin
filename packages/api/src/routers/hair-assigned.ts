@@ -119,25 +119,34 @@ export const hairAssignedRouter = router({
     }),
 
   delete: protectedProcedure.input(z.object({ id: z.string().min(1) })).mutation(async ({ input }) => {
-    const existing = await db.query.hairAssigned.findFirst({
-      where: eq(hairAssigned.id, input.id),
-    })
-    if (!existing) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Hair assigned not found" })
-    }
-
     return await db.transaction(async (tx) => {
+      const existing = await tx.query.hairAssigned.findFirst({
+        where: eq(hairAssigned.id, input.id),
+      })
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Hair assigned not found" })
+      }
+
+      const [parentOrder] = await tx
+        .select()
+        .from(hairOrder)
+        .where(eq(hairOrder.id, existing.hairOrderId))
+        .for("update")
+      if (!parentOrder) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Hair order not found" })
+      }
+
       await tx.delete(hairAssigned).where(eq(hairAssigned.id, input.id))
 
       const weightAgg = await tx
         .select({ total: sql<number>`coalesce(sum(${hairAssigned.weightInGrams}), 0)` })
         .from(hairAssigned)
-        .where(eq(hairAssigned.hairOrderId, existing.hairOrderId))
+        .where(eq(hairAssigned.hairOrderId, parentOrder.id))
 
       await tx
         .update(hairOrder)
         .set({ weightUsed: Number(weightAgg[0]?.total ?? 0) })
-        .where(eq(hairOrder.id, existing.hairOrderId))
+        .where(eq(hairOrder.id, parentOrder.id))
     })
   }),
 })
