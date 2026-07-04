@@ -52,11 +52,19 @@ function HairOrderDetailPage() {
 
   const { data: hairOrder, isLoading } = useQuery(hairOrderQueryOptions)
 
+  const assignedClientSummaryKeys = Array.from(
+    new Set([
+      ...(hairOrder?.hairAssigned ?? []).map((ha) => ha.client.id),
+      ...(hairOrder?.customer.id ? [hairOrder.customer.id] : []),
+    ]),
+  ).map((id) => ({ queryKey: trpc.customers.summary.queryOptions({ id }).queryKey }))
+
   const recalcMutation = useMutation({
     ...trpc.hairOrders.recalculatePrices.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hairOrderQueryOptions.queryKey })
       queryClient.invalidateQueries({ queryKey: hairOrdersListQueryOptions.queryKey })
+      for (const key of assignedClientSummaryKeys) queryClient.invalidateQueries(key)
       notifications.show({ color: "green", message: "Prices recalculated" })
     },
     onError: (error) => notifications.show({ color: "red", message: error.message }),
@@ -81,10 +89,7 @@ function HairOrderDetailPage() {
     )
   }
 
-  const invalidateKeys = [
-    { queryKey: hairOrderQueryOptions.queryKey },
-    { queryKey: trpc.customers.summary.queryOptions({ id: hairOrder.customer.id }).queryKey },
-  ]
+  const invalidateKeys = [{ queryKey: hairOrderQueryOptions.queryKey }, ...assignedClientSummaryKeys]
 
   return (
     <Container size="xl">
