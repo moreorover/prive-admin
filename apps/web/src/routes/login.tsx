@@ -13,6 +13,9 @@ export const Route = createFileRoute("/login")({
   }),
   beforeLoad: async () => {
     const session = await authClient.getSession()
+    if (session.error) {
+      throw new Error(session.error.message || "Failed to load session")
+    }
     if (session.data) {
       throw redirect({ to: "/customers" })
     }
