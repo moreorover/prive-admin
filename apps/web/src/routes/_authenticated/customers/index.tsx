@@ -11,7 +11,8 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
-const customersQueryOptions = trpc.customers.list.queryOptions()
+const defaultCustomersListInput = { page: 1, pageSize: 25, search: undefined as string | undefined }
+const customersQueryOptions = trpc.customers.list.queryOptions(defaultCustomersListInput)
 
 export const Route = createFileRoute("/_authenticated/customers/")({
   component: CustomersPage,
@@ -60,7 +61,8 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
 }
 
 function CustomersPage() {
-  const { data: customers, isLoading } = useQuery(customersQueryOptions)
+  const { data, isLoading } = useQuery(customersQueryOptions)
+  const customers = data?.items ?? []
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
@@ -98,7 +100,7 @@ function CustomersPage() {
                     </Table.Td>
                   </Table.Tr>
                 ))
-              : customers?.map((c) => (
+              : customers.map((c) => (
                   <Table.Tr key={c.id}>
                     <Table.Td>
                       <Text
@@ -117,7 +119,7 @@ function CustomersPage() {
                     </Table.Td>
                   </Table.Tr>
                 ))}
-            {!isLoading && customers?.length === 0 && (
+            {!isLoading && customers.length === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={3} ta="center" c="dimmed">
                   No customers yet. Create your first one.

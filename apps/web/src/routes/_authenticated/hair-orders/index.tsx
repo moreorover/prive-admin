@@ -12,6 +12,8 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
+const defaultCustomersListInput = { page: 1, pageSize: 25, search: undefined as string | undefined }
+
 export const Route = createFileRoute("/_authenticated/hair-orders/")({
   component: HairOrdersPage,
 })
@@ -19,7 +21,8 @@ export const Route = createFileRoute("/_authenticated/hair-orders/")({
 function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const queryClient = useQueryClient()
 
-  const { data: customers } = useQuery(trpc.customers.list.queryOptions())
+  const { data: customersData } = useQuery(trpc.customers.list.queryOptions(defaultCustomersListInput))
+  const customers = customersData?.items ?? []
   const hairOrdersQueryOptions = trpc.hairOrders.list.queryOptions()
 
   const mutation = useMutation({
@@ -61,7 +64,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
             label="Customer"
             placeholder="Select a customer..."
             searchable
-            data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
+            data={customers.map((c) => ({ value: c.id, label: c.name }))}
             {...form.getInputProps("customerId")}
           />
           <DateInput label="Placed At" valueFormat="DD MMM YYYY" {...form.getInputProps("placedAt")} />

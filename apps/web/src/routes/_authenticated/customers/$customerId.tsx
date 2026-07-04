@@ -34,11 +34,13 @@ import { Section } from "@/components/section"
 import { CURRENCIES, formatMinor } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
+const defaultCustomersListInput = { page: 1, pageSize: 25, search: undefined as string | undefined }
+
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetailPage,
   loader: async ({ context, params }) => {
     await Promise.all([
-      context.queryClient.prefetchQuery(trpc.customers.byId.queryOptions({ id: params.customerId })),
+      context.queryClient.prefetchQuery(trpc.customers.get.queryOptions({ id: params.customerId })),
       context.queryClient.prefetchQuery(trpc.customers.summary.queryOptions({ id: params.customerId })),
       context.queryClient.prefetchQuery(trpc.appointments.byCustomerId.queryOptions({ customerId: params.customerId })),
       context.queryClient.prefetchQuery(trpc.notes.list.queryOptions({ customerId: params.customerId })),
@@ -80,8 +82,10 @@ function EditCustomerDialog({
     ...trpc.customers.update.mutationOptions(),
     onSuccess: async () => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: trpc.customers.list.queryOptions().queryKey }),
-        queryClient.invalidateQueries({ queryKey: trpc.customers.byId.queryOptions({ id: customer.id }).queryKey }),
+        queryClient.invalidateQueries({
+          queryKey: trpc.customers.list.queryOptions(defaultCustomersListInput).queryKey,
+        }),
+        queryClient.invalidateQueries({ queryKey: trpc.customers.get.queryOptions({ id: customer.id }).queryKey }),
         queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id: customer.id }).queryKey }),
       ])
       onOpenChange(false)
@@ -175,7 +179,7 @@ function CustomerDetailPage() {
   const customerAppointmentsQueryOptions = trpc.appointments.byCustomerId.queryOptions({ customerId })
   const hairAssignedQueryOptions = trpc.hairAssigned.byCustomer.queryOptions({ customerId })
 
-  const { data: customer, isLoading } = useQuery(trpc.customers.byId.queryOptions({ id: customerId }))
+  const { data: customer, isLoading } = useQuery(trpc.customers.get.queryOptions({ id: customerId }))
 
   const { data: appointments } = useQuery(customerAppointmentsQueryOptions)
 

@@ -31,6 +31,7 @@ type SalonOption = {
 }
 
 const defaultStartsAtString = () => dayjs().startOf("hour").add(1, "hour").format("YYYY-MM-DD HH:mm:ss")
+const defaultCustomersListInput = { page: 1, pageSize: 25, search: undefined as string | undefined }
 
 export function CreateAppointmentDialog({
   open,
@@ -84,7 +85,8 @@ function CreateAppointmentForm({
     },
   })
 
-  const { data: customers } = useQuery(trpc.customers.list.queryOptions())
+  const { data: customersData } = useQuery(trpc.customers.list.queryOptions(defaultCustomersListInput))
+  const customers = customersData?.items ?? []
 
   const { data: salons } = useQuery(salonsQueryOptions)
 
@@ -126,7 +128,7 @@ function CreateAppointmentForm({
             label="Client"
             required
             searchable
-            data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
+            data={customers.map((c) => ({ value: c.id, label: c.name }))}
             {...form.getInputProps("clientId")}
           />
         )}
@@ -134,7 +136,7 @@ function CreateAppointmentForm({
           label="Master"
           required
           searchable
-          data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
+          data={customers.map((c) => ({ value: c.id, label: c.name }))}
           {...form.getInputProps("masterId")}
         />
         <Select

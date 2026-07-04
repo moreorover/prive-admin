@@ -25,6 +25,7 @@ import { type Currency } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
+const defaultCustomersListInput = { page: 1, pageSize: 25, search: undefined as string | undefined }
 
 type CashTransactionDirection = "all" | "received" | "paid"
 type CashTransactionCurrencyFilter = Currency | ""
@@ -55,7 +56,7 @@ function CashPage() {
   const [editing, setEditing] = useState<CashTransactionRow | null>(null)
   const [deleting, setDeleting] = useState<CashTransactionRow | null>(null)
 
-  const { data: customersData } = useQuery(trpc.customers.list.queryOptions())
+  const { data: customersData } = useQuery(trpc.customers.list.queryOptions(defaultCustomersListInput))
 
   const queryFilter = {
     page,
@@ -72,7 +73,7 @@ function CashPage() {
     trpc.cashTransactions.list.queryOptions(queryFilter, { placeholderData: (previousData) => previousData }),
   )
 
-  const customers = customersData ?? []
+  const customers = customersData?.items ?? []
   const totalCount = result?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 

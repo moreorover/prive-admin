@@ -40,6 +40,7 @@ const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => 
   Currency,
   number
 >
+const defaultCustomersListInput = { page: 1, pageSize: 25, search: undefined as string | undefined }
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
@@ -473,7 +474,8 @@ function ChangeMasterForm({
   const [draftMasterId, setDraftMasterId] = useState<string | null>(null)
   const masterId = draftMasterId ?? currentMasterId
 
-  const { data: customers } = useQuery(trpc.customers.list.queryOptions())
+  const { data: customersData } = useQuery(trpc.customers.list.queryOptions(defaultCustomersListInput))
+  const customers = customersData?.items ?? []
 
   const mutation = useMutation({
     ...trpc.appointments.updateMaster.mutationOptions(),
@@ -493,7 +495,7 @@ function ChangeMasterForm({
         searchable
         value={masterId}
         onChange={setDraftMasterId}
-        data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
+        data={customers.map((c) => ({ value: c.id, label: c.name }))}
       />
       <Group justify="flex-end" gap="xs">
         <Button variant="default" onClick={onClose}>
@@ -516,15 +518,16 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
   const [selected, setSelected] = useState<string[]>([])
   const [search, setSearch] = useState("")
 
-  const { data: customers } = useQuery({
-    ...trpc.customers.list.queryOptions(),
+  const { data: customersData } = useQuery({
+    ...trpc.customers.list.queryOptions(defaultCustomersListInput),
     enabled: open,
   })
+  const customers = customersData?.items ?? []
 
   const available = useMemo(() => {
     const assigned = new Set(assignedPersonnelIds)
     const term = search.trim().toLowerCase()
-    return (customers ?? []).filter((c) => {
+    return customers.filter((c) => {
       if (assigned.has(c.id)) return false
       if (term && !c.name.toLowerCase().includes(term)) return false
       return true
