@@ -25,8 +25,8 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
 
   const mutation = useMutation({
     ...trpc.customers.create.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries()
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: customersQueryOptions.queryKey })
       onOpenChange(false)
       notifications.show({ color: "green", message: "Customer created" })
     },

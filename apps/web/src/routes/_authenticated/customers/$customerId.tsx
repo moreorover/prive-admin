@@ -90,8 +90,12 @@ function EditCustomerDialog({
 
   const mutation = useMutation({
     ...trpc.customers.update.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries()
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: trpc.customers.list.queryOptions().queryKey }),
+        queryClient.invalidateQueries({ queryKey: trpc.customers.byId.queryOptions({ id: customer.id }).queryKey }),
+        queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id: customer.id }).queryKey }),
+      ])
       onOpenChange(false)
       notifications.show({ color: "green", message: "Customer updated" })
     },
