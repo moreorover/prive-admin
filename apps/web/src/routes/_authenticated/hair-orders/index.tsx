@@ -10,6 +10,7 @@ import { useState } from "react"
 import { HairOrdersTable } from "@/components/hair-orders-table"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
+import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
@@ -21,9 +22,20 @@ export const Route = createFileRoute("/_authenticated/hair-orders/")({
 
 function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const queryClient = useQueryClient()
+  const [customerSearch, setCustomerSearch] = useState("")
+  const [selectedCustomerOption, setSelectedCustomerOption] = useState<SelectOption | null>(null)
 
-  const { data: customersData } = useQuery(trpc.customers.list.queryOptions(defaultCustomersListInput))
+  const { data: customersData } = useQuery(
+    trpc.customers.list.queryOptions({
+      ...defaultCustomersListInput,
+      search: customerSearch.trim() || undefined,
+    }),
+  )
   const customers = customersData?.items ?? []
+  const customerOptions = withPinnedOption(
+    customers.map((c) => ({ value: c.id, label: c.name })),
+    selectedCustomerOption,
+  )
   const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
 
   const mutation = useMutation({
@@ -65,8 +77,16 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
             label="Customer"
             placeholder="Select a customer..."
             searchable
-            data={customers.map((c) => ({ value: c.id, label: c.name }))}
-            {...form.getInputProps("customerId")}
+            searchValue={customerSearch}
+            onSearchChange={setCustomerSearch}
+            data={customerOptions}
+            value={form.values.customerId}
+            onChange={(value) => {
+              form.setFieldValue("customerId", value ?? "")
+              const option = customerOptions.find((candidate) => candidate.value === value)
+              if (option) setSelectedCustomerOption(option)
+            }}
+            error={form.errors.customerId}
           />
           <DateInput label="Placed At" valueFormat="DD MMM YYYY" {...form.getInputProps("placedAt")} />
           <Group grow>

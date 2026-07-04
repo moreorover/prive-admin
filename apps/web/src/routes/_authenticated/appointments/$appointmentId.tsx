@@ -8,6 +8,7 @@ import {
   Group,
   Menu,
   Modal,
+  Pagination,
   ScrollArea,
   Select,
   Skeleton,
@@ -21,7 +22,7 @@ import { notifications } from "@mantine/notifications"
 import { IconArrowLeft, IconCash, IconClock, IconDots, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
 import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
@@ -34,6 +35,7 @@ import { DeleteTransactionDialog } from "@/components/transactions/delete-transa
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
 import { CURRENCIES, type Currency, formatMinor } from "@/lib/currency"
+import { clampPage, formatPageRange, type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
 const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
@@ -41,8 +43,7 @@ const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => 
   number
 >
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
-const boundedAppointmentDetailTransactionsListInput = { page: 1, pageSize: 100 }
-const boundedAppointmentDetailHairAssignedListInput = { page: 1, pageSize: 100 }
+const APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE = 25
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
@@ -51,13 +52,15 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
       context.queryClient.prefetchQuery(trpc.appointments.get.queryOptions({ id: params.appointmentId })),
       context.queryClient.prefetchQuery(
         trpc.hairAssigned.list.queryOptions({
-          ...boundedAppointmentDetailHairAssignedListInput,
+          page: 1,
+          pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
           appointmentId: params.appointmentId,
         }),
       ),
       context.queryClient.prefetchQuery(
         trpc.transactions.list.queryOptions({
-          ...boundedAppointmentDetailTransactionsListInput,
+          page: 1,
+          pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
           appointmentId: params.appointmentId,
         }),
       ),
@@ -77,14 +80,18 @@ function AppointmentDetailPage() {
   const [createTxCustomerId, setCreateTxCustomerId] = useState<string | null>(null)
   const [editTx, setEditTx] = useState<TransactionRow | null>(null)
   const [deleteTx, setDeleteTx] = useState<TransactionRow | null>(null)
+  const [transactionsPage, setTransactionsPage] = useState(1)
+  const [hairAssignedPage, setHairAssignedPage] = useState(1)
 
   const appointmentQueryOptions = trpc.appointments.get.queryOptions({ id: appointmentId })
   const hairAssignedQueryOptions = trpc.hairAssigned.list.queryOptions({
-    ...boundedAppointmentDetailHairAssignedListInput,
+    page: hairAssignedPage,
+    pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
     appointmentId,
   })
   const transactionsQueryOptions = trpc.transactions.list.queryOptions({
-    ...boundedAppointmentDetailTransactionsListInput,
+    page: transactionsPage,
+    pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
     appointmentId,
   })
 
@@ -92,8 +99,14 @@ function AppointmentDetailPage() {
 
   const { data: hairAssignedData } = useQuery(hairAssignedQueryOptions)
   const hairAssigned = hairAssignedData?.items ?? []
+  const hairAssignedTotalCount = hairAssignedData?.totalCount ?? 0
+  const hairAssignedTotalPages = Math.max(1, Math.ceil(hairAssignedTotalCount / APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE))
+  const showHairAssignedPagination = hairAssignedTotalCount > APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE
 
   const { data: transactionsData } = useQuery(transactionsQueryOptions)
+  const transactionsTotalCount = transactionsData?.totalCount ?? 0
+  const transactionsTotalPages = Math.max(1, Math.ceil(transactionsTotalCount / APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE))
+  const showTransactionsPagination = transactionsTotalCount > APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE
 
   const { data: userSettings } = useQuery(trpc.userSettings.get.queryOptions())
 
@@ -105,6 +118,33 @@ function AppointmentDetailPage() {
     totalsByCurrency[c] += t.amount
   }
   const currenciesPresent = CURRENCIES.filter((c) => totalsByCurrency[c] !== 0)
+
+  useEffect(() => {
+    setTransactionsPage(1)
+    setHairAssignedPage(1)
+  }, [appointmentId])
+
+  useEffect(() => {
+    if (!transactionsData) return
+    setTransactionsPage((current) =>
+      clampPage({
+        page: current,
+        pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
+        totalCount: transactionsData.totalCount,
+      }),
+    )
+  }, [transactionsData])
+
+  useEffect(() => {
+    if (!hairAssignedData) return
+    setHairAssignedPage((current) =>
+      clampPage({
+        page: current,
+        pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
+        totalCount: hairAssignedData.totalCount,
+      }),
+    )
+  }, [hairAssignedData])
 
   if (isLoading) {
     return (
@@ -127,7 +167,7 @@ function AppointmentDetailPage() {
 
   const invalidateKeys = [
     { queryKey: appointmentQueryOptions.queryKey },
-    { queryKey: hairAssignedQueryOptions.queryKey },
+    { queryKey: trpc.hairAssigned.list.queryKey() },
     { queryKey: trpc.customers.summary.queryOptions({ id: appointment.client.id }).queryKey },
   ]
 
@@ -139,7 +179,7 @@ function AppointmentDetailPage() {
     ]),
   )
   const txInvalidateKeys = [
-    { queryKey: transactionsQueryOptions.queryKey },
+    { queryKey: trpc.transactions.list.queryKey() },
     ...transactionCustomerIds.map((id) => ({ queryKey: trpc.customers.summary.queryOptions({ id }).queryKey })),
   ]
 
@@ -277,7 +317,17 @@ function AppointmentDetailPage() {
 
           <Card withBorder>
             <Group justify="space-between" mb="sm">
-              <Title order={5}>Hair Assigned</Title>
+              <Stack gap={0}>
+                <Title order={5}>Hair Assigned</Title>
+                <Text size="xs" c="dimmed">
+                  {formatPageRange({
+                    page: hairAssignedPage,
+                    pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
+                    itemCount: hairAssigned.length,
+                    totalCount: hairAssignedTotalCount,
+                  })}
+                </Text>
+              </Stack>
               <Button
                 variant="subtle"
                 size="xs"
@@ -288,6 +338,18 @@ function AppointmentDetailPage() {
               </Button>
             </Group>
             <HairAssignedTable items={hairAssigned} showHairOrderColumn onEdit={setEditItem} onDelete={setDeleteItem} />
+            {showHairAssignedPagination && (
+              <Group justify="space-between" mt="md">
+                <Text size="sm" c="dimmed">
+                  Page {Math.min(hairAssignedPage, hairAssignedTotalPages)} of {hairAssignedTotalPages}
+                </Text>
+                <Pagination
+                  total={hairAssignedTotalPages}
+                  value={Math.min(hairAssignedPage, hairAssignedTotalPages)}
+                  onChange={setHairAssignedPage}
+                />
+              </Group>
+            )}
           </Card>
         </Group>
 
@@ -310,7 +372,7 @@ function AppointmentDetailPage() {
                 {currenciesPresent.length === 0 ? (
                   <Stack gap={2}>
                     <Text size="sm">
-                      Total: <b>{formatMinor(0, "EUR")}</b>
+                      Current page total: <b>{formatMinor(0, "EUR")}</b>
                     </Text>
                   </Stack>
                 ) : (
@@ -320,7 +382,7 @@ function AppointmentDetailPage() {
                         {c}
                       </Text>
                       <Text size="sm">
-                        Total: <b>{formatMinor(totalsByCurrency[c], c)}</b>
+                        Current page total: <b>{formatMinor(totalsByCurrency[c], c)}</b>
                       </Text>
                     </Stack>
                   ))
@@ -332,7 +394,17 @@ function AppointmentDetailPage() {
 
         <Card withBorder>
           <Group justify="space-between" mb="sm">
-            <Title order={5}>Transactions</Title>
+            <Stack gap={0}>
+              <Title order={5}>Transactions</Title>
+              <Text size="xs" c="dimmed">
+                {formatPageRange({
+                  page: transactionsPage,
+                  pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
+                  itemCount: txList.length,
+                  totalCount: transactionsTotalCount,
+                })}
+              </Text>
+            </Stack>
             <Button
               variant="subtle"
               size="xs"
@@ -349,6 +421,18 @@ function AppointmentDetailPage() {
             }))
             return <TransactionsTable items={txRows} onEdit={setEditTx} onDelete={setDeleteTx} />
           })()}
+          {showTransactionsPagination && (
+            <Group justify="space-between" mt="md">
+              <Text size="sm" c="dimmed">
+                Page {Math.min(transactionsPage, transactionsTotalPages)} of {transactionsTotalPages}
+              </Text>
+              <Pagination
+                total={transactionsTotalPages}
+                value={Math.min(transactionsPage, transactionsTotalPages)}
+                onChange={setTransactionsPage}
+              />
+            </Group>
+          )}
         </Card>
 
         <Card withBorder>
@@ -409,6 +493,7 @@ function AppointmentDetailPage() {
             onOpenChange={setChangeMasterOpen}
             appointmentId={appointmentId}
             currentMasterId={appointment.master.id}
+            currentMasterName={appointment.master.name}
           />
         )}
         <CreateTransactionDialog
@@ -455,15 +540,23 @@ type ChangeMasterModalProps = {
   onOpenChange: (open: boolean) => void
   appointmentId: string
   currentMasterId: string
+  currentMasterName: string
 }
 
-function ChangeMasterModal({ open, onOpenChange, appointmentId, currentMasterId }: ChangeMasterModalProps) {
+function ChangeMasterModal({
+  open,
+  onOpenChange,
+  appointmentId,
+  currentMasterId,
+  currentMasterName,
+}: ChangeMasterModalProps) {
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Change master">
       {open && (
         <ChangeMasterForm
           appointmentId={appointmentId}
           currentMasterId={currentMasterId}
+          currentMasterName={currentMasterName}
           onClose={() => onOpenChange(false)}
         />
       )}
@@ -474,18 +567,32 @@ function ChangeMasterModal({ open, onOpenChange, appointmentId, currentMasterId 
 function ChangeMasterForm({
   appointmentId,
   currentMasterId,
+  currentMasterName,
   onClose,
 }: {
   appointmentId: string
   currentMasterId: string
+  currentMasterName: string
   onClose: () => void
 }) {
   const queryClient = useQueryClient()
   const [draftMasterId, setDraftMasterId] = useState<string | null>(null)
+  const [masterSearch, setMasterSearch] = useState("")
+  const [selectedMasterOption, setSelectedMasterOption] = useState<SelectOption | null>(null)
   const masterId = draftMasterId ?? currentMasterId
 
-  const { data: customersData } = useQuery(trpc.customers.list.queryOptions(defaultCustomersListInput))
+  const { data: customersData } = useQuery(
+    trpc.customers.list.queryOptions({
+      ...defaultCustomersListInput,
+      search: masterSearch.trim() || undefined,
+    }),
+  )
   const customers = customersData?.items ?? []
+  const customerOptions = customers.map((c) => ({ value: c.id, label: c.name }))
+  const masterOptions = withPinnedOption(
+    customerOptions,
+    selectedMasterOption ?? { value: currentMasterId, label: currentMasterName },
+  )
 
   const mutation = useMutation({
     ...trpc.appointments.update.mutationOptions(),
@@ -503,9 +610,15 @@ function ChangeMasterForm({
         label="Master"
         required
         searchable
+        searchValue={masterSearch}
+        onSearchChange={setMasterSearch}
         value={masterId}
-        onChange={setDraftMasterId}
-        data={customers.map((c) => ({ value: c.id, label: c.name }))}
+        onChange={(value) => {
+          setDraftMasterId(value)
+          const option = masterOptions.find((candidate) => candidate.value === value)
+          if (option) setSelectedMasterOption(option)
+        }}
+        data={masterOptions}
       />
       <Group justify="flex-end" gap="xs">
         <Button variant="default" onClick={onClose}>
@@ -529,20 +642,21 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
   const [search, setSearch] = useState("")
 
   const { data: customersData } = useQuery({
-    ...trpc.customers.list.queryOptions(defaultCustomersListInput),
+    ...trpc.customers.list.queryOptions({
+      ...defaultCustomersListInput,
+      search: search.trim() || undefined,
+    }),
     enabled: open,
   })
   const customers = customersData?.items ?? []
 
   const available = useMemo(() => {
     const assigned = new Set(assignedPersonnelIds)
-    const term = search.trim().toLowerCase()
     return customers.filter((c) => {
       if (assigned.has(c.id)) return false
-      if (term && !c.name.toLowerCase().includes(term)) return false
       return true
     })
-  }, [customers, assignedPersonnelIds, search])
+  }, [customers, assignedPersonnelIds])
 
   const mutation = useMutation({
     ...trpc.appointments.linkPersonnel.mutationOptions(),

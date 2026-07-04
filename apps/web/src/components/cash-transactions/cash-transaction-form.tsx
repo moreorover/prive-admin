@@ -1,8 +1,10 @@
 import { Button, Group, NativeSelect, NumberInput, Select, Stack, Textarea, TextInput } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
+import { useState } from "react"
 
 import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
+import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 
 const MIN_MINOR_AMOUNT = -2147483648
 const MAX_MINOR_AMOUNT = 2147483647
@@ -34,7 +36,10 @@ type CashTransactionFormSubmit = {
 
 type CashTransactionFormProps = {
   customers: CashTransactionFormCustomer[]
+  customerSearch: string
+  onCustomerSearchChange: (search: string) => void
   initialValues: CashTransactionFormValues
+  initialCustomerOption?: SelectOption | null
   submitLabel: string
   onSubmit: (values: CashTransactionFormSubmit) => void | Promise<void>
   loading?: boolean
@@ -42,11 +47,17 @@ type CashTransactionFormProps = {
 
 export function CashTransactionForm({
   customers,
+  customerSearch,
+  onCustomerSearchChange,
   initialValues,
+  initialCustomerOption,
   submitLabel,
   onSubmit,
   loading,
 }: CashTransactionFormProps) {
+  const [selectedCustomerOption, setSelectedCustomerOption] = useState<SelectOption | null>(
+    initialCustomerOption ?? null,
+  )
   const form = useForm<CashTransactionFormValues>({
     initialValues,
     validate: {
@@ -65,6 +76,10 @@ export function CashTransactionForm({
       },
     },
   })
+  const customerOptions = withPinnedOption(
+    customers.map((customer) => ({ value: customer.id, label: customer.name })),
+    selectedCustomerOption ?? initialCustomerOption,
+  )
 
   return (
     <form
@@ -84,8 +99,16 @@ export function CashTransactionForm({
           label="Customer"
           placeholder="Select a customer..."
           searchable
-          data={customers.map((customer) => ({ value: customer.id, label: customer.name }))}
-          {...form.getInputProps("customerId")}
+          searchValue={customerSearch}
+          onSearchChange={onCustomerSearchChange}
+          data={customerOptions}
+          value={form.values.customerId}
+          onChange={(value) => {
+            form.setFieldValue("customerId", value ?? "")
+            const option = customerOptions.find((candidate) => candidate.value === value)
+            if (option) setSelectedCustomerOption(option)
+          }}
+          error={form.errors.customerId}
         />
         <DateInput label="Date" valueFormat="DD MMM YYYY" {...form.getInputProps("createdAt")} />
         <TextInput

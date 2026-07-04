@@ -1,4 +1,4 @@
-import { Container, Stack } from "@mantine/core"
+import { Alert, Container, Stack, Text } from "@mantine/core"
 import { Schedule, type ScheduleEventData, type ScheduleViewLevel } from "@mantine/schedule"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
@@ -58,6 +58,9 @@ function CalendarPage() {
   const [defaultStartsAt, setDefaultStartsAt] = useState<string | null>(null)
   const appointmentsQueryOptions = calendarAppointmentsQueryOptions(date, view)
   const { data: appointmentsData } = useQuery(appointmentsQueryOptions)
+  const visibleAppointmentCount = appointmentsData?.items.length ?? 0
+  const appointmentTotalCount = appointmentsData?.totalCount ?? 0
+  const hasHiddenAppointments = appointmentTotalCount > visibleAppointmentCount
 
   const openCreate = useCallback((startsAt: string | null) => {
     setDefaultStartsAt(startsAt)
@@ -90,6 +93,14 @@ function CalendarPage() {
     <Container size="xl">
       <PageHeader title="Calendar" description="Click a slot to book or open an existing appointment." />
       <Stack>
+        {hasHiddenAppointments && (
+          <Alert color="yellow" variant="light">
+            <Text size="sm">
+              Showing first {visibleAppointmentCount} of {appointmentTotalCount} appointments in this range. Narrow the
+              view or date range.
+            </Text>
+          </Alert>
+        )}
         <Section padding="md">
           <Schedule
             events={events}

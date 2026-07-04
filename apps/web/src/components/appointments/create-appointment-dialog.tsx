@@ -5,7 +5,9 @@ import { notifications } from "@mantine/notifications"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
+import { useState } from "react"
 
+import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
 type CreateAppointmentDialogProps = {
@@ -68,6 +70,9 @@ function CreateAppointmentForm({
   const navigate = useNavigate()
   const appointmentListQueryOptions = trpc.appointments.list.queryOptions(defaultAppointmentsListInput)
   const salonsQueryOptions = trpc.salons.list.queryOptions({})
+  const [clientSearch, setClientSearch] = useState("")
+  const [masterSearch, setMasterSearch] = useState("")
+  const [selectedCustomerOptions, setSelectedCustomerOptions] = useState<Record<string, SelectOption>>({})
 
   const form = useForm<FormValues>({
     initialValues: {
@@ -86,8 +91,29 @@ function CreateAppointmentForm({
     },
   })
 
-  const { data: customersData } = useQuery(trpc.customers.list.queryOptions(defaultCustomersListInput))
-  const customers = customersData?.items ?? []
+  const { data: clientCustomersData } = useQuery(
+    trpc.customers.list.queryOptions({
+      ...defaultCustomersListInput,
+      search: clientSearch.trim() || undefined,
+    }),
+  )
+  const { data: masterCustomersData } = useQuery(
+    trpc.customers.list.queryOptions({
+      ...defaultCustomersListInput,
+      search: masterSearch.trim() || undefined,
+    }),
+  )
+  const clientCustomerOptions = (clientCustomersData?.items ?? []).map((c) => ({ value: c.id, label: c.name }))
+  const masterCustomerOptions = (masterCustomersData?.items ?? []).map((c) => ({ value: c.id, label: c.name }))
+  const clientOptions = withPinnedOption(clientCustomerOptions, selectedCustomerOptions[form.values.clientId])
+  const masterOptions = withPinnedOption(masterCustomerOptions, selectedCustomerOptions[form.values.masterId])
+
+  const rememberCustomerOption = (value: string | null, options: SelectOption[]) => {
+    if (!value) return
+    const option = options.find((candidate) => candidate.value === value)
+    if (!option) return
+    setSelectedCustomerOptions((current) => ({ ...current, [option.value]: option }))
+  }
 
   const { data: salons } = useQuery(salonsQueryOptions)
 
@@ -129,16 +155,30 @@ function CreateAppointmentForm({
             label="Client"
             required
             searchable
-            data={customers.map((c) => ({ value: c.id, label: c.name }))}
-            {...form.getInputProps("clientId")}
+            searchValue={clientSearch}
+            onSearchChange={setClientSearch}
+            data={clientOptions}
+            value={form.values.clientId}
+            onChange={(value) => {
+              form.setFieldValue("clientId", value ?? "")
+              rememberCustomerOption(value, clientOptions)
+            }}
+            error={form.errors.clientId}
           />
         )}
         <Select
           label="Master"
           required
           searchable
-          data={customers.map((c) => ({ value: c.id, label: c.name }))}
-          {...form.getInputProps("masterId")}
+          searchValue={masterSearch}
+          onSearchChange={setMasterSearch}
+          data={masterOptions}
+          value={form.values.masterId}
+          onChange={(value) => {
+            form.setFieldValue("masterId", value ?? "")
+            rememberCustomerOption(value, masterOptions)
+          }}
+          error={form.errors.masterId}
         />
         <Select
           label="Salon"
