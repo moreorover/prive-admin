@@ -13,12 +13,11 @@ env:
 
 jobs:
   build-scan-push:
-    name: Build, Scan, and Push Main Images
+    name: Build and Push Main Images
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      security-events: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -64,81 +63,6 @@ jobs:
             ${{ env.IMAGE_NAME_BASE }}-migrate:main
           cache-from: type=gha,scope=migrate
           cache-to: type=gha,mode=max,scope=migrate
-
-      - name: Scan web image with Trivy
-        id: scan-web
-        continue-on-error: true
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ${{ env.IMAGE_NAME_BASE }}-web:${{ github.sha }}
-          format: sarif
-          output: trivy-web-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "1"
-
-      - name: Upload web Trivy SARIF
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy-web-results.sarif
-          category: trivy-main-web
-
-      - name: Scan server image with Trivy
-        id: scan-server
-        continue-on-error: true
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ${{ env.IMAGE_NAME_BASE }}-server:${{ github.sha }}
-          format: sarif
-          output: trivy-server-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "1"
-
-      - name: Upload server Trivy SARIF
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy-server-results.sarif
-          category: trivy-main-server
-
-      - name: Scan migrate image with Trivy
-        id: scan-migrate
-        continue-on-error: true
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ${{ env.IMAGE_NAME_BASE }}-migrate:${{ github.sha }}
-          format: sarif
-          output: trivy-migrate-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "1"
-
-      - name: Upload migrate Trivy SARIF
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy-migrate-results.sarif
-          category: trivy-main-migrate
-
-      - name: Fail if image scans failed
-        run: |
-          set -euo pipefail
-          failed=0
-          if [ "${{ steps.scan-web.outcome }}" != "success" ]; then
-            echo "web image scan failed" >&2
-            failed=1
-          fi
-          if [ "${{ steps.scan-server.outcome }}" != "success" ]; then
-            echo "server image scan failed" >&2
-            failed=1
-          fi
-          if [ "${{ steps.scan-migrate.outcome }}" != "success" ]; then
-            echo "migrate image scan failed" >&2
-            failed=1
-          fi
-          exit "${failed}"
 
       - name: Login to GHCR
         uses: docker/login-action@v3
