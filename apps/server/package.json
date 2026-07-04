@@ -10,16 +10,22 @@
     "start": "node dist/index.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1068.0",
     "@hono/node-server": "catalog:",
     "@hono/trpc-server": "catalog:",
+    "@paralleldrive/cuid2": "^3.3.0",
     "@prive-admin-tanstack/api": "workspace:*",
     "@prive-admin-tanstack/auth": "workspace:*",
+    "@prive-admin-tanstack/db": "workspace:*",
     "@prive-admin-tanstack/env": "workspace:*",
     "@trpc/server": "catalog:",
+    "archiver": "^8.0.0",
+    "drizzle-orm": "^0.45.2",
     "hono": "catalog:"
   },
   "devDependencies": {
     "@prive-admin-tanstack/config": "workspace:*",
+    "@types/archiver": "^6.0.3",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
     "tsx": "catalog:",

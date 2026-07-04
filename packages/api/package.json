@@ -5,6 +5,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./context": "./src/context.ts",
+    "./r2": "./src/r2.ts",
     "./routers": "./src/routers/index.ts"
   },
   "scripts": {
