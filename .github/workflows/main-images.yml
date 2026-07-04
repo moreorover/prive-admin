@@ -1,89 +1,67 @@
-name: PR Build Check
+name: Main Images
 
 on:
-  pull_request:
+  push:
     branches:
       - main
 
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME_BASE: ghcr.io/${{ github.repository }}
+
 jobs:
-  build:
-    name: Source Build
+  build-scan-push:
+    name: Build, Scan, and Push Main Images
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
-      pull-requests: write
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
-        with:
-          node-version: "24"
-          cache: true
-
-      - name: Install Dependencies
-        run: vp install --frozen-lockfile
-
-      - name: Check
-        run: vp check
-
-      - name: Check Types
-        run: vp run check-types
-
-      - name: Run Knip
-        run: vp exec knip --reporter github-actions
-
-      - name: Run Build
-        run: vp run build
-
-  docker-build:
-    name: Docker Image Build and Scan
-    runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
+      packages: write
       security-events: write
-
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build web image (no push)
+      - name: Build web
         uses: docker/build-push-action@v6
         with:
           file: apps/web/Dockerfile
           context: .
           platforms: linux/amd64
           load: true
-          tags: prive-admin-web:pr-${{ github.sha }}
+          tags: |
+            ${{ env.IMAGE_NAME_BASE }}-web:${{ github.sha }}
+            ${{ env.IMAGE_NAME_BASE }}-web:main
           cache-from: type=gha,scope=web
           cache-to: type=gha,mode=max,scope=web
 
-      - name: Build server image (no push)
+      - name: Build server
         uses: docker/build-push-action@v6
         with:
           file: apps/server/Dockerfile
           context: .
           platforms: linux/amd64
           load: true
-          tags: prive-admin-server:pr-${{ github.sha }}
+          tags: |
+            ${{ env.IMAGE_NAME_BASE }}-server:${{ github.sha }}
+            ${{ env.IMAGE_NAME_BASE }}-server:main
           cache-from: type=gha,scope=server
           cache-to: type=gha,mode=max,scope=server
 
-      - name: Build migrate image (no push)
+      - name: Build migrate
         uses: docker/build-push-action@v6
         with:
           file: packages/db/Dockerfile
           context: .
           platforms: linux/amd64
           load: true
-          tags: prive-admin-migrate:pr-${{ github.sha }}
+          tags: |
+            ${{ env.IMAGE_NAME_BASE }}-migrate:${{ github.sha }}
+            ${{ env.IMAGE_NAME_BASE }}-migrate:main
           cache-from: type=gha,scope=migrate
           cache-to: type=gha,mode=max,scope=migrate
 
@@ -92,7 +70,7 @@ jobs:
         continue-on-error: true
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: prive-admin-web:pr-${{ github.sha }}
+          image-ref: ${{ env.IMAGE_NAME_BASE }}-web:${{ github.sha }}
           format: sarif
           output: trivy-web-results.sarif
           severity: CRITICAL,HIGH
@@ -104,14 +82,14 @@ jobs:
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-web-results.sarif
-          category: trivy-pr-web
+          category: trivy-main-web
 
       - name: Scan server image with Trivy
         id: scan-server
         continue-on-error: true
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: prive-admin-server:pr-${{ github.sha }}
+          image-ref: ${{ env.IMAGE_NAME_BASE }}-server:${{ github.sha }}
           format: sarif
           output: trivy-server-results.sarif
           severity: CRITICAL,HIGH
@@ -123,14 +101,14 @@ jobs:
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-server-results.sarif
-          category: trivy-pr-server
+          category: trivy-main-server
 
       - name: Scan migrate image with Trivy
         id: scan-migrate
         continue-on-error: true
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: prive-admin-migrate:pr-${{ github.sha }}
+          image-ref: ${{ env.IMAGE_NAME_BASE }}-migrate:${{ github.sha }}
           format: sarif
           output: trivy-migrate-results.sarif
           severity: CRITICAL,HIGH
@@ -142,7 +120,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-migrate-results.sarif
-          category: trivy-pr-migrate
+          category: trivy-main-migrate
 
       - name: Fail if image scans failed
         run: |
@@ -161,3 +139,18 @@ jobs:
             failed=1
           fi
           exit "${failed}"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push images
+        run: |
+          set -euo pipefail
+          for image in web server migrate; do
+            docker image push "${IMAGE_NAME_BASE}-${image}:${GITHUB_SHA}"
+            docker image push "${IMAGE_NAME_BASE}-${image}:main"
+          done
