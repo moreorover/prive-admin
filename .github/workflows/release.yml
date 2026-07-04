@@ -12,12 +12,13 @@ env:
   IMAGE_NAME_BASE: ghcr.io/${{ github.repository }}
 
 jobs:
-  promote-release:
-    name: Promote Release Images
+  validate-release:
+    name: Validate Release
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
+    outputs:
+      commit: ${{ steps.release.outputs.commit }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,6 +43,20 @@ jobs:
 
           echo "commit=${RELEASE_COMMIT}" >> "${GITHUB_OUTPUT}"
 
+  promote-release:
+    name: Promote ${{ matrix.image }} Release Image
+    needs: validate-release
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - web
+          - server
+          - migrate
+    steps:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -55,24 +70,23 @@ jobs:
       - name: Promote commit images
         run: |
           set -euo pipefail
-          for image in web server migrate; do
-            source_image="${IMAGE_NAME_BASE}-${image}:${{ steps.release.outputs.commit }}"
-            for attempt in $(seq 1 20); do
-              if docker buildx imagetools inspect "${source_image}" > /dev/null; then
-                break
-              fi
-              if [ "${attempt}" -eq 20 ]; then
-                echo "Image ${source_image} was not found in GHCR after waiting" >&2
-                exit 1
-              fi
-              echo "Waiting for ${source_image} to be available in GHCR (${attempt}/20)"
-              sleep 15
-            done
-            docker buildx imagetools create \
-              -t "${IMAGE_NAME_BASE}-${image}:${GITHUB_REF_NAME}" \
-              -t "${IMAGE_NAME_BASE}-${image}:latest" \
-              "${source_image}"
+          image="${{ matrix.image }}"
+          source_image="${IMAGE_NAME_BASE}-${image}:${{ needs.validate-release.outputs.commit }}"
+          for attempt in $(seq 1 20); do
+            if docker buildx imagetools inspect "${source_image}" > /dev/null; then
+              break
+            fi
+            if [ "${attempt}" -eq 20 ]; then
+              echo "Image ${source_image} was not found in GHCR after waiting" >&2
+              exit 1
+            fi
+            echo "Waiting for ${source_image} to be available in GHCR (${attempt}/20)"
+            sleep 15
           done
+          docker buildx imagetools create \
+            -t "${IMAGE_NAME_BASE}-${image}:${GITHUB_REF_NAME}" \
+            -t "${IMAGE_NAME_BASE}-${image}:latest" \
+            "${source_image}"
 
   pre-deploy-backup:
     name: Pre-deploy Postgres Backup
