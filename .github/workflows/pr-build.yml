@@ -53,10 +53,22 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build (no push)
+      - name: Build web image (no push)
         uses: docker/build-push-action@v6
         with:
           file: apps/web/Dockerfile
+          context: .
+          platforms: linux/amd64
+          push: false
+          build-args: |
+            VITE_SERVER_URL=http://localhost:3000
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+      - name: Build server image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          file: apps/server/Dockerfile
           context: .
           platforms: linux/amd64
           push: false

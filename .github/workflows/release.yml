@@ -10,7 +10,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/${{ github.repository }}
+  IMAGE_NAME_BASE: ghcr.io/${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -34,36 +34,69 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push
+      - name: Build and push web
         uses: docker/build-push-action@v6
         with:
           file: apps/web/Dockerfile
           context: .
           platforms: linux/amd64
           push: true
+          build-args: |
+            VITE_SERVER_URL=https://prive.salon
           tags: |
-            ${{ env.IMAGE_NAME }}:latest
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.IMAGE_NAME }}:${{ github.ref_name }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+            ${{ env.IMAGE_NAME_BASE }}-web:latest
+            ${{ env.IMAGE_NAME_BASE }}-web:${{ github.sha }}
+            ${{ env.IMAGE_NAME_BASE }}-web:${{ github.ref_name }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
 
-      - name: Scan image with Trivy
+      - name: Build and push server
+        uses: docker/build-push-action@v6
+        with:
+          file: apps/server/Dockerfile
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME_BASE }}-server:latest
+            ${{ env.IMAGE_NAME_BASE }}-server:${{ github.sha }}
+            ${{ env.IMAGE_NAME_BASE }}-server:${{ github.ref_name }}
+          cache-from: type=gha,scope=server
+          cache-to: type=gha,mode=max,scope=server
+
+      - name: Scan web image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          image-ref: ${{ env.IMAGE_NAME_BASE }}-web:${{ github.sha }}
           format: sarif
-          output: trivy-results.sarif
+          output: trivy-web-results.sarif
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           exit-code: "1"
 
-      - name: Upload Trivy SARIF
+      - name: Upload web Trivy SARIF
         if: always()
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: trivy-results.sarif
-          category: trivy
+          sarif_file: trivy-web-results.sarif
+          category: trivy-web
+
+      - name: Scan server image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE_NAME_BASE }}-server:${{ github.sha }}
+          format: sarif
+          output: trivy-server-results.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Upload server Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-server-results.sarif
+          category: trivy-server
 
   pre-deploy-backup:
     name: Pre-deploy Postgres Backup

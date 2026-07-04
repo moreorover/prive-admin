@@ -23,7 +23,13 @@
     max_size 25MB
   }
 
-  reverse_proxy web:8081 {
+  @api path /api/* /trpc/*
+  reverse_proxy @api server:3000 {
+    header_up X-Real-IP {remote_host}
+    header_up X-Forwarded-Proto {scheme}
+  }
+
+  reverse_proxy web:80 {
     header_up X-Real-IP {remote_host}
     header_up X-Forwarded-Proto {scheme}
   }

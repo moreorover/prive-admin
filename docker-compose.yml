@@ -18,9 +18,21 @@ services:
     depends_on:
       web:
         condition: service_healthy
+      server:
+        condition: service_healthy
 
   web:
-    image: ghcr.io/${GITHUB_REPOSITORY}:${IMAGE_TAG:-latest}
+    image: ghcr.io/${GITHUB_REPOSITORY}-web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  server:
+    image: ghcr.io/${GITHUB_REPOSITORY}-server:${IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file: .env
     depends_on:
@@ -32,7 +44,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "fetch('http://localhost:8081/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+          "fetch('http://localhost:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
         ]
       interval: 10s
       timeout: 5s
