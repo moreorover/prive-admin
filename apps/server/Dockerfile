@@ -40,10 +40,18 @@ FROM node:24-bookworm-slim AS runtime
 WORKDIR /app/apps/server
 ENV NODE_ENV=production
 
+RUN apt-get update \
+  && apt-get upgrade -y \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/apps/server/dist /app/apps/server/dist
 COPY --from=build /app/apps/server/package.json /app/apps/server/package.json
 COPY --from=deps /app/node_modules /app/node_modules
 COPY --from=deps /app/apps/server/node_modules /app/apps/server/node_modules
+
+RUN find /app/node_modules -type f \
+  \( -name esbuild -o -name rolldown -o -name oxlint -o -name tsgolint -o -name tsx -o -name vite-plus \) \
+  -delete
 
 USER node
 EXPOSE 3000

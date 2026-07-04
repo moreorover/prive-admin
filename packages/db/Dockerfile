@@ -34,11 +34,19 @@ FROM node:24-bookworm-slim AS runtime
 WORKDIR /app/packages/db
 ENV NODE_ENV=production
 
+RUN apt-get update \
+  && apt-get upgrade -y \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/packages/db/dist /app/packages/db/dist
 COPY --from=build /app/packages/db/src/migrations /app/packages/db/dist/migrations
 COPY --from=build /app/packages/db/package.json /app/packages/db/package.json
 COPY --from=deps /app/node_modules /app/node_modules
 COPY --from=deps /app/packages/db/node_modules /app/packages/db/node_modules
+
+RUN find /app/node_modules -type f \
+  \( -name esbuild -o -name rolldown -o -name oxlint -o -name tsgolint -o -name tsx -o -name vite-plus \) \
+  -delete
 
 USER node
 

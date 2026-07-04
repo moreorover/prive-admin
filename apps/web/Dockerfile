@@ -21,6 +21,8 @@ RUN vp run --filter web build
 
 FROM nginx:alpine AS runtime
 
+RUN apk upgrade --no-cache
+
 COPY --from=build /app/apps/web/dist /usr/share/nginx/html
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 
