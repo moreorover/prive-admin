@@ -112,6 +112,7 @@ function AppointmentDetailPage() {
   const invalidateKeys = [
     { queryKey: appointmentQueryOptions.queryKey },
     { queryKey: hairAssignedQueryOptions.queryKey },
+    { queryKey: trpc.customers.summary.queryOptions({ id: appointment.client.id }).queryKey },
   ]
 
   const txInvalidateKeys = [{ queryKey: transactionsQueryOptions.queryKey }]

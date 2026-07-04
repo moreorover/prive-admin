@@ -55,32 +55,32 @@ export const hairAssignedRouter = router({
     .input(
       z.object({
         id: z.string().min(1),
-        weightInGrams: z.number().min(0),
-        soldFor: z.number().min(0),
+        weightInGrams: z.number().int().min(0),
+        soldFor: z.number().int().min(0),
       }),
     )
     .mutation(async ({ input }) => {
-      const existing = await db.query.hairAssigned.findFirst({
-        where: eq(hairAssigned.id, input.id),
-        with: { hairOrder: true },
-      })
-      if (!existing) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Hair assigned not found" })
-      }
-
-      const parentOrder = existing.hairOrder
-      const availableWeight = parentOrder.weightReceived - parentOrder.weightUsed + existing.weightInGrams
-      if (input.weightInGrams > availableWeight) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `Weight exceeds available stock (${availableWeight}g available)`,
-        })
-      }
-
-      const pricePerGram = input.weightInGrams > 0 ? Math.round(input.soldFor / input.weightInGrams) : 0
-      const profit = input.soldFor - input.weightInGrams * parentOrder.pricePerGram
-
       return await db.transaction(async (tx) => {
+        const existing = await tx.query.hairAssigned.findFirst({
+          where: eq(hairAssigned.id, input.id),
+          with: { hairOrder: true },
+        })
+        if (!existing) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Hair assigned not found" })
+        }
+
+        const parentOrder = existing.hairOrder
+        const availableWeight = parentOrder.weightReceived - parentOrder.weightUsed + existing.weightInGrams
+        if (input.weightInGrams > availableWeight) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Weight exceeds available stock (${availableWeight}g available)`,
+          })
+        }
+
+        const pricePerGram = input.weightInGrams > 0 ? Math.round(input.soldFor / input.weightInGrams) : 0
+        const profit = input.soldFor - input.weightInGrams * parentOrder.pricePerGram
+
         const [updated] = await tx
           .update(hairAssigned)
           .set({
@@ -96,11 +96,15 @@ export const hairAssignedRouter = router({
           .select({ total: sql<number>`coalesce(sum(${hairAssigned.weightInGrams}), 0)` })
           .from(hairAssigned)
           .where(eq(hairAssigned.hairOrderId, parentOrder.id))
+        const assignedTotal = Number(weightAgg[0]?.total ?? 0)
+        if (assignedTotal > parentOrder.weightReceived) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Assigned weight cannot exceed weight received (${parentOrder.weightReceived}g received)`,
+          })
+        }
 
-        await tx
-          .update(hairOrder)
-          .set({ weightUsed: Number(weightAgg[0]?.total ?? 0) })
-          .where(eq(hairOrder.id, parentOrder.id))
+        await tx.update(hairOrder).set({ weightUsed: assignedTotal }).where(eq(hairOrder.id, parentOrder.id))
 
         return updated
       })

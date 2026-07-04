@@ -1,7 +1,7 @@
 import { db } from "@prive-admin-tanstack/db"
 import { hairAssigned, hairOrder } from "@prive-admin-tanstack/db/schema/hair"
 import { TRPCError } from "@trpc/server"
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import { z } from "zod"
 
 import { protectedProcedure, router } from "../index"
@@ -12,12 +12,21 @@ const hairOrderInputSchema = z.object({
   arrivedAt: z.union([z.string(), z.date(), z.null()]),
   customerId: z.string().min(1, "Customer is required"),
   status: z.enum(["PENDING", "COMPLETED"]).default("PENDING"),
-  weightReceived: z.number().min(0),
-  weightUsed: z.number().min(0),
-  total: z.number().min(0),
+  weightReceived: z.number().int().min(0),
+  weightUsed: z.number().int().min(0),
+  total: z.number().int().min(0),
 })
 
 const dateValue = (value: string | Date | null) => (value ? String(value) : null)
+
+const assertWeightUsedWithinReceived = (weightUsed: number, weightReceived: number) => {
+  if (weightUsed > weightReceived) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Weight used cannot exceed weight received",
+    })
+  }
+}
 
 export const hairOrdersRouter = router({
   list: protectedProcedure.query(() => {
@@ -44,6 +53,8 @@ export const hairOrdersRouter = router({
   }),
 
   create: protectedProcedure.input(hairOrderInputSchema).mutation(async ({ ctx, input }) => {
+    assertWeightUsedWithinReceived(input.weightUsed, input.weightReceived)
+
     const [result] = await db
       .insert(hairOrder)
       .values({
@@ -61,22 +72,43 @@ export const hairOrdersRouter = router({
   }),
 
   update: protectedProcedure.input(hairOrderInputSchema.required({ id: true })).mutation(async ({ input }) => {
-    const [result] = await db
-      .update(hairOrder)
-      .set({
-        placedAt: dateValue(input.placedAt),
-        arrivedAt: dateValue(input.arrivedAt),
-        status: input.status,
-        weightReceived: input.weightReceived,
-        weightUsed: input.weightUsed,
-        total: input.total,
+    assertWeightUsedWithinReceived(input.weightUsed, input.weightReceived)
+
+    return await db.transaction(async (tx) => {
+      const existing = await tx.query.hairOrder.findFirst({
+        where: eq(hairOrder.id, input.id),
+        columns: { id: true },
       })
-      .where(eq(hairOrder.id, input.id))
-      .returning()
-    if (!result) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Hair order not found" })
-    }
-    return result
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Hair order not found" })
+      }
+
+      const assignedWeight = await tx
+        .select({ total: sql<number>`coalesce(sum(${hairAssigned.weightInGrams}), 0)` })
+        .from(hairAssigned)
+        .where(eq(hairAssigned.hairOrderId, input.id))
+      const assignedTotal = Number(assignedWeight[0]?.total ?? 0)
+      if (assignedTotal > input.weightReceived) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Weight received cannot be less than assigned weight (${assignedTotal}g assigned)`,
+        })
+      }
+
+      const [result] = await tx
+        .update(hairOrder)
+        .set({
+          placedAt: dateValue(input.placedAt),
+          arrivedAt: dateValue(input.arrivedAt),
+          status: input.status,
+          weightReceived: input.weightReceived,
+          weightUsed: input.weightUsed,
+          total: input.total,
+        })
+        .where(eq(hairOrder.id, input.id))
+        .returning()
+      return result
+    })
   }),
 
   recalculatePrices: protectedProcedure.input(z.object({ hairOrderId: z.string() })).mutation(async ({ input }) => {
