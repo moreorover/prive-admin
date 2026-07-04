@@ -1,10 +1,15 @@
-import { tanstackStart } from "@tanstack/react-start/plugin/vite"
+import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import viteReact from "@vitejs/plugin-react"
-import { nitro } from "nitro/vite"
 import { defineConfig, lazyPlugins } from "vite-plus"
 
 export default defineConfig({
-  plugins: lazyPlugins(() => [tanstackStart(), nitro({ preset: "node" }), viteReact()]),
+  plugins: lazyPlugins(() => [
+    tanstackRouter({
+      target: "react",
+      autoCodeSplitting: true,
+    }),
+    viteReact(),
+  ]),
   server: {
     port: 3001,
   },

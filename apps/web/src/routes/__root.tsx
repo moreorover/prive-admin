@@ -1,9 +1,10 @@
 import { ColorSchemeScript } from "@prive-admin-tanstack/ui/color-scheme"
 import { UIProvider } from "@prive-admin-tanstack/ui/provider"
-import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router"
+import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router"
 import { lazy, useEffect } from "react"
 
-import { getLocale } from "@/functions/get-locale"
+import type { queryClient, trpc } from "@/utils/trpc"
+
 import { LocaleProvider } from "@/lib/locale-context"
 
 const TanStackRouterDevtools =
@@ -15,54 +16,44 @@ const TanStackRouterDevtools =
         })),
       )
 
-import type { QueryClient } from "@tanstack/react-query"
-
-import appCss from "../index.css?url"
-
 export interface RouterAppContext {
-  queryClient: QueryClient
+  queryClient: typeof queryClient
+  trpc: typeof trpc
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
-  beforeLoad: async () => {
-    const { locale, timeZone } = await getLocale()
-    return { locale, timeZone }
-  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Privé" },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
   }),
-
-  component: RootDocument,
+  component: RootComponent,
 })
 
-function RootDocument() {
-  const { locale, timeZone } = Route.useRouteContext()
+function RootComponent() {
+  const locale = navigator.language || "en-US"
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"
 
   useEffect(() => {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
-    document.cookie = `tz=${tz};path=/;max-age=31536000`
-  }, [])
+    document.cookie = `tz=${timeZone};path=/;max-age=31536000`
+  }, [timeZone])
+
+  useEffect(() => {
+    document.documentElement.lang = locale
+  }, [locale])
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <head>
-        <ColorSchemeScript defaultColorScheme="auto" />
-        <HeadContent />
-      </head>
-      <body>
-        <LocaleProvider value={{ locale, timeZone }}>
-          <UIProvider>
-            <Outlet />
-          </UIProvider>
-        </LocaleProvider>
-        <TanStackRouterDevtools position="bottom-left" />
-        <Scripts />
-      </body>
-    </html>
+    <>
+      <ColorSchemeScript defaultColorScheme="auto" />
+      <HeadContent />
+      <LocaleProvider value={{ locale, timeZone }}>
+        <UIProvider>
+          <Outlet />
+        </UIProvider>
+      </LocaleProvider>
+      <TanStackRouterDevtools position="bottom-left" />
+    </>
   )
 }
