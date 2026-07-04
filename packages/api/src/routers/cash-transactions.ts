@@ -7,14 +7,13 @@ import { and, count, desc, eq, gt, gte, ilike, lt, or, type SQL } from "drizzle-
 import { z } from "zod"
 
 import { protectedProcedure, router } from "../index"
+import { getOffset, pagedResult, pageSchema, searchSchema } from "../pagination"
 
 const pgIntegerSchema = z.number().int().min(-2147483648).max(2147483647)
 const currencySchema = z.enum(["EUR", "GBP"])
 
-const listSchema = z.object({
-  page: z.number().int().min(1).max(1000).default(1),
-  pageSize: z.number().int().min(1).max(100).default(25),
-  search: z.string().trim().max(120).optional(),
+const listSchema = pageSchema.extend({
+  search: searchSchema,
   customerId: z.string().optional(),
   currency: currencySchema.optional(),
   direction: z.enum(["all", "received", "paid"]).default("all"),
@@ -74,7 +73,6 @@ function buildWhere(data: z.infer<typeof listSchema>) {
 export const cashTransactionsRouter = router({
   list: protectedProcedure.input(listSchema).query(async ({ input }) => {
     const where = buildWhere(input)
-    const offset = (input.page - 1) * input.pageSize
     const rows = await db
       .select({
         id: cashTransaction.id,
@@ -94,7 +92,7 @@ export const cashTransactionsRouter = router({
       .where(where)
       .orderBy(desc(cashTransaction.createdAt), desc(cashTransaction.id))
       .limit(input.pageSize)
-      .offset(offset)
+      .offset(getOffset(input))
 
     const [countRow] = await db
       .select({ totalCount: count() })
@@ -102,7 +100,7 @@ export const cashTransactionsRouter = router({
       .innerJoin(customer, eq(cashTransaction.customerId, customer.id))
       .where(where)
 
-    return { items: rows, page: input.page, pageSize: input.pageSize, totalCount: countRow?.totalCount ?? 0 }
+    return pagedResult(rows, input, countRow?.totalCount ?? 0)
   }),
 
   create: protectedProcedure.input(cashTransactionSchema).mutation(async ({ input, ctx }) => {
