@@ -10,8 +10,6 @@ import { useState } from "react"
 import { HairOrdersTable } from "@/components/hair-orders-table"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { createHairOrder, getHairOrders } from "@/functions/hair-orders"
-import { hairOrderKeys } from "@/lib/query-keys"
 import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/hair-orders/")({
@@ -22,19 +20,12 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   const queryClient = useQueryClient()
 
   const { data: customers } = useQuery(trpc.customers.list.queryOptions())
+  const hairOrdersQueryOptions = trpc.hairOrders.list.queryOptions()
 
   const mutation = useMutation({
-    mutationFn: (data: {
-      customerId: string
-      placedAt: string | null
-      arrivedAt: string | null
-      status: "PENDING" | "COMPLETED"
-      weightReceived: number
-      weightUsed: number
-      total: number
-    }) => createHairOrder({ data }),
+    ...trpc.hairOrders.create.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
+      queryClient.invalidateQueries({ queryKey: hairOrdersQueryOptions.queryKey })
       onOpenChange(false)
       notifications.show({ color: "green", message: "Hair order created" })
     },
@@ -88,10 +79,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 }
 
 function HairOrdersPage() {
-  const { data: hairOrders, isLoading } = useQuery({
-    queryKey: hairOrderKeys.list(),
-    queryFn: () => getHairOrders(),
-  })
+  const { data: hairOrders, isLoading } = useQuery(trpc.hairOrders.list.queryOptions())
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (

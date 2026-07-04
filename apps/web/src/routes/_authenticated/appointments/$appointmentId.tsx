@@ -19,7 +19,7 @@ import {
 } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { IconArrowLeft, IconCash, IconClock, IconDots, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 
@@ -33,9 +33,7 @@ import { CreateTransactionDialog } from "@/components/transactions/create-transa
 import { DeleteTransactionDialog } from "@/components/transactions/delete-transaction-dialog"
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
-import { getHairAssignedByAppointment } from "@/functions/hair-assigned"
 import { CURRENCIES, type Currency, formatMinor } from "@/lib/currency"
-import { hairAssignedKeys } from "@/lib/query-keys"
 import { trpc } from "@/utils/trpc"
 
 const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
@@ -49,10 +47,7 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
     await Promise.all([
       context.queryClient.prefetchQuery(trpc.appointments.byId.queryOptions({ id: params.appointmentId })),
       context.queryClient.prefetchQuery(
-        queryOptions({
-          queryKey: hairAssignedKeys.byAppointment(params.appointmentId),
-          queryFn: () => getHairAssignedByAppointment({ data: { appointmentId: params.appointmentId } }),
-        }),
+        trpc.hairAssigned.byAppointment.queryOptions({ appointmentId: params.appointmentId }),
       ),
       context.queryClient.prefetchQuery(
         trpc.transactions.byAppointmentId.queryOptions({ appointmentId: params.appointmentId }),
@@ -75,14 +70,12 @@ function AppointmentDetailPage() {
   const [deleteTx, setDeleteTx] = useState<TransactionRow | null>(null)
 
   const appointmentQueryOptions = trpc.appointments.byId.queryOptions({ id: appointmentId })
+  const hairAssignedQueryOptions = trpc.hairAssigned.byAppointment.queryOptions({ appointmentId })
   const transactionsQueryOptions = trpc.transactions.byAppointmentId.queryOptions({ appointmentId })
 
   const { data: appointment, isLoading } = useQuery(appointmentQueryOptions)
 
-  const { data: hairAssigned } = useQuery({
-    queryKey: hairAssignedKeys.byAppointment(appointmentId),
-    queryFn: () => getHairAssignedByAppointment({ data: { appointmentId } }),
-  })
+  const { data: hairAssigned } = useQuery(hairAssignedQueryOptions)
 
   const { data: transactions } = useQuery(transactionsQueryOptions)
 
@@ -118,7 +111,7 @@ function AppointmentDetailPage() {
 
   const invalidateKeys = [
     { queryKey: appointmentQueryOptions.queryKey },
-    { queryKey: hairAssignedKeys.byAppointment(appointmentId) },
+    { queryKey: hairAssignedQueryOptions.queryKey },
   ]
 
   const txInvalidateKeys = [{ queryKey: transactionsQueryOptions.queryKey }]

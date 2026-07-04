@@ -1,0 +1,131 @@
+import { db } from "@prive-admin-tanstack/db"
+import { hairAssigned, hairOrder } from "@prive-admin-tanstack/db/schema/hair"
+import { TRPCError } from "@trpc/server"
+import { eq, gt, sql } from "drizzle-orm"
+import { z } from "zod"
+
+import { protectedProcedure, router } from "../index"
+
+export const hairAssignedRouter = router({
+  byAppointment: protectedProcedure.input(z.object({ appointmentId: z.string() })).query(({ input }) => {
+    return db.query.hairAssigned.findMany({
+      where: eq(hairAssigned.appointmentId, input.appointmentId),
+      with: { client: true, hairOrder: true },
+    })
+  }),
+
+  byCustomer: protectedProcedure.input(z.object({ customerId: z.string() })).query(({ input }) => {
+    return db.query.hairAssigned.findMany({
+      where: eq(hairAssigned.clientId, input.customerId),
+      with: { client: true, hairOrder: true },
+      orderBy: (ha, { desc }) => [desc(ha.createdAt)],
+    })
+  }),
+
+  availableOrders: protectedProcedure.query(() => {
+    return db.query.hairOrder.findMany({
+      where: gt(sql`${hairOrder.weightReceived} - ${hairOrder.weightUsed}`, 0),
+      with: { customer: true },
+      orderBy: (hairOrder, { asc }) => [asc(hairOrder.uid)],
+    })
+  }),
+
+  create: protectedProcedure
+    .input(
+      z.object({
+        hairOrderId: z.string().min(1),
+        clientId: z.string().min(1),
+        appointmentId: z.string().nullish(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [result] = await db
+        .insert(hairAssigned)
+        .values({
+          hairOrderId: input.hairOrderId,
+          clientId: input.clientId,
+          appointmentId: input.appointmentId ?? null,
+          createdById: ctx.session.user.id,
+        })
+        .returning()
+      return result
+    }),
+
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+        weightInGrams: z.number().min(0),
+        soldFor: z.number().min(0),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const existing = await db.query.hairAssigned.findFirst({
+        where: eq(hairAssigned.id, input.id),
+        with: { hairOrder: true },
+      })
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Hair assigned not found" })
+      }
+
+      const parentOrder = existing.hairOrder
+      const availableWeight = parentOrder.weightReceived - parentOrder.weightUsed + existing.weightInGrams
+      if (input.weightInGrams > availableWeight) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Weight exceeds available stock (${availableWeight}g available)`,
+        })
+      }
+
+      const pricePerGram = input.weightInGrams > 0 ? Math.round(input.soldFor / input.weightInGrams) : 0
+      const profit = input.soldFor - input.weightInGrams * parentOrder.pricePerGram
+
+      return await db.transaction(async (tx) => {
+        const [updated] = await tx
+          .update(hairAssigned)
+          .set({
+            weightInGrams: input.weightInGrams,
+            soldFor: input.soldFor,
+            pricePerGram,
+            profit,
+          })
+          .where(eq(hairAssigned.id, input.id))
+          .returning()
+
+        const weightAgg = await tx
+          .select({ total: sql<number>`coalesce(sum(${hairAssigned.weightInGrams}), 0)` })
+          .from(hairAssigned)
+          .where(eq(hairAssigned.hairOrderId, parentOrder.id))
+
+        await tx
+          .update(hairOrder)
+          .set({ weightUsed: Number(weightAgg[0]?.total ?? 0) })
+          .where(eq(hairOrder.id, parentOrder.id))
+
+        return updated
+      })
+    }),
+
+  delete: protectedProcedure.input(z.object({ id: z.string().min(1) })).mutation(async ({ input }) => {
+    const existing = await db.query.hairAssigned.findFirst({
+      where: eq(hairAssigned.id, input.id),
+    })
+    if (!existing) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Hair assigned not found" })
+    }
+
+    return await db.transaction(async (tx) => {
+      await tx.delete(hairAssigned).where(eq(hairAssigned.id, input.id))
+
+      const weightAgg = await tx
+        .select({ total: sql<number>`coalesce(sum(${hairAssigned.weightInGrams}), 0)` })
+        .from(hairAssigned)
+        .where(eq(hairAssigned.hairOrderId, existing.hairOrderId))
+
+      await tx
+        .update(hairOrder)
+        .set({ weightUsed: Number(weightAgg[0]?.total ?? 0) })
+        .where(eq(hairOrder.id, existing.hairOrderId))
+    })
+  }),
+})

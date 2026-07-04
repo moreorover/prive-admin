@@ -18,7 +18,7 @@ import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconArrowLeft, IconCalculator, IconPencil, IconPlus, IconUser } from "@tabler/icons-react"
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -29,18 +29,12 @@ import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-ass
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { getHairOrder, recalculateHairOrderPrices, updateHairOrder } from "@/functions/hair-orders"
-import { hairOrderKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")({
   component: HairOrderDetailPage,
   loader: async ({ context, params }) => {
-    await context.queryClient.prefetchQuery(
-      queryOptions({
-        queryKey: hairOrderKeys.detail(params.hairOrderId),
-        queryFn: () => getHairOrder({ data: { id: params.hairOrderId } }),
-      }),
-    )
+    await context.queryClient.prefetchQuery(trpc.hairOrders.byId.queryOptions({ id: params.hairOrderId }))
   },
 })
 
@@ -53,16 +47,16 @@ function HairOrderDetailPage() {
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
   const [editOrderOpen, setEditOrderOpen] = useState(false)
+  const hairOrderQueryOptions = trpc.hairOrders.byId.queryOptions({ id: hairOrderId })
+  const hairOrdersListQueryOptions = trpc.hairOrders.list.queryOptions()
 
-  const { data: hairOrder, isLoading } = useQuery({
-    queryKey: hairOrderKeys.detail(hairOrderId),
-    queryFn: () => getHairOrder({ data: { id: hairOrderId } }),
-  })
+  const { data: hairOrder, isLoading } = useQuery(hairOrderQueryOptions)
 
   const recalcMutation = useMutation({
-    mutationFn: () => recalculateHairOrderPrices({ data: { hairOrderId } }),
+    ...trpc.hairOrders.recalculatePrices.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
+      queryClient.invalidateQueries({ queryKey: hairOrderQueryOptions.queryKey })
+      queryClient.invalidateQueries({ queryKey: hairOrdersListQueryOptions.queryKey })
       notifications.show({ color: "green", message: "Prices recalculated" })
     },
     onError: (error) => notifications.show({ color: "red", message: error.message }),
@@ -87,7 +81,7 @@ function HairOrderDetailPage() {
     )
   }
 
-  const invalidateKeys = [{ queryKey: hairOrderKeys.detail(hairOrderId) }]
+  const invalidateKeys = [{ queryKey: hairOrderQueryOptions.queryKey }]
 
   return (
     <Container size="xl">
@@ -135,7 +129,7 @@ function HairOrderDetailPage() {
               variant="default"
               leftSection={<IconCalculator size={14} />}
               loading={recalcMutation.isPending}
-              onClick={() => recalcMutation.mutate()}
+              onClick={() => recalcMutation.mutate({ hairOrderId })}
             >
               Recalculate
             </Button>
@@ -256,29 +250,14 @@ type EditHairOrderModalProps = {
 
 function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModalProps) {
   const queryClient = useQueryClient()
+  const hairOrderQueryOptions = trpc.hairOrders.byId.queryOptions({ id: hairOrder.id })
+  const hairOrdersListQueryOptions = trpc.hairOrders.list.queryOptions()
 
   const mutation = useMutation({
-    mutationFn: (values: {
-      placedAt: string
-      arrivedAt: string
-      status: "PENDING" | "COMPLETED"
-      weightReceived: number
-      total: number
-    }) =>
-      updateHairOrder({
-        data: {
-          id: hairOrder.id,
-          placedAt: values.placedAt || null,
-          arrivedAt: values.arrivedAt || null,
-          status: values.status,
-          customerId: hairOrder.customerId,
-          weightReceived: values.weightReceived,
-          weightUsed: hairOrder.weightUsed,
-          total: Math.round(values.total * 100),
-        },
-      }),
+    ...trpc.hairOrders.update.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: hairOrderKeys.all })
+      queryClient.invalidateQueries({ queryKey: hairOrderQueryOptions.queryKey })
+      queryClient.invalidateQueries({ queryKey: hairOrdersListQueryOptions.queryKey })
       onOpenChange(false)
       notifications.show({ color: "green", message: "Hair order updated" })
     },
@@ -297,7 +276,20 @@ function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModa
 
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Hair Order">
-      <form onSubmit={form.onSubmit((values) => mutation.mutate(values))}>
+      <form
+        onSubmit={form.onSubmit((values) =>
+          mutation.mutate({
+            id: hairOrder.id,
+            placedAt: values.placedAt || null,
+            arrivedAt: values.arrivedAt || null,
+            status: values.status,
+            customerId: hairOrder.customerId,
+            weightReceived: values.weightReceived,
+            weightUsed: hairOrder.weightUsed,
+            total: Math.round(values.total * 100),
+          }),
+        )}
+      >
         <Stack>
           <DateInput label="Placed At" valueFormat="DD MMM YYYY" {...form.getInputProps("placedAt")} />
           <DateInput label="Arrived At" valueFormat="DD MMM YYYY" {...form.getInputProps("arrivedAt")} />
