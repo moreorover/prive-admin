@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntit
 
 function BankAccountsTab() {
   const { legalEntityId } = Route.useParams()
-  const { data: legalEntity } = useQuery(trpc.legalEntities.byId.queryOptions({ id: legalEntityId }))
+  const { data: legalEntity } = useQuery(trpc.legalEntities.get.queryOptions({ id: legalEntityId }))
   const bankAccounts = legalEntity?.bankAccounts ?? []
 
   return (

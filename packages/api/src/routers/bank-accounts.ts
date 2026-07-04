@@ -23,7 +23,7 @@ const bankAccountSchema = z.object({
 })
 
 export const bankAccountsRouter = router({
-  byId: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
+  get: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
     const row = await db.query.bankAccount.findFirst({
       where: eq(bankAccount.id, input.id),
       with: {

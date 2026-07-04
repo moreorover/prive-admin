@@ -67,7 +67,7 @@ function CreateAppointmentForm({
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const appointmentListQueryOptions = trpc.appointments.list.queryOptions(defaultAppointmentsListInput)
-  const salonsQueryOptions = trpc.salons.list.queryOptions()
+  const salonsQueryOptions = trpc.salons.list.queryOptions({})
 
   const form = useForm<FormValues>({
     initialValues: {

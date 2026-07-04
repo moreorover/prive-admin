@@ -2,11 +2,17 @@ import { db } from "@prive-admin-tanstack/db"
 import { bankAccount } from "@prive-admin-tanstack/db/schema/bank-account"
 import { bankStatementEntry } from "@prive-admin-tanstack/db/schema/bank-statement-entry"
 import { TRPCError } from "@trpc/server"
-import { and, desc, eq } from "drizzle-orm"
+import { and, count, desc, eq } from "drizzle-orm"
 import { z } from "zod"
 
 import { parseBankCsv } from "../bank-csv"
 import { protectedProcedure, router } from "../index"
+import { getOffset, pagedResult, pageSchema } from "../pagination"
+
+const bankStatementEntryListSchema = pageSchema.extend({
+  bankAccountId: z.string().optional(),
+  status: z.enum(["PENDING", "IGNORED"]).optional(),
+})
 
 export const bankStatementEntriesRouter = router({
   importCsv: protectedProcedure.input(z.object({ csv: z.string().min(1) })).mutation(async ({ input }) => {
@@ -59,29 +65,28 @@ export const bankStatementEntriesRouter = router({
     }
   }),
 
-  list: protectedProcedure
-    .input(
-      z.object({
-        bankAccountId: z.string().optional(),
-        status: z.enum(["PENDING", "IGNORED"]).optional(),
-      }),
-    )
-    .query(async ({ input }) => {
-      const conditions = []
-      if (input.bankAccountId) conditions.push(eq(bankStatementEntry.bankAccountId, input.bankAccountId))
-      if (input.status) conditions.push(eq(bankStatementEntry.status, input.status))
+  list: protectedProcedure.input(bankStatementEntryListSchema).query(async ({ input }) => {
+    const conditions = []
+    if (input.bankAccountId) conditions.push(eq(bankStatementEntry.bankAccountId, input.bankAccountId))
+    if (input.status) conditions.push(eq(bankStatementEntry.status, input.status))
+    const where = conditions.length > 0 ? and(...conditions) : undefined
 
-      return db.query.bankStatementEntry.findMany({
-        where: conditions.length > 0 ? and(...conditions) : undefined,
-        with: {
-          bankAccount: { with: { legalEntity: true } },
-        },
-        orderBy: [desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt)],
-        limit: 500,
-      })
-    }),
+    const items = await db.query.bankStatementEntry.findMany({
+      where,
+      with: {
+        bankAccount: { with: { legalEntity: true } },
+      },
+      orderBy: [desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt)],
+      limit: input.pageSize,
+      offset: getOffset(input),
+    })
 
-  byId: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
+    const [countRow] = await db.select({ totalCount: count() }).from(bankStatementEntry).where(where)
+
+    return pagedResult(items, input, countRow?.totalCount ?? 0)
+  }),
+
+  get: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
     const row = await db.query.bankStatementEntry.findFirst({
       where: eq(bankStatementEntry.id, input.id),
       with: {

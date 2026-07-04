@@ -19,7 +19,7 @@ function LegalEntityLayout() {
   const { legalEntityId } = Route.useParams()
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
 
-  const { data: legalEntity } = useQuery(trpc.legalEntities.byId.queryOptions({ id: legalEntityId }))
+  const { data: legalEntity } = useQuery(trpc.legalEntities.get.queryOptions({ id: legalEntityId }))
 
   const country = legalEntity?.country as Country | undefined
   const description = legalEntity
@@ -93,8 +93,8 @@ function EditLegalEntityForm({
   onClose: () => void
 }) {
   const queryClient = useQueryClient()
-  const legalEntitiesQueryOptions = trpc.legalEntities.list.queryOptions()
-  const legalEntityQueryOptions = trpc.legalEntities.byId.queryOptions({ id: initialValues.id })
+  const legalEntitiesQueryOptions = trpc.legalEntities.list.queryOptions({})
+  const legalEntityQueryOptions = trpc.legalEntities.get.queryOptions({ id: initialValues.id })
 
   const form = useForm<EditValues & { id: string }>({
     initialValues,

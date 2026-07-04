@@ -99,7 +99,9 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] = useDisclosure(false)
 
-  const { data: unassignedAttachments = [] } = useQuery(trpc.bankStatementAttachments.unassigned.queryOptions())
+  const { data: unassignedAttachments = [] } = useQuery(
+    trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
+  )
   const badges = { unassigned: unassignedAttachments.length }
 
   return (
@@ -162,7 +164,7 @@ function SidebarNav({ badges, onNavigate }: { badges: { unassigned: number }; on
   const entityTab = entityMatch?.[2] ?? "overview"
 
   const { data: entity } = useQuery({
-    ...trpc.legalEntities.byId.queryOptions({ id: entityId ?? "" }),
+    ...trpc.legalEntities.get.queryOptions({ id: entityId ?? "" }),
     enabled: !!entityId,
   })
 

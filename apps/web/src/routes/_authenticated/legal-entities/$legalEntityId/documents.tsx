@@ -20,12 +20,17 @@ function DocumentsTab() {
   const [fileInputKey, setFileInputKey] = useState(0)
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
 
-  const { data: unassignedDocuments = [] } = useQuery(trpc.bankStatementAttachments.unassigned.queryOptions())
+  const { data: unassignedDocuments = [] } = useQuery(
+    trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
+  )
 
-  const { data: assignableEntries = [] } = useQuery(trpc.bankStatementEntries.list.queryOptions({ status: "PENDING" }))
+  const { data: assignableEntriesData } = useQuery(
+    trpc.bankStatementEntries.list.queryOptions({ status: "PENDING", page: 1, pageSize: 100 }),
+  )
+  const assignableEntries = assignableEntriesData?.items ?? []
 
   const invalidate = async () => {
-    await queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.unassigned.queryKey() })
+    await queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.list.queryKey() })
     await queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.counts.queryKey() })
   }
 
