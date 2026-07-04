@@ -48,6 +48,7 @@ function HairOrderDetailPage() {
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
   const [editOrderOpen, setEditOrderOpen] = useState(false)
   const hairOrderQueryOptions = trpc.hairOrders.get.queryOptions({ id: hairOrderId })
+  const hairAssignedListQueryKey = trpc.hairAssigned.list.queryKey()
   const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
 
   const { data: hairOrder, isLoading } = useQuery(hairOrderQueryOptions)
@@ -63,6 +64,7 @@ function HairOrderDetailPage() {
     ...trpc.hairOrders.recalculatePrices.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: hairOrderQueryOptions.queryKey })
+      queryClient.invalidateQueries({ queryKey: hairAssignedListQueryKey })
       queryClient.invalidateQueries({ queryKey: hairOrdersListQueryKey })
       for (const key of assignedClientSummaryKeys) queryClient.invalidateQueries(key)
       notifications.show({ color: "green", message: "Prices recalculated" })

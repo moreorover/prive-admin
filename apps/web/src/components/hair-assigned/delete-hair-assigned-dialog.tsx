@@ -24,12 +24,14 @@ export function DeleteHairAssignedDialog({
 }: DeleteHairAssignedDialogProps) {
   const queryClient = useQueryClient()
   const availableOrdersQueryOptions = trpc.hairAssigned.availableOrders.queryOptions()
+  const hairAssignedListQueryKey = trpc.hairAssigned.list.queryKey()
   const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
 
   const mutation = useMutation({
     ...trpc.hairAssigned.delete.mutationOptions(),
     onSuccess: () => {
       for (const key of invalidateKeys) queryClient.invalidateQueries(key)
+      queryClient.invalidateQueries({ queryKey: hairAssignedListQueryKey })
       queryClient.invalidateQueries({ queryKey: availableOrdersQueryOptions.queryKey })
       queryClient.invalidateQueries({ queryKey: hairOrdersListQueryKey })
       if (hairAssigned.hairOrder) {
