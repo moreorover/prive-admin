@@ -26,15 +26,7 @@ export default defineConfig({
     experimentalSortPackageJson: {
       sortScripts: false,
     },
-    ignorePatterns: [
-      ".agents",
-      "**/*.html",
-      "docs",
-      "routeTree.gen.ts",
-      "packages/db/src/migrations",
-      "**/CHANGELOG.md",
-      "CHANGELOG.md",
-    ],
+    ignorePatterns: [".agents", "**/*.html", "docs", "routeTree.gen.ts", "packages/db/src/migrations"],
   },
   lint: {
     rules: {
@@ -44,15 +36,7 @@ export default defineConfig({
       builtin: true,
     },
     globals: {},
-    ignorePatterns: [
-      ".agents",
-      "**/*.html",
-      "docs",
-      "routeTree.gen.ts",
-      "packages/db/src/migrations",
-      "**/CHANGELOG.md",
-      "CHANGELOG.md",
-    ],
+    ignorePatterns: [".agents", "**/*.html", "docs", "routeTree.gen.ts", "packages/db/src/migrations"],
     jsPlugins: [
       {
         name: "vite-plus",
