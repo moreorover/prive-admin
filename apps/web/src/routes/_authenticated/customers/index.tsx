@@ -2,20 +2,16 @@ import { Button, Container, Modal, Skeleton, Stack, Table, Text, TextInput } fro
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconPlus } from "@tabler/icons-react"
-import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { createCustomer, getCustomers } from "@/functions/customers"
-import { customerKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
-const customersQueryOptions = queryOptions({
-  queryKey: customerKeys.list(),
-  queryFn: () => getCustomers(),
-})
+const customersQueryOptions = trpc.customers.list.queryOptions()
 
 export const Route = createFileRoute("/_authenticated/customers/")({
   component: CustomersPage,
@@ -28,9 +24,9 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (data: { name: string; phoneNumber: string | null }) => createCustomer({ data }),
+    ...trpc.customers.create.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: customerKeys.all })
+      queryClient.invalidateQueries()
       onOpenChange(false)
       notifications.show({ color: "green", message: "Customer created" })
     },

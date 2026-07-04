@@ -32,28 +32,18 @@ import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assig
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { getAppointmentsByCustomerId } from "@/functions/appointments"
-import { getCustomer, getCustomerSummary, updateCustomer } from "@/functions/customers"
 import { getHairAssignedByCustomer } from "@/functions/hair-assigned"
 import { createNote, deleteNote, getNotes } from "@/functions/notes"
 import { CURRENCIES, formatMinor } from "@/lib/currency"
-import { appointmentKeys, customerKeys, hairAssignedKeys, noteKeys } from "@/lib/query-keys"
+import { appointmentKeys, hairAssignedKeys, noteKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetailPage,
   loader: async ({ context, params }) => {
     await Promise.all([
-      context.queryClient.prefetchQuery(
-        queryOptions({
-          queryKey: customerKeys.detail(params.customerId),
-          queryFn: () => getCustomer({ data: { id: params.customerId } }),
-        }),
-      ),
-      context.queryClient.prefetchQuery(
-        queryOptions({
-          queryKey: customerKeys.summary(params.customerId),
-          queryFn: () => getCustomerSummary({ data: { id: params.customerId } }),
-        }),
-      ),
+      context.queryClient.prefetchQuery(trpc.customers.byId.queryOptions({ id: params.customerId })),
+      context.queryClient.prefetchQuery(trpc.customers.summary.queryOptions({ id: params.customerId })),
       context.queryClient.prefetchQuery(
         queryOptions({
           queryKey: appointmentKeys.byCustomer(params.customerId),
@@ -99,9 +89,9 @@ function EditCustomerDialog({
   const queryClient = useQueryClient()
 
   const mutation = useMutation({
-    mutationFn: (data: { id: string; name: string; phoneNumber?: string | null }) => updateCustomer({ data }),
+    ...trpc.customers.update.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: customerKeys.all })
+      queryClient.invalidateQueries()
       onOpenChange(false)
       notifications.show({ color: "green", message: "Customer updated" })
     },
@@ -153,7 +143,7 @@ function AddNoteDialog({
     mutationFn: (data: { note: string; customerId: string }) => createNote({ data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: noteKeys.all })
-      queryClient.invalidateQueries({ queryKey: customerKeys.summary(customerId) })
+      queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey })
       onOpenChange(false)
       notifications.show({ color: "green", message: "Note added" })
     },
@@ -189,11 +179,9 @@ function CustomerDetailPage() {
   const [hairEditItem, setHairEditItem] = useState<HairAssignedRow | null>(null)
   const [hairDeleteItem, setHairDeleteItem] = useState<HairAssignedRow | null>(null)
   const queryClient = useQueryClient()
+  const customerSummaryQueryOptions = trpc.customers.summary.queryOptions({ id: customerId })
 
-  const { data: customer, isLoading } = useQuery({
-    queryKey: customerKeys.detail(customerId),
-    queryFn: () => getCustomer({ data: { id: customerId } }),
-  })
+  const { data: customer, isLoading } = useQuery(trpc.customers.byId.queryOptions({ id: customerId }))
 
   const { data: appointments } = useQuery({
     queryKey: appointmentKeys.byCustomer(customerId),
@@ -205,10 +193,7 @@ function CustomerDetailPage() {
     queryFn: () => getNotes({ data: { customerId } }),
   })
 
-  const { data: summary } = useQuery({
-    queryKey: customerKeys.summary(customerId),
-    queryFn: () => getCustomerSummary({ data: { id: customerId } }),
-  })
+  const { data: summary } = useQuery(customerSummaryQueryOptions)
 
   const { data: hairAssigned } = useQuery({
     queryKey: hairAssignedKeys.byCustomer(customerId),
@@ -219,7 +204,7 @@ function CustomerDetailPage() {
     mutationFn: (id: string) => deleteNote({ data: { id } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: noteKeys.all })
-      queryClient.invalidateQueries({ queryKey: customerKeys.summary(customerId) })
+      queryClient.invalidateQueries({ queryKey: customerSummaryQueryOptions.queryKey })
       notifications.show({ color: "green", message: "Note deleted" })
     },
   })
@@ -424,7 +409,7 @@ function CustomerDetailPage() {
           defaultClientId={customerId}
           invalidateKeys={[
             { queryKey: appointmentKeys.byCustomer(customerId) },
-            { queryKey: customerKeys.summary(customerId) },
+            { queryKey: customerSummaryQueryOptions.queryKey },
           ]}
           navigateOnSuccess
         />
@@ -435,7 +420,7 @@ function CustomerDetailPage() {
           appointmentId={null}
           invalidateKeys={[
             { queryKey: hairAssignedKeys.byCustomer(customerId) },
-            { queryKey: customerKeys.summary(customerId) },
+            { queryKey: customerSummaryQueryOptions.queryKey },
           ]}
         />
         {hairEditItem && (
@@ -445,7 +430,7 @@ function CustomerDetailPage() {
             hairAssigned={hairEditItem}
             invalidateKeys={[
               { queryKey: hairAssignedKeys.byCustomer(customerId) },
-              { queryKey: customerKeys.summary(customerId) },
+              { queryKey: customerSummaryQueryOptions.queryKey },
             ]}
           />
         )}
@@ -456,7 +441,7 @@ function CustomerDetailPage() {
             hairAssigned={hairDeleteItem}
             invalidateKeys={[
               { queryKey: hairAssignedKeys.byCustomer(customerId) },
-              { queryKey: customerKeys.summary(customerId) },
+              { queryKey: customerSummaryQueryOptions.queryKey },
             ]}
           />
         )}

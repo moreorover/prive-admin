@@ -10,9 +10,9 @@ import { useState } from "react"
 import { HairOrdersTable } from "@/components/hair-orders-table"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { getCustomers } from "@/functions/customers"
 import { createHairOrder, getHairOrders } from "@/functions/hair-orders"
-import { customerKeys, hairOrderKeys } from "@/lib/query-keys"
+import { hairOrderKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/hair-orders/")({
   component: HairOrdersPage,
@@ -21,10 +21,7 @@ export const Route = createFileRoute("/_authenticated/hair-orders/")({
 function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const queryClient = useQueryClient()
 
-  const { data: customers } = useQuery({
-    queryKey: customerKeys.list(),
-    queryFn: () => getCustomers(),
-  })
+  const { data: customers } = useQuery(trpc.customers.list.queryOptions())
 
   const mutation = useMutation({
     mutationFn: (data: {

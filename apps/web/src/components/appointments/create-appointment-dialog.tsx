@@ -8,9 +8,9 @@ import dayjs from "dayjs"
 import { useEffect } from "react"
 
 import { createAppointment } from "@/functions/appointments"
-import { getCustomers } from "@/functions/customers"
 import { listSalons } from "@/functions/salons"
-import { appointmentKeys, customerKeys, salonKeys } from "@/lib/query-keys"
+import { appointmentKeys, salonKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 type CreateAppointmentDialogProps = {
   open: boolean
@@ -74,8 +74,7 @@ export function CreateAppointmentDialog({
   }, [open, defaultClientId, defaultStartsAt])
 
   const { data: customers } = useQuery({
-    queryKey: customerKeys.list(),
-    queryFn: () => getCustomers(),
+    ...trpc.customers.list.queryOptions(),
     enabled: open,
   })
 

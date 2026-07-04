@@ -22,9 +22,9 @@ import { EditCashTransactionDialog } from "@/components/cash-transactions/edit-c
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { listCashTransactions } from "@/functions/cash-transactions"
-import { getCustomers } from "@/functions/customers"
 import { type Currency } from "@/lib/currency"
-import { cashTransactionKeys, customerKeys } from "@/lib/query-keys"
+import { cashTransactionKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
 
@@ -57,10 +57,7 @@ function CashPage() {
   const [editing, setEditing] = useState<CashTransactionRow | null>(null)
   const [deleting, setDeleting] = useState<CashTransactionRow | null>(null)
 
-  const { data: customersData } = useQuery({
-    queryKey: customerKeys.list(),
-    queryFn: () => getCustomers(),
-  })
+  const { data: customersData } = useQuery(trpc.customers.list.queryOptions())
 
   const queryFilter = {
     page,

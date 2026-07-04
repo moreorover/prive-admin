@@ -34,12 +34,12 @@ import { DeleteTransactionDialog } from "@/components/transactions/delete-transa
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
 import { getAppointment, linkPersonnel, updateAppointmentMaster } from "@/functions/appointments"
-import { getCustomers } from "@/functions/customers"
 import { getHairAssignedByAppointment } from "@/functions/hair-assigned"
 import { getTransactionsByAppointmentId } from "@/functions/transactions"
 import { getUserSettings } from "@/functions/user-settings"
 import { CURRENCIES, type Currency, formatMinor } from "@/lib/currency"
-import { appointmentKeys, customerKeys, hairAssignedKeys, transactionKeys, userSettingsKeys } from "@/lib/query-keys"
+import { appointmentKeys, hairAssignedKeys, transactionKeys, userSettingsKeys } from "@/lib/query-keys"
+import { trpc } from "@/utils/trpc"
 
 const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
   Currency,
@@ -469,8 +469,7 @@ function ChangeMasterModal({ open, onOpenChange, appointmentId, currentMasterId 
   const [masterId, setMasterId] = useState(currentMasterId)
 
   const { data: customers } = useQuery({
-    queryKey: customerKeys.list(),
-    queryFn: () => getCustomers(),
+    ...trpc.customers.list.queryOptions(),
     enabled: open,
   })
 
@@ -518,8 +517,7 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
   const [search, setSearch] = useState("")
 
   const { data: customers } = useQuery({
-    queryKey: customerKeys.list(),
-    queryFn: () => getCustomers(),
+    ...trpc.customers.list.queryOptions(),
     enabled: open,
   })
 
