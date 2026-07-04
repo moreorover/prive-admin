@@ -10,7 +10,6 @@
 - **PostgreSQL** - Database engine
 - **Authentication** - Better-Auth
 - **Vite+** - Unified runtime, package, build, lint, format, and test tooling
-- **Changesets** - Versioning and changelog automation
 
 ## Getting Started
 
