@@ -23,7 +23,7 @@ function SalonEdit() {
   const salonsQueryOptions = trpc.salons.list.queryOptions()
   const salonQueryOptions = trpc.salons.byId.queryOptions({ id: salonId })
 
-  const salonQuery = useQuery({
+  const { data: salon } = useQuery({
     ...salonQueryOptions,
     enabled: !isNew,
   })
@@ -34,16 +34,15 @@ function SalonEdit() {
   })
 
   useEffect(() => {
-    if (!isNew && salonQuery.data) {
+    if (!isNew && salon) {
       form.setValues({
-        id: salonQuery.data.id,
-        name: salonQuery.data.name,
-        address: salonQuery.data.address ?? "",
+        id: salon.id,
+        name: salon.name,
+        address: salon.address ?? "",
       })
       form.resetDirty()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isNew, salonQuery.data])
+  }, [form.setValues, form.resetDirty, isNew, salon])
 
   const onSaveSuccess = async () => {
     notifications.show({ color: "green", message: "Saved" })

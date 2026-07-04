@@ -46,7 +46,12 @@ function PreviewBody({ attachment, previewUrl }: { attachment: AttachmentPreview
 
   if (contentType === "application/pdf") {
     return (
-      <iframe title={attachment.originalName} src={previewUrl} style={{ width: "100%", height: "75vh", border: 0 }} />
+      <iframe
+        title={attachment.originalName}
+        src={previewUrl}
+        sandbox=""
+        style={{ width: "100%", height: "75vh", border: 0 }}
+      />
     )
   }
 
@@ -77,7 +82,7 @@ function PreviewBody({ attachment, previewUrl }: { attachment: AttachmentPreview
 }
 
 function TextPreview({ previewUrl }: { previewUrl: string }) {
-  const q = useQuery({
+  const { data, error, isError, isPending } = useQuery({
     queryKey: ["attachment-preview-text", previewUrl],
     queryFn: async () => {
       const res = await fetch(previewUrl)
@@ -86,17 +91,17 @@ function TextPreview({ previewUrl }: { previewUrl: string }) {
     },
   })
 
-  if (q.isPending) {
+  if (isPending) {
     return (
       <Text size="sm" c="dimmed">
         Loading…
       </Text>
     )
   }
-  if (q.isError) {
+  if (isError) {
     return (
       <Text size="sm" c="red">
-        {(q.error as Error).message}
+        {(error as Error).message}
       </Text>
     )
   }
@@ -112,7 +117,7 @@ function TextPreview({ previewUrl }: { previewUrl: string }) {
         whiteSpace: "pre",
       }}
     >
-      {q.data}
+      {data}
     </pre>
   )
 }

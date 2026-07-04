@@ -1,7 +1,6 @@
 import { Button, Group, NativeSelect, NumberInput, Select, Stack, Textarea, TextInput } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
-import { useState } from "react"
 
 import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
 
@@ -49,7 +48,6 @@ export function CashTransactionForm({
   loading,
 }: CashTransactionFormProps) {
   const form = useForm<CashTransactionFormValues>({
-    mode: "uncontrolled",
     initialValues,
     validate: {
       customerId: (value) => (value ? null : "Customer is required"),
@@ -67,9 +65,6 @@ export function CashTransactionForm({
       },
     },
   })
-
-  // react-doctor-disable-next-line react-doctor/no-derived-useState
-  const [currency, setCurrency] = useState<Currency>(initialValues.currency)
 
   return (
     <form
@@ -107,19 +102,10 @@ export function CashTransactionForm({
           maxLength={1000}
           {...form.getInputProps("notes")}
         />
-        <NativeSelect
-          label="Currency"
-          data={CURRENCY_OPTIONS}
-          {...form.getInputProps("currency")}
-          onChange={(event) => {
-            const next = event.currentTarget.value as Currency
-            form.setFieldValue("currency", next)
-            setCurrency(next)
-          }}
-        />
+        <NativeSelect label="Currency" data={CURRENCY_OPTIONS} {...form.getInputProps("currency")} />
         <NumberInput
           label="Signed amount"
-          prefix={currencySymbol(currency)}
+          prefix={currencySymbol(form.values.currency)}
           decimalScale={2}
           fixedDecimalScale
           step={0.01}

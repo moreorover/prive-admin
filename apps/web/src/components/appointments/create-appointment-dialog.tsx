@@ -5,7 +5,6 @@ import { notifications } from "@mantine/notifications"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
-import { useEffect } from "react"
 
 import { trpc } from "@/utils/trpc"
 
@@ -41,6 +40,28 @@ export function CreateAppointmentDialog({
   invalidateKeys,
   navigateOnSuccess,
 }: CreateAppointmentDialogProps) {
+  return (
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="New Appointment">
+      {open && (
+        <CreateAppointmentForm
+          defaultClientId={defaultClientId}
+          defaultStartsAt={defaultStartsAt}
+          invalidateKeys={invalidateKeys}
+          navigateOnSuccess={navigateOnSuccess}
+          onClose={() => onOpenChange(false)}
+        />
+      )}
+    </Modal>
+  )
+}
+
+function CreateAppointmentForm({
+  defaultClientId,
+  defaultStartsAt,
+  invalidateKeys,
+  navigateOnSuccess,
+  onClose,
+}: Omit<CreateAppointmentDialogProps, "open" | "onOpenChange"> & { onClose: () => void }) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const appointmentListQueryOptions = trpc.appointments.list.queryOptions({})
@@ -63,29 +84,9 @@ export function CreateAppointmentDialog({
     },
   })
 
-  useEffect(() => {
-    if (open) {
-      form.setValues({
-        name: "",
-        startsAt: defaultStartsAt ?? defaultStartsAtString(),
-        clientId: defaultClientId ?? "",
-        masterId: "",
-        salonId: "",
-      })
-      form.resetDirty()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, defaultClientId, defaultStartsAt])
+  const { data: customers } = useQuery(trpc.customers.list.queryOptions())
 
-  const { data: customers } = useQuery({
-    ...trpc.customers.list.queryOptions(),
-    enabled: open,
-  })
-
-  const { data: salons } = useQuery({
-    ...salonsQueryOptions,
-    enabled: open,
-  })
+  const { data: salons } = useQuery(salonsQueryOptions)
 
   const mutation = useMutation({
     ...trpc.appointments.create.mutationOptions(),
@@ -93,7 +94,7 @@ export function CreateAppointmentDialog({
       queryClient.invalidateQueries({ queryKey: appointmentListQueryOptions.queryKey })
       for (const key of invalidateKeys ?? []) queryClient.invalidateQueries(key)
       notifications.show({ color: "green", message: "Appointment created" })
-      onOpenChange(false)
+      onClose()
       if (navigateOnSuccess && created?.id) {
         navigate({ to: "/appointments/$appointmentId", params: { appointmentId: created.id } })
       }
@@ -111,48 +112,46 @@ export function CreateAppointmentDialog({
     })
 
   return (
-    <Modal opened={open} onClose={() => onOpenChange(false)} title="New Appointment">
-      <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack>
-          <TextInput label="Name" placeholder="Appointment name" required {...form.getInputProps("name")} />
-          <DateTimePicker
-            label="Starts at"
-            required
-            valueFormat="DD MMM YYYY HH:mm"
-            {...form.getInputProps("startsAt")}
-          />
-          {!defaultClientId && (
-            <Select
-              label="Client"
-              required
-              searchable
-              data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
-              {...form.getInputProps("clientId")}
-            />
-          )}
+    <form onSubmit={form.onSubmit(handleSubmit)}>
+      <Stack>
+        <TextInput label="Name" placeholder="Appointment name" required {...form.getInputProps("name")} />
+        <DateTimePicker
+          label="Starts at"
+          required
+          valueFormat="DD MMM YYYY HH:mm"
+          {...form.getInputProps("startsAt")}
+        />
+        {!defaultClientId && (
           <Select
-            label="Master"
+            label="Client"
             required
             searchable
             data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
-            {...form.getInputProps("masterId")}
+            {...form.getInputProps("clientId")}
           />
-          <Select
-            label="Salon"
-            required
-            data={(salons ?? []).map((s: SalonOption) => ({ value: s.id, label: s.name }))}
-            {...form.getInputProps("salonId")}
-          />
-          <Group justify="flex-end" gap="xs">
-            <Button variant="default" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" loading={mutation.isPending}>
-              Create
-            </Button>
-          </Group>
-        </Stack>
-      </form>
-    </Modal>
+        )}
+        <Select
+          label="Master"
+          required
+          searchable
+          data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
+          {...form.getInputProps("masterId")}
+        />
+        <Select
+          label="Salon"
+          required
+          data={(salons ?? []).map((s: SalonOption) => ({ value: s.id, label: s.name }))}
+          {...form.getInputProps("salonId")}
+        />
+        <Group justify="flex-end" gap="xs">
+          <Button variant="default" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" loading={mutation.isPending}>
+            Create
+          </Button>
+        </Group>
+      </Stack>
+    </form>
   )
 }

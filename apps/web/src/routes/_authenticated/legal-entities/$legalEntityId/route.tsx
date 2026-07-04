@@ -5,7 +5,6 @@ import { notifications } from "@mantine/notifications"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Outlet, createFileRoute } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
-import { useEffect } from "react"
 
 import { PageHeader } from "@/components/page-header"
 import { COUNTRY_FLAGS, COUNTRY_LABELS, type Country } from "@/lib/legal-entity"
@@ -77,22 +76,30 @@ function EditLegalEntityModal({
   legalEntityId: string
   initial: EditValues | null
 }) {
+  const initialValues = initial && { id: legalEntityId, ...initial }
+
+  return (
+    <Modal opened={opened} onClose={onClose} title="Edit legal entity">
+      {opened && initialValues && <EditLegalEntityForm initialValues={initialValues} onClose={onClose} />}
+    </Modal>
+  )
+}
+
+function EditLegalEntityForm({
+  initialValues,
+  onClose,
+}: {
+  initialValues: EditValues & { id: string }
+  onClose: () => void
+}) {
   const queryClient = useQueryClient()
   const legalEntitiesQueryOptions = trpc.legalEntities.list.queryOptions()
-  const legalEntityQueryOptions = trpc.legalEntities.byId.queryOptions({ id: legalEntityId })
+  const legalEntityQueryOptions = trpc.legalEntities.byId.queryOptions({ id: initialValues.id })
 
   const form = useForm<EditValues & { id: string }>({
-    initialValues: { id: legalEntityId, name: "", registrationNumber: "", vatNumber: "" },
+    initialValues,
     validate: zodResolver(legalEntityUpdateSchema),
   })
-
-  useEffect(() => {
-    if (opened && initial) {
-      form.setValues({ id: legalEntityId, ...initial })
-      form.resetDirty()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [opened, initial, legalEntityId])
 
   const save = useMutation({
     ...trpc.legalEntities.update.mutationOptions(),
@@ -106,26 +113,24 @@ function EditLegalEntityModal({
   })
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Edit legal entity">
-      <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
-        <Stack>
-          <TextInput label="Name" required {...form.getInputProps("name")} />
-          <TextInput
-            label="Registration number"
-            placeholder="Companies House / JAR"
-            {...form.getInputProps("registrationNumber")}
-          />
-          <TextInput label="VAT number" {...form.getInputProps("vatNumber")} />
-          <Group justify="flex-end">
-            <Button variant="subtle" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" loading={save.isPending}>
-              Save
-            </Button>
-          </Group>
-        </Stack>
-      </form>
-    </Modal>
+    <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
+      <Stack>
+        <TextInput label="Name" required {...form.getInputProps("name")} />
+        <TextInput
+          label="Registration number"
+          placeholder="Companies House / JAR"
+          {...form.getInputProps("registrationNumber")}
+        />
+        <TextInput label="VAT number" {...form.getInputProps("vatNumber")} />
+        <Group justify="flex-end">
+          <Button variant="subtle" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" loading={save.isPending}>
+            Save
+          </Button>
+        </Group>
+      </Stack>
+    </form>
   )
 }
