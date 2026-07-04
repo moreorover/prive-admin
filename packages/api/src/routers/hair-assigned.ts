@@ -69,7 +69,15 @@ export const hairAssignedRouter = router({
           throw new TRPCError({ code: "NOT_FOUND", message: "Hair assigned not found" })
         }
 
-        const parentOrder = existing.hairOrder
+        const [parentOrder] = await tx
+          .select()
+          .from(hairOrder)
+          .where(eq(hairOrder.id, existing.hairOrderId))
+          .for("update")
+        if (!parentOrder) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Hair order not found" })
+        }
+
         const availableWeight = parentOrder.weightReceived - parentOrder.weightUsed + existing.weightInGrams
         if (input.weightInGrams > availableWeight) {
           throw new TRPCError({

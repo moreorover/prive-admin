@@ -81,7 +81,10 @@ function HairOrderDetailPage() {
     )
   }
 
-  const invalidateKeys = [{ queryKey: hairOrderQueryOptions.queryKey }]
+  const invalidateKeys = [
+    { queryKey: hairOrderQueryOptions.queryKey },
+    { queryKey: trpc.customers.summary.queryOptions({ id: hairOrder.customer.id }).queryKey },
+  ]
 
   return (
     <Container size="xl">
