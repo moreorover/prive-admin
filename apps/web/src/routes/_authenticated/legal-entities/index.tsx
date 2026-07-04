@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/legal-entities/")({
 })
 
 function LegalEntitiesIndex() {
-  const q = useQuery(trpc.legalEntities.list.queryOptions())
+  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions())
 
   return (
     <Container size="xl">
@@ -29,7 +29,7 @@ function LegalEntitiesIndex() {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {(q.data ?? []).map((le) => (
+              {legalEntities.map((le) => (
                 <Table.Tr key={le.id}>
                   <Table.Td>
                     <Anchor

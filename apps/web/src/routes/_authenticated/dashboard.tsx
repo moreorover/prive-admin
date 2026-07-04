@@ -23,8 +23,12 @@ function DashboardPage() {
   const currentYear = new Date().getFullYear()
   const year = search.year ?? currentYear
 
-  const appointmentsQuery = useQuery(trpc.dashboard.hairAssignedStats.queryOptions({ year }))
-  const salesQuery = useQuery(trpc.dashboard.hairAssignedThroughSaleStats.queryOptions({ year }))
+  const { data: appointmentsData, isLoading: appointmentsLoading } = useQuery(
+    trpc.dashboard.hairAssignedStats.queryOptions({ year }),
+  )
+  const { data: salesData, isLoading: salesLoading } = useQuery(
+    trpc.dashboard.hairAssignedThroughSaleStats.queryOptions({ year }),
+  )
 
   const setYear = (next: number) => navigate({ search: { year: next } })
 
@@ -54,14 +58,14 @@ function DashboardPage() {
       <HairReportTable
         title="Hair assigned during appointments"
         description="Hair assigned through appointments, grouped by appointment month."
-        data={appointmentsQuery.data}
-        isLoading={appointmentsQuery.isLoading}
+        data={appointmentsData}
+        isLoading={appointmentsLoading}
       />
       <HairReportTable
         title="Hair assigned during sale"
         description="Hair assigned without an appointment, grouped by sale month."
-        data={salesQuery.data}
-        isLoading={salesQuery.isLoading}
+        data={salesData}
+        isLoading={salesLoading}
       />
     </Stack>
   )

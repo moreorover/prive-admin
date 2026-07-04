@@ -11,7 +11,8 @@ export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntit
 
 function BankAccountsTab() {
   const { legalEntityId } = Route.useParams()
-  const q = useQuery(trpc.legalEntities.byId.queryOptions({ id: legalEntityId }))
+  const { data: legalEntity } = useQuery(trpc.legalEntities.byId.queryOptions({ id: legalEntityId }))
+  const bankAccounts = legalEntity?.bankAccounts ?? []
 
   return (
     <Section
@@ -44,7 +45,7 @@ function BankAccountsTab() {
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {(q.data?.bankAccounts ?? []).map((a) => (
+          {bankAccounts.map((a) => (
             <Table.Tr key={a.id}>
               <Table.Td>
                 <Anchor
@@ -66,7 +67,7 @@ function BankAccountsTab() {
               <Table.Td>{a.bankName ?? "—"}</Table.Td>
             </Table.Tr>
           ))}
-          {q.data && q.data.bankAccounts.length === 0 && (
+          {legalEntity && bankAccounts.length === 0 && (
             <Table.Tr>
               <Table.Td colSpan={4} ta="center" c="dimmed">
                 No bank accounts.

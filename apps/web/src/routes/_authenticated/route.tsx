@@ -99,8 +99,8 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] = useDisclosure(false)
 
-  const unassignedQuery = useQuery(trpc.bankStatementAttachments.unassigned.queryOptions())
-  const badges = { unassigned: unassignedQuery.data?.length ?? 0 }
+  const { data: unassignedAttachments = [] } = useQuery(trpc.bankStatementAttachments.unassigned.queryOptions())
+  const badges = { unassigned: unassignedAttachments.length }
 
   return (
     <AppShell
@@ -161,7 +161,7 @@ function SidebarNav({ badges, onNavigate }: { badges: { unassigned: number }; on
   const entityId = entityMatch?.[1]
   const entityTab = entityMatch?.[2] ?? "overview"
 
-  const entityQ = useQuery({
+  const { data: entity } = useQuery({
     ...trpc.legalEntities.byId.queryOptions({ id: entityId ?? "" }),
     enabled: !!entityId,
   })
@@ -198,7 +198,7 @@ function SidebarNav({ badges, onNavigate }: { badges: { unassigned: number }; on
         {entityId && (
           <Box mt={6} className={classes.entitySubNav}>
             <Text size="xs" fw={600} c="dimmed" px="sm" py={4} truncate>
-              {entityQ.data?.name ?? "…"}
+              {entity?.name ?? "…"}
             </Text>
             <Stack gap={2}>
               {LEGAL_ENTITY_TABS.map((t) => {

@@ -74,11 +74,11 @@ function BankAccountShow({ id }: { id: string }) {
     bankAccountId: id,
     status: statusFilter === "ALL" ? undefined : statusFilter,
   })
-  const q = useQuery(bankAccountQueryOptions)
+  const { data: bankAccount } = useQuery(bankAccountQueryOptions)
 
-  const entriesQuery = useQuery(statementEntriesQueryOptions)
+  const { data: entries = [] } = useQuery(statementEntriesQueryOptions)
 
-  const attachmentCountsQuery = useQuery(trpc.bankStatementAttachments.counts.queryOptions())
+  const { data: attachmentCounts } = useQuery(trpc.bankStatementAttachments.counts.queryOptions())
 
   const importMutation = useMutation({
     ...trpc.bankStatementEntries.importCsv.mutationOptions(),
@@ -121,12 +121,12 @@ function BankAccountShow({ id }: { id: string }) {
   return (
     <>
       <Stack>
-        {q.data?.legalEntity && (
+        {bankAccount?.legalEntity && (
           <Anchor
             renderRoot={(props) => (
               <Link
                 to="/legal-entities/$legalEntityId/bank-accounts"
-                params={{ legalEntityId: q.data!.legalEntity!.id }}
+                params={{ legalEntityId: bankAccount.legalEntity!.id }}
                 {...props}
               />
             )}
@@ -135,45 +135,45 @@ function BankAccountShow({ id }: { id: string }) {
           >
             <Group gap={4}>
               <IconArrowLeft size={12} />
-              Back to {q.data.legalEntity.name}
+              Back to {bankAccount.legalEntity.name}
             </Group>
           </Anchor>
         )}
 
         <Group justify="space-between">
-          <Title order={3}>{q.data?.displayName ?? "Bank account"}</Title>
-          <Button onClick={openEdit} disabled={!q.data}>
+          <Title order={3}>{bankAccount?.displayName ?? "Bank account"}</Title>
+          <Button onClick={openEdit} disabled={!bankAccount}>
             Edit
           </Button>
         </Group>
 
         <Card withBorder>
           <Stack gap="xs">
-            <Field label="Display name" value={q.data?.displayName} />
+            <Field label="Display name" value={bankAccount?.displayName} />
             <Field
               label="Legal entity"
               value={
-                q.data?.legalEntity ? (
+                bankAccount?.legalEntity ? (
                   <Anchor
                     renderRoot={(props) => (
                       <Link
                         to="/legal-entities/$legalEntityId"
-                        params={{ legalEntityId: q.data!.legalEntity!.id }}
+                        params={{ legalEntityId: bankAccount.legalEntity!.id }}
                         {...props}
                       />
                     )}
                   >
-                    {q.data.legalEntity.name}
+                    {bankAccount.legalEntity.name}
                   </Anchor>
                 ) : (
                   "—"
                 )
               }
             />
-            <Field label="IBAN" value={q.data ? <code>{q.data.iban}</code> : undefined} />
-            <Field label="Currency" value={q.data?.currency} />
-            <Field label="Bank" value={q.data?.bankName ?? "—"} />
-            <Field label="SWIFT" value={q.data?.swift ?? "—"} />
+            <Field label="IBAN" value={bankAccount ? <code>{bankAccount.iban}</code> : undefined} />
+            <Field label="Currency" value={bankAccount?.currency} />
+            <Field label="Bank" value={bankAccount?.bankName ?? "—"} />
+            <Field label="SWIFT" value={bankAccount?.swift ?? "—"} />
           </Stack>
         </Card>
 
@@ -265,7 +265,7 @@ function BankAccountShow({ id }: { id: string }) {
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {(entriesQuery.data ?? []).map((e) => {
+              {entries.map((e) => {
                 const sign = e.direction === "C" ? "+" : "−"
                 const color = e.direction === "C" ? "teal" : "red"
                 return (
@@ -291,7 +291,7 @@ function BankAccountShow({ id }: { id: string }) {
                     <Table.Td ta="center">
                       <AttachmentsCell
                         entryId={e.id}
-                        count={attachmentCountsQuery.data?.[e.id] ?? 0}
+                        count={attachmentCounts?.[e.id] ?? 0}
                         onPreview={setPreviewAttachment}
                       />
                     </Table.Td>
@@ -316,7 +316,7 @@ function BankAccountShow({ id }: { id: string }) {
                   </Table.Tr>
                 )
               })}
-              {entriesQuery.data?.length === 0 && (
+              {entries.length === 0 && (
                 <Table.Tr>
                   <Table.Td colSpan={6} ta="center" c="dimmed">
                     No entries.
@@ -328,19 +328,19 @@ function BankAccountShow({ id }: { id: string }) {
         </Card>
       </Stack>
 
-      {editOpened && q.data && (
+      {editOpened && bankAccount && (
         <EditBankAccountModal
-          key={q.data.id}
+          key={bankAccount.id}
           opened={editOpened}
           onClose={closeEdit}
           bankAccountId={id}
           initial={{
-            legalEntityId: q.data.legalEntityId,
-            iban: q.data.iban,
-            currency: q.data.currency as Currency,
-            bankName: q.data.bankName ?? "",
-            swift: q.data.swift ?? "",
-            displayName: q.data.displayName,
+            legalEntityId: bankAccount.legalEntityId,
+            iban: bankAccount.iban,
+            currency: bankAccount.currency as Currency,
+            bankName: bankAccount.bankName ?? "",
+            swift: bankAccount.swift ?? "",
+            displayName: bankAccount.displayName,
           }}
         />
       )}
@@ -364,20 +364,22 @@ function AttachmentsCell({
   const [fileInputKey, setFileInputKey] = useState(0)
 
   const listQueryOptions = trpc.bankStatementAttachments.list.queryOptions({ entryId })
-  const listQuery = useQuery({
+  const { data: attachments = [], isLoading: attachmentsLoading } = useQuery({
     ...listQueryOptions,
     enabled: opened,
   })
 
-  const unassignedQuery = useQuery({
+  const { data: unassignedAttachments = [] } = useQuery({
     ...trpc.bankStatementAttachments.unassigned.queryOptions(),
     enabled: opened,
   })
 
   const invalidate = async () => {
-    await queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.list.queryKey() })
-    await queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.unassigned.queryKey() })
-    await queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.counts.queryKey() })
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.list.queryKey() }),
+      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.unassigned.queryKey() }),
+      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.counts.queryKey() }),
+    ])
   }
 
   const remove = useMutation({
@@ -448,12 +450,12 @@ function AttachmentsCell({
           <Text fw={500} size="sm">
             Attachments
           </Text>
-          {opened && listQuery.isLoading && (
+          {opened && attachmentsLoading && (
             <Text size="xs" c="dimmed">
               Loading…
             </Text>
           )}
-          {(listQuery.data ?? []).map((a) => (
+          {attachments.map((a) => (
             <Group key={a.id} justify="space-between" wrap="nowrap" gap="xs">
               <UnstyledButton
                 onClick={() => {
@@ -491,17 +493,17 @@ function AttachmentsCell({
               </Group>
             </Group>
           ))}
-          {opened && listQuery.data?.length === 0 && (
+          {opened && attachments.length === 0 && (
             <Text size="xs" c="dimmed">
               No files yet.
             </Text>
           )}
-          {(unassignedQuery.data ?? []).length > 0 && (
+          {unassignedAttachments.length > 0 && (
             <Select
               placeholder="Attach existing…"
               size="xs"
               searchable
-              data={(unassignedQuery.data ?? []).map((a) => ({ value: a.id, label: a.originalName }))}
+              data={unassignedAttachments.map((a) => ({ value: a.id, label: a.originalName }))}
               value={null}
               onChange={(v) => {
                 if (v) assign.mutate({ id: v, entryId })
@@ -560,7 +562,7 @@ function EditBankAccountModal({
   initial: FormValues
 }) {
   const queryClient = useQueryClient()
-  const legalEntitiesQuery = useQuery(trpc.legalEntities.list.queryOptions())
+  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions())
 
   const form = useForm<FormValues & { id: string }>({
     initialValues: {
@@ -595,7 +597,7 @@ function EditBankAccountModal({
           <Select
             label="Legal entity"
             required
-            data={(legalEntitiesQuery.data ?? []).map((le) => ({ value: le.id, label: le.name }))}
+            data={legalEntities.map((le) => ({ value: le.id, label: le.name }))}
             value={form.values.legalEntityId}
             onChange={(v) => form.setFieldValue("legalEntityId", v ?? "")}
           />
@@ -633,7 +635,7 @@ function BankAccountNew() {
   const { legalEntityId: pathLegalEntityId } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const legalEntitiesQuery = useQuery(trpc.legalEntities.list.queryOptions())
+  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions())
 
   const form = useForm<FormValues>({
     initialValues: {
@@ -674,7 +676,7 @@ function BankAccountNew() {
             <Select
               label="Legal entity"
               required
-              data={(legalEntitiesQuery.data ?? []).map((le) => ({ value: le.id, label: le.name }))}
+              data={legalEntities.map((le) => ({ value: le.id, label: le.name }))}
               value={form.values.legalEntityId}
               onChange={(v) => form.setFieldValue("legalEntityId", v ?? "")}
             />

@@ -20,9 +20,9 @@ function DocumentsTab() {
   const [fileInputKey, setFileInputKey] = useState(0)
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
 
-  const unassignedQuery = useQuery(trpc.bankStatementAttachments.unassigned.queryOptions())
+  const { data: unassignedDocuments = [] } = useQuery(trpc.bankStatementAttachments.unassigned.queryOptions())
 
-  const assignableEntriesQuery = useQuery(trpc.bankStatementEntries.list.queryOptions({ status: "PENDING" }))
+  const { data: assignableEntries = [] } = useQuery(trpc.bankStatementEntries.list.queryOptions({ status: "PENDING" }))
 
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.unassigned.queryKey() })
@@ -67,14 +67,14 @@ function DocumentsTab() {
     onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
 
-  const entryOptions = (assignableEntriesQuery.data ?? []).map((e) => ({
+  const entryOptions = assignableEntries.map((e) => ({
     value: e.id,
     label: `${e.date} · ${e.direction === "C" ? "+" : "−"}${formatMinor(e.amount, e.currency as Currency)} · ${
       e.counterpartyName ?? "—"
     }`,
   }))
 
-  const items = unassignedQuery.data ?? []
+  const items = unassignedDocuments
 
   return (
     <>

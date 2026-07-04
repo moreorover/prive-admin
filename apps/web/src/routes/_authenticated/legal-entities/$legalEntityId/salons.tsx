@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntit
 })
 
 function SalonsTab() {
-  const q = useQuery(trpc.salons.list.queryOptions())
+  const { data: salons = [] } = useQuery(trpc.salons.list.queryOptions())
 
   return (
     <Section
@@ -27,7 +27,7 @@ function SalonsTab() {
         </Button>
       }
     >
-      <SalonsTable salons={q.data ?? []} />
+      <SalonsTable salons={salons} />
     </Section>
   )
 }

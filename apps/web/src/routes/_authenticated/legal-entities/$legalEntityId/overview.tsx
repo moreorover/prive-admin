@@ -24,7 +24,9 @@ function OverviewTab() {
 
   const setYear = (next: number) => navigate({ search: { year: next } })
 
-  const bankQuery = useQuery(trpc.reports.bankAccountMonthlyBreakdown.queryOptions({ year, legalEntityId }))
+  const { data: bankAccounts = [] } = useQuery(
+    trpc.reports.bankAccountMonthlyBreakdown.queryOptions({ year, legalEntityId }),
+  )
 
   return (
     <Stack gap="lg">
@@ -49,13 +51,13 @@ function OverviewTab() {
         />
       </Group>
       <Stack gap="md">
-        {(bankQuery.data ?? []).length === 0 ? (
+        {bankAccounts.length === 0 ? (
           <Text c="dimmed" size="sm">
             No bank accounts.
           </Text>
         ) : (
           <Stack gap="xl">
-            {(bankQuery.data ?? []).map((a) => (
+            {bankAccounts.map((a) => (
               <BankAccountReportBlock key={a.bankAccountId} a={a} />
             ))}
           </Stack>

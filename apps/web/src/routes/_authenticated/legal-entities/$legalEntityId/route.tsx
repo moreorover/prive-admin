@@ -20,20 +20,20 @@ function LegalEntityLayout() {
   const { legalEntityId } = Route.useParams()
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
 
-  const q = useQuery(trpc.legalEntities.byId.queryOptions({ id: legalEntityId }))
+  const { data: legalEntity } = useQuery(trpc.legalEntities.byId.queryOptions({ id: legalEntityId }))
 
-  const country = q.data?.country as Country | undefined
-  const description = q.data
-    ? `${q.data.type}${country ? ` · ${COUNTRY_FLAGS[country]} ${COUNTRY_LABELS[country]}` : ""} · ${q.data.defaultCurrency}`
+  const country = legalEntity?.country as Country | undefined
+  const description = legalEntity
+    ? `${legalEntity.type}${country ? ` · ${COUNTRY_FLAGS[country]} ${COUNTRY_LABELS[country]}` : ""} · ${legalEntity.defaultCurrency}`
     : undefined
 
   return (
     <Container size="xl">
       <PageHeader
-        title={q.data?.name ?? "Legal entity"}
+        title={legalEntity?.name ?? "Legal entity"}
         description={description}
         actions={
-          <Button variant="default" onClick={openEdit} disabled={!q.data}>
+          <Button variant="default" onClick={openEdit} disabled={!legalEntity}>
             Edit
           </Button>
         }
@@ -47,11 +47,11 @@ function LegalEntityLayout() {
         onClose={closeEdit}
         legalEntityId={legalEntityId}
         initial={
-          q.data
+          legalEntity
             ? {
-                name: q.data.name,
-                registrationNumber: q.data.registrationNumber ?? "",
-                vatNumber: q.data.vatNumber ?? "",
+                name: legalEntity.name,
+                registrationNumber: legalEntity.registrationNumber ?? "",
+                vatNumber: legalEntity.vatNumber ?? "",
               }
             : null
         }
