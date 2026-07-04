@@ -1,6 +1,5 @@
-import { ColorSchemeScript } from "@prive-admin-tanstack/ui/color-scheme"
 import { UIProvider } from "@prive-admin-tanstack/ui/provider"
-import { HeadContent, Outlet, createRootRouteWithContext } from "@tanstack/react-router"
+import { Outlet, createRootRouteWithContext } from "@tanstack/react-router"
 import { lazy, useEffect } from "react"
 
 import type { queryClient, trpc } from "@/utils/trpc"
@@ -22,13 +21,6 @@ export interface RouterAppContext {
 }
 
 export const Route = createRootRouteWithContext<RouterAppContext>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Privé" },
-    ],
-  }),
   component: RootComponent,
 })
 
@@ -46,8 +38,6 @@ function RootComponent() {
 
   return (
     <>
-      <ColorSchemeScript defaultColorScheme="auto" />
-      <HeadContent />
       <LocaleProvider value={{ locale, timeZone }}>
         <UIProvider>
           <Outlet />
