@@ -20,17 +20,17 @@ export function EditHairAssignedDialog({
 }: EditHairAssignedDialogProps) {
   const queryClient = useQueryClient()
   const availableOrdersQueryOptions = trpc.hairAssigned.availableOrders.queryOptions()
-  const hairOrdersListQueryOptions = trpc.hairOrders.list.queryOptions()
+  const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
 
   const mutation = useMutation({
     ...trpc.hairAssigned.update.mutationOptions(),
     onSuccess: () => {
       for (const key of invalidateKeys) queryClient.invalidateQueries(key)
       queryClient.invalidateQueries({ queryKey: availableOrdersQueryOptions.queryKey })
-      queryClient.invalidateQueries({ queryKey: hairOrdersListQueryOptions.queryKey })
+      queryClient.invalidateQueries({ queryKey: hairOrdersListQueryKey })
       if (hairAssigned.hairOrder) {
         queryClient.invalidateQueries({
-          queryKey: trpc.hairOrders.byId.queryOptions({ id: hairAssigned.hairOrder.id }).queryKey,
+          queryKey: trpc.hairOrders.get.queryOptions({ id: hairAssigned.hairOrder.id }).queryKey,
         })
       }
       onOpenChange(false)

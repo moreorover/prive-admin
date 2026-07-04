@@ -42,6 +42,7 @@ const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => 
 >
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 const boundedAppointmentDetailTransactionsListInput = { page: 1, pageSize: 100 }
+const boundedAppointmentDetailHairAssignedListInput = { page: 1, pageSize: 100 }
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailPage,
@@ -49,7 +50,10 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
     await Promise.all([
       context.queryClient.prefetchQuery(trpc.appointments.get.queryOptions({ id: params.appointmentId })),
       context.queryClient.prefetchQuery(
-        trpc.hairAssigned.byAppointment.queryOptions({ appointmentId: params.appointmentId }),
+        trpc.hairAssigned.list.queryOptions({
+          ...boundedAppointmentDetailHairAssignedListInput,
+          appointmentId: params.appointmentId,
+        }),
       ),
       context.queryClient.prefetchQuery(
         trpc.transactions.list.queryOptions({
@@ -75,7 +79,10 @@ function AppointmentDetailPage() {
   const [deleteTx, setDeleteTx] = useState<TransactionRow | null>(null)
 
   const appointmentQueryOptions = trpc.appointments.get.queryOptions({ id: appointmentId })
-  const hairAssignedQueryOptions = trpc.hairAssigned.byAppointment.queryOptions({ appointmentId })
+  const hairAssignedQueryOptions = trpc.hairAssigned.list.queryOptions({
+    ...boundedAppointmentDetailHairAssignedListInput,
+    appointmentId,
+  })
   const transactionsQueryOptions = trpc.transactions.list.queryOptions({
     ...boundedAppointmentDetailTransactionsListInput,
     appointmentId,
@@ -83,7 +90,8 @@ function AppointmentDetailPage() {
 
   const { data: appointment, isLoading } = useQuery(appointmentQueryOptions)
 
-  const { data: hairAssigned } = useQuery(hairAssignedQueryOptions)
+  const { data: hairAssignedData } = useQuery(hairAssignedQueryOptions)
+  const hairAssigned = hairAssignedData?.items ?? []
 
   const { data: transactionsData } = useQuery(transactionsQueryOptions)
 
@@ -279,12 +287,7 @@ function AppointmentDetailPage() {
                 Add
               </Button>
             </Group>
-            <HairAssignedTable
-              items={hairAssigned ?? []}
-              showHairOrderColumn
-              onEdit={setEditItem}
-              onDelete={setDeleteItem}
-            />
+            <HairAssignedTable items={hairAssigned} showHairOrderColumn onEdit={setEditItem} onDelete={setDeleteItem} />
           </Card>
         </Group>
 

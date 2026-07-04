@@ -35,6 +35,7 @@ import { CURRENCIES, formatMinor } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
 const CUSTOMER_APPOINTMENTS_PAGE_SIZE = 25
+const CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE = 25
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetailPage,
@@ -50,7 +51,13 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
         }),
       ),
       context.queryClient.prefetchQuery(trpc.notes.list.queryOptions({ customerId: params.customerId })),
-      context.queryClient.prefetchQuery(trpc.hairAssigned.byCustomer.queryOptions({ customerId: params.customerId })),
+      context.queryClient.prefetchQuery(
+        trpc.hairAssigned.list.queryOptions({
+          page: 1,
+          pageSize: CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE,
+          customerId: params.customerId,
+        }),
+      ),
     ])
   },
 })
@@ -181,6 +188,7 @@ function CustomerDetailPage() {
   const [hairEditItem, setHairEditItem] = useState<HairAssignedRow | null>(null)
   const [hairDeleteItem, setHairDeleteItem] = useState<HairAssignedRow | null>(null)
   const [appointmentsPage, setAppointmentsPage] = useState(1)
+  const [hairAssignedPage, setHairAssignedPage] = useState(1)
   const queryClient = useQueryClient()
   const customerSummaryQueryOptions = trpc.customers.summary.queryOptions({ id: customerId })
   const customerAppointmentsQueryOptions = trpc.appointments.list.queryOptions({
@@ -188,7 +196,11 @@ function CustomerDetailPage() {
     pageSize: CUSTOMER_APPOINTMENTS_PAGE_SIZE,
     customerId,
   })
-  const hairAssignedQueryOptions = trpc.hairAssigned.byCustomer.queryOptions({ customerId })
+  const hairAssignedQueryOptions = trpc.hairAssigned.list.queryOptions({
+    page: hairAssignedPage,
+    pageSize: CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE,
+    customerId,
+  })
 
   const { data: customer, isLoading } = useQuery(trpc.customers.get.queryOptions({ id: customerId }))
 
@@ -204,10 +216,16 @@ function CustomerDetailPage() {
 
   const { data: summary } = useQuery(customerSummaryQueryOptions)
 
-  const { data: hairAssigned } = useQuery(hairAssignedQueryOptions)
+  const { data: hairAssignedData } = useQuery(hairAssignedQueryOptions)
+  const hairAssigned = hairAssignedData?.items ?? []
+  const hairAssignedTotalCount = hairAssignedData?.totalCount ?? 0
+  const hairAssignedTotalPages = Math.max(1, Math.ceil(hairAssignedTotalCount / CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE))
+  const hasHairAssignedOnCurrentPage = hairAssigned.length > 0
+  const showHairAssignedPagination = hairAssignedTotalCount > CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE
 
   useEffect(() => {
     setAppointmentsPage(1)
+    setHairAssignedPage(1)
   }, [customerId])
 
   useEffect(() => {
@@ -215,6 +233,12 @@ function CustomerDetailPage() {
       setAppointmentsPage(appointmentsTotalPages)
     }
   }, [appointmentsData, appointmentsPage, appointmentsTotalPages])
+
+  useEffect(() => {
+    if (hairAssignedData && hairAssignedPage > hairAssignedTotalPages) {
+      setHairAssignedPage(hairAssignedTotalPages)
+    }
+  }, [hairAssignedData, hairAssignedPage, hairAssignedTotalPages])
 
   const deleteNoteMutation = useMutation({
     ...trpc.notes.delete.mutationOptions(),
@@ -445,7 +469,13 @@ function CustomerDetailPage() {
           <Tabs.Panel value="hair-sales" pt="md">
             <HairSalesPanel
               customerId={customerId}
-              hairAssigned={hairAssigned ?? []}
+              hairAssigned={hairAssigned}
+              hasItemsOnCurrentPage={hasHairAssignedOnCurrentPage}
+              showPagination={showHairAssignedPagination}
+              totalCount={hairAssignedTotalCount}
+              totalPages={hairAssignedTotalPages}
+              page={hairAssignedPage}
+              onPageChange={setHairAssignedPage}
               onCreate={() => setHairCreateOpen(true)}
               onEdit={setHairEditItem}
               onDelete={setHairDeleteItem}
@@ -506,12 +536,24 @@ type HairAssignedItem = HairAssignedRow & { appointmentId?: string | null }
 
 function HairSalesPanel({
   hairAssigned,
+  hasItemsOnCurrentPage,
+  showPagination,
+  totalCount,
+  totalPages,
+  page,
+  onPageChange,
   onCreate,
   onEdit,
   onDelete,
 }: {
   customerId: string
   hairAssigned: HairAssignedItem[]
+  hasItemsOnCurrentPage: boolean
+  showPagination: boolean
+  totalCount: number
+  totalPages: number
+  page: number
+  onPageChange: (page: number) => void
   onCreate: () => void
   onEdit: (item: HairAssignedRow) => void
   onDelete: (item: HairAssignedRow) => void
@@ -521,34 +563,65 @@ function HairSalesPanel({
 
   return (
     <Stack>
-      <Card withBorder>
-        <Title order={5} mb="sm">
-          Hair Sales through Appointment
-        </Title>
-        {throughAppointment.length > 0 ? (
-          <HairAssignedTable items={throughAppointment} showHairOrderColumn onEdit={onEdit} onDelete={onDelete} />
-        ) : (
-          <Text size="sm" c="dimmed">
-            No appointment-tied hair sales.
-          </Text>
-        )}
-      </Card>
+      {hasItemsOnCurrentPage || showPagination ? (
+        <>
+          <Card withBorder>
+            <Title order={5} mb="sm">
+              Hair Sales through Appointment
+            </Title>
+            {throughAppointment.length > 0 ? (
+              <HairAssignedTable items={throughAppointment} showHairOrderColumn onEdit={onEdit} onDelete={onDelete} />
+            ) : (
+              <Text size="sm" c="dimmed">
+                No appointment-tied hair sales on this page.
+              </Text>
+            )}
+          </Card>
 
-      <Card withBorder>
-        <Group justify="space-between" mb="sm">
-          <Title order={5}>Hair Sales Individual</Title>
-          <Button variant="subtle" size="xs" leftSection={<IconPlus size={12} />} onClick={onCreate}>
-            New
-          </Button>
-        </Group>
-        {individual.length > 0 ? (
-          <HairAssignedTable items={individual} showHairOrderColumn onEdit={onEdit} onDelete={onDelete} />
-        ) : (
+          <Card withBorder>
+            <Group justify="space-between" mb="sm">
+              <Title order={5}>Hair Sales Individual</Title>
+              <Button variant="subtle" size="xs" leftSection={<IconPlus size={12} />} onClick={onCreate}>
+                New
+              </Button>
+            </Group>
+            {individual.length > 0 ? (
+              <HairAssignedTable items={individual} showHairOrderColumn onEdit={onEdit} onDelete={onDelete} />
+            ) : (
+              <Text size="sm" c="dimmed">
+                No individual hair sales on this page.
+              </Text>
+            )}
+          </Card>
+          {showPagination && (
+            <Group justify="space-between">
+              <Text size="sm" c="dimmed">
+                {totalCount} hair sale{totalCount === 1 ? "" : "s"} · Page {Math.min(page, totalPages)} of {totalPages}
+              </Text>
+              <Group gap="xs">
+                <Button variant="default" disabled={page <= 1} onClick={() => onPageChange(Math.max(1, page - 1))}>
+                  Previous
+                </Button>
+                <Button variant="default" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}>
+                  Next
+                </Button>
+              </Group>
+            </Group>
+          )}
+        </>
+      ) : (
+        <Card withBorder>
+          <Group justify="space-between" mb="sm">
+            <Title order={5}>Hair Sales Individual</Title>
+            <Button variant="subtle" size="xs" leftSection={<IconPlus size={12} />} onClick={onCreate}>
+              New
+            </Button>
+          </Group>
           <Text size="sm" c="dimmed">
-            No individual hair sales.
+            No hair sales yet.
           </Text>
-        )}
-      </Card>
+        </Card>
+      )}
     </Stack>
   )
 }

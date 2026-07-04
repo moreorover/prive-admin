@@ -1,4 +1,4 @@
-import { Button, Container, Group, Modal, NumberInput, Select, Stack } from "@mantine/core"
+import { Button, Container, Group, Modal, NumberInput, Select, Stack, Text } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
@@ -13,6 +13,7 @@ import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
+const HAIR_ORDERS_PAGE_SIZE = 25
 
 export const Route = createFileRoute("/_authenticated/hair-orders/")({
   component: HairOrdersPage,
@@ -23,12 +24,12 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 
   const { data: customersData } = useQuery(trpc.customers.list.queryOptions(defaultCustomersListInput))
   const customers = customersData?.items ?? []
-  const hairOrdersQueryOptions = trpc.hairOrders.list.queryOptions()
+  const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
 
   const mutation = useMutation({
     ...trpc.hairOrders.create.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: hairOrdersQueryOptions.queryKey })
+      queryClient.invalidateQueries({ queryKey: hairOrdersListQueryKey })
       onOpenChange(false)
       notifications.show({ color: "green", message: "Hair order created" })
     },
@@ -82,8 +83,15 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 }
 
 function HairOrdersPage() {
-  const { data: hairOrders, isLoading } = useQuery(trpc.hairOrders.list.queryOptions())
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [page, setPage] = useState(1)
+  const { data: hairOrdersData, isLoading } = useQuery(
+    trpc.hairOrders.list.queryOptions({ page, pageSize: HAIR_ORDERS_PAGE_SIZE }),
+  )
+  const hairOrders = hairOrdersData?.items ?? []
+  const totalCount = hairOrdersData?.totalCount ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / HAIR_ORDERS_PAGE_SIZE))
+  const showPagination = totalCount > HAIR_ORDERS_PAGE_SIZE
 
   return (
     <Container size="xl">
@@ -98,6 +106,25 @@ function HairOrdersPage() {
       />
       <Section padding="lg">
         <HairOrdersTable hairOrders={hairOrders} isLoading={isLoading} />
+        {showPagination && (
+          <Group justify="space-between" mt="md">
+            <Text size="sm" c="dimmed">
+              {totalCount} hair order{totalCount === 1 ? "" : "s"} · Page {Math.min(page, totalPages)} of {totalPages}
+            </Text>
+            <Group gap="xs">
+              <Button
+                variant="default"
+                disabled={page <= 1}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+              >
+                Previous
+              </Button>
+              <Button variant="default" disabled={page >= totalPages} onClick={() => setPage((current) => current + 1)}>
+                Next
+              </Button>
+            </Group>
+          </Group>
+        )}
       </Section>
 
       <CreateHairOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} />

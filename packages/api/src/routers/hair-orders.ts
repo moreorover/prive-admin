@@ -1,10 +1,11 @@
 import { db } from "@prive-admin-tanstack/db"
 import { hairAssigned, hairOrder } from "@prive-admin-tanstack/db/schema/hair"
 import { TRPCError } from "@trpc/server"
-import { eq, sql } from "drizzle-orm"
+import { and, count, eq, sql } from "drizzle-orm"
 import { z } from "zod"
 
 import { protectedProcedure, router } from "../index"
+import { getOffset, pagedResult, pageSchema } from "../pagination"
 
 const hairOrderInputSchema = z.object({
   id: z.string().optional(),
@@ -15,6 +16,11 @@ const hairOrderInputSchema = z.object({
   weightReceived: z.number().int().min(0),
   weightUsed: z.number().int().min(0),
   total: z.number().int().min(0),
+})
+
+const hairOrderListSchema = pageSchema.extend({
+  customerId: z.string().optional(),
+  status: z.enum(["PENDING", "COMPLETED"]).optional(),
 })
 
 const dateValue = (value: string | Date | null) => (value ? String(value) : null)
@@ -29,14 +35,26 @@ const assertWeightUsedWithinReceived = (weightUsed: number, weightReceived: numb
 }
 
 export const hairOrdersRouter = router({
-  list: protectedProcedure.query(() => {
-    return db.query.hairOrder.findMany({
+  list: protectedProcedure.input(hairOrderListSchema).query(async ({ input }) => {
+    const conditions = []
+    if (input.customerId) conditions.push(eq(hairOrder.customerId, input.customerId))
+    if (input.status) conditions.push(eq(hairOrder.status, input.status))
+    const where = conditions.length > 0 ? and(...conditions) : undefined
+
+    const items = await db.query.hairOrder.findMany({
+      where,
       with: { createdBy: true, customer: true },
       orderBy: (hairOrder, { asc }) => [asc(hairOrder.uid)],
+      limit: input.pageSize,
+      offset: getOffset(input),
     })
+
+    const [countRow] = await db.select({ totalCount: count() }).from(hairOrder).where(where)
+
+    return pagedResult(items, input, countRow?.totalCount ?? 0)
   }),
 
-  byId: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
+  get: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
     const result = await db.query.hairOrder.findFirst({
       where: eq(hairOrder.id, input.id),
       with: {
