@@ -18,7 +18,8 @@ jobs:
     permissions:
       contents: read
       packages: write
-      security-events: write
+    outputs:
+      commit: ${{ steps.release.outputs.commit }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -95,60 +96,49 @@ jobs:
           cache-from: type=gha,scope=migrate
           cache-to: type=gha,mode=max,scope=migrate
 
-      - name: Scan web image with Trivy
+  scan-images:
+    name: Scan ${{ matrix.image.name }} image
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - name: web
+          - name: server
+          - name: migrate
+    steps:
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ env.IMAGE_NAME_BASE }}-web:${{ steps.release.outputs.commit }}
+          image-ref: ${{ env.IMAGE_NAME_BASE }}-${{ matrix.image.name }}:${{ needs.build-and-push.outputs.commit }}
           format: sarif
-          output: trivy-web-results.sarif
+          output: trivy-${{ matrix.image.name }}-results.sarif
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           exit-code: "1"
 
-      - name: Upload web Trivy SARIF
+      - name: Upload Trivy SARIF
         if: always()
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: trivy-web-results.sarif
-          category: trivy-web
-
-      - name: Scan server image with Trivy
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ${{ env.IMAGE_NAME_BASE }}-server:${{ steps.release.outputs.commit }}
-          format: sarif
-          output: trivy-server-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "1"
-
-      - name: Upload server Trivy SARIF
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy-server-results.sarif
-          category: trivy-server
-
-      - name: Scan migrate image with Trivy
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ${{ env.IMAGE_NAME_BASE }}-migrate:${{ steps.release.outputs.commit }}
-          format: sarif
-          output: trivy-migrate-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: "1"
-
-      - name: Upload migrate Trivy SARIF
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy-migrate-results.sarif
-          category: trivy-migrate
+          sarif_file: trivy-${{ matrix.image.name }}-results.sarif
+          category: trivy-${{ matrix.image.name }}
 
   pre-deploy-backup:
     name: Pre-deploy Postgres Backup
-    needs: build-and-push
+    needs: scan-images
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -230,7 +220,7 @@ jobs:
 
   deploy:
     name: Deploy to prive
-    needs: [build-and-push, pre-deploy-backup]
+    needs: [scan-images, pre-deploy-backup]
     runs-on: ubuntu-latest
     environment:
       name: production
