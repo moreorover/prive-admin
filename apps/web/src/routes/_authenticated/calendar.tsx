@@ -3,7 +3,7 @@ import { Schedule, type ScheduleEventData, type ScheduleViewLevel } from "@manti
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
 import { PageHeader } from "@/components/page-header"
@@ -52,24 +52,6 @@ function CalendarPage() {
     },
     [navigate],
   )
-
-  // Mantine Schedule v9.1.0 doesn't forward onClick to events rendered inside the
-  // "+N more" overflow popover (see node_modules/@mantine/schedule/.../MoreEvents.mjs:33).
-  // Document-level delegation on data-event-id catches those popover clicks too.
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null
-      const node = target?.closest("[data-event-id]")
-      if (!node) return
-      const id = node.getAttribute("data-event-id")
-      if (id) {
-        e.preventDefault()
-        goToAppointment(id)
-      }
-    }
-    document.addEventListener("click", handler)
-    return () => document.removeEventListener("click", handler)
-  }, [goToAppointment])
 
   return (
     <Container size="xl">
