@@ -1,6 +1,6 @@
+import { ApplicationError } from "@prive-admin-tanstack/application/errors"
 import { describe, expect, it } from "vite-plus/test"
 
-import { ApplicationError } from "../../application/src"
 import { toTrpcError } from "./errors"
 
 describe("toTrpcError", () => {

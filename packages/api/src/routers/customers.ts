@@ -1,10 +1,10 @@
 import {
+  createCustomer,
   getCustomer,
   getCustomerSummary,
   listCustomers,
-  createCustomer,
   updateCustomer,
-} from "@prive-admin-tanstack/application/services/customers"
+} from "@prive-admin-tanstack/application/services"
 import { z } from "zod"
 
 import { toTrpcError } from "../errors"

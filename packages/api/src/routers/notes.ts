@@ -1,4 +1,4 @@
-import { createNote, deleteNote, listNotes } from "@prive-admin-tanstack/application/services/notes"
+import { createNote, deleteNote, listNotes } from "@prive-admin-tanstack/application/services"
 import { z } from "zod"
 
 import { protectedProcedure, router } from "../index"

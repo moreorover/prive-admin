@@ -1,4 +1,4 @@
-import { ApplicationError } from "@prive-admin-tanstack/application"
+import { ApplicationError } from "@prive-admin-tanstack/application/errors"
 import { TRPCError } from "@trpc/server"
 
 export function toTrpcError(error: unknown) {

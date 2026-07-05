@@ -1,4 +1,4 @@
-import { getUserSettings, updateUserSettings } from "@prive-admin-tanstack/application/services/user-settings"
+import { getUserSettings, updateUserSettings } from "@prive-admin-tanstack/application/services"
 import { z } from "zod"
 
 import { protectedProcedure, router } from "../index"

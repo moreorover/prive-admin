@@ -3,11 +3,26 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./context": "./src/context.ts",
-    "./http": "./src/http/index.ts",
-    "./r2": "./src/r2.ts",
-    "./routers": "./src/routers/index.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./context": {
+      "types": "./src/context.ts",
+      "default": "./src/context.ts"
+    },
+    "./http": {
+      "types": "./src/http/index.ts",
+      "default": "./src/http/index.ts"
+    },
+    "./r2": {
+      "types": "./src/r2.ts",
+      "default": "./src/r2.ts"
+    },
+    "./routers": {
+      "types": "./src/routers/index.ts",
+      "default": "./src/routers/index.ts"
+    }
   },
   "scripts": {
     "check-types": "tsc --noEmit",

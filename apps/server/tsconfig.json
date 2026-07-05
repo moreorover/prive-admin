@@ -1,16 +1,4 @@
 {
   "extends": "@prive-admin-tanstack/config/tsconfig.base.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
-    "rootDir": "../..",
-    "paths": {
-      "@prive-admin-tanstack/api": ["../../packages/api/src/index.ts"],
-      "@prive-admin-tanstack/api/*": ["../../packages/api/src/*"],
-      "@prive-admin-tanstack/application": ["../../packages/application/src/index.ts"],
-      "@prive-admin-tanstack/application/*": ["../../packages/application/src/*"],
-      "@prive-admin-tanstack/db": ["../../packages/db/src/index.ts"],
-      "@prive-admin-tanstack/db/*": ["../../packages/db/src/*"]
-    }
-  }
+  "compilerOptions": {}
 }

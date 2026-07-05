@@ -28,7 +28,7 @@ const dbMock = vi.hoisted(() => ({
   update: vi.fn(),
 }))
 
-vi.mock("@prive-admin-tanstack/application/services/bank-accounts", () => bankAccountServiceMock)
+vi.mock("@prive-admin-tanstack/application/services", () => bankAccountServiceMock)
 vi.mock("@prive-admin-tanstack/db", () => ({ db: dbMock }))
 
 const ctx = { session: { user: { id: "user-1" } } } as never

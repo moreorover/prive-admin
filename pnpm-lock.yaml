@@ -431,6 +431,9 @@ importers:
       '@paralleldrive/cuid2':
         specifier: ^3.3.0
         version: 3.3.0
+      '@prive-admin-tanstack/application':
+        specifier: workspace:*
+        version: link:../application
       '@prive-admin-tanstack/auth':
         specifier: workspace:*
         version: link:../auth
@@ -458,6 +461,37 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 4.4.3
+    devDependencies:
+      '@prive-admin-tanstack/config':
+        specifier: workspace:*
+        version: link:../config
+      '@types/archiver':
+        specifier: ^6.0.3
+        version: 6.0.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.4
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+
+  packages/application:
+    dependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.1068.0
+        version: 3.1079.0
+      '@paralleldrive/cuid2':
+        specifier: ^3.3.0
+        version: 3.3.0
+      '@prive-admin-tanstack/db':
+        specifier: workspace:*
+        version: link:../db
+      archiver:
+        specifier: ^8.0.0
+        version: 8.0.0
+      drizzle-orm:
+        specifier: ^0.45.2
+        version: 0.45.2(@types/pg@8.20.0)(kysely@0.29.2)(pg@8.22.0)
     devDependencies:
       '@prive-admin-tanstack/config':
         specifier: workspace:*

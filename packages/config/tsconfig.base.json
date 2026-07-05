@@ -3,6 +3,16 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["ESNext"],
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@prive-admin-tanstack/api": ["../api/src/index.ts"],
+      "@prive-admin-tanstack/api/*": ["../api/src/*"],
+      "@prive-admin-tanstack/application": ["../application/src/index.ts"],
+      "@prive-admin-tanstack/application/*": ["../application/src/*"],
+      "@prive-admin-tanstack/db": ["../db/src/index.ts"],
+      "@prive-admin-tanstack/db/*": ["../db/src/*"]
+    },
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
