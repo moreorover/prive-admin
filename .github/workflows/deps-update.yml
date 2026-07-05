@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1
@@ -25,7 +25,7 @@ jobs:
           cache: true
 
       - name: Load PAT from 1Password
-        uses: 1password/load-secrets-action@v2
+        uses: 1password/load-secrets-action@v4
         with:
           export-env: true
         env:
@@ -33,7 +33,7 @@ jobs:
           DEPS_PAT: op://prive-admin/PAT prive-admin deps bot/token
 
       - name: Run taze major
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           timeout_minutes: 5
           max_attempts: 3
@@ -51,7 +51,7 @@ jobs:
         run: vp install
 
       - name: Create or Update Pull Request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ env.DEPS_PAT }}
           branch: chore/auto-dep-updates
