@@ -7,7 +7,6 @@ import {
   Group,
   Modal,
   SimpleGrid,
-  Skeleton,
   Stack,
   Tabs,
   Table,
@@ -41,17 +40,17 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetailRoute,
   loader: async ({ context, params }) => {
     await Promise.all([
-      context.queryClient.prefetchQuery(trpc.customers.get.queryOptions({ id: params.customerId })),
-      context.queryClient.prefetchQuery(trpc.customers.summary.queryOptions({ id: params.customerId })),
-      context.queryClient.prefetchQuery(
+      context.queryClient.ensureQueryData(trpc.customers.get.queryOptions({ id: params.customerId })),
+      context.queryClient.ensureQueryData(trpc.customers.summary.queryOptions({ id: params.customerId })),
+      context.queryClient.ensureQueryData(
         trpc.appointments.list.queryOptions({
           page: 1,
           pageSize: CUSTOMER_APPOINTMENTS_PAGE_SIZE,
           customerId: params.customerId,
         }),
       ),
-      context.queryClient.prefetchQuery(trpc.notes.list.queryOptions({ customerId: params.customerId })),
-      context.queryClient.prefetchQuery(
+      context.queryClient.ensureQueryData(trpc.notes.list.queryOptions({ customerId: params.customerId })),
+      context.queryClient.ensureQueryData(
         trpc.hairAssigned.list.queryOptions({
           page: 1,
           pageSize: CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE,
@@ -206,7 +205,7 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
     customerId,
   })
 
-  const { data: customer, isLoading } = useQuery(trpc.customers.get.queryOptions({ id: customerId }))
+  const { data: customer } = useQuery(trpc.customers.get.queryOptions({ id: customerId }))
 
   const { data: appointmentsData } = useQuery(customerAppointmentsQueryOptions)
   const appointments = appointmentsData?.items ?? []
@@ -236,18 +235,7 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
     },
   })
 
-  if (isLoading) {
-    return (
-      <Container size="xl">
-        <Stack>
-          <Skeleton h={24} w={200} />
-          <Skeleton h={120} />
-        </Stack>
-      </Container>
-    )
-  }
-
-  if (!customer) {
+  if (!customer || !summary) {
     return (
       <Container size="xl">
         <Text c="dimmed">Customer not found.</Text>
@@ -282,42 +270,34 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
         }
       />
       <Stack>
-        {summary ? (
-          <SimpleGrid cols={{ base: 2, sm: 3, lg: 4 }}>
-            <StatCard label="Appointments" value={String(summary.appointmentCount)} />
-            <Card padding="md">
-              <Text size="xs" c="dimmed">
-                Transactions
-              </Text>
-              <Title order={4}>
-                {(() => {
-                  const parts = CURRENCIES.flatMap((c) =>
-                    summary.transactionSumsMinor[c] !== 0 ? [formatMinor(summary.transactionSumsMinor[c], c)] : [],
-                  )
-                  return parts.length > 0 ? parts.join(" · ") : formatMinor(0, "EUR")
-                })()}
-              </Title>
-            </Card>
-            <StatCard label="Hair profit" value={`€${summary.hairAssignedProfitSum.toFixed(2)}`} />
-            <StatCard label="Hair sold for" value={`€${summary.hairAssignedSoldForSum.toFixed(2)}`} />
-            <StatCard label="Hair weight" value={`${summary.hairAssignedWeightInGramsSum}g`} />
-            <StatCard label="Notes" value={String(summary.noteCount)} />
-            <Card padding="md">
-              <Text size="xs" c="dimmed">
-                Joined
-              </Text>
-              <Title order={4}>
-                <ClientDate date={summary.customerCreatedAt} />
-              </Title>
-            </Card>
-          </SimpleGrid>
-        ) : (
-          <SimpleGrid cols={{ base: 2, sm: 3, lg: 4 }}>
-            {Array.from({ length: 7 }).map((_, i) => (
-              <Skeleton key={i} h={70} />
-            ))}
-          </SimpleGrid>
-        )}
+        <SimpleGrid cols={{ base: 2, sm: 3, lg: 4 }}>
+          <StatCard label="Appointments" value={String(summary.appointmentCount)} />
+          <Card padding="md">
+            <Text size="xs" c="dimmed">
+              Transactions
+            </Text>
+            <Title order={4}>
+              {(() => {
+                const parts = CURRENCIES.flatMap((c) =>
+                  summary.transactionSumsMinor[c] !== 0 ? [formatMinor(summary.transactionSumsMinor[c], c)] : [],
+                )
+                return parts.length > 0 ? parts.join(" · ") : formatMinor(0, "EUR")
+              })()}
+            </Title>
+          </Card>
+          <StatCard label="Hair profit" value={`€${summary.hairAssignedProfitSum.toFixed(2)}`} />
+          <StatCard label="Hair sold for" value={`€${summary.hairAssignedSoldForSum.toFixed(2)}`} />
+          <StatCard label="Hair weight" value={`${summary.hairAssignedWeightInGramsSum}g`} />
+          <StatCard label="Notes" value={String(summary.noteCount)} />
+          <Card padding="md">
+            <Text size="xs" c="dimmed">
+              Joined
+            </Text>
+            <Title order={4}>
+              <ClientDate date={summary.customerCreatedAt} />
+            </Title>
+          </Card>
+        </SimpleGrid>
 
         <Tabs defaultValue="appointments">
           <Tabs.List>

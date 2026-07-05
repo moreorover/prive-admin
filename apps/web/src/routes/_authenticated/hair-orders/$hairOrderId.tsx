@@ -9,7 +9,6 @@ import {
   NativeSelect,
   NumberInput,
   SimpleGrid,
-  Skeleton,
   Stack,
   Text,
   Title,
@@ -34,7 +33,7 @@ import { trpc } from "@/utils/trpc"
 export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")({
   component: HairOrderDetailPage,
   loader: async ({ context, params }) => {
-    await context.queryClient.prefetchQuery(trpc.hairOrders.get.queryOptions({ id: params.hairOrderId }))
+    await context.queryClient.ensureQueryData(trpc.hairOrders.get.queryOptions({ id: params.hairOrderId }))
   },
 })
 
@@ -51,7 +50,7 @@ function HairOrderDetailPage() {
   const hairAssignedListQueryKey = trpc.hairAssigned.list.queryKey()
   const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
 
-  const { data: hairOrder, isLoading } = useQuery(hairOrderQueryOptions)
+  const { data: hairOrder } = useQuery(hairOrderQueryOptions)
 
   const assignedClientSummaryKeys = Array.from(
     new Set([
@@ -71,17 +70,6 @@ function HairOrderDetailPage() {
     },
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
-
-  if (isLoading) {
-    return (
-      <Container size="xl">
-        <Stack>
-          <Skeleton h={24} w={200} />
-          <Skeleton h={120} />
-        </Stack>
-      </Container>
-    )
-  }
 
   if (!hairOrder) {
     return (

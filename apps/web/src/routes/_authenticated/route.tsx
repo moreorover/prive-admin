@@ -13,7 +13,6 @@ import {
   Menu,
   NavLink as MantineNavLink,
   ScrollArea,
-  Skeleton,
   Stack,
   Text,
   Title,
@@ -301,10 +300,6 @@ function UserSection() {
   const theme = useMantineTheme()
   const { session } = Route.useRouteContext()
   const [menuOpened, setMenuOpened] = useState(false)
-
-  if (!session) {
-    return <Skeleton height={28} width={140} />
-  }
 
   const user = session.user
   const triggerClass = `${classes.user}${menuOpened ? ` ${classes.userActive}` : ""}`
