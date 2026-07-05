@@ -3,11 +3,22 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./context": "./src/context.ts",
-    "./http": "./src/http/index.ts",
-    "./r2": "./src/r2.ts",
-    "./routers": "./src/routers/index.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./context": {
+      "types": "./src/context.ts",
+      "default": "./src/context.ts"
+    },
+    "./http": {
+      "types": "./src/http/index.ts",
+      "default": "./src/http/index.ts"
+    },
+    "./routers": {
+      "types": "./src/routers/index.ts",
+      "default": "./src/routers/index.ts"
+    }
   },
   "scripts": {
     "check-types": "tsc --noEmit",
@@ -15,21 +26,14 @@
     "test:watch": "vp test"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1068.0",
-    "@paralleldrive/cuid2": "^3.3.0",
+    "@prive-admin-tanstack/application": "workspace:*",
     "@prive-admin-tanstack/auth": "workspace:*",
-    "@prive-admin-tanstack/db": "workspace:*",
-    "@prive-admin-tanstack/env": "workspace:*",
     "@trpc/server": "catalog:",
-    "archiver": "^8.0.0",
-    "csv-parse": "^6.2.1",
-    "drizzle-orm": "^0.45.2",
     "hono": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@prive-admin-tanstack/config": "workspace:*",
-    "@types/archiver": "^6.0.3",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   }

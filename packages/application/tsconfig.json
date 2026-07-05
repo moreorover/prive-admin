@@ -1,0 +1,4 @@
+{
+  "extends": "@prive-admin-tanstack/config/tsconfig.base.json",
+  "compilerOptions": {}
+}

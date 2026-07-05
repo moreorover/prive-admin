@@ -9,4 +9,8 @@ export function createDb() {
 
 export const db = createDb()
 
+export type Db = typeof db
+export type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0]
+
+export * from "./repositories"
 export { whereActiveLegalEntity } from "./scope"

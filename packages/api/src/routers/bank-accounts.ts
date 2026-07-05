@@ -1,9 +1,7 @@
-import { db } from "@prive-admin-tanstack/db"
-import { bankAccount } from "@prive-admin-tanstack/db/schema/bank-account"
-import { TRPCError } from "@trpc/server"
-import { eq } from "drizzle-orm"
+import { createBankAccount, getBankAccount, updateBankAccount } from "@prive-admin-tanstack/application/services"
 import { z } from "zod"
 
+import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
 
 const currencySchema = z.enum(["EUR", "GBP"])
@@ -24,45 +22,37 @@ const bankAccountSchema = z.object({
 
 export const bankAccountsRouter = router({
   get: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
-    const row = await db.query.bankAccount.findFirst({
-      where: eq(bankAccount.id, input.id),
-      with: {
-        legalEntity: true,
-      },
-    })
-    if (!row) throw new TRPCError({ code: "NOT_FOUND", message: "Bank account not found" })
-    return row
+    try {
+      return await getBankAccount(input.id)
+    } catch (error) {
+      throw toTrpcError(error)
+    }
   }),
 
   create: protectedProcedure.input(bankAccountSchema).mutation(async ({ input }) => {
-    const [row] = await db
-      .insert(bankAccount)
-      .values({
-        legalEntityId: input.legalEntityId,
-        iban: input.iban,
-        currency: input.currency,
-        bankName: input.bankName ?? null,
-        swift: input.swift ?? null,
-        displayName: input.displayName,
-      })
-      .returning()
-    return row
+    return createBankAccount({
+      legalEntityId: input.legalEntityId,
+      iban: input.iban,
+      currency: input.currency,
+      bankName: input.bankName,
+      swift: input.swift,
+      displayName: input.displayName,
+    })
   }),
 
   update: protectedProcedure.input(bankAccountSchema.required({ id: true })).mutation(async ({ input }) => {
-    const [row] = await db
-      .update(bankAccount)
-      .set({
+    try {
+      return await updateBankAccount({
+        id: input.id,
         legalEntityId: input.legalEntityId,
         iban: input.iban,
         currency: input.currency,
-        bankName: input.bankName ?? null,
-        swift: input.swift ?? null,
+        bankName: input.bankName,
+        swift: input.swift,
         displayName: input.displayName,
       })
-      .where(eq(bankAccount.id, input.id))
-      .returning()
-    if (!row) throw new TRPCError({ code: "NOT_FOUND", message: "Bank account not found" })
-    return row
+    } catch (error) {
+      throw toTrpcError(error)
+    }
   }),
 })

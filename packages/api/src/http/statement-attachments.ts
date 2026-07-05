@@ -1,40 +1,11 @@
-import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3"
-import { createId } from "@paralleldrive/cuid2"
-import { db } from "@prive-admin-tanstack/db"
-import { bankStatementAttachment } from "@prive-admin-tanstack/db/schema/bank-statement-attachment"
-import { bankStatementEntry } from "@prive-admin-tanstack/db/schema/bank-statement-entry"
-import * as archiverPkg from "archiver"
-import { and, eq, gte, lte } from "drizzle-orm"
+import {
+  exportBankStatementAttachmentsResponse,
+  getBankStatementAttachmentPreviewResponse,
+  uploadBankStatementAttachment,
+} from "@prive-admin-tanstack/application/services"
 import { Hono } from "hono"
-import { Readable } from "node:stream"
 
-import { bucketName, r2 } from "../r2"
 import { requireSession } from "./session"
-
-const ZipArchive = (
-  archiverPkg as unknown as {
-    ZipArchive: new (opts?: unknown) => Readable & {
-      append: (src: Readable | Buffer, opts: { name: string }) => void
-      finalize: () => void
-      on: (ev: string, cb: (err: Error) => void) => void
-    }
-  }
-).ZipArchive
-
-const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024
-
-function pad2(n: number) {
-  return String(n).padStart(2, "0")
-}
-
-function lastDay(year: number, month: number) {
-  return new Date(Date.UTC(year, month, 0)).getUTCDate()
-}
-
-function safeSegment(s: string | null | undefined) {
-  if (!s) return ""
-  return s.replace(/[^\w.-]+/g, "_").slice(0, 60)
-}
 
 export const statementAttachmentRoutes = new Hono()
 
@@ -48,52 +19,21 @@ statementAttachmentRoutes.post("/upload", async (c) => {
   const file = formData.get("file") as globalThis.File | null
 
   if (!file) return c.json({ error: "No file provided" }, 400)
-  if (file.size > MAX_ATTACHMENT_BYTES) return c.json({ error: `File exceeds ${MAX_ATTACHMENT_BYTES} bytes` }, 413)
-
-  if (entryId) {
-    const entry = await db.query.bankStatementEntry.findFirst({
-      where: eq(bankStatementEntry.id, entryId),
-      columns: { id: true },
-    })
-    if (!entry) return c.json({ error: "Entry not found" }, 404)
-  }
-
-  const safeName = file.name.replace(/[^\w.-]+/g, "_")
-  const now = new Date()
-  const yyyy = now.getUTCFullYear()
-  const mm = pad2(now.getUTCMonth() + 1)
-  const attachmentId = createId()
-  const key = `statement_uploads/${yyyy}/${mm}/${attachmentId}-${safeName}`
-  const arrayBuffer = await file.arrayBuffer()
 
   try {
-    await r2.send(
-      new PutObjectCommand({
-        Bucket: bucketName,
-        Key: key,
-        Body: new Uint8Array(arrayBuffer),
-        ContentType: file.type || "application/octet-stream",
-      }),
-    )
-  } catch (error) {
-    console.error("[statement-attachment upload] R2", error)
-    return c.json({ error: "Upload failed" }, 500)
-  }
-
-  const [row] = await db
-    .insert(bankStatementAttachment)
-    .values({
-      id: attachmentId,
-      bankStatementEntryId: entryId,
-      r2Key: key,
-      originalName: file.name,
+    const row = await uploadBankStatementAttachment({
+      entryId,
+      fileName: file.name,
       contentType: file.type || "application/octet-stream",
       size: file.size,
       uploadedById: session.user.id,
+      body: new Uint8Array(await file.arrayBuffer()),
     })
-    .returning()
-
-  return c.json(row)
+    return c.json(row)
+  } catch (error) {
+    console.error("[statement-attachment upload]", error)
+    return c.json({ error: "Upload failed" }, 500)
+  }
 })
 
 statementAttachmentRoutes.get("/preview", async (c) => {
@@ -103,42 +43,11 @@ statementAttachmentRoutes.get("/preview", async (c) => {
   const id = c.req.query("id")
   if (!id) return c.json({ error: "Missing id" }, 400)
 
-  const row = await db.query.bankStatementAttachment.findFirst({
-    where: eq(bankStatementAttachment.id, id),
-  })
-  if (!row) return c.json({ error: "Not found" }, 404)
-
-  let obj
   try {
-    obj = await r2.send(new GetObjectCommand({ Bucket: bucketName, Key: row.r2Key }))
-  } catch (error) {
-    console.error("[statement-attachment preview] R2", error)
-    return c.json({ error: "Fetch failed" }, 500)
+    return await getBankStatementAttachmentPreviewResponse(id)
+  } catch {
+    return c.json({ error: "Not found" }, 404)
   }
-  if (!obj.Body) return c.json({ error: "Empty body" }, 500)
-
-  const webStream = Readable.toWeb(obj.Body as Readable) as unknown as ReadableStream
-  const inlineSafeTypes = new Set([
-    "application/pdf",
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/webp",
-    "text/plain",
-    "text/csv",
-  ])
-  const contentType = row.contentType || "application/octet-stream"
-  const disposition = inlineSafeTypes.has(contentType) ? "inline" : "attachment"
-  const filename = encodeURIComponent(row.originalName)
-
-  return new Response(webStream, {
-    headers: {
-      "Content-Type": contentType,
-      "Content-Disposition": `${disposition}; filename="${filename}"; filename*=UTF-8''${filename}`,
-      "Cache-Control": "private, max-age=60",
-      "X-Content-Type-Options": "nosniff",
-    },
-  })
 })
 
 statementAttachmentRoutes.get("/export", async (c) => {
@@ -152,43 +61,10 @@ statementAttachmentRoutes.get("/export", async (c) => {
   if (!Number.isInteger(year) || year < 2000 || year > 9999) return c.json({ error: "Invalid year" }, 400)
   if (!Number.isInteger(month) || month < 1 || month > 12) return c.json({ error: "Invalid month" }, 400)
 
-  const start = `${year}-${pad2(month)}-01`
-  const end = `${year}-${pad2(month)}-${pad2(lastDay(year, month))}`
-
-  const conditions = [gte(bankStatementEntry.date, start), lte(bankStatementEntry.date, end)]
-  if (bankAccountId) conditions.push(eq(bankStatementEntry.bankAccountId, bankAccountId))
-
-  const rows = await db
-    .select({
-      attachment: bankStatementAttachment,
-      entry: bankStatementEntry,
-    })
-    .from(bankStatementAttachment)
-    .innerJoin(bankStatementEntry, eq(bankStatementAttachment.bankStatementEntryId, bankStatementEntry.id))
-    .where(and(...conditions))
-
-  const archive = new ZipArchive({ zlib: { level: 9 } })
-  archive.on("warning", (err: Error) => console.warn("[zip warning]", err))
-  archive.on("error", (err: Error) => console.error("[zip error]", err))
-
-  for (const { attachment, entry } of rows) {
-    const obj = await r2.send(new GetObjectCommand({ Bucket: bucketName, Key: attachment.r2Key }))
-    const body = obj.Body
-    if (!body) continue
-    const counterparty = safeSegment(entry.counterpartyName) || "unknown"
-    const name = `${entry.date}_${counterparty}_${attachment.originalName}`
-    archive.append(body as Readable, { name })
+  try {
+    return await exportBankStatementAttachmentsResponse({ year, month, bankAccountId })
+  } catch (error) {
+    console.error("[statement-attachment export]", error)
+    return c.json({ error: "Export failed" }, 500)
   }
-
-  archive.finalize()
-
-  const webStream = Readable.toWeb(archive) as unknown as ReadableStream
-  const filename = `bank-statements-${year}-${pad2(month)}.zip`
-
-  return new Response(webStream, {
-    headers: {
-      "Content-Type": "application/zip",
-      "Content-Disposition": `attachment; filename="${filename}"`,
-    },
-  })
 })
