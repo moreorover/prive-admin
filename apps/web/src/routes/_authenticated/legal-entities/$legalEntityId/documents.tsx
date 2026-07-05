@@ -1,4 +1,15 @@
-import { ActionIcon, FileInput, Select, Stack, Table, Text, Tooltip, UnstyledButton } from "@mantine/core"
+import {
+  ActionIcon,
+  FileInput,
+  Group,
+  Pagination,
+  Select,
+  Stack,
+  Table,
+  Text,
+  Tooltip,
+  UnstyledButton,
+} from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { IconTrash } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -14,18 +25,33 @@ export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntit
   component: DocumentsTab,
 })
 
+const ASSIGNABLE_ENTRIES_PAGE_SIZE = 100
+
 function DocumentsTab() {
   const queryClient = useQueryClient()
   const [busy, setBusy] = useState(false)
   const [fileInputKey, setFileInputKey] = useState(0)
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
+  const [assignableEntriesPage, setAssignableEntriesPage] = useState(1)
 
-  const { data: unassignedDocuments = [] } = useQuery(trpc.bankStatementAttachments.unassigned.queryOptions())
+  const { data: unassignedDocuments = [] } = useQuery(
+    trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
+  )
 
-  const { data: assignableEntries = [] } = useQuery(trpc.bankStatementEntries.list.queryOptions({ status: "PENDING" }))
+  const { data: assignableEntriesData } = useQuery(
+    trpc.bankStatementEntries.list.queryOptions({
+      status: "PENDING",
+      page: assignableEntriesPage,
+      pageSize: ASSIGNABLE_ENTRIES_PAGE_SIZE,
+    }),
+  )
+  const assignableEntries = assignableEntriesData?.items ?? []
+  const assignableEntriesTotalCount = assignableEntriesData?.totalCount ?? 0
+  const assignableEntriesTotalPages = Math.max(1, Math.ceil(assignableEntriesTotalCount / ASSIGNABLE_ENTRIES_PAGE_SIZE))
+  const showAssignableEntriesPagination = assignableEntriesTotalCount > ASSIGNABLE_ENTRIES_PAGE_SIZE
 
   const invalidate = async () => {
-    await queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.unassigned.queryKey() })
+    await queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.list.queryKey() })
     await queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.counts.queryKey() })
   }
 
@@ -97,6 +123,20 @@ function DocumentsTab() {
         padding={items.length > 0 ? 0 : "lg"}
       >
         <Stack gap="md">
+          {showAssignableEntriesPagination && (
+            <Group justify="space-between" px="md" pt="md">
+              <Text size="sm" c="dimmed">
+                {assignableEntriesTotalCount} pending entr{assignableEntriesTotalCount === 1 ? "y" : "ies"} · Page{" "}
+                {Math.min(assignableEntriesPage, assignableEntriesTotalPages)} of {assignableEntriesTotalPages}
+              </Text>
+              <Pagination
+                size="sm"
+                total={assignableEntriesTotalPages}
+                value={Math.min(assignableEntriesPage, assignableEntriesTotalPages)}
+                onChange={setAssignableEntriesPage}
+              />
+            </Group>
+          )}
           {items.length > 0 && (
             <Table>
               <Table.Thead>

@@ -13,13 +13,13 @@ const salonSchema = z.object({
 })
 
 export const salonsRouter = router({
-  list: protectedProcedure.query(() => {
+  list: protectedProcedure.input(z.object({}).optional().default({})).query(() => {
     return db.query.salon.findMany({
       orderBy: (s, { asc }) => [asc(s.name)],
     })
   }),
 
-  byId: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
+  get: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
     const result = await db.query.salon.findFirst({ where: eq(salon.id, input.id) })
     if (!result) {
       throw new TRPCError({ code: "NOT_FOUND", message: "Salon not found" })

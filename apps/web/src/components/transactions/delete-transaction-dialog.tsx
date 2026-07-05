@@ -16,6 +16,7 @@ type DeleteTransactionDialogProps = {
     customer?: { name: string } | null
   }
   invalidateKeys: { queryKey: readonly unknown[] }[]
+  onSuccess?: () => void
 }
 
 export function DeleteTransactionDialog({
@@ -23,6 +24,7 @@ export function DeleteTransactionDialog({
   onOpenChange,
   transaction,
   invalidateKeys,
+  onSuccess,
 }: DeleteTransactionDialogProps) {
   const queryClient = useQueryClient()
 
@@ -30,6 +32,7 @@ export function DeleteTransactionDialog({
     ...trpc.transactions.delete.mutationOptions(),
     onSuccess: () => {
       for (const key of invalidateKeys) queryClient.invalidateQueries(key)
+      onSuccess?.()
       onOpenChange(false)
       notifications.show({ color: "green", message: "Transaction deleted" })
     },

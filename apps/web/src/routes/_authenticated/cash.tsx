@@ -22,9 +22,11 @@ import { EditCashTransactionDialog } from "@/components/cash-transactions/edit-c
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { type Currency } from "@/lib/currency"
+import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
+const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 
 type CashTransactionDirection = "all" | "received" | "paid"
 type CashTransactionCurrencyFilter = Currency | ""
@@ -54,8 +56,15 @@ function CashPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [editing, setEditing] = useState<CashTransactionRow | null>(null)
   const [deleting, setDeleting] = useState<CashTransactionRow | null>(null)
+  const [customerSearch, setCustomerSearch] = useState("")
+  const [selectedCustomerOption, setSelectedCustomerOption] = useState<SelectOption | null>(null)
 
-  const { data: customersData } = useQuery(trpc.customers.list.queryOptions())
+  const { data: customersData } = useQuery(
+    trpc.customers.list.queryOptions({
+      ...defaultCustomersListInput,
+      search: customerSearch.trim() || undefined,
+    }),
+  )
 
   const queryFilter = {
     page,
@@ -72,7 +81,11 @@ function CashPage() {
     trpc.cashTransactions.list.queryOptions(queryFilter, { placeholderData: (previousData) => previousData }),
   )
 
-  const customers = customersData ?? []
+  const customers = customersData?.items ?? []
+  const customerOptions = withPinnedOption(
+    customers.map((customer) => ({ value: customer.id, label: customer.name })),
+    selectedCustomerOption,
+  )
   const totalCount = result?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
@@ -112,10 +125,14 @@ function CashPage() {
             placeholder="All customers"
             searchable
             clearable
-            data={customers.map((customer) => ({ value: customer.id, label: customer.name }))}
+            searchValue={customerSearch}
+            onSearchChange={setCustomerSearch}
+            data={customerOptions}
             value={filters.customerId}
             onChange={(value) => {
               updateFilters({ customerId: value ?? "" })
+              const option = customerOptions.find((candidate) => candidate.value === value)
+              setSelectedCustomerOption(option ?? null)
             }}
           />
           <NativeSelect
@@ -172,7 +189,7 @@ function CashPage() {
         </Group>
       </Section>
 
-      <CreateCashTransactionDialog open={createOpen} onOpenChange={setCreateOpen} customers={customers} />
+      <CreateCashTransactionDialog open={createOpen} onOpenChange={setCreateOpen} />
       {editing ? (
         <EditCashTransactionDialog
           open={!!editing}
@@ -180,7 +197,6 @@ function CashPage() {
             if (!open) setEditing(null)
           }}
           transaction={editing}
-          customers={customers}
         />
       ) : null}
       {deleting ? (

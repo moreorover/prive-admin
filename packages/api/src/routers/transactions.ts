@@ -2,10 +2,11 @@ import { db } from "@prive-admin-tanstack/db"
 import { appointment, personnelOnAppointments } from "@prive-admin-tanstack/db/schema/appointment"
 import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
 import { TRPCError } from "@trpc/server"
-import { eq } from "drizzle-orm"
+import { and, count, eq } from "drizzle-orm"
 import { z } from "zod"
 
 import { protectedProcedure, router } from "../index"
+import { getOffset, pagedResult, pageSchema } from "../pagination"
 
 const currencySchema = z.enum(["GBP", "EUR"])
 
@@ -16,23 +17,43 @@ const transactionFieldsSchema = z.object({
   currency: currencySchema,
 })
 
+const transactionListSchema = pageSchema.extend({
+  appointmentId: z.string().optional(),
+  customerId: z.string().optional(),
+  currency: currencySchema.optional(),
+})
+
 export const transactionsRouter = router({
-  byAppointmentId: protectedProcedure.input(z.object({ appointmentId: z.string() })).query(async ({ input }) => {
-    const appointmentRow = await db.query.appointment.findFirst({
-      where: eq(appointment.id, input.appointmentId),
-      columns: { id: true },
-    })
-    if (!appointmentRow) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" })
+  list: protectedProcedure.input(transactionListSchema).query(async ({ input }) => {
+    if (input.appointmentId) {
+      const appointmentRow = await db.query.appointment.findFirst({
+        where: eq(appointment.id, input.appointmentId),
+        columns: { id: true },
+      })
+      if (!appointmentRow) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" })
+      }
     }
 
-    return db.query.transaction.findMany({
-      where: eq(transaction.appointmentId, input.appointmentId),
+    const conditions = []
+    if (input.appointmentId) conditions.push(eq(transaction.appointmentId, input.appointmentId))
+    if (input.customerId) conditions.push(eq(transaction.customerId, input.customerId))
+    if (input.currency) conditions.push(eq(transaction.currency, input.currency))
+    const where = conditions.length > 0 ? and(...conditions) : undefined
+
+    const items = await db.query.transaction.findMany({
+      where,
       with: {
         customer: { columns: { id: true, name: true } },
       },
       orderBy: (tx, { asc }) => [asc(tx.createdAt)],
+      limit: input.pageSize,
+      offset: getOffset(input),
     })
+
+    const [countRow] = await db.select({ totalCount: count() }).from(transaction).where(where)
+
+    return pagedResult(items, input, countRow?.totalCount ?? 0)
   }),
 
   create: protectedProcedure

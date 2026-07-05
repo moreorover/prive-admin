@@ -9,6 +9,7 @@ import {
   Group,
   Menu,
   Modal,
+  Pagination,
   Popover,
   Select,
   Stack,
@@ -45,9 +46,11 @@ export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntit
   component: BankAccountRoute,
 })
 
+const STATEMENT_ENTRIES_PAGE_SIZE = 25
+
 function BankAccountRoute() {
   const { bankAccountId } = Route.useParams()
-  return bankAccountId === "new" ? <BankAccountNew /> : <BankAccountShow id={bankAccountId} />
+  return bankAccountId === "new" ? <BankAccountNew /> : <BankAccountShow key={bankAccountId} id={bankAccountId} />
 }
 
 type StatusFilter = "PENDING" | "IGNORED" | "ALL"
@@ -68,15 +71,22 @@ function BankAccountShow({ id }: { id: string }) {
     return new Date(d.getFullYear(), d.getMonth(), 1)
   })
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
+  const [entriesPage, setEntriesPage] = useState(1)
 
-  const bankAccountQueryOptions = trpc.bankAccounts.byId.queryOptions({ id })
+  const bankAccountQueryOptions = trpc.bankAccounts.get.queryOptions({ id })
   const statementEntriesQueryOptions = trpc.bankStatementEntries.list.queryOptions({
     bankAccountId: id,
     status: statusFilter === "ALL" ? undefined : statusFilter,
+    page: entriesPage,
+    pageSize: STATEMENT_ENTRIES_PAGE_SIZE,
   })
   const { data: bankAccount } = useQuery(bankAccountQueryOptions)
 
-  const { data: entries = [] } = useQuery(statementEntriesQueryOptions)
+  const { data: statementEntriesData } = useQuery(statementEntriesQueryOptions)
+  const entries = statementEntriesData?.items ?? []
+  const entriesTotalCount = statementEntriesData?.totalCount ?? 0
+  const entriesTotalPages = Math.max(1, Math.ceil(entriesTotalCount / STATEMENT_ENTRIES_PAGE_SIZE))
+  const showEntriesPagination = entriesTotalCount > STATEMENT_ENTRIES_PAGE_SIZE
 
   const { data: attachmentCounts } = useQuery(trpc.bankStatementAttachments.counts.queryOptions())
 
@@ -85,6 +95,7 @@ function BankAccountShow({ id }: { id: string }) {
     onSuccess: async (result) => {
       setImportResult(result)
       setFile(null)
+      setEntriesPage(1)
       notifications.show({
         color: "green",
         message: `Imported ${result.inserted} new entries (${result.skipped} duplicates skipped)`,
@@ -97,6 +108,7 @@ function BankAccountShow({ id }: { id: string }) {
   const ignoreMutation = useMutation({
     ...trpc.bankStatementEntries.ignore.mutationOptions(),
     onSuccess: async () => {
+      setEntriesPage(1)
       notifications.show({ color: "yellow", message: "Marked as ignored" })
       await queryClient.invalidateQueries({ queryKey: trpc.bankStatementEntries.list.queryKey() })
     },
@@ -106,6 +118,7 @@ function BankAccountShow({ id }: { id: string }) {
   const undoMutation = useMutation({
     ...trpc.bankStatementEntries.undo.mutationOptions(),
     onSuccess: async () => {
+      setEntriesPage(1)
       notifications.show({ color: "green", message: "Restored to pending" })
       await queryClient.invalidateQueries({ queryKey: trpc.bankStatementEntries.list.queryKey() })
     },
@@ -210,7 +223,10 @@ function BankAccountShow({ id }: { id: string }) {
               { value: "ALL", label: "All" },
             ]}
             value={statusFilter}
-            onChange={(v) => setStatusFilter((v as StatusFilter) ?? "PENDING")}
+            onChange={(v) => {
+              setStatusFilter((v as StatusFilter) ?? "PENDING")
+              setEntriesPage(1)
+            }}
             w={180}
           />
           <Popover position="bottom-end" withArrow shadow="md" width={260}>
@@ -325,6 +341,19 @@ function BankAccountShow({ id }: { id: string }) {
               )}
             </Table.Tbody>
           </Table>
+          {showEntriesPagination && (
+            <Group justify="space-between" mt="md">
+              <Text size="sm" c="dimmed">
+                {entriesTotalCount} entr{entriesTotalCount === 1 ? "y" : "ies"} · Page{" "}
+                {Math.min(entriesPage, entriesTotalPages)} of {entriesTotalPages}
+              </Text>
+              <Pagination
+                total={entriesTotalPages}
+                value={Math.min(entriesPage, entriesTotalPages)}
+                onChange={setEntriesPage}
+              />
+            </Group>
+          )}
         </Card>
       </Stack>
 
@@ -370,14 +399,13 @@ function AttachmentsCell({
   })
 
   const { data: unassignedAttachments = [] } = useQuery({
-    ...trpc.bankStatementAttachments.unassigned.queryOptions(),
+    ...trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
     enabled: opened,
   })
 
   const invalidate = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.list.queryKey() }),
-      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.unassigned.queryKey() }),
       queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.counts.queryKey() }),
     ])
   }
@@ -562,7 +590,7 @@ function EditBankAccountModal({
   initial: FormValues
 }) {
   const queryClient = useQueryClient()
-  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions())
+  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions({}))
 
   const form = useForm<FormValues & { id: string }>({
     initialValues: {
@@ -578,10 +606,10 @@ function EditBankAccountModal({
       notifications.show({ color: "green", message: "Saved" })
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: trpc.bankAccounts.byId.queryOptions({ id: bankAccountId }).queryKey,
+          queryKey: trpc.bankAccounts.get.queryOptions({ id: bankAccountId }).queryKey,
         }),
         queryClient.invalidateQueries({
-          queryKey: trpc.legalEntities.byId.queryOptions({ id: values.legalEntityId }).queryKey,
+          queryKey: trpc.legalEntities.get.queryOptions({ id: values.legalEntityId }).queryKey,
         }),
       ])
       onClose()
@@ -635,7 +663,7 @@ function BankAccountNew() {
   const { legalEntityId: pathLegalEntityId } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions())
+  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions({}))
 
   const form = useForm<FormValues>({
     initialValues: {
@@ -654,7 +682,7 @@ function BankAccountNew() {
     onSuccess: async (_, values) => {
       notifications.show({ color: "green", message: "Saved" })
       await queryClient.invalidateQueries({
-        queryKey: trpc.legalEntities.byId.queryOptions({ id: values.legalEntityId }).queryKey,
+        queryKey: trpc.legalEntities.get.queryOptions({ id: values.legalEntityId }).queryKey,
       })
       navigate({
         to: "/legal-entities/$legalEntityId/bank-accounts",

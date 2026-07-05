@@ -1,4 +1,4 @@
-import { Container, Stack } from "@mantine/core"
+import { Alert, Container, Stack, Text } from "@mantine/core"
 import { Schedule, type ScheduleEventData, type ScheduleViewLevel } from "@mantine/schedule"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
@@ -10,22 +10,57 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
-const appointmentsQueryOptions = trpc.appointments.list.queryOptions({})
+const CALENDAR_APPOINTMENTS_PAGE_SIZE = 100
+
+function getVisibleDateRange(date: string, view: ScheduleViewLevel) {
+  const current = dayjs(date)
+  if (view === "day") {
+    return {
+      startDate: current.startOf("day").toISOString(),
+      endDate: current.endOf("day").toISOString(),
+    }
+  }
+
+  if (view === "week") {
+    const start = current.startOf("day").subtract((current.day() + 6) % 7, "day")
+    return {
+      startDate: start.toISOString(),
+      endDate: start.add(6, "day").endOf("day").toISOString(),
+    }
+  }
+
+  return {
+    startDate: current.startOf("month").toISOString(),
+    endDate: current.endOf("month").toISOString(),
+  }
+}
+
+function calendarAppointmentsQueryOptions(date: string, view: ScheduleViewLevel) {
+  return trpc.appointments.list.queryOptions({
+    page: 1,
+    pageSize: CALENDAR_APPOINTMENTS_PAGE_SIZE,
+    ...getVisibleDateRange(date, view),
+  })
+}
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   component: CalendarPage,
   loader: async ({ context }) => {
-    await context.queryClient.prefetchQuery(appointmentsQueryOptions)
+    await context.queryClient.prefetchQuery(calendarAppointmentsQueryOptions(dayjs().format("YYYY-MM-DD"), "month"))
   },
 })
 
 function CalendarPage() {
-  const { data: appointments } = useQuery(appointmentsQueryOptions)
   const navigate = useNavigate()
   const [view, setView] = useState<ScheduleViewLevel>("month")
   const [date, setDate] = useState<string>(() => dayjs().format("YYYY-MM-DD"))
   const [createOpen, setCreateOpen] = useState(false)
   const [defaultStartsAt, setDefaultStartsAt] = useState<string | null>(null)
+  const appointmentsQueryOptions = calendarAppointmentsQueryOptions(date, view)
+  const { data: appointmentsData } = useQuery(appointmentsQueryOptions)
+  const visibleAppointmentCount = appointmentsData?.items.length ?? 0
+  const appointmentTotalCount = appointmentsData?.totalCount ?? 0
+  const hasHiddenAppointments = appointmentTotalCount > visibleAppointmentCount
 
   const openCreate = useCallback((startsAt: string | null) => {
     setDefaultStartsAt(startsAt)
@@ -33,6 +68,7 @@ function CalendarPage() {
   }, [])
 
   const events = useMemo<ScheduleEventData[]>(() => {
+    const appointments = appointmentsData?.items ?? []
     return (appointments ?? []).map((a) => {
       const start = dayjs(a.startsAt)
       const end = start.add(1, "hour")
@@ -44,7 +80,7 @@ function CalendarPage() {
         color: "blue",
       }
     })
-  }, [appointments])
+  }, [appointmentsData])
 
   const goToAppointment = useCallback(
     (id: string) => {
@@ -57,6 +93,14 @@ function CalendarPage() {
     <Container size="xl">
       <PageHeader title="Calendar" description="Click a slot to book or open an existing appointment." />
       <Stack>
+        {hasHiddenAppointments && (
+          <Alert color="yellow" variant="light">
+            <Text size="sm">
+              Showing first {visibleAppointmentCount} of {appointmentTotalCount} appointments in this range. Narrow the
+              view or date range.
+            </Text>
+          </Alert>
+        )}
         <Section padding="md">
           <Schedule
             events={events}

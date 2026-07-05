@@ -14,13 +14,13 @@ const legalEntityUpdateSchema = z.object({
 })
 
 export const legalEntitiesRouter = router({
-  list: protectedProcedure.query(() => {
+  list: protectedProcedure.input(z.object({}).optional().default({})).query(() => {
     return db.query.legalEntity.findMany({
       orderBy: (le, { asc }) => [asc(le.country), asc(le.name)],
     })
   }),
 
-  byId: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
+  get: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
     const result = await db.query.legalEntity.findFirst({
       where: eq(legalEntity.id, input.id),
       with: {

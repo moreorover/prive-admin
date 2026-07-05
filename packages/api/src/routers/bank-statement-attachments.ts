@@ -3,26 +3,31 @@ import { db } from "@prive-admin-tanstack/db"
 import { bankStatementAttachment } from "@prive-admin-tanstack/db/schema/bank-statement-attachment"
 import { bankStatementEntry } from "@prive-admin-tanstack/db/schema/bank-statement-entry"
 import { TRPCError } from "@trpc/server"
-import { desc, eq, isNull } from "drizzle-orm"
+import { and, desc, eq, isNotNull, isNull } from "drizzle-orm"
 import { z } from "zod"
 
 import { protectedProcedure, router } from "../index"
 import { bucketName, r2 } from "../r2"
 
 export const bankStatementAttachmentsRouter = router({
-  list: protectedProcedure.input(z.object({ entryId: z.string().min(1) })).query(({ input }) => {
-    return db.query.bankStatementAttachment.findMany({
-      where: eq(bankStatementAttachment.bankStatementEntryId, input.entryId),
-      orderBy: [desc(bankStatementAttachment.uploadedAt)],
-    })
-  }),
+  list: protectedProcedure
+    .input(
+      z.object({
+        entryId: z.string().min(1).optional(),
+        assigned: z.boolean().optional(),
+      }),
+    )
+    .query(({ input }) => {
+      const conditions = []
+      if (input.entryId) conditions.push(eq(bankStatementAttachment.bankStatementEntryId, input.entryId))
+      if (input.assigned === false) conditions.push(isNull(bankStatementAttachment.bankStatementEntryId))
+      if (input.assigned === true) conditions.push(isNotNull(bankStatementAttachment.bankStatementEntryId))
 
-  unassigned: protectedProcedure.query(() => {
-    return db.query.bankStatementAttachment.findMany({
-      where: isNull(bankStatementAttachment.bankStatementEntryId),
-      orderBy: [desc(bankStatementAttachment.uploadedAt)],
-    })
-  }),
+      return db.query.bankStatementAttachment.findMany({
+        where: conditions.length > 0 ? and(...conditions) : undefined,
+        orderBy: [desc(bankStatementAttachment.uploadedAt)],
+      })
+    }),
 
   counts: protectedProcedure.query(async () => {
     const rows = await db

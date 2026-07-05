@@ -1,3 +1,4 @@
+import { UIProvider } from "@prive-admin-tanstack/ui/provider"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { RouterProvider } from "@tanstack/react-router"
 import { StrictMode } from "react"
@@ -15,7 +16,9 @@ if (!rootElement) {
 ReactDOM.createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} context={{ queryClient, trpc }} />
+      <UIProvider>
+        <RouterProvider router={router} context={{ queryClient, trpc }} />
+      </UIProvider>
     </QueryClientProvider>
   </StrictMode>,
 )

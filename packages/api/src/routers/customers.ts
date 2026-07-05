@@ -1,10 +1,11 @@
 import { db } from "@prive-admin-tanstack/db"
 import { customer } from "@prive-admin-tanstack/db/schema/customer"
 import { TRPCError } from "@trpc/server"
-import { eq } from "drizzle-orm"
+import { asc, count, eq, ilike, or } from "drizzle-orm"
 import { z } from "zod"
 
 import { protectedProcedure, router } from "../index"
+import { getOffset, pagedResult, pageSchema, searchSchema } from "../pagination"
 
 const customerInputSchema = z.object({
   id: z.string().optional(),
@@ -19,14 +20,35 @@ const customerInputSchema = z.object({
 
 type Currency = "GBP" | "EUR"
 
+const customerListSchema = pageSchema.extend({ search: searchSchema })
+
+function escapeLikePattern(value: string) {
+  return value.replace(/[\\%_]/g, "\\$&")
+}
+
 export const customersRouter = router({
-  list: protectedProcedure.query(() => {
-    return db.query.customer.findMany({
-      orderBy: (customer, { asc }) => [asc(customer.name)],
-    })
+  list: protectedProcedure.input(customerListSchema).query(async ({ input }) => {
+    const where = input.search
+      ? or(
+          ilike(customer.name, `%${escapeLikePattern(input.search)}%`),
+          ilike(customer.phoneNumber, `%${escapeLikePattern(input.search)}%`),
+        )
+      : undefined
+
+    const items = await db
+      .select()
+      .from(customer)
+      .where(where)
+      .orderBy(asc(customer.name))
+      .limit(input.pageSize)
+      .offset(getOffset(input))
+
+    const [countRow] = await db.select({ totalCount: count() }).from(customer).where(where)
+
+    return pagedResult(items, input, countRow?.totalCount ?? 0)
   }),
 
-  byId: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
+  get: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input }) => {
     const result = await db.query.customer.findFirst({
       where: eq(customer.id, input.id),
     })

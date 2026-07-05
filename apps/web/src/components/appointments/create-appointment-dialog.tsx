@@ -5,7 +5,9 @@ import { notifications } from "@mantine/notifications"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
+import { useState } from "react"
 
+import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
 type CreateAppointmentDialogProps = {
@@ -31,6 +33,8 @@ type SalonOption = {
 }
 
 const defaultStartsAtString = () => dayjs().startOf("hour").add(1, "hour").format("YYYY-MM-DD HH:mm:ss")
+const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
+const defaultAppointmentsListInput = { page: 1, pageSize: 100 }
 
 export function CreateAppointmentDialog({
   open,
@@ -64,8 +68,11 @@ function CreateAppointmentForm({
 }: Omit<CreateAppointmentDialogProps, "open" | "onOpenChange"> & { onClose: () => void }) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const appointmentListQueryOptions = trpc.appointments.list.queryOptions({})
-  const salonsQueryOptions = trpc.salons.list.queryOptions()
+  const appointmentListQueryOptions = trpc.appointments.list.queryOptions(defaultAppointmentsListInput)
+  const salonsQueryOptions = trpc.salons.list.queryOptions({})
+  const [clientSearch, setClientSearch] = useState("")
+  const [masterSearch, setMasterSearch] = useState("")
+  const [selectedCustomerOptions, setSelectedCustomerOptions] = useState<Record<string, SelectOption>>({})
 
   const form = useForm<FormValues>({
     initialValues: {
@@ -84,7 +91,29 @@ function CreateAppointmentForm({
     },
   })
 
-  const { data: customers } = useQuery(trpc.customers.list.queryOptions())
+  const { data: clientCustomersData } = useQuery(
+    trpc.customers.list.queryOptions({
+      ...defaultCustomersListInput,
+      search: clientSearch.trim() || undefined,
+    }),
+  )
+  const { data: masterCustomersData } = useQuery(
+    trpc.customers.list.queryOptions({
+      ...defaultCustomersListInput,
+      search: masterSearch.trim() || undefined,
+    }),
+  )
+  const clientCustomerOptions = (clientCustomersData?.items ?? []).map((c) => ({ value: c.id, label: c.name }))
+  const masterCustomerOptions = (masterCustomersData?.items ?? []).map((c) => ({ value: c.id, label: c.name }))
+  const clientOptions = withPinnedOption(clientCustomerOptions, selectedCustomerOptions[form.values.clientId])
+  const masterOptions = withPinnedOption(masterCustomerOptions, selectedCustomerOptions[form.values.masterId])
+
+  const rememberCustomerOption = (value: string | null, options: SelectOption[]) => {
+    if (!value) return
+    const option = options.find((candidate) => candidate.value === value)
+    if (!option) return
+    setSelectedCustomerOptions((current) => ({ ...current, [option.value]: option }))
+  }
 
   const { data: salons } = useQuery(salonsQueryOptions)
 
@@ -126,16 +155,30 @@ function CreateAppointmentForm({
             label="Client"
             required
             searchable
-            data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
-            {...form.getInputProps("clientId")}
+            searchValue={clientSearch}
+            onSearchChange={setClientSearch}
+            data={clientOptions}
+            value={form.values.clientId}
+            onChange={(value) => {
+              form.setFieldValue("clientId", value ?? "")
+              rememberCustomerOption(value, clientOptions)
+            }}
+            error={form.errors.clientId}
           />
         )}
         <Select
           label="Master"
           required
           searchable
-          data={(customers ?? []).map((c) => ({ value: c.id, label: c.name }))}
-          {...form.getInputProps("masterId")}
+          searchValue={masterSearch}
+          onSearchChange={setMasterSearch}
+          data={masterOptions}
+          value={form.values.masterId}
+          onChange={(value) => {
+            form.setFieldValue("masterId", value ?? "")
+            rememberCustomerOption(value, masterOptions)
+          }}
+          error={form.errors.masterId}
         />
         <Select
           label="Salon"

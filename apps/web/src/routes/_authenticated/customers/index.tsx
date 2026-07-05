@@ -1,7 +1,7 @@
-import { Button, Container, Modal, Skeleton, Stack, Table, Text, TextInput } from "@mantine/core"
+import { Button, Container, Group, Modal, Pagination, Skeleton, Stack, Table, Text, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
-import { IconPlus } from "@tabler/icons-react"
+import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
@@ -11,7 +11,9 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
-const customersQueryOptions = trpc.customers.list.queryOptions()
+const PAGE_SIZE = 25
+const defaultCustomersListInput = { page: 1, pageSize: PAGE_SIZE, search: undefined as string | undefined }
+const customersQueryOptions = trpc.customers.list.queryOptions(defaultCustomersListInput)
 
 export const Route = createFileRoute("/_authenticated/customers/")({
   component: CustomersPage,
@@ -26,7 +28,7 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
   const mutation = useMutation({
     ...trpc.customers.create.mutationOptions(),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: customersQueryOptions.queryKey })
+      await queryClient.invalidateQueries({ queryKey: trpc.customers.list.queryKey() })
       onOpenChange(false)
       notifications.show({ color: "green", message: "Customer created" })
     },
@@ -60,7 +62,19 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
 }
 
 function CustomersPage() {
-  const { data: customers, isLoading } = useQuery(customersQueryOptions)
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState("")
+  const listInput = {
+    page,
+    pageSize: PAGE_SIZE,
+    search: search.trim() || undefined,
+  }
+  const { data, isLoading } = useQuery(
+    trpc.customers.list.queryOptions(listInput, { placeholderData: (previousData) => previousData }),
+  )
+  const customers = data?.items ?? []
+  const totalCount = data?.totalCount ?? 0
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
@@ -75,6 +89,23 @@ function CustomersPage() {
         }
       />
       <Section padding={0}>
+        <Group p="md" justify="space-between" align="flex-end">
+          <TextInput
+            label="Search"
+            placeholder="Search customers"
+            leftSection={<IconSearch size={16} />}
+            value={search}
+            onChange={(event) => {
+              setSearch(event.currentTarget.value)
+              setPage(1)
+            }}
+            miw={260}
+            flex={1}
+          />
+          <Text size="sm" c="dimmed">
+            {totalCount} customer{totalCount === 1 ? "" : "s"}
+          </Text>
+        </Group>
         <Table>
           <Table.Thead>
             <Table.Tr>
@@ -98,7 +129,7 @@ function CustomersPage() {
                     </Table.Td>
                   </Table.Tr>
                 ))
-              : customers?.map((c) => (
+              : customers.map((c) => (
                   <Table.Tr key={c.id}>
                     <Table.Td>
                       <Text
@@ -117,15 +148,21 @@ function CustomersPage() {
                     </Table.Td>
                   </Table.Tr>
                 ))}
-            {!isLoading && customers?.length === 0 && (
+            {!isLoading && customers.length === 0 && (
               <Table.Tr>
                 <Table.Td colSpan={3} ta="center" c="dimmed">
-                  No customers yet. Create your first one.
+                  {search.trim() ? "No customers match your search." : "No customers yet. Create your first one."}
                 </Table.Td>
               </Table.Tr>
             )}
           </Table.Tbody>
         </Table>
+        <Group justify="space-between" p="md">
+          <Text size="sm" c="dimmed">
+            Page {Math.min(page, totalPages)} of {totalPages}
+          </Text>
+          <Pagination total={totalPages} value={Math.min(page, totalPages)} onChange={setPage} />
+        </Group>
       </Section>
 
       <CustomerFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />

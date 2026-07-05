@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-import { Group, Stack, Text, Title } from "@mantine/core"
+import { Box, Group, Stack, Title } from "@mantine/core"
 
 export function PageHeader({
   title,
@@ -18,9 +18,9 @@ export function PageHeader({
           {title}
         </Title>
         {description ? (
-          <Text size="sm" c="dimmed">
+          <Box c="dimmed" fz="sm">
             {description}
-          </Text>
+          </Box>
         ) : null}
       </Stack>
       {actions ? (

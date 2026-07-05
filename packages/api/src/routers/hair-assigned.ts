@@ -1,25 +1,35 @@
 import { db } from "@prive-admin-tanstack/db"
 import { hairAssigned, hairOrder } from "@prive-admin-tanstack/db/schema/hair"
 import { TRPCError } from "@trpc/server"
-import { eq, gt, sql } from "drizzle-orm"
+import { and, count, eq, gt, sql } from "drizzle-orm"
 import { z } from "zod"
 
 import { protectedProcedure, router } from "../index"
+import { getOffset, pagedResult, pageSchema } from "../pagination"
+
+const hairAssignedListSchema = pageSchema.extend({
+  appointmentId: z.string().optional(),
+  customerId: z.string().optional(),
+})
 
 export const hairAssignedRouter = router({
-  byAppointment: protectedProcedure.input(z.object({ appointmentId: z.string() })).query(({ input }) => {
-    return db.query.hairAssigned.findMany({
-      where: eq(hairAssigned.appointmentId, input.appointmentId),
-      with: { client: true, hairOrder: true },
-    })
-  }),
+  list: protectedProcedure.input(hairAssignedListSchema).query(async ({ input }) => {
+    const conditions = []
+    if (input.appointmentId) conditions.push(eq(hairAssigned.appointmentId, input.appointmentId))
+    if (input.customerId) conditions.push(eq(hairAssigned.clientId, input.customerId))
+    const where = conditions.length > 0 ? and(...conditions) : undefined
 
-  byCustomer: protectedProcedure.input(z.object({ customerId: z.string() })).query(({ input }) => {
-    return db.query.hairAssigned.findMany({
-      where: eq(hairAssigned.clientId, input.customerId),
+    const items = await db.query.hairAssigned.findMany({
+      where,
       with: { client: true, hairOrder: true },
       orderBy: (ha, { desc }) => [desc(ha.createdAt)],
+      limit: input.pageSize,
+      offset: getOffset(input),
     })
+
+    const [countRow] = await db.select({ totalCount: count() }).from(hairAssigned).where(where)
+
+    return pagedResult(items, input, countRow?.totalCount ?? 0)
   }),
 
   availableOrders: protectedProcedure.query(() => {
