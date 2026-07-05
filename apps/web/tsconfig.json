@@ -7,7 +7,6 @@
     "module": "ESNext",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["vite/client"],
-    "baseUrl": ".",
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -24,13 +23,7 @@
     "noUncheckedSideEffectImports": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@prive-admin-tanstack/ui/*": ["../../packages/ui/src/*"],
-      "@prive-admin-tanstack/api": ["../../packages/api/src/index.ts"],
-      "@prive-admin-tanstack/api/*": ["../../packages/api/src/*"],
-      "@prive-admin-tanstack/application": ["../../packages/application/src/index.ts"],
-      "@prive-admin-tanstack/application/*": ["../../packages/application/src/*"],
-      "@prive-admin-tanstack/db": ["../../packages/db/src/index.ts"],
-      "@prive-admin-tanstack/db/*": ["../../packages/db/src/*"]
+      "@prive-admin-tanstack/ui/*": ["../../packages/ui/src/*"]
     }
   }
 }
