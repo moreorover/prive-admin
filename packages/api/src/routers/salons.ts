@@ -1,9 +1,7 @@
-import { db } from "@prive-admin-tanstack/db"
-import { salon } from "@prive-admin-tanstack/db/schema/salon"
-import { TRPCError } from "@trpc/server"
-import { eq } from "drizzle-orm"
 import { z } from "zod"
 
+import { createSalon, getSalon, listSalons, updateSalon } from "../../../application/src/services/salons"
+import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
 
 const salonSchema = z.object({
@@ -14,36 +12,26 @@ const salonSchema = z.object({
 
 export const salonsRouter = router({
   list: protectedProcedure.input(z.object({}).optional().default({})).query(() => {
-    return db.query.salon.findMany({
-      orderBy: (s, { asc }) => [asc(s.name)],
-    })
+    return listSalons()
   }),
 
   get: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
-    const result = await db.query.salon.findFirst({ where: eq(salon.id, input.id) })
-    if (!result) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Salon not found" })
+    try {
+      return await getSalon(input.id)
+    } catch (error) {
+      throw toTrpcError(error)
     }
-    return result
   }),
 
   create: protectedProcedure.input(salonSchema).mutation(async ({ input }) => {
-    const [result] = await db
-      .insert(salon)
-      .values({ name: input.name, address: input.address ?? null })
-      .returning()
-    return result
+    return createSalon({ name: input.name, address: input.address })
   }),
 
   update: protectedProcedure.input(salonSchema.required({ id: true })).mutation(async ({ input }) => {
-    const [result] = await db
-      .update(salon)
-      .set({ name: input.name, address: input.address ?? null })
-      .where(eq(salon.id, input.id))
-      .returning()
-    if (!result) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Salon not found" })
+    try {
+      return await updateSalon({ id: input.id, name: input.name, address: input.address })
+    } catch (error) {
+      throw toTrpcError(error)
     }
-    return result
   }),
 })

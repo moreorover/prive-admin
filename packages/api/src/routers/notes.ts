@@ -1,8 +1,6 @@
-import { db } from "@prive-admin-tanstack/db"
-import { note } from "@prive-admin-tanstack/db/schema/note"
-import { and, eq } from "drizzle-orm"
 import { z } from "zod"
 
+import { createNote, deleteNote, listNotes } from "../../../application/src/services/notes"
 import { protectedProcedure, router } from "../index"
 
 const noteSchema = z.object({
@@ -23,33 +21,24 @@ export const notesRouter = router({
       }),
     )
     .query(async ({ input }) => {
-      const conditions = []
-      if (input.customerId) conditions.push(eq(note.customerId, input.customerId))
-      if (input.appointmentId) conditions.push(eq(note.appointmentId, input.appointmentId))
-      if (input.hairOrderId) conditions.push(eq(note.hairOrderId, input.hairOrderId))
-
-      return db.query.note.findMany({
-        where: conditions.length > 0 ? and(...conditions) : undefined,
-        with: { createdBy: true },
-        orderBy: (note, { desc }) => [desc(note.createdAt)],
+      return listNotes({
+        customerId: input.customerId,
+        appointmentId: input.appointmentId,
+        hairOrderId: input.hairOrderId,
       })
     }),
 
   create: protectedProcedure.input(noteSchema).mutation(async ({ input, ctx }) => {
-    const [result] = await db
-      .insert(note)
-      .values({
-        note: input.note,
-        customerId: input.customerId,
-        appointmentId: input.appointmentId,
-        hairOrderId: input.hairOrderId,
-        createdById: ctx.session.user.id,
-      })
-      .returning()
-    return result
+    return createNote({
+      note: input.note,
+      customerId: input.customerId,
+      appointmentId: input.appointmentId,
+      hairOrderId: input.hairOrderId,
+      createdById: ctx.session.user.id,
+    })
   }),
 
   delete: protectedProcedure.input(z.object({ id: z.string().min(1) })).mutation(async ({ input }) => {
-    await db.delete(note).where(eq(note.id, input.id))
+    await deleteNote(input.id)
   }),
 })

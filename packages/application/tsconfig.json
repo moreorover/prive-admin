@@ -4,8 +4,7 @@
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@prive-admin-tanstack/application": ["../application/src/index.ts"],
-      "@prive-admin-tanstack/application/*": ["../application/src/*"]
+      "@prive-admin-tanstack/db/repositories/*": ["../db/src/repositories/*"]
     }
   }
 }
