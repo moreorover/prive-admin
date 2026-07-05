@@ -1,6 +1,9 @@
-import "dotenv/config"
 import { createEnv } from "@t3-oss/env-core"
+import dotenv from "dotenv"
+import { expand } from "dotenv-expand"
 import { z } from "zod"
+
+expand(dotenv.config({ quiet: true }))
 
 export const env = createEnv({
   server: {
