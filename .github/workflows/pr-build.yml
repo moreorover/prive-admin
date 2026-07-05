@@ -40,11 +40,25 @@ jobs:
         run: vp run build
 
   docker-build:
-    name: Docker Image Build
+    name: Docker Image Build (${{ matrix.image.name }})
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - name: web
+            file: apps/web/Dockerfile
+            tag: prive-admin-web
+          - name: server
+            file: apps/server/Dockerfile
+            tag: prive-admin-server
+          - name: migrate
+            file: packages/db/Dockerfile
+            tag: prive-admin-migrate
 
     steps:
       - name: Checkout Code
@@ -53,35 +67,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build web image (no push)
+      - name: Build ${{ matrix.image.name }} image (no push)
         uses: docker/build-push-action@v6
         with:
-          file: apps/web/Dockerfile
+          file: ${{ matrix.image.file }}
           context: .
           platforms: linux/amd64
           load: true
-          tags: prive-admin-web:pr-${{ github.sha }}
-          cache-from: type=gha,scope=web
-          cache-to: type=gha,mode=max,scope=web
-
-      - name: Build server image (no push)
-        uses: docker/build-push-action@v6
-        with:
-          file: apps/server/Dockerfile
-          context: .
-          platforms: linux/amd64
-          load: true
-          tags: prive-admin-server:pr-${{ github.sha }}
-          cache-from: type=gha,scope=server
-          cache-to: type=gha,mode=max,scope=server
-
-      - name: Build migrate image (no push)
-        uses: docker/build-push-action@v6
-        with:
-          file: packages/db/Dockerfile
-          context: .
-          platforms: linux/amd64
-          load: true
-          tags: prive-admin-migrate:pr-${{ github.sha }}
-          cache-from: type=gha,scope=migrate
-          cache-to: type=gha,mode=max,scope=migrate
+          tags: ${{ matrix.image.tag }}:pr-${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.image.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image.name }}
