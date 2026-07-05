@@ -1,14 +1,17 @@
-import type { ObjectStorage } from "./storage"
+import { PutObjectCommand } from "@aws-sdk/client-s3"
 
-export async function storeUpload(input: {
-  prefix: string
-  fileName: string
-  contentType: string
-  body: Uint8Array
-  storage: ObjectStorage
-}) {
+import { bucketName, r2 } from "../r2"
+
+export async function storeUpload(input: { prefix: string; fileName: string; contentType: string; body: Uint8Array }) {
   const safeName = input.fileName.replace(/[^\w.-]+/g, "_")
   const key = `${input.prefix}/${Date.now()}-${safeName}`
-  await input.storage.putObject({ key, body: input.body, contentType: input.contentType })
+  await r2.send(
+    new PutObjectCommand({
+      Bucket: bucketName,
+      Key: key,
+      Body: input.body,
+      ContentType: input.contentType,
+    }),
+  )
   return { key }
 }

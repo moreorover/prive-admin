@@ -1,3 +1,4 @@
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3"
 import {
   createBankStatementAttachment as insertBankStatementAttachment,
   assignBankStatementAttachment as patchAssignBankStatementAttachment,
@@ -13,9 +14,8 @@ import * as archiverPkg from "archiver"
 import { randomUUID } from "node:crypto"
 import { Readable } from "node:stream"
 
-import type { ObjectStorage } from "./storage"
-
 import { notFound, unexpectedError } from "../errors"
+import { bucketName, r2 } from "../r2"
 
 const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024
 const INLINE_SAFE_TYPES = new Set([
@@ -67,7 +67,6 @@ export async function uploadBankStatementAttachment(input: {
   size: number
   uploadedById: string
   body: Uint8Array
-  storage: ObjectStorage
 }) {
   if (input.size > MAX_ATTACHMENT_BYTES) {
     throw new Error(`File exceeds ${MAX_ATTACHMENT_BYTES} bytes`)
@@ -86,7 +85,14 @@ export async function uploadBankStatementAttachment(input: {
   const key = `statement_uploads/${yyyy}/${mm}/${attachmentId}-${safeName}`
 
   try {
-    await input.storage.putObject({ key, body: input.body, contentType: input.contentType })
+    await r2.send(
+      new PutObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+        Body: input.body,
+        ContentType: input.contentType,
+      }),
+    )
   } catch (error) {
     throw unexpectedError("Failed to upload bank statement attachment", error)
   }
@@ -110,14 +116,14 @@ export async function getBankStatementAttachment(id: string) {
   return row
 }
 
-export async function getBankStatementAttachmentPreview(id: string, storage: ObjectStorage) {
+export async function getBankStatementAttachmentPreview(id: string) {
   const row = await getBankStatementAttachment(id)
-  const object = await storage.getObject({ key: row.r2Key })
-  return { row, body: object?.body ?? null }
+  const object = await r2.send(new GetObjectCommand({ Bucket: bucketName, Key: row.r2Key }))
+  return { row, body: object.Body ?? null }
 }
 
-export async function getBankStatementAttachmentPreviewResponse(id: string, storage: ObjectStorage) {
-  const preview = await getBankStatementAttachmentPreview(id, storage)
+export async function getBankStatementAttachmentPreviewResponse(id: string) {
+  const preview = await getBankStatementAttachmentPreview(id)
   if (!preview.body) throw new Error("Empty body")
 
   const contentType = preview.row.contentType || "application/octet-stream"
@@ -152,10 +158,10 @@ export async function deleteBankStatementAttachment(id: string) {
   return row
 }
 
-export async function deleteBankStatementAttachmentFile(id: string, storage: ObjectStorage) {
+export async function deleteBankStatementAttachmentFile(id: string) {
   const row = await getBankStatementAttachment(id)
   try {
-    await storage.deleteObject({ key: row.r2Key })
+    await r2.send(new DeleteObjectCommand({ Bucket: bucketName, Key: row.r2Key }))
   } catch (error) {
     throw unexpectedError("Failed to delete bank statement attachment file", error)
   }
@@ -172,18 +178,16 @@ export async function listBankStatementAttachmentExportRows(input: {
   return fetchBankStatementAttachmentExportRows(undefined, input)
 }
 
-export async function listBankStatementAttachmentExportFiles(
-  input: { start: string; end: string; bankAccountId?: string },
-  storage: ObjectStorage,
-) {
+export async function listBankStatementAttachmentExportFiles(input: {
+  start: string
+  end: string
+  bankAccountId?: string
+}) {
   const rows = await listBankStatementAttachmentExportRows(input)
-  const files: Array<{
-    name: string
-    body: NonNullable<NonNullable<Awaited<ReturnType<ObjectStorage["getObject"]>>>["body"]>
-  }> = []
+  const files: Array<{ name: string; body: Readable | Buffer }> = []
   for (const { attachment, entry } of rows) {
-    const object = await storage.getObject({ key: attachment.r2Key })
-    const body = object?.body
+    const object = await r2.send(new GetObjectCommand({ Bucket: bucketName, Key: attachment.r2Key }))
+    const body = object.Body as Readable | Buffer | null | undefined
     if (!body) continue
     const counterparty = (entry.counterpartyName ?? "").replace(/[^\w.-]+/g, "_").slice(0, 60) || "unknown"
     files.push({
@@ -202,16 +206,14 @@ function lastDay(year: number, month: number) {
   return new Date(Date.UTC(year, month, 0)).getUTCDate()
 }
 
-export async function exportBankStatementAttachmentsResponse(
-  input: { year: number; month: number; bankAccountId?: string },
-  storage: ObjectStorage,
-) {
+export async function exportBankStatementAttachmentsResponse(input: {
+  year: number
+  month: number
+  bankAccountId?: string
+}) {
   const start = `${input.year}-${pad2(input.month)}-01`
   const end = `${input.year}-${pad2(input.month)}-${pad2(lastDay(input.year, input.month))}`
-  const files = await listBankStatementAttachmentExportFiles(
-    { start, end, bankAccountId: input.bankAccountId },
-    storage,
-  )
+  const files = await listBankStatementAttachmentExportFiles({ start, end, bankAccountId: input.bankAccountId })
 
   const archive = new ZipArchive({ zlib: { level: 9 } })
   archive.on("warning", (err: Error) => console.warn("[zip warning]", err))

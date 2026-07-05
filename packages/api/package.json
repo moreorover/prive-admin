@@ -15,10 +15,6 @@
       "types": "./src/http/index.ts",
       "default": "./src/http/index.ts"
     },
-    "./r2": {
-      "types": "./src/r2.ts",
-      "default": "./src/r2.ts"
-    },
     "./routers": {
       "types": "./src/routers/index.ts",
       "default": "./src/routers/index.ts"
@@ -30,10 +26,8 @@
     "test:watch": "vp test"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1068.0",
     "@prive-admin-tanstack/application": "workspace:*",
     "@prive-admin-tanstack/auth": "workspace:*",
-    "@prive-admin-tanstack/env": "workspace:*",
     "@trpc/server": "catalog:",
     "hono": "catalog:",
     "zod": "catalog:"

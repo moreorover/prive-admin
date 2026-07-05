@@ -425,18 +425,12 @@ importers:
 
   packages/api:
     dependencies:
-      '@aws-sdk/client-s3':
-        specifier: ^3.1068.0
-        version: 3.1079.0
       '@prive-admin-tanstack/application':
         specifier: workspace:*
         version: link:../application
       '@prive-admin-tanstack/auth':
         specifier: workspace:*
         version: link:../auth
-      '@prive-admin-tanstack/env':
-        specifier: workspace:*
-        version: link:../env
       '@trpc/server':
         specifier: 'catalog:'
         version: 11.18.0(typescript@6.0.3)
@@ -459,9 +453,15 @@ importers:
 
   packages/application:
     dependencies:
+      '@aws-sdk/client-s3':
+        specifier: ^3.1068.0
+        version: 3.1079.0
       '@prive-admin-tanstack/db':
         specifier: workspace:*
         version: link:../db
+      '@prive-admin-tanstack/env':
+        specifier: workspace:*
+        version: link:../env
       archiver:
         specifier: ^8.0.0
         version: 8.0.0

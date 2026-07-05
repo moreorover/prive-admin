@@ -9,7 +9,6 @@ import { z } from "zod"
 
 import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
-import { r2Storage } from "../storage"
 
 export const bankStatementAttachmentsRouter = router({
   list: protectedProcedure
@@ -55,7 +54,7 @@ export const bankStatementAttachmentsRouter = router({
 
   delete: protectedProcedure.input(z.object({ id: z.string().min(1) })).mutation(async ({ input }) => {
     try {
-      return await deleteBankStatementAttachmentFile(input.id, r2Storage)
+      return await deleteBankStatementAttachmentFile(input.id)
     } catch (error) {
       throw toTrpcError(error)
     }

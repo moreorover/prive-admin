@@ -1,7 +1,6 @@
 import { storeUpload } from "@prive-admin-tanstack/application/services"
 import { Hono } from "hono"
 
-import { r2Storage } from "../storage"
 import { requireSession } from "./session"
 
 export const uploadRoutes = new Hono()
@@ -21,7 +20,6 @@ uploadRoutes.post("/upload", async (c) => {
       fileName: file.name,
       contentType: file.type || "application/octet-stream",
       body,
-      storage: r2Storage,
     })
     return c.json(result)
   } catch (error) {

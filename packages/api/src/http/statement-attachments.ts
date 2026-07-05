@@ -5,7 +5,6 @@ import {
 } from "@prive-admin-tanstack/application/services"
 import { Hono } from "hono"
 
-import { r2Storage } from "../storage"
 import { requireSession } from "./session"
 
 export const statementAttachmentRoutes = new Hono()
@@ -29,7 +28,6 @@ statementAttachmentRoutes.post("/upload", async (c) => {
       size: file.size,
       uploadedById: session.user.id,
       body: new Uint8Array(await file.arrayBuffer()),
-      storage: r2Storage,
     })
     return c.json(row)
   } catch (error) {
@@ -46,7 +44,7 @@ statementAttachmentRoutes.get("/preview", async (c) => {
   if (!id) return c.json({ error: "Missing id" }, 400)
 
   try {
-    return await getBankStatementAttachmentPreviewResponse(id, r2Storage)
+    return await getBankStatementAttachmentPreviewResponse(id)
   } catch {
     return c.json({ error: "Not found" }, 404)
   }
@@ -64,7 +62,7 @@ statementAttachmentRoutes.get("/export", async (c) => {
   if (!Number.isInteger(month) || month < 1 || month > 12) return c.json({ error: "Invalid month" }, 400)
 
   try {
-    return await exportBankStatementAttachmentsResponse({ year, month, bankAccountId }, r2Storage)
+    return await exportBankStatementAttachmentsResponse({ year, month, bankAccountId })
   } catch (error) {
     console.error("[statement-attachment export]", error)
     return c.json({ error: "Export failed" }, 500)
