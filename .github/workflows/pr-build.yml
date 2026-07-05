@@ -41,6 +41,7 @@ jobs:
 
   docker-build:
     name: Docker Image Build (${{ matrix.image.name }})
+    needs: build
     runs-on: ubuntu-latest
 
     permissions:
