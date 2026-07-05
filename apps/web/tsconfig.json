@@ -1,5 +1,4 @@
 {
-  "extends": "@prive-admin-tanstack/config/tsconfig.base.json",
   "include": ["**/*.ts", "**/*.tsx"],
   "compilerOptions": {
     "target": "ES2022",
