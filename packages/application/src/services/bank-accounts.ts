@@ -2,7 +2,8 @@ import {
   createBankAccount as insertBankAccount,
   getBankAccount as findBankAccount,
   updateBankAccount as patchBankAccount,
-} from "../../../db/src/repositories/bank-accounts"
+} from "@prive-admin-tanstack/db"
+
 import { notFound } from "../errors"
 
 export async function getBankAccount(id: string) {

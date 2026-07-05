@@ -3,7 +3,8 @@ import {
   getSalon as findSalon,
   listSalons as fetchSalons,
   updateSalon as patchSalon,
-} from "../../../db/src/repositories/salons"
+} from "@prive-admin-tanstack/db"
+
 import { notFound } from "../errors"
 
 export async function listSalons() {

@@ -6,9 +6,6 @@
     ".": {
       "default": "./src/index.ts"
     },
-    "./repositories/*": {
-      "default": "./src/repositories/*.ts"
-    },
     "./*": {
       "default": "./src/*.ts"
     }

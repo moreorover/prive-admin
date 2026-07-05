@@ -17,6 +17,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1068.0",
     "@paralleldrive/cuid2": "^3.3.0",
+    "@prive-admin-tanstack/application": "workspace:*",
     "@prive-admin-tanstack/auth": "workspace:*",
     "@prive-admin-tanstack/db": "workspace:*",
     "@prive-admin-tanstack/env": "workspace:*",

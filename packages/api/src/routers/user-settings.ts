@@ -1,6 +1,6 @@
+import { getUserSettings, updateUserSettings } from "@prive-admin-tanstack/application/services/user-settings"
 import { z } from "zod"
 
-import { getUserSettings, updateUserSettings } from "../../../application/src/services/user-settings"
 import { protectedProcedure, router } from "../index"
 
 const currencySchema = z.enum(["GBP", "EUR"])

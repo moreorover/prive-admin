@@ -4,7 +4,8 @@ import {
   getCustomerSummary as fetchCustomerSummary,
   listCustomers as fetchCustomers,
   updateCustomer as patchCustomer,
-} from "../../../db/src/repositories/customers"
+} from "@prive-admin-tanstack/db"
+
 import { notFound } from "../errors"
 
 type Currency = "GBP" | "EUR"

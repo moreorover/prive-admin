@@ -5,6 +5,12 @@ import { appointmentsRouter } from "./appointments"
 import { bankAccountsRouter } from "./bank-accounts"
 import { transactionsRouter } from "./transactions"
 
+const bankAccountServiceMock = vi.hoisted(() => ({
+  createBankAccount: vi.fn(),
+  getBankAccount: vi.fn(),
+  updateBankAccount: vi.fn(),
+}))
+
 const dbMock = vi.hoisted(() => ({
   query: {
     appointment: {
@@ -22,6 +28,7 @@ const dbMock = vi.hoisted(() => ({
   update: vi.fn(),
 }))
 
+vi.mock("@prive-admin-tanstack/application/services/bank-accounts", () => bankAccountServiceMock)
 vi.mock("@prive-admin-tanstack/db", () => ({ db: dbMock }))
 
 const ctx = { session: { user: { id: "user-1" } } } as never
@@ -79,14 +86,10 @@ describe("resource read routers", () => {
   it("gets a bank account with legal entity only", async () => {
     const caller = bankAccountsRouter.createCaller(ctx)
     const bankAccountRow = { id: "bank-account-1", legalEntity: { id: "legal-entity-1" } }
-    dbMock.query.bankAccount.findFirst.mockResolvedValue(bankAccountRow)
+    bankAccountServiceMock.getBankAccount.mockResolvedValue(bankAccountRow)
 
     await expect(caller.get({ id: "bank-account-1" })).resolves.toBe(bankAccountRow)
-    expect(dbMock.query.bankAccount.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        with: { legalEntity: true },
-      }),
-    )
+    expect(bankAccountServiceMock.getBankAccount).toHaveBeenCalledWith("bank-account-1")
   })
 
   it("updates an appointment master by id", async () => {

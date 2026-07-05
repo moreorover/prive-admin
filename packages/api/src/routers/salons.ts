@@ -1,6 +1,6 @@
+import { createSalon, getSalon, listSalons, updateSalon } from "@prive-admin-tanstack/application/services/salons"
 import { z } from "zod"
 
-import { createSalon, getSalon, listSalons, updateSalon } from "../../../application/src/services/salons"
 import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
 

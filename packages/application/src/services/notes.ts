@@ -1,8 +1,4 @@
-import {
-  createNote as insertNote,
-  deleteNote as removeNote,
-  listNotes as fetchNotes,
-} from "../../../db/src/repositories/notes"
+import { createNote as insertNote, deleteNote as removeNote, listNotes as fetchNotes } from "@prive-admin-tanstack/db"
 
 export async function listNotes(filter: { customerId?: string; appointmentId?: string; hairOrderId?: string }) {
   return fetchNotes(undefined, filter)

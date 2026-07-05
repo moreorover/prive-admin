@@ -1,7 +1,4 @@
-import {
-  getUserSettings as findUserSettings,
-  upsertUserSettings as saveUserSettings,
-} from "../../../db/src/repositories/user-settings"
+import { getUserSettings as findUserSettings, upsertUserSettings as saveUserSettings } from "@prive-admin-tanstack/db"
 
 export async function getUserSettings(userId: string) {
   const row = await findUserSettings(undefined, userId)

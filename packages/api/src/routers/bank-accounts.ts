@@ -1,6 +1,10 @@
+import {
+  createBankAccount,
+  getBankAccount,
+  updateBankAccount,
+} from "@prive-admin-tanstack/application/services/bank-accounts"
 import { z } from "zod"
 
-import { createBankAccount, getBankAccount, updateBankAccount } from "../../../application/src/services/bank-accounts"
 import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
 

@@ -2,7 +2,8 @@ import {
   getLegalEntity as findLegalEntity,
   listLegalEntities as fetchLegalEntities,
   updateLegalEntity as patchLegalEntity,
-} from "../../../db/src/repositories/legal-entities"
+} from "@prive-admin-tanstack/db"
+
 import { notFound } from "../errors"
 
 export async function listLegalEntities() {

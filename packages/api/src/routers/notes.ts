@@ -1,6 +1,6 @@
+import { createNote, deleteNote, listNotes } from "@prive-admin-tanstack/application/services/notes"
 import { z } from "zod"
 
-import { createNote, deleteNote, listNotes } from "../../../application/src/services/notes"
 import { protectedProcedure, router } from "../index"
 
 const noteSchema = z.object({

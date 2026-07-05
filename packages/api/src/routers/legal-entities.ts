@@ -1,6 +1,10 @@
+import {
+  getLegalEntity,
+  listLegalEntities,
+  updateLegalEntity,
+} from "@prive-admin-tanstack/application/services/legal-entities"
 import { z } from "zod"
 
-import { getLegalEntity, listLegalEntities, updateLegalEntity } from "../../../application/src/services/legal-entities"
 import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
 

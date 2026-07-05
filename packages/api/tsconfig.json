@@ -3,9 +3,12 @@
   "compilerOptions": {
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
+    "rootDir": "../..",
     "paths": {
       "@prive-admin-tanstack/application": ["../application/src/index.ts"],
-      "@prive-admin-tanstack/application/*": ["../application/src/*"]
+      "@prive-admin-tanstack/application/*": ["../application/src/*"],
+      "@prive-admin-tanstack/db": ["../db/src/index.ts"],
+      "@prive-admin-tanstack/db/*": ["../db/src/*"]
     }
   }
 }

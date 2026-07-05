@@ -1,12 +1,12 @@
-import { z } from "zod"
-
 import {
   getCustomer,
   getCustomerSummary,
   listCustomers,
   createCustomer,
   updateCustomer,
-} from "../../../application/src/services/customers"
+} from "@prive-admin-tanstack/application/services/customers"
+import { z } from "zod"
+
 import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
 import { pagedResult, pageSchema, searchSchema } from "../pagination"
