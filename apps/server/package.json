@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsdown",
     "check-types": "tsc --noEmit",
+    "env:inject": "op inject -i .env.example -o .env --force",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.mjs"
   },

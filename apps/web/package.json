@@ -6,7 +6,6 @@
     "build": "vp build",
     "check-types": "tsc --noEmit",
     "serve": "vp preview",
-    "env:inject": "op inject -i .env.example -o .env --force",
     "dev": "vp dev"
   },
   "dependencies": {
