@@ -1,4 +1,3 @@
-import { UIProvider } from "@prive-admin-tanstack/ui/provider"
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router"
 import { lazy, useEffect } from "react"
 
@@ -39,9 +38,7 @@ function RootComponent() {
   return (
     <>
       <LocaleProvider value={{ locale, timeZone }}>
-        <UIProvider>
-          <Outlet />
-        </UIProvider>
+        <Outlet />
       </LocaleProvider>
       <TanStackRouterDevtools position="bottom-left" />
     </>
