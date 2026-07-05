@@ -22,7 +22,7 @@ import { notifications } from "@mantine/notifications"
 import { IconArrowLeft, IconCash, IconClock, IconDots, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
 import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
@@ -35,7 +35,7 @@ import { DeleteTransactionDialog } from "@/components/transactions/delete-transa
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
 import { CURRENCIES, type Currency, formatMinor } from "@/lib/currency"
-import { clampPage, formatPageRange, type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
+import { formatPageRange, type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
 const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
@@ -46,7 +46,7 @@ const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as
 const APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE = 25
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
-  component: AppointmentDetailPage,
+  component: AppointmentDetailRoute,
   loader: async ({ context, params }) => {
     await Promise.all([
       context.queryClient.prefetchQuery(trpc.appointments.get.queryOptions({ id: params.appointmentId })),
@@ -69,8 +69,12 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
   },
 })
 
-function AppointmentDetailPage() {
+function AppointmentDetailRoute() {
   const { appointmentId } = Route.useParams()
+  return <AppointmentDetailPage key={appointmentId} appointmentId={appointmentId} />
+}
+
+function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
   const [createOpen, setCreateOpen] = useState(false)
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
@@ -118,33 +122,6 @@ function AppointmentDetailPage() {
     totalsByCurrency[c] += t.amount
   }
   const currenciesPresent = CURRENCIES.filter((c) => totalsByCurrency[c] !== 0)
-
-  useEffect(() => {
-    setTransactionsPage(1)
-    setHairAssignedPage(1)
-  }, [appointmentId])
-
-  useEffect(() => {
-    if (!transactionsData) return
-    setTransactionsPage((current) =>
-      clampPage({
-        page: current,
-        pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-        totalCount: transactionsData.totalCount,
-      }),
-    )
-  }, [transactionsData])
-
-  useEffect(() => {
-    if (!hairAssignedData) return
-    setHairAssignedPage((current) =>
-      clampPage({
-        page: current,
-        pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-        totalCount: hairAssignedData.totalCount,
-      }),
-    )
-  }, [hairAssignedData])
 
   if (isLoading) {
     return (
@@ -463,6 +440,7 @@ function AppointmentDetailPage() {
           clientId={appointment.client.id}
           appointmentId={appointmentId}
           invalidateKeys={invalidateKeys}
+          onSuccess={() => setHairAssignedPage(1)}
         />
         {editItem && (
           <EditHairAssignedDialog
@@ -478,6 +456,7 @@ function AppointmentDetailPage() {
             onOpenChange={(open) => !open && setDeleteItem(null)}
             hairAssigned={deleteItem}
             invalidateKeys={invalidateKeys}
+            onSuccess={() => setHairAssignedPage(1)}
           />
         )}
         <PickPersonnelModal
@@ -506,6 +485,7 @@ function AppointmentDetailPage() {
           customerId={txCustomerId}
           defaultCurrency={txDefaultCurrency}
           invalidateKeys={txInvalidateKeys}
+          onSuccess={() => setTransactionsPage(1)}
         />
         {editTx && (
           <EditTransactionDialog
@@ -521,6 +501,7 @@ function AppointmentDetailPage() {
             onOpenChange={(open) => !open && setDeleteTx(null)}
             transaction={deleteTx}
             invalidateKeys={txInvalidateKeys}
+            onSuccess={() => setTransactionsPage(1)}
           />
         )}
       </Stack>
@@ -587,7 +568,7 @@ function ChangeMasterForm({
       search: masterSearch.trim() || undefined,
     }),
   )
-  const customers = customersData?.items ?? []
+  const customers = useMemo(() => customersData?.items ?? [], [customersData?.items])
   const customerOptions = customers.map((c) => ({ value: c.id, label: c.name }))
   const masterOptions = withPinnedOption(
     customerOptions,
@@ -648,7 +629,7 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
     }),
     enabled: open,
   })
-  const customers = customersData?.items ?? []
+  const customers = useMemo(() => customersData?.items ?? [], [customersData?.items])
 
   const available = useMemo(() => {
     const assigned = new Set(assignedPersonnelIds)

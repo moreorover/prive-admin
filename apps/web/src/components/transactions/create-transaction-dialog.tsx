@@ -14,6 +14,7 @@ type CreateTransactionDialogProps = {
   customerId: string
   defaultCurrency: Currency
   invalidateKeys: { queryKey: readonly unknown[] }[]
+  onSuccess?: () => void
 }
 
 export function CreateTransactionDialog({
@@ -23,6 +24,7 @@ export function CreateTransactionDialog({
   customerId,
   defaultCurrency,
   invalidateKeys,
+  onSuccess,
 }: CreateTransactionDialogProps) {
   const queryClient = useQueryClient()
 
@@ -30,6 +32,7 @@ export function CreateTransactionDialog({
     ...trpc.transactions.create.mutationOptions(),
     onSuccess: () => {
       for (const key of invalidateKeys) queryClient.invalidateQueries(key)
+      onSuccess?.()
       onOpenChange(false)
       notifications.show({ color: "green", message: "Transaction created" })
     },

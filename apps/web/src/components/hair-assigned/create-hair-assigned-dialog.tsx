@@ -11,6 +11,7 @@ type CreateHairAssignedDialogProps = {
   clientId: string
   appointmentId?: string | null
   invalidateKeys: { queryKey: readonly unknown[] }[]
+  onSuccess?: () => void
 }
 
 export function CreateHairAssignedDialog({
@@ -19,6 +20,7 @@ export function CreateHairAssignedDialog({
   clientId,
   appointmentId,
   invalidateKeys,
+  onSuccess,
 }: CreateHairAssignedDialogProps) {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const queryClient = useQueryClient()
@@ -41,6 +43,7 @@ export function CreateHairAssignedDialog({
       if (selectedOrderId) {
         queryClient.invalidateQueries({ queryKey: trpc.hairOrders.get.queryOptions({ id: selectedOrderId }).queryKey })
       }
+      onSuccess?.()
       onOpenChange(false)
       setSelectedOrderId(null)
       notifications.show({ color: "green", message: "Hair assigned created" })

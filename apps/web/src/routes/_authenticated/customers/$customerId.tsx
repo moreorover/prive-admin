@@ -21,7 +21,7 @@ import { notifications } from "@mantine/notifications"
 import { IconArrowLeft, IconPencil, IconPhone, IconPlus, IconTrash } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
 import { ClientDate } from "@/components/client-date"
@@ -38,7 +38,7 @@ const CUSTOMER_APPOINTMENTS_PAGE_SIZE = 25
 const CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE = 25
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
-  component: CustomerDetailPage,
+  component: CustomerDetailRoute,
   loader: async ({ context, params }) => {
     await Promise.all([
       context.queryClient.prefetchQuery(trpc.customers.get.queryOptions({ id: params.customerId })),
@@ -61,6 +61,11 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
     ])
   },
 })
+
+function CustomerDetailRoute() {
+  const { customerId } = Route.useParams()
+  return <CustomerDetailPage key={customerId} customerId={customerId} />
+}
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
@@ -179,8 +184,7 @@ function AddNoteDialog({
   )
 }
 
-function CustomerDetailPage() {
-  const { customerId } = Route.useParams()
+function CustomerDetailPage({ customerId }: { customerId: string }) {
   const [editOpen, setEditOpen] = useState(false)
   const [noteOpen, setNoteOpen] = useState(false)
   const [appointmentCreateOpen, setAppointmentCreateOpen] = useState(false)
@@ -222,23 +226,6 @@ function CustomerDetailPage() {
   const hairAssignedTotalPages = Math.max(1, Math.ceil(hairAssignedTotalCount / CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE))
   const hasHairAssignedOnCurrentPage = hairAssigned.length > 0
   const showHairAssignedPagination = hairAssignedTotalCount > CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE
-
-  useEffect(() => {
-    setAppointmentsPage(1)
-    setHairAssignedPage(1)
-  }, [customerId])
-
-  useEffect(() => {
-    if (appointmentsData && appointmentsPage > appointmentsTotalPages) {
-      setAppointmentsPage(appointmentsTotalPages)
-    }
-  }, [appointmentsData, appointmentsPage, appointmentsTotalPages])
-
-  useEffect(() => {
-    if (hairAssignedData && hairAssignedPage > hairAssignedTotalPages) {
-      setHairAssignedPage(hairAssignedTotalPages)
-    }
-  }, [hairAssignedData, hairAssignedPage, hairAssignedTotalPages])
 
   const deleteNoteMutation = useMutation({
     ...trpc.notes.delete.mutationOptions(),
@@ -504,6 +491,7 @@ function CustomerDetailPage() {
             { queryKey: hairAssignedQueryOptions.queryKey },
             { queryKey: customerSummaryQueryOptions.queryKey },
           ]}
+          onSuccess={() => setHairAssignedPage(1)}
         />
         {hairEditItem && (
           <EditHairAssignedDialog
@@ -525,6 +513,7 @@ function CustomerDetailPage() {
               { queryKey: hairAssignedQueryOptions.queryKey },
               { queryKey: customerSummaryQueryOptions.queryKey },
             ]}
+            onSuccess={() => setHairAssignedPage(1)}
           />
         )}
       </Stack>

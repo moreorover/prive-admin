@@ -14,6 +14,7 @@ type DeleteHairAssignedDialogProps = {
     hairOrder?: { id: string; uid: number } | null
   }
   invalidateKeys: { queryKey: readonly unknown[] }[]
+  onSuccess?: () => void
 }
 
 export function DeleteHairAssignedDialog({
@@ -21,6 +22,7 @@ export function DeleteHairAssignedDialog({
   onOpenChange,
   hairAssigned,
   invalidateKeys,
+  onSuccess,
 }: DeleteHairAssignedDialogProps) {
   const queryClient = useQueryClient()
   const availableOrdersQueryOptions = trpc.hairAssigned.availableOrders.queryOptions()
@@ -39,6 +41,7 @@ export function DeleteHairAssignedDialog({
           queryKey: trpc.hairOrders.get.queryOptions({ id: hairAssigned.hairOrder.id }).queryKey,
         })
       }
+      onSuccess?.()
       onOpenChange(false)
       notifications.show({ color: "green", message: "Hair assigned deleted" })
     },

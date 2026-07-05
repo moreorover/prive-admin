@@ -35,7 +35,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
 import { CURRENCY_OPTIONS, type Currency, formatMinor } from "@/lib/currency"
@@ -50,7 +50,7 @@ const STATEMENT_ENTRIES_PAGE_SIZE = 25
 
 function BankAccountRoute() {
   const { bankAccountId } = Route.useParams()
-  return bankAccountId === "new" ? <BankAccountNew /> : <BankAccountShow id={bankAccountId} />
+  return bankAccountId === "new" ? <BankAccountNew /> : <BankAccountShow key={bankAccountId} id={bankAccountId} />
 }
 
 type StatusFilter = "PENDING" | "IGNORED" | "ALL"
@@ -88,16 +88,6 @@ function BankAccountShow({ id }: { id: string }) {
   const entriesTotalPages = Math.max(1, Math.ceil(entriesTotalCount / STATEMENT_ENTRIES_PAGE_SIZE))
   const showEntriesPagination = entriesTotalCount > STATEMENT_ENTRIES_PAGE_SIZE
 
-  useEffect(() => {
-    setEntriesPage(1)
-  }, [id, statusFilter])
-
-  useEffect(() => {
-    if (statementEntriesData && entriesPage > entriesTotalPages) {
-      setEntriesPage(entriesTotalPages)
-    }
-  }, [statementEntriesData, entriesPage, entriesTotalPages])
-
   const { data: attachmentCounts } = useQuery(trpc.bankStatementAttachments.counts.queryOptions())
 
   const importMutation = useMutation({
@@ -105,6 +95,7 @@ function BankAccountShow({ id }: { id: string }) {
     onSuccess: async (result) => {
       setImportResult(result)
       setFile(null)
+      setEntriesPage(1)
       notifications.show({
         color: "green",
         message: `Imported ${result.inserted} new entries (${result.skipped} duplicates skipped)`,
@@ -117,6 +108,7 @@ function BankAccountShow({ id }: { id: string }) {
   const ignoreMutation = useMutation({
     ...trpc.bankStatementEntries.ignore.mutationOptions(),
     onSuccess: async () => {
+      setEntriesPage(1)
       notifications.show({ color: "yellow", message: "Marked as ignored" })
       await queryClient.invalidateQueries({ queryKey: trpc.bankStatementEntries.list.queryKey() })
     },
@@ -126,6 +118,7 @@ function BankAccountShow({ id }: { id: string }) {
   const undoMutation = useMutation({
     ...trpc.bankStatementEntries.undo.mutationOptions(),
     onSuccess: async () => {
+      setEntriesPage(1)
       notifications.show({ color: "green", message: "Restored to pending" })
       await queryClient.invalidateQueries({ queryKey: trpc.bankStatementEntries.list.queryKey() })
     },
