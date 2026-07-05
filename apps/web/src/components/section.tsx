@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-import { Box, Card, Divider, Group, Stack, Text, Title } from "@mantine/core"
+import { Box, Card, Divider, Group, Stack, Title } from "@mantine/core"
 
 export function Section({
   title,
@@ -29,9 +29,9 @@ export function Section({
                 </Title>
               ) : null}
               {description ? (
-                <Text size="sm" c="dimmed">
+                <Box c="dimmed" fz="sm">
                   {description}
-                </Text>
+                </Box>
               ) : null}
             </Stack>
             {actions ? (
