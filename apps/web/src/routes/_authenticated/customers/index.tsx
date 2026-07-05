@@ -1,4 +1,4 @@
-import { Button, Container, Group, Modal, Skeleton, Stack, Table, Text, TextInput } from "@mantine/core"
+import { Button, Container, Group, Modal, Pagination, Skeleton, Stack, Table, Text, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
@@ -161,18 +161,7 @@ function CustomersPage() {
           <Text size="sm" c="dimmed">
             Page {Math.min(page, totalPages)} of {totalPages}
           </Text>
-          <Group gap="xs">
-            <Button
-              variant="default"
-              disabled={page <= 1}
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-            >
-              Previous
-            </Button>
-            <Button variant="default" disabled={page >= totalPages} onClick={() => setPage((current) => current + 1)}>
-              Next
-            </Button>
-          </Group>
+          <Pagination total={totalPages} value={Math.min(page, totalPages)} onChange={setPage} />
         </Group>
       </Section>
 

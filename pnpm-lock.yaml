@@ -288,39 +288,24 @@ importers:
 
   apps/server:
     dependencies:
-      '@aws-sdk/client-s3':
-        specifier: ^3.1068.0
-        version: 3.1079.0
       '@hono/node-server':
         specifier: 'catalog:'
         version: 1.19.14(hono@4.12.27)
       '@hono/trpc-server':
         specifier: 'catalog:'
         version: 0.4.2(@trpc/server@11.18.0(typescript@6.0.3))(hono@4.12.27)
-      '@paralleldrive/cuid2':
-        specifier: ^3.3.0
-        version: 3.3.0
       '@prive-admin-tanstack/api':
         specifier: workspace:*
         version: link:../../packages/api
       '@prive-admin-tanstack/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@prive-admin-tanstack/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       '@prive-admin-tanstack/env':
         specifier: workspace:*
         version: link:../../packages/env
       '@trpc/server':
         specifier: 'catalog:'
         version: 11.18.0(typescript@6.0.3)
-      archiver:
-        specifier: ^8.0.0
-        version: 8.0.0
-      drizzle-orm:
-        specifier: ^0.45.2
-        version: 0.45.2(@types/pg@8.20.0)(kysely@0.29.2)(pg@8.22.0)
       hono:
         specifier: 'catalog:'
         version: 4.12.27
@@ -328,9 +313,6 @@ importers:
       '@prive-admin-tanstack/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@types/archiver':
-        specifier: ^6.0.3
-        version: 6.0.4
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.4
@@ -446,6 +428,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.1068.0
         version: 3.1079.0
+      '@paralleldrive/cuid2':
+        specifier: ^3.3.0
+        version: 3.3.0
       '@prive-admin-tanstack/auth':
         specifier: workspace:*
         version: link:../auth
@@ -458,6 +443,9 @@ importers:
       '@trpc/server':
         specifier: 'catalog:'
         version: 11.18.0(typescript@6.0.3)
+      archiver:
+        specifier: ^8.0.0
+        version: 8.0.0
       csv-parse:
         specifier: ^6.2.1
         version: 6.2.1
@@ -474,6 +462,9 @@ importers:
       '@prive-admin-tanstack/config':
         specifier: workspace:*
         version: link:../config
+      '@types/archiver':
+        specifier: ^6.0.3
+        version: 6.0.4
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.4
