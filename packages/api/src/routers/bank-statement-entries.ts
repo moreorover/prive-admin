@@ -7,9 +7,9 @@ import {
   listBankStatementEntries,
   undoBankStatementEntry,
 } from "@prive-admin-tanstack/application/services"
+import { parseBankCsv } from "@prive-admin-tanstack/application/services"
 import { z } from "zod"
 
-import { parseBankCsv } from "../bank-csv"
 import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
 import { getOffset, pagedResult, pageSchema } from "../pagination"
@@ -35,7 +35,7 @@ export const bankStatementEntriesRouter = router({
         return { accountIban: parsed.accountIban, inserted: 0, skipped: 0, total: 0 }
       }
 
-      const values = parsed.rows.map((r) => ({
+      const values = parsed.rows.map((r: (typeof parsed.rows)[number]) => ({
         bankAccountId: account.id,
         externalRef: r.externalRef,
         docNumber: r.docNumber || null,

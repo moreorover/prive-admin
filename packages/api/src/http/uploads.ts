@@ -1,7 +1,7 @@
-import { PutObjectCommand } from "@aws-sdk/client-s3"
+import { storeUpload } from "@prive-admin-tanstack/application/services"
 import { Hono } from "hono"
 
-import { bucketName, r2 } from "../r2"
+import { r2Storage } from "../storage"
 import { requireSession } from "./session"
 
 export const uploadRoutes = new Hono()
@@ -15,18 +15,15 @@ uploadRoutes.post("/upload", async (c) => {
   if (!file) return c.json({ error: "No file provided" }, 400)
 
   try {
-    const safeName = file.name.replace(/[^\w.-]+/g, "_")
-    const key = `uploads/${Date.now()}-${safeName}`
-    const arrayBuffer = await file.arrayBuffer()
-    await r2.send(
-      new PutObjectCommand({
-        Bucket: bucketName,
-        Key: key,
-        Body: new Uint8Array(arrayBuffer),
-        ContentType: file.type || "application/octet-stream",
-      }),
-    )
-    return c.json({ key })
+    const body = new Uint8Array(await file.arrayBuffer())
+    const result = await storeUpload({
+      prefix: "uploads",
+      fileName: file.name,
+      contentType: file.type || "application/octet-stream",
+      body,
+      storage: r2Storage,
+    })
+    return c.json(result)
   } catch (error) {
     console.error("[upload]", error)
     return c.json({ error: "Upload failed" }, 500)

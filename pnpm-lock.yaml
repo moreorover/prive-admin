@@ -428,9 +428,6 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.1068.0
         version: 3.1079.0
-      '@paralleldrive/cuid2':
-        specifier: ^3.3.0
-        version: 3.3.0
       '@prive-admin-tanstack/application':
         specifier: workspace:*
         version: link:../application
@@ -443,15 +440,6 @@ importers:
       '@trpc/server':
         specifier: 'catalog:'
         version: 11.18.0(typescript@6.0.3)
-      archiver:
-        specifier: ^8.0.0
-        version: 8.0.0
-      csv-parse:
-        specifier: ^6.2.1
-        version: 6.2.1
-      drizzle-orm:
-        specifier: ^0.45.2
-        version: 0.45.2(@types/pg@8.20.0)(kysely@0.29.2)(pg@8.22.0)
       hono:
         specifier: 'catalog:'
         version: 4.12.27
@@ -462,9 +450,6 @@ importers:
       '@prive-admin-tanstack/config':
         specifier: workspace:*
         version: link:../config
-      '@types/archiver':
-        specifier: ^6.0.3
-        version: 6.0.4
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.4
@@ -474,18 +459,15 @@ importers:
 
   packages/application:
     dependencies:
-      '@aws-sdk/client-s3':
-        specifier: ^3.1068.0
-        version: 3.1079.0
-      '@paralleldrive/cuid2':
-        specifier: ^3.3.0
-        version: 3.3.0
       '@prive-admin-tanstack/db':
         specifier: workspace:*
         version: link:../db
       archiver:
         specifier: ^8.0.0
         version: 8.0.0
+      csv-parse:
+        specifier: ^6.2.1
+        version: 6.2.1
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@types/pg@8.20.0)(kysely@0.29.2)(pg@8.22.0)

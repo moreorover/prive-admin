@@ -1,8 +1,7 @@
 import {
   assignBankStatementAttachment,
   countBankStatementAttachments,
-  deleteBankStatementAttachment,
-  getBankStatementEntry,
+  deleteBankStatementAttachmentFile,
   listBankStatementAttachments,
   unassignBankStatementAttachment,
 } from "@prive-admin-tanstack/application/services"
@@ -10,6 +9,7 @@ import { z } from "zod"
 
 import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
+import { r2Storage } from "../storage"
 
 export const bankStatementAttachmentsRouter = router({
   list: protectedProcedure
@@ -39,7 +39,6 @@ export const bankStatementAttachmentsRouter = router({
     .input(z.object({ id: z.string().min(1), entryId: z.string().min(1) }))
     .mutation(async ({ input }) => {
       try {
-        await getBankStatementEntry(input.entryId)
         return await assignBankStatementAttachment({ id: input.id, entryId: input.entryId })
       } catch (error) {
         throw toTrpcError(error)
@@ -56,7 +55,7 @@ export const bankStatementAttachmentsRouter = router({
 
   delete: protectedProcedure.input(z.object({ id: z.string().min(1) })).mutation(async ({ input }) => {
     try {
-      return await deleteBankStatementAttachment(input.id)
+      return await deleteBankStatementAttachmentFile(input.id, r2Storage)
     } catch (error) {
       throw toTrpcError(error)
     }
