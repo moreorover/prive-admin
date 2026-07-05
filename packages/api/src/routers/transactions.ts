@@ -1,10 +1,12 @@
-import { db } from "@prive-admin-tanstack/db"
-import { appointment, personnelOnAppointments } from "@prive-admin-tanstack/db/schema/appointment"
-import { transaction } from "@prive-admin-tanstack/db/schema/transaction"
-import { TRPCError } from "@trpc/server"
-import { and, count, eq } from "drizzle-orm"
+import {
+  createTransaction,
+  deleteTransaction,
+  listTransactions,
+  updateTransaction,
+} from "@prive-admin-tanstack/application/services"
 import { z } from "zod"
 
+import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
 import { getOffset, pagedResult, pageSchema } from "../pagination"
 
@@ -25,35 +27,14 @@ const transactionListSchema = pageSchema.extend({
 
 export const transactionsRouter = router({
   list: protectedProcedure.input(transactionListSchema).query(async ({ input }) => {
-    if (input.appointmentId) {
-      const appointmentRow = await db.query.appointment.findFirst({
-        where: eq(appointment.id, input.appointmentId),
-        columns: { id: true },
-      })
-      if (!appointmentRow) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" })
-      }
-    }
-
-    const conditions = []
-    if (input.appointmentId) conditions.push(eq(transaction.appointmentId, input.appointmentId))
-    if (input.customerId) conditions.push(eq(transaction.customerId, input.customerId))
-    if (input.currency) conditions.push(eq(transaction.currency, input.currency))
-    const where = conditions.length > 0 ? and(...conditions) : undefined
-
-    const items = await db.query.transaction.findMany({
-      where,
-      with: {
-        customer: { columns: { id: true, name: true } },
-      },
-      orderBy: (tx, { asc }) => [asc(tx.createdAt)],
-      limit: input.pageSize,
+    const result = await listTransactions({
+      pageSize: input.pageSize,
       offset: getOffset(input),
+      appointmentId: input.appointmentId,
+      customerId: input.customerId,
+      currency: input.currency,
     })
-
-    const [countRow] = await db.select({ totalCount: count() }).from(transaction).where(where)
-
-    return pagedResult(items, input, countRow?.totalCount ?? 0)
+    return pagedResult(result.items, input, result.totalCount)
   }),
 
   create: protectedProcedure
@@ -64,76 +45,41 @@ export const transactionsRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
-      return await db.transaction(async (tx) => {
-        const allowedCustomerIds = new Set<string>()
-        const appointmentRow = await tx.query.appointment.findFirst({
-          where: (a, { eq }) => eq(a.id, input.appointmentId),
-          columns: { clientId: true },
-        })
-        if (!appointmentRow) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" })
-        }
-        allowedCustomerIds.add(appointmentRow.clientId)
-        const personnelRows = await tx
-          .select({ personnelId: personnelOnAppointments.personnelId })
-          .from(personnelOnAppointments)
-          .where(eq(personnelOnAppointments.appointmentId, input.appointmentId))
-        for (const row of personnelRows) {
-          allowedCustomerIds.add(row.personnelId)
-        }
-        if (!allowedCustomerIds.has(input.customerId)) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Customer is not the appointment client or assigned personnel",
-          })
-        }
-
-        const [result] = await tx
-          .insert(transaction)
-          .values({
-            appointmentId: input.appointmentId,
-            customerId: input.customerId,
-            name: input.name ?? null,
-            notes: input.notes ?? null,
-            amount: input.amount,
-            currency: input.currency,
-          })
-          .returning()
-        return result
-      })
-    }),
-
-  update: protectedProcedure
-    .input(transactionFieldsSchema.extend({ id: z.string().min(1) }))
-    .mutation(async ({ input }) => {
-      const existing = await db.query.transaction.findFirst({
-        where: eq(transaction.id, input.id),
-        columns: { id: true },
-      })
-      if (!existing) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Transaction not found" })
-      }
-      const [result] = await db
-        .update(transaction)
-        .set({
+      try {
+        return await createTransaction({
+          appointmentId: input.appointmentId,
+          customerId: input.customerId,
           name: input.name ?? null,
           notes: input.notes ?? null,
           amount: input.amount,
           currency: input.currency,
         })
-        .where(eq(transaction.id, input.id))
-        .returning()
-      return result
+      } catch (error) {
+        throw toTrpcError(error)
+      }
+    }),
+
+  update: protectedProcedure
+    .input(transactionFieldsSchema.extend({ id: z.string().min(1) }))
+    .mutation(async ({ input }) => {
+      try {
+        return await updateTransaction({
+          id: input.id,
+          name: input.name ?? null,
+          notes: input.notes ?? null,
+          amount: input.amount,
+          currency: input.currency,
+        })
+      } catch (error) {
+        throw toTrpcError(error)
+      }
     }),
 
   delete: protectedProcedure.input(z.object({ id: z.string().min(1) })).mutation(async ({ input }) => {
-    const existing = await db.query.transaction.findFirst({
-      where: eq(transaction.id, input.id),
-      columns: { id: true },
-    })
-    if (!existing) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "Transaction not found" })
+    try {
+      return await deleteTransaction(input.id)
+    } catch (error) {
+      throw toTrpcError(error)
     }
-    await db.delete(transaction).where(eq(transaction.id, input.id))
   }),
 })

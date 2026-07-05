@@ -1,11 +1,16 @@
-import { db } from "@prive-admin-tanstack/db"
-import { bankAccount } from "@prive-admin-tanstack/db/schema/bank-account"
-import { bankStatementEntry } from "@prive-admin-tanstack/db/schema/bank-statement-entry"
-import { TRPCError } from "@trpc/server"
-import { and, count, desc, eq } from "drizzle-orm"
+import { badRequest } from "@prive-admin-tanstack/application/errors"
+import {
+  findBankAccountForIban,
+  getBankStatementEntry,
+  ignoreBankStatementEntry,
+  importBankStatementEntries,
+  listBankStatementEntries,
+  undoBankStatementEntry,
+} from "@prive-admin-tanstack/application/services"
 import { z } from "zod"
 
 import { parseBankCsv } from "../bank-csv"
+import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
 import { getOffset, pagedResult, pageSchema } from "../pagination"
 
@@ -16,104 +21,87 @@ const bankStatementEntryListSchema = pageSchema.extend({
 
 export const bankStatementEntriesRouter = router({
   importCsv: protectedProcedure.input(z.object({ csv: z.string().min(1) })).mutation(async ({ input }) => {
-    const parsed = parseBankCsv(input.csv)
+    try {
+      const parsed = parseBankCsv(input.csv)
 
-    const account = await db.query.bankAccount.findFirst({
-      where: eq(bankAccount.iban, parsed.accountIban),
-      columns: { id: true, currency: true },
-    })
-    if (!account) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: `No bank account configured for IBAN ${parsed.accountIban}. Add it from the legal entity's Bank accounts tab first.`,
+      const account = await findBankAccountForIban(parsed.accountIban)
+      if (!account) {
+        throw badRequest(
+          `No bank account configured for IBAN ${parsed.accountIban}. Add it from the legal entity's Bank accounts tab first.`,
+        )
+      }
+
+      if (parsed.rows.length === 0) {
+        return { accountIban: parsed.accountIban, inserted: 0, skipped: 0, total: 0 }
+      }
+
+      const values = parsed.rows.map((r) => ({
+        bankAccountId: account.id,
+        externalRef: r.externalRef,
+        docNumber: r.docNumber || null,
+        date: r.date,
+        amount: r.accountAmount,
+        currency: r.accountCurrency || account.currency,
+        direction: r.direction,
+        counterpartyName: r.counterpartyName,
+        counterpartyIban: r.counterpartyIban,
+        counterpartyBank: r.counterpartyBank,
+        swift: r.swift,
+        purpose: r.purpose,
+        transactionType: r.transactionType,
+      }))
+
+      const inserted = await importBankStatementEntries({
+        accountIban: parsed.accountIban,
+        values,
       })
-    }
 
-    if (parsed.rows.length === 0) {
-      return { accountIban: parsed.accountIban, inserted: 0, skipped: 0, total: 0 }
-    }
-
-    const values = parsed.rows.map((r) => ({
-      bankAccountId: account.id,
-      externalRef: r.externalRef,
-      docNumber: r.docNumber || null,
-      date: r.date,
-      amount: r.accountAmount,
-      currency: r.accountCurrency || account.currency,
-      direction: r.direction,
-      counterpartyName: r.counterpartyName,
-      counterpartyIban: r.counterpartyIban,
-      counterpartyBank: r.counterpartyBank,
-      swift: r.swift,
-      purpose: r.purpose,
-      transactionType: r.transactionType,
-    }))
-
-    const inserted = await db
-      .insert(bankStatementEntry)
-      .values(values)
-      .onConflictDoNothing({
-        target: [bankStatementEntry.bankAccountId, bankStatementEntry.externalRef],
-      })
-      .returning({ id: bankStatementEntry.id })
-
-    return {
-      accountIban: parsed.accountIban,
-      total: values.length,
-      inserted: inserted.length,
-      skipped: values.length - inserted.length,
+      return {
+        accountIban: parsed.accountIban,
+        total: values.length,
+        inserted: inserted.length,
+        skipped: values.length - inserted.length,
+      }
+    } catch (error) {
+      throw toTrpcError(error)
     }
   }),
 
   list: protectedProcedure.input(bankStatementEntryListSchema).query(async ({ input }) => {
-    const conditions = []
-    if (input.bankAccountId) conditions.push(eq(bankStatementEntry.bankAccountId, input.bankAccountId))
-    if (input.status) conditions.push(eq(bankStatementEntry.status, input.status))
-    const where = conditions.length > 0 ? and(...conditions) : undefined
-
-    const items = await db.query.bankStatementEntry.findMany({
-      where,
-      with: {
-        bankAccount: { with: { legalEntity: true } },
-      },
-      orderBy: [desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt)],
-      limit: input.pageSize,
-      offset: getOffset(input),
-    })
-
-    const [countRow] = await db.select({ totalCount: count() }).from(bankStatementEntry).where(where)
-
-    return pagedResult(items, input, countRow?.totalCount ?? 0)
+    try {
+      const result = await listBankStatementEntries({
+        pageSize: input.pageSize,
+        offset: getOffset(input),
+        bankAccountId: input.bankAccountId,
+        status: input.status,
+      })
+      return pagedResult(result.items, input, result.totalCount)
+    } catch (error) {
+      throw toTrpcError(error)
+    }
   }),
 
   get: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
-    const row = await db.query.bankStatementEntry.findFirst({
-      where: eq(bankStatementEntry.id, input.id),
-      with: {
-        bankAccount: { with: { legalEntity: true } },
-      },
-    })
-    if (!row) throw new TRPCError({ code: "NOT_FOUND", message: "Statement entry not found" })
-    return row
+    try {
+      return await getBankStatementEntry(input.id)
+    } catch (error) {
+      throw toTrpcError(error)
+    }
   }),
 
   ignore: protectedProcedure.input(z.object({ id: z.string().min(1) })).mutation(async ({ input }) => {
-    const [row] = await db
-      .update(bankStatementEntry)
-      .set({ status: "IGNORED" })
-      .where(eq(bankStatementEntry.id, input.id))
-      .returning({ id: bankStatementEntry.id, status: bankStatementEntry.status })
-    if (!row) throw new TRPCError({ code: "NOT_FOUND", message: "Statement entry not found" })
-    return row
+    try {
+      return await ignoreBankStatementEntry(input.id)
+    } catch (error) {
+      throw toTrpcError(error)
+    }
   }),
 
   undo: protectedProcedure.input(z.object({ id: z.string().min(1) })).mutation(async ({ input }) => {
-    const [row] = await db
-      .update(bankStatementEntry)
-      .set({ status: "PENDING" })
-      .where(eq(bankStatementEntry.id, input.id))
-      .returning({ id: bankStatementEntry.id, status: bankStatementEntry.status })
-    if (!row) throw new TRPCError({ code: "NOT_FOUND", message: "Statement entry not found" })
-    return row
+    try {
+      return await undoBankStatementEntry(input.id)
+    } catch (error) {
+      throw toTrpcError(error)
+    }
   }),
 })

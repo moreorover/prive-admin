@@ -6,7 +6,7 @@ import {
   updateCustomer as patchCustomer,
 } from "@prive-admin-tanstack/db"
 
-import { notFound } from "../errors"
+import { notFound, unexpectedError } from "../errors"
 
 type Currency = "GBP" | "EUR"
 
@@ -29,11 +29,28 @@ export async function getCustomer(id: string) {
 }
 
 export async function createCustomer(input: { name: string; phoneNumber?: string | null }) {
-  return insertCustomer(undefined, input)
+  let result
+  try {
+    result = await insertCustomer(undefined, input)
+  } catch (error) {
+    throw unexpectedError("Failed to create customer", error)
+  }
+
+  if (!result) {
+    throw unexpectedError("Failed to create customer")
+  }
+
+  return result
 }
 
 export async function updateCustomer(input: { id: string; name: string; phoneNumber?: string | null }) {
-  const result = await patchCustomer(undefined, input)
+  let result
+  try {
+    result = await patchCustomer(undefined, input)
+  } catch (error) {
+    throw unexpectedError("Failed to update customer", error)
+  }
+
   if (!result) throw notFound("Customer not found")
   return result
 }

@@ -437,9 +437,6 @@ importers:
       '@prive-admin-tanstack/auth':
         specifier: workspace:*
         version: link:../auth
-      '@prive-admin-tanstack/db':
-        specifier: workspace:*
-        version: link:../db
       '@prive-admin-tanstack/env':
         specifier: workspace:*
         version: link:../env

@@ -4,7 +4,7 @@ import {
   updateBankAccount as patchBankAccount,
 } from "@prive-admin-tanstack/db"
 
-import { notFound } from "../errors"
+import { notFound, unexpectedError } from "../errors"
 
 export async function getBankAccount(id: string) {
   const result = await findBankAccount(undefined, id)
@@ -20,7 +20,18 @@ export async function createBankAccount(input: {
   swift?: string | null
   displayName: string
 }) {
-  return insertBankAccount(undefined, input)
+  let result
+  try {
+    result = await insertBankAccount(undefined, input)
+  } catch (error) {
+    throw unexpectedError("Failed to create bank account", error)
+  }
+
+  if (!result) {
+    throw unexpectedError("Failed to create bank account")
+  }
+
+  return result
 }
 
 export async function updateBankAccount(input: {
@@ -32,7 +43,13 @@ export async function updateBankAccount(input: {
   swift?: string | null
   displayName: string
 }) {
-  const result = await patchBankAccount(undefined, input)
+  let result
+  try {
+    result = await patchBankAccount(undefined, input)
+  } catch (error) {
+    throw unexpectedError("Failed to update bank account", error)
+  }
+
   if (!result) throw notFound("Bank account not found")
   return result
 }

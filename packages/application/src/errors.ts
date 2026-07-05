@@ -22,3 +22,6 @@ export const internalServerError = (message: string, options?: { cause?: unknown
 
 export const notFound = (message: string, options?: { cause?: unknown }) =>
   new ApplicationError("NOT_FOUND", message, options)
+
+export const unexpectedError = (message: string, cause?: unknown) =>
+  internalServerError(message, cause === undefined ? undefined : { cause })

@@ -5,7 +5,7 @@ import {
   updateSalon as patchSalon,
 } from "@prive-admin-tanstack/db"
 
-import { notFound } from "../errors"
+import { notFound, unexpectedError } from "../errors"
 
 export async function listSalons() {
   return fetchSalons()
@@ -18,11 +18,28 @@ export async function getSalon(id: string) {
 }
 
 export async function createSalon(input: { name: string; address?: string | null }) {
-  return insertSalon(undefined, input)
+  let result
+  try {
+    result = await insertSalon(undefined, input)
+  } catch (error) {
+    throw unexpectedError("Failed to create salon", error)
+  }
+
+  if (!result) {
+    throw unexpectedError("Failed to create salon")
+  }
+
+  return result
 }
 
 export async function updateSalon(input: { id: string; name: string; address?: string | null }) {
-  const result = await patchSalon(undefined, input)
+  let result
+  try {
+    result = await patchSalon(undefined, input)
+  } catch (error) {
+    throw unexpectedError("Failed to update salon", error)
+  }
+
   if (!result) throw notFound("Salon not found")
   return result
 }

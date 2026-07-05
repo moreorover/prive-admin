@@ -1,10 +1,12 @@
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3"
 import { createId } from "@paralleldrive/cuid2"
-import { db } from "@prive-admin-tanstack/db"
-import { bankStatementAttachment } from "@prive-admin-tanstack/db/schema/bank-statement-attachment"
-import { bankStatementEntry } from "@prive-admin-tanstack/db/schema/bank-statement-entry"
+import {
+  createBankStatementAttachment,
+  getBankStatementAttachment,
+  getBankStatementEntry,
+  listBankStatementAttachmentExportRows,
+} from "@prive-admin-tanstack/application/services"
 import * as archiverPkg from "archiver"
-import { and, eq, gte, lte } from "drizzle-orm"
 import { Hono } from "hono"
 import { Readable } from "node:stream"
 
@@ -51,11 +53,11 @@ statementAttachmentRoutes.post("/upload", async (c) => {
   if (file.size > MAX_ATTACHMENT_BYTES) return c.json({ error: `File exceeds ${MAX_ATTACHMENT_BYTES} bytes` }, 413)
 
   if (entryId) {
-    const entry = await db.query.bankStatementEntry.findFirst({
-      where: eq(bankStatementEntry.id, entryId),
-      columns: { id: true },
-    })
-    if (!entry) return c.json({ error: "Entry not found" }, 404)
+    try {
+      await getBankStatementEntry(entryId)
+    } catch {
+      return c.json({ error: "Entry not found" }, 404)
+    }
   }
 
   const safeName = file.name.replace(/[^\w.-]+/g, "_")
@@ -80,9 +82,9 @@ statementAttachmentRoutes.post("/upload", async (c) => {
     return c.json({ error: "Upload failed" }, 500)
   }
 
-  const [row] = await db
-    .insert(bankStatementAttachment)
-    .values({
+  let row
+  try {
+    row = await createBankStatementAttachment({
       id: attachmentId,
       bankStatementEntryId: entryId,
       r2Key: key,
@@ -91,7 +93,10 @@ statementAttachmentRoutes.post("/upload", async (c) => {
       size: file.size,
       uploadedById: session.user.id,
     })
-    .returning()
+  } catch (error) {
+    console.error("[statement-attachment upload] db", error)
+    return c.json({ error: "Upload failed" }, 500)
+  }
 
   return c.json(row)
 })
@@ -103,10 +108,12 @@ statementAttachmentRoutes.get("/preview", async (c) => {
   const id = c.req.query("id")
   if (!id) return c.json({ error: "Missing id" }, 400)
 
-  const row = await db.query.bankStatementAttachment.findFirst({
-    where: eq(bankStatementAttachment.id, id),
-  })
-  if (!row) return c.json({ error: "Not found" }, 404)
+  let row
+  try {
+    row = await getBankStatementAttachment(id)
+  } catch {
+    return c.json({ error: "Not found" }, 404)
+  }
 
   let obj
   try {
@@ -155,17 +162,7 @@ statementAttachmentRoutes.get("/export", async (c) => {
   const start = `${year}-${pad2(month)}-01`
   const end = `${year}-${pad2(month)}-${pad2(lastDay(year, month))}`
 
-  const conditions = [gte(bankStatementEntry.date, start), lte(bankStatementEntry.date, end)]
-  if (bankAccountId) conditions.push(eq(bankStatementEntry.bankAccountId, bankAccountId))
-
-  const rows = await db
-    .select({
-      attachment: bankStatementAttachment,
-      entry: bankStatementEntry,
-    })
-    .from(bankStatementAttachment)
-    .innerJoin(bankStatementEntry, eq(bankStatementAttachment.bankStatementEntryId, bankStatementEntry.id))
-    .where(and(...conditions))
+  const rows = await listBankStatementAttachmentExportRows({ start, end, bankAccountId })
 
   const archive = new ZipArchive({ zlib: { level: 9 } })
   archive.on("warning", (err: Error) => console.warn("[zip warning]", err))
