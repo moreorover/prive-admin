@@ -291,43 +291,6 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
               </Text>
             )}
           </Card>
-
-          <Card withBorder>
-            <Group justify="space-between" mb="sm">
-              <Stack gap={0}>
-                <Title order={5}>Hair Assigned</Title>
-                <Text size="xs" c="dimmed">
-                  {formatPageRange({
-                    page: hairAssignedPage,
-                    pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-                    itemCount: hairAssigned.length,
-                    totalCount: hairAssignedTotalCount,
-                  })}
-                </Text>
-              </Stack>
-              <Button
-                variant="subtle"
-                size="xs"
-                leftSection={<IconPlus size={12} />}
-                onClick={() => setCreateOpen(true)}
-              >
-                Add
-              </Button>
-            </Group>
-            <HairAssignedTable items={hairAssigned} showHairOrderColumn onEdit={setEditItem} onDelete={setDeleteItem} />
-            {showHairAssignedPagination && (
-              <Group justify="space-between" mt="md">
-                <Text size="sm" c="dimmed">
-                  Page {Math.min(hairAssignedPage, hairAssignedTotalPages)} of {hairAssignedTotalPages}
-                </Text>
-                <Pagination
-                  total={hairAssignedTotalPages}
-                  value={Math.min(hairAssignedPage, hairAssignedTotalPages)}
-                  onChange={setHairAssignedPage}
-                />
-              </Group>
-            )}
-          </Card>
         </Group>
 
         <Card withBorder>
@@ -407,6 +370,38 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
                 total={transactionsTotalPages}
                 value={Math.min(transactionsPage, transactionsTotalPages)}
                 onChange={setTransactionsPage}
+              />
+            </Group>
+          )}
+        </Card>
+
+        <Card withBorder>
+          <Group justify="space-between" mb="sm">
+            <Stack gap={0}>
+              <Title order={5}>Hair Assigned</Title>
+              <Text size="xs" c="dimmed">
+                {formatPageRange({
+                  page: hairAssignedPage,
+                  pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
+                  itemCount: hairAssigned.length,
+                  totalCount: hairAssignedTotalCount,
+                })}
+              </Text>
+            </Stack>
+            <Button variant="subtle" size="xs" leftSection={<IconPlus size={12} />} onClick={() => setCreateOpen(true)}>
+              Add
+            </Button>
+          </Group>
+          <HairAssignedTable items={hairAssigned} showHairOrderColumn onEdit={setEditItem} onDelete={setDeleteItem} />
+          {showHairAssignedPagination && (
+            <Group justify="space-between" mt="md">
+              <Text size="sm" c="dimmed">
+                Page {Math.min(hairAssignedPage, hairAssignedTotalPages)} of {hairAssignedTotalPages}
+              </Text>
+              <Pagination
+                total={hairAssignedTotalPages}
+                value={Math.min(hairAssignedPage, hairAssignedTotalPages)}
+                onChange={setHairAssignedPage}
               />
             </Group>
           )}
