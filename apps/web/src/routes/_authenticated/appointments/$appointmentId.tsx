@@ -11,7 +11,6 @@ import {
   Pagination,
   ScrollArea,
   Select,
-  Skeleton,
   Stack,
   Table,
   Text,
@@ -49,22 +48,22 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
   component: AppointmentDetailRoute,
   loader: async ({ context, params }) => {
     await Promise.all([
-      context.queryClient.prefetchQuery(trpc.appointments.get.queryOptions({ id: params.appointmentId })),
-      context.queryClient.prefetchQuery(
+      context.queryClient.ensureQueryData(trpc.appointments.get.queryOptions({ id: params.appointmentId })),
+      context.queryClient.ensureQueryData(
         trpc.hairAssigned.list.queryOptions({
           page: 1,
           pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
           appointmentId: params.appointmentId,
         }),
       ),
-      context.queryClient.prefetchQuery(
+      context.queryClient.ensureQueryData(
         trpc.transactions.list.queryOptions({
           page: 1,
           pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
           appointmentId: params.appointmentId,
         }),
       ),
-      context.queryClient.prefetchQuery(trpc.userSettings.get.queryOptions()),
+      context.queryClient.ensureQueryData(trpc.userSettings.get.queryOptions()),
     ])
   },
 })
@@ -99,7 +98,7 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
     appointmentId,
   })
 
-  const { data: appointment, isLoading } = useQuery(appointmentQueryOptions)
+  const { data: appointment } = useQuery(appointmentQueryOptions)
 
   const { data: hairAssignedData } = useQuery(hairAssignedQueryOptions)
   const hairAssigned = hairAssignedData?.items ?? []
@@ -122,17 +121,6 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
     totalsByCurrency[c] += t.amount
   }
   const currenciesPresent = CURRENCIES.filter((c) => totalsByCurrency[c] !== 0)
-
-  if (isLoading) {
-    return (
-      <Container size="xl">
-        <Stack>
-          <Skeleton h={24} w={200} />
-          <Skeleton h={120} />
-        </Stack>
-      </Container>
-    )
-  }
 
   if (!appointment) {
     return (

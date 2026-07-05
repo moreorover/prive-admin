@@ -15,6 +15,17 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,
   validateSearch: searchSchema,
+  loaderDeps: ({ search }) => ({
+    year: search.year ?? new Date().getFullYear(),
+  }),
+  loader: async ({ context, deps }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(trpc.dashboard.hairAssignedStats.queryOptions({ year: deps.year })),
+      context.queryClient.ensureQueryData(
+        trpc.dashboard.hairAssignedThroughSaleStats.queryOptions({ year: deps.year }),
+      ),
+    ])
+  },
 })
 
 function DashboardPage() {
@@ -23,12 +34,8 @@ function DashboardPage() {
   const currentYear = new Date().getFullYear()
   const year = search.year ?? currentYear
 
-  const { data: appointmentsData, isLoading: appointmentsLoading } = useQuery(
-    trpc.dashboard.hairAssignedStats.queryOptions({ year }),
-  )
-  const { data: salesData, isLoading: salesLoading } = useQuery(
-    trpc.dashboard.hairAssignedThroughSaleStats.queryOptions({ year }),
-  )
+  const { data: appointmentsData } = useQuery(trpc.dashboard.hairAssignedStats.queryOptions({ year }))
+  const { data: salesData } = useQuery(trpc.dashboard.hairAssignedThroughSaleStats.queryOptions({ year }))
 
   const setYear = (next: number) => navigate({ search: { year: next } })
 
@@ -59,13 +66,11 @@ function DashboardPage() {
         title="Hair assigned during appointments"
         description="Hair assigned through appointments, grouped by appointment month."
         data={appointmentsData}
-        isLoading={appointmentsLoading}
       />
       <HairReportTable
         title="Hair assigned during sale"
         description="Hair assigned without an appointment, grouped by sale month."
         data={salesData}
-        isLoading={salesLoading}
       />
     </Stack>
   )
@@ -75,7 +80,6 @@ function HairReportTable({
   title,
   description,
   data,
-  isLoading,
 }: {
   title: string
   description: string
@@ -85,7 +89,6 @@ function HairReportTable({
         totals: { weight: number; soldFor: number; profit: number; pricePerGramAvg: number }
       }
     | undefined
-  isLoading: boolean
 }) {
   return (
     <Paper withBorder radius="sm" p="md">
@@ -98,11 +101,7 @@ function HairReportTable({
             {description}
           </Text>
         </Stack>
-        {isLoading || !data ? (
-          <Text c="dimmed" size="sm">
-            Loading report...
-          </Text>
-        ) : (
+        {data ? (
           <Table.ScrollContainer minWidth={640}>
             <Table striped highlightOnHover verticalSpacing="xs">
               <Table.Thead>
@@ -144,6 +143,10 @@ function HairReportTable({
               </Table.Tbody>
             </Table>
           </Table.ScrollContainer>
+        ) : (
+          <Text c="dimmed" size="sm">
+            No report data.
+          </Text>
         )}
       </Stack>
     </Paper>
