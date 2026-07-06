@@ -18,8 +18,8 @@ type CustomerSummaryRow = {
   notes: Array<{ id: string }>
 }
 
-export async function listCustomers(search?: string) {
-  return fetchCustomers(undefined, { search })
+export async function listCustomers(input: { pageSize: number; offset: number; search?: string }) {
+  return fetchCustomers(undefined, input)
 }
 
 export async function getCustomer(id: string) {

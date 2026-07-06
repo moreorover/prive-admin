@@ -12,7 +12,7 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
-const PAGE_SIZE = 25
+const PAGE_SIZE = 10
 const searchSchema = z.object({
   page: z.number().int().min(1).optional(),
   search: z.string().optional(),

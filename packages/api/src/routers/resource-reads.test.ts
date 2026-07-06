@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import { appointmentsRouter } from "./appointments"
 import { bankAccountsRouter } from "./bank-accounts"
+import { customersRouter } from "./customers"
 import { transactionsRouter } from "./transactions"
 
 const servicesMock = vi.hoisted(() => ({
@@ -13,6 +14,7 @@ const servicesMock = vi.hoisted(() => ({
   createBankAccount: vi.fn(),
   getBankAccount: vi.fn(),
   updateBankAccount: vi.fn(),
+  listCustomers: vi.fn(),
   createTransaction: vi.fn(),
   deleteTransaction: vi.fn(),
   listTransactions: vi.fn(),
@@ -84,6 +86,23 @@ describe("resource read routers", () => {
         pageSize: 25,
         offset: 0,
         appointmentId: "appointment-1",
+      }),
+    )
+  })
+
+  it("lists customers with page offset applied", async () => {
+    const caller = customersRouter.createCaller(ctx)
+    const customerRows = [{ id: "customer-1", name: "Anna" }]
+    servicesMock.listCustomers.mockResolvedValue({ items: customerRows, totalCount: 31 })
+
+    const result = await caller.list({ page: 2, pageSize: 10, search: "ann" })
+
+    expect(result).toEqual({ items: customerRows, page: 2, pageSize: 10, totalCount: 31 })
+    expect(servicesMock.listCustomers).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pageSize: 10,
+        offset: 10,
+        search: "ann",
       }),
     )
   })
