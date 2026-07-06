@@ -2,6 +2,9 @@ import {
   createCustomer,
   getCustomer,
   getCustomerSummary,
+  listAppointments,
+  listHairAssigned,
+  listNotes,
   listCustomers,
   updateCustomer,
 } from "@prive-admin-tanstack/application/services"
@@ -23,6 +26,39 @@ const customerInputSchema = z.object({
 })
 
 const customerListSchema = pageSchema.extend({ search: searchSchema })
+const customerScopedListSchema = pageSchema.extend({ customerId: z.string().min(1) })
+
+const customerAppointmentsRouter = router({
+  list: protectedProcedure.input(customerScopedListSchema).query(async ({ input }) => {
+    const result = await listAppointments({
+      pageSize: input.pageSize,
+      offset: getOffset(input),
+      customerId: input.customerId,
+    })
+    return pagedResult(result.items, input, result.totalCount)
+  }),
+})
+
+const customerNotesRouter = router({
+  list: protectedProcedure.input(z.object({ customerId: z.string().min(1) })).query(async ({ input }) => {
+    return listNotes({ customerId: input.customerId })
+  }),
+})
+
+const customerHairAssignedRouter = router({
+  list: protectedProcedure.input(customerScopedListSchema).query(async ({ input }) => {
+    try {
+      const result = await listHairAssigned({
+        pageSize: input.pageSize,
+        offset: getOffset(input),
+        customerId: input.customerId,
+      })
+      return pagedResult(result.items, input, result.totalCount)
+    } catch (error) {
+      throw toTrpcError(error)
+    }
+  }),
+})
 
 export const customersRouter = router({
   list: protectedProcedure.input(customerListSchema).query(async ({ input }) => {
@@ -61,4 +97,8 @@ export const customersRouter = router({
       throw toTrpcError(error)
     }
   }),
+
+  appointments: customerAppointmentsRouter,
+  notes: customerNotesRouter,
+  hairAssigned: customerHairAssignedRouter,
 })

@@ -36,27 +36,45 @@ import { trpc } from "@/utils/trpc"
 const CUSTOMER_APPOINTMENTS_PAGE_SIZE = 25
 const CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE = 25
 
+function createCustomerDetailQueries(customerId: string) {
+  return {
+    customer: {
+      get: trpc.customers.get.queryOptions({ id: customerId }),
+      summary: trpc.customers.summary.queryOptions({ id: customerId }),
+    },
+    appointments: {
+      list: (page: number) =>
+        trpc.customers.appointments.list.queryOptions({
+          page,
+          pageSize: CUSTOMER_APPOINTMENTS_PAGE_SIZE,
+          customerId,
+        }),
+    },
+    notes: {
+      list: trpc.customers.notes.list.queryOptions({ customerId }),
+    },
+    hairAssigned: {
+      list: (page: number) =>
+        trpc.customers.hairAssigned.list.queryOptions({
+          page,
+          pageSize: CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE,
+          customerId,
+        }),
+    },
+  }
+}
+
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetailRoute,
   loader: async ({ context, params }) => {
+    const queries = createCustomerDetailQueries(params.customerId)
+
     await Promise.all([
-      context.queryClient.ensureQueryData(trpc.customers.get.queryOptions({ id: params.customerId })),
-      context.queryClient.ensureQueryData(trpc.customers.summary.queryOptions({ id: params.customerId })),
-      context.queryClient.ensureQueryData(
-        trpc.appointments.list.queryOptions({
-          page: 1,
-          pageSize: CUSTOMER_APPOINTMENTS_PAGE_SIZE,
-          customerId: params.customerId,
-        }),
-      ),
-      context.queryClient.ensureQueryData(trpc.notes.list.queryOptions({ customerId: params.customerId })),
-      context.queryClient.ensureQueryData(
-        trpc.hairAssigned.list.queryOptions({
-          page: 1,
-          pageSize: CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE,
-          customerId: params.customerId,
-        }),
-      ),
+      context.queryClient.ensureQueryData(queries.customer.get),
+      context.queryClient.ensureQueryData(queries.customer.summary),
+      context.queryClient.ensureQueryData(queries.appointments.list(1)),
+      context.queryClient.ensureQueryData(queries.notes.list),
+      context.queryClient.ensureQueryData(queries.hairAssigned.list(1)),
     ])
   },
 })
@@ -155,7 +173,7 @@ function AddNoteDialog({
   const mutation = useMutation({
     ...trpc.notes.create.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.notes.list.queryKey({ customerId }) })
+      queryClient.invalidateQueries({ queryKey: trpc.customers.notes.list.queryKey({ customerId }) })
       queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey })
       onOpenChange(false)
       notifications.show({ color: "green", message: "Note added" })
@@ -193,33 +211,22 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
   const [appointmentsPage, setAppointmentsPage] = useState(1)
   const [hairAssignedPage, setHairAssignedPage] = useState(1)
   const queryClient = useQueryClient()
-  const customerSummaryQueryOptions = trpc.customers.summary.queryOptions({ id: customerId })
-  const customerAppointmentsQueryOptions = trpc.appointments.list.queryOptions({
-    page: appointmentsPage,
-    pageSize: CUSTOMER_APPOINTMENTS_PAGE_SIZE,
-    customerId,
-  })
-  const hairAssignedQueryOptions = trpc.hairAssigned.list.queryOptions({
-    page: hairAssignedPage,
-    pageSize: CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE,
-    customerId,
-  })
+  const customerQueries = createCustomerDetailQueries(customerId)
 
-  const { data: customer } = useQuery(trpc.customers.get.queryOptions({ id: customerId }))
+  const { data: customer } = useQuery(customerQueries.customer.get)
 
-  const { data: appointmentsData } = useQuery(customerAppointmentsQueryOptions)
+  const { data: appointmentsData } = useQuery(customerQueries.appointments.list(appointmentsPage))
   const appointments = appointmentsData?.items ?? []
   const appointmentsTotalCount = appointmentsData?.totalCount ?? 0
   const appointmentsTotalPages = Math.max(1, Math.ceil(appointmentsTotalCount / CUSTOMER_APPOINTMENTS_PAGE_SIZE))
   const hasAppointmentsOnCurrentPage = appointments.length > 0
   const showAppointmentsPagination = appointmentsTotalCount > CUSTOMER_APPOINTMENTS_PAGE_SIZE
 
-  const notesQueryOptions = trpc.notes.list.queryOptions({ customerId })
-  const { data: notes } = useQuery(notesQueryOptions)
+  const { data: notes } = useQuery(customerQueries.notes.list)
 
-  const { data: summary } = useQuery(customerSummaryQueryOptions)
+  const { data: summary } = useQuery(customerQueries.customer.summary)
 
-  const { data: hairAssignedData } = useQuery(hairAssignedQueryOptions)
+  const { data: hairAssignedData } = useQuery(customerQueries.hairAssigned.list(hairAssignedPage))
   const hairAssigned = hairAssignedData?.items ?? []
   const hairAssignedTotalCount = hairAssignedData?.totalCount ?? 0
   const hairAssignedTotalPages = Math.max(1, Math.ceil(hairAssignedTotalCount / CUSTOMER_HAIR_ASSIGNED_PAGE_SIZE))
@@ -229,8 +236,8 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
   const deleteNoteMutation = useMutation({
     ...trpc.notes.delete.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: notesQueryOptions.queryKey })
-      queryClient.invalidateQueries({ queryKey: customerSummaryQueryOptions.queryKey })
+      queryClient.invalidateQueries({ queryKey: customerQueries.notes.list.queryKey })
+      queryClient.invalidateQueries({ queryKey: customerQueries.customer.summary.queryKey })
       notifications.show({ color: "green", message: "Note deleted" })
     },
   })
@@ -457,8 +464,8 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
           onOpenChange={setAppointmentCreateOpen}
           defaultClientId={customerId}
           invalidateKeys={[
-            { queryKey: trpc.appointments.list.queryKey() },
-            { queryKey: customerSummaryQueryOptions.queryKey },
+            { queryKey: trpc.customers.appointments.list.queryKey() },
+            { queryKey: customerQueries.customer.summary.queryKey },
           ]}
           navigateOnSuccess
         />
@@ -468,8 +475,8 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
           clientId={customerId}
           appointmentId={null}
           invalidateKeys={[
-            { queryKey: hairAssignedQueryOptions.queryKey },
-            { queryKey: customerSummaryQueryOptions.queryKey },
+            { queryKey: trpc.customers.hairAssigned.list.queryKey() },
+            { queryKey: customerQueries.customer.summary.queryKey },
           ]}
           onSuccess={() => setHairAssignedPage(1)}
         />
@@ -479,8 +486,8 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
             onOpenChange={(open) => !open && setHairEditItem(null)}
             hairAssigned={hairEditItem}
             invalidateKeys={[
-              { queryKey: hairAssignedQueryOptions.queryKey },
-              { queryKey: customerSummaryQueryOptions.queryKey },
+              { queryKey: trpc.customers.hairAssigned.list.queryKey() },
+              { queryKey: customerQueries.customer.summary.queryKey },
             ]}
           />
         )}
@@ -490,8 +497,8 @@ function CustomerDetailPage({ customerId }: { customerId: string }) {
             onOpenChange={(open) => !open && setHairDeleteItem(null)}
             hairAssigned={hairDeleteItem}
             invalidateKeys={[
-              { queryKey: hairAssignedQueryOptions.queryKey },
-              { queryKey: customerSummaryQueryOptions.queryKey },
+              { queryKey: trpc.customers.hairAssigned.list.queryKey() },
+              { queryKey: customerQueries.customer.summary.queryKey },
             ]}
             onSuccess={() => setHairAssignedPage(1)}
           />
