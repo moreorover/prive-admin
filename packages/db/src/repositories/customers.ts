@@ -1,9 +1,11 @@
 import { asc, count, eq, ilike, or } from "drizzle-orm"
 
 import { db, type Db } from "../index"
-import { customer } from "../schema/customer"
+import { customer } from "../schema"
 
 export type CustomerListFilter = {
+  pageSize: number
+  offset: number
   search?: string
 }
 
@@ -17,7 +19,7 @@ function escapeLikePattern(value: string) {
   return value.replace(/[\\%_]/g, "\\$&")
 }
 
-export async function listCustomers(database: Db = db, filter: CustomerListFilter = {}) {
+export async function listCustomers(database: Db = db, filter: CustomerListFilter) {
   const where = filter.search
     ? or(
         ilike(customer.name, `%${escapeLikePattern(filter.search)}%`),
@@ -25,7 +27,13 @@ export async function listCustomers(database: Db = db, filter: CustomerListFilte
       )
     : undefined
 
-  const items = await database.select().from(customer).where(where).orderBy(asc(customer.name))
+  const items = await database
+    .select()
+    .from(customer)
+    .where(where)
+    .orderBy(asc(customer.name))
+    .limit(filter.pageSize)
+    .offset(filter.offset)
 
   const [countRow] = await database.select({ totalCount: count() }).from(customer).where(where)
   return { items, totalCount: countRow?.totalCount ?? 0 }

@@ -9,7 +9,7 @@ import { z } from "zod"
 
 import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
-import { pagedResult, pageSchema, searchSchema } from "../pagination"
+import { getOffset, pagedResult, pageSchema, searchSchema } from "../pagination"
 
 const customerInputSchema = z.object({
   id: z.string().optional(),
@@ -26,7 +26,11 @@ const customerListSchema = pageSchema.extend({ search: searchSchema })
 
 export const customersRouter = router({
   list: protectedProcedure.input(customerListSchema).query(async ({ input }) => {
-    const { items, totalCount } = await listCustomers(input.search ?? undefined)
+    const { items, totalCount } = await listCustomers({
+      pageSize: input.pageSize,
+      offset: getOffset(input),
+      search: input.search,
+    })
     return pagedResult(items, input, totalCount)
   }),
 
