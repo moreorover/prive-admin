@@ -25,15 +25,30 @@ export async function listCustomers(input: { pageSize: number; offset: number; s
   return fetchCustomers(undefined, input)
 }
 
-export async function listCustomerAppointments(input: { customerId: string; pageSize: number; offset: number }) {
+export async function listCustomerAppointments(input: {
+  customerId: string
+  pageSize: number
+  offset: number
+  search?: string
+}) {
   return fetchCustomerAppointments(undefined, input)
 }
 
-export async function listCustomerNotes(input: { customerId: string }) {
+export async function listCustomerNotes(input: {
+  customerId: string
+  pageSize: number
+  offset: number
+  search?: string
+}) {
   return fetchCustomerNotes(undefined, input)
 }
 
-export async function listCustomerHairAssigned(input: { customerId: string; pageSize: number; offset: number }) {
+export async function listCustomerHairAssigned(input: {
+  customerId: string
+  pageSize: number
+  offset: number
+  search?: string
+}) {
   return fetchCustomerHairAssigned(undefined, input)
 }
 

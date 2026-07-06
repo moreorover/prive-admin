@@ -26,7 +26,7 @@ const customerInputSchema = z.object({
 })
 
 const customerListSchema = pageSchema.extend({ search: searchSchema })
-const customerScopedListSchema = pageSchema.extend({ customerId: z.string().min(1) })
+const customerScopedListSchema = pageSchema.extend({ customerId: z.string().min(1), search: searchSchema })
 
 export const customersRouter = router({
   list: protectedProcedure.input(customerListSchema).query(async ({ input }) => {
@@ -72,14 +72,21 @@ export const customersRouter = router({
         customerId: input.customerId,
         pageSize: input.pageSize,
         offset: getOffset(input),
+        search: input.search,
       })
       return pagedResult(result.items, input, result.totalCount)
     }),
   }),
 
   notes: router({
-    list: protectedProcedure.input(z.object({ customerId: z.string().min(1) })).query(async ({ input }) => {
-      return listCustomerNotes({ customerId: input.customerId })
+    list: protectedProcedure.input(customerScopedListSchema).query(async ({ input }) => {
+      const result = await listCustomerNotes({
+        customerId: input.customerId,
+        pageSize: input.pageSize,
+        offset: getOffset(input),
+        search: input.search,
+      })
+      return pagedResult(result.items, input, result.totalCount)
     }),
   }),
 
@@ -90,6 +97,7 @@ export const customersRouter = router({
           customerId: input.customerId,
           pageSize: input.pageSize,
           offset: getOffset(input),
+          search: input.search,
         })
         return pagedResult(result.items, input, result.totalCount)
       } catch (error) {

@@ -1,4 +1,4 @@
-import { asc, count, desc, eq, ilike, or } from "drizzle-orm"
+import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { customer } from "../schema"
@@ -61,9 +61,11 @@ export async function getCustomerSummary(database: Db = db, id: string) {
 
 export async function listCustomerAppointments(
   database: Db = db,
-  input: { customerId: string; pageSize: number; offset: number },
+  input: { customerId: string; pageSize: number; offset: number; search?: string },
 ) {
-  const where = eq(appointment.clientId, input.customerId)
+  const where = input.search
+    ? and(eq(appointment.clientId, input.customerId), ilike(appointment.name, `%${escapeLikePattern(input.search)}%`))
+    : eq(appointment.clientId, input.customerId)
 
   const items = await database.query.appointment.findMany({
     where,
@@ -77,19 +79,42 @@ export async function listCustomerAppointments(
   return { items, totalCount: countRow?.totalCount ?? 0 }
 }
 
-export async function listCustomerNotes(database: Db = db, input: { customerId: string }) {
-  return database.query.note.findMany({
-    where: eq(note.customerId, input.customerId),
+export async function listCustomerNotes(
+  database: Db = db,
+  input: { customerId: string; pageSize: number; offset: number; search?: string },
+) {
+  const where = input.search
+    ? and(eq(note.customerId, input.customerId), ilike(note.note, `%${escapeLikePattern(input.search)}%`))
+    : eq(note.customerId, input.customerId)
+
+  const items = await database.query.note.findMany({
+    where,
     with: { createdBy: true },
     orderBy: (n) => [desc(n.createdAt)],
+    limit: input.pageSize,
+    offset: input.offset,
   })
+
+  const [countRow] = await database.select({ totalCount: count() }).from(note).where(where)
+  return { items, totalCount: countRow?.totalCount ?? 0 }
 }
 
 export async function listCustomerHairAssigned(
   database: Db = db,
-  input: { customerId: string; pageSize: number; offset: number },
+  input: { customerId: string; pageSize: number; offset: number; search?: string },
 ) {
-  const where = eq(hairAssigned.clientId, input.customerId)
+  const where = input.search
+    ? and(
+        eq(hairAssigned.clientId, input.customerId),
+        // Hair-sale search targets the linked hair order UID because it is the stable human-facing identifier.
+        sql<boolean>`exists (
+          select 1
+          from hair_order
+          where hair_order.id = ${hairAssigned.hairOrderId}
+            and hair_order.uid::text ilike ${`%${escapeLikePattern(input.search)}%`}
+        )`,
+      )
+    : eq(hairAssigned.clientId, input.customerId)
 
   const items = await database.query.hairAssigned.findMany({
     where,
