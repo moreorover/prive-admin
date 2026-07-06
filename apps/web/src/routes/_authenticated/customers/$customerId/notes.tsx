@@ -3,8 +3,8 @@ import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconPlus, IconSearch, IconTrash } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { createFileRoute } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
+import { createFileRoute, redirect } from "@tanstack/react-router"
+import { useState } from "react"
 import { z } from "zod"
 
 import { ClientDate } from "@/components/client-date"
@@ -34,7 +34,15 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId/note
     search: search.search ?? "",
   }),
   loader: async ({ context, deps, params }) => {
-    await context.queryClient.ensureQueryData(notesQueryOptions(params.customerId, deps.page, deps.search))
+    const data = await context.queryClient.ensureQueryData(notesQueryOptions(params.customerId, deps.page, deps.search))
+    const totalPages = Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE))
+    if (deps.page > totalPages) {
+      throw redirect({
+        to: "/customers/$customerId/notes",
+        params: { customerId: params.customerId },
+        search: { page: totalPages, search: deps.search },
+      })
+    }
   },
 })
 
@@ -62,12 +70,6 @@ function NotesRoute() {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const clampedPage = Math.min(page, totalPages)
   const hasItemsOnCurrentPage = notes.length > 0
-
-  useEffect(() => {
-    if (page !== clampedPage) {
-      navigate({ search: { page: clampedPage, search: searchValue }, replace: true })
-    }
-  }, [clampedPage, navigate, page, searchValue])
 
   const deleteNoteMutation = useMutation({
     ...trpc.notes.delete.mutationOptions(),

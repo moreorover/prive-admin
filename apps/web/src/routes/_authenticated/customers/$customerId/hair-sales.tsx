@@ -1,8 +1,8 @@
 import { Button, Card, Group, Pagination, Stack, Text, TextInput, Title } from "@mantine/core"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
-import { createFileRoute } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
+import { createFileRoute, redirect } from "@tanstack/react-router"
+import { useState } from "react"
 import { z } from "zod"
 
 import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
@@ -35,7 +35,17 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId/hair
     search: search.search ?? "",
   }),
   loader: async ({ context, deps, params }) => {
-    await context.queryClient.ensureQueryData(hairSalesQueryOptions(params.customerId, deps.page, deps.search))
+    const data = await context.queryClient.ensureQueryData(
+      hairSalesQueryOptions(params.customerId, deps.page, deps.search),
+    )
+    const totalPages = Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE))
+    if (deps.page > totalPages) {
+      throw redirect({
+        to: "/customers/$customerId/hair-sales",
+        params: { customerId: params.customerId },
+        search: { page: totalPages, search: deps.search },
+      })
+    }
   },
 })
 
@@ -59,12 +69,6 @@ function HairSalesRoute() {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const clampedPage = Math.min(page, totalPages)
   const hasItemsOnCurrentPage = hairAssigned.length > 0
-
-  useEffect(() => {
-    if (page !== clampedPage) {
-      navigate({ search: { page: clampedPage, search: searchValue }, replace: true })
-    }
-  }, [clampedPage, navigate, page, searchValue])
 
   const throughAppointment = hairAssigned.filter((ha) => !!ha.appointmentId)
   const individual = hairAssigned.filter((ha) => !ha.appointmentId)
