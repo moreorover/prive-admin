@@ -13,8 +13,8 @@ import { trpc } from "@/utils/trpc"
 import {
   CUSTOMER_DETAIL_PAGE_SIZE,
   customerAppointmentsQueryArgs,
-  customerDetailSearchSchema,
   customerDetailQueryInput,
+  customerDetailSearchSchema,
 } from "./customer-detail-queries"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId/appointments")({

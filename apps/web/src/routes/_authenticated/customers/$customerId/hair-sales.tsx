@@ -3,51 +3,63 @@ import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
+import { z } from "zod"
 
 import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
 import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
 import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
 import { Section } from "@/components/section"
-import { clampPage } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
-import {
-  CUSTOMER_DETAIL_PAGE_SIZE,
-  customerDetailQueryInput,
-  customerDetailSearchSchema,
-  customerHairSalesQueryArgs,
-} from "./customer-detail-queries"
+const PAGE_SIZE = 25
+const searchSchema = z.object({
+  page: z.number().int().min(1).optional(),
+  search: z.string().optional(),
+})
+
+function hairSalesQueryOptions(customerId: string, page: number, search: string) {
+  return trpc.customers.hairAssigned.list.queryOptions({
+    customerId,
+    page,
+    pageSize: PAGE_SIZE,
+    search: search.trim() || undefined,
+  })
+}
+
+export const Route = createFileRoute("/_authenticated/customers/$customerId/hair-sales")({
+  component: HairSalesRoute,
+  validateSearch: searchSchema,
+  loaderDeps: ({ search }) => ({
+    page: search.page ?? 1,
+    search: search.search ?? "",
+  }),
+  loader: async ({ context, deps, params }) => {
+    await context.queryClient.ensureQueryData(hairSalesQueryOptions(params.customerId, deps.page, deps.search))
+  },
+})
 
 type HairAssignedItem = HairAssignedRow & { appointmentId?: string | null }
 
-export const Route = createFileRoute("/_authenticated/customers/$customerId/hair-sales")({
-  validateSearch: customerDetailSearchSchema,
-  loaderDeps: ({ search }) => customerDetailQueryInput(search),
-  loader: async ({ context, deps, params }) => {
-    await context.queryClient.ensureQueryData(
-      trpc.customers.hairAssigned.list.queryOptions(customerHairSalesQueryArgs(params.customerId, deps)),
-    )
-  },
-  component: CustomerHairSalesRoute,
-})
-
-function CustomerHairSalesRoute() {
+function HairSalesRoute() {
   const { customerId } = Route.useParams()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
-  const queryInput = customerHairSalesQueryArgs(customerId, search)
-  const { data } = useQuery(trpc.customers.hairAssigned.list.queryOptions(queryInput))
   const [hairCreateOpen, setHairCreateOpen] = useState(false)
   const [hairEditItem, setHairEditItem] = useState<HairAssignedRow | null>(null)
   const [hairDeleteItem, setHairDeleteItem] = useState<HairAssignedRow | null>(null)
 
   const page = search.page ?? 1
   const searchValue = search.search ?? ""
+  const normalizedSearch = searchValue.trim()
+  const queryOptions = hairSalesQueryOptions(customerId, page, searchValue)
+  const { data } = useQuery(queryOptions)
   const hairAssigned = (data?.items ?? []) as HairAssignedItem[]
   const totalCount = data?.totalCount ?? 0
-  const totalPages = Math.max(1, Math.ceil(totalCount / CUSTOMER_DETAIL_PAGE_SIZE))
-  const clampedPage = clampPage({ page, pageSize: CUSTOMER_DETAIL_PAGE_SIZE, totalCount })
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+  const clampedPage = Math.min(page, totalPages)
+  const showPagination = totalCount > PAGE_SIZE
+  const hasItemsOnCurrentPage = hairAssigned.length > 0
 
   useEffect(() => {
     if (page !== clampedPage) {
@@ -55,100 +67,100 @@ function CustomerHairSalesRoute() {
     }
   }, [clampedPage, navigate, page, searchValue])
 
-  const updateSearch = (value: string) => {
-    navigate({ search: { page: 1, search: value }, replace: true })
-  }
-
   const throughAppointment = hairAssigned.filter((ha) => !!ha.appointmentId)
   const individual = hairAssigned.filter((ha) => !ha.appointmentId)
 
   return (
     <Section
       title="Hair Sales"
+      description="Hair sales tied to this customer."
       actions={
-        <Button
-          variant="default"
-          size="sm"
-          leftSection={<IconPlus size={12} />}
-          onClick={() => setHairCreateOpen(true)}
-        >
-          New
-        </Button>
+        <>
+          <TextInput
+            label="Search"
+            placeholder="Search hair sales"
+            leftSection={<IconSearch size={16} />}
+            value={searchValue}
+            onChange={(event) => {
+              navigate({ search: { page: 1, search: event.currentTarget.value }, replace: true })
+            }}
+            w={260}
+          />
+          <Button
+            variant="default"
+            size="sm"
+            leftSection={<IconPlus size={12} />}
+            onClick={() => setHairCreateOpen(true)}
+          >
+            New
+          </Button>
+        </>
       }
-      padding={hairAssigned.length > 0 || totalCount > 0 ? 0 : "lg"}
+      padding={hasItemsOnCurrentPage || showPagination ? 0 : "lg"}
     >
-      <Group p="md" justify="space-between" align="flex-end">
-        <TextInput
-          label="Search"
-          placeholder="Search hair sales"
-          leftSection={<IconSearch size={16} />}
-          value={searchValue}
-          onChange={(event) => updateSearch(event.currentTarget.value)}
-          miw={260}
-          flex={1}
-        />
-        <Text size="sm" c="dimmed">
-          {totalCount} hair sale{totalCount === 1 ? "" : "s"}
-        </Text>
-      </Group>
+      {hasItemsOnCurrentPage || showPagination ? (
+        <>
+          {hasItemsOnCurrentPage ? (
+            <Stack>
+              <Card withBorder>
+                <Title order={5} mb="sm">
+                  Hair Sales through Appointment
+                </Title>
+                {throughAppointment.length > 0 ? (
+                  <HairAssignedTable
+                    items={throughAppointment}
+                    showHairOrderColumn
+                    onEdit={setHairEditItem}
+                    onDelete={setHairDeleteItem}
+                  />
+                ) : (
+                  <Text size="sm" c="dimmed">
+                    No appointment-tied hair sales on this page.
+                  </Text>
+                )}
+              </Card>
 
-      {hairAssigned.length > 0 ? (
-        <Stack>
-          <Card withBorder>
-            <Title order={5} mb="sm">
-              Hair Sales through Appointment
-            </Title>
-            {throughAppointment.length > 0 ? (
-              <HairAssignedTable
-                items={throughAppointment}
-                showHairOrderColumn
-                onEdit={setHairEditItem}
-                onDelete={setHairDeleteItem}
-              />
-            ) : (
-              <Text size="sm" c="dimmed">
-                No appointment-tied hair sales on this page.
-              </Text>
-            )}
-          </Card>
+              <Card withBorder>
+                <Title order={5} mb="sm">
+                  Hair Sales Individual
+                </Title>
+                {individual.length > 0 ? (
+                  <HairAssignedTable
+                    items={individual}
+                    showHairOrderColumn
+                    onEdit={setHairEditItem}
+                    onDelete={setHairDeleteItem}
+                  />
+                ) : (
+                  <Text size="sm" c="dimmed">
+                    No individual hair sales on this page.
+                  </Text>
+                )}
+              </Card>
 
-          <Card withBorder>
-            <Title order={5} mb="sm">
-              Hair Sales Individual
-            </Title>
-            {individual.length > 0 ? (
-              <HairAssignedTable
-                items={individual}
-                showHairOrderColumn
-                onEdit={setHairEditItem}
-                onDelete={setHairDeleteItem}
-              />
-            ) : (
-              <Text size="sm" c="dimmed">
-                No individual hair sales on this page.
-              </Text>
-            )}
-          </Card>
-
-          {totalCount > 0 && (
-            <Group justify="space-between" px="md" pb="md">
-              <Text size="sm" c="dimmed">
-                Page {clampedPage} of {totalPages}
-              </Text>
-              <Pagination
-                value={clampedPage}
-                total={totalPages}
-                onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
-              />
-            </Group>
+              {showPagination && (
+                <Group justify="space-between" px="md" pb="md">
+                  <Text size="sm" c="dimmed">
+                    {totalCount} hair sale{totalCount === 1 ? "" : "s"} · Page {clampedPage} of {totalPages}
+                  </Text>
+                  <Pagination
+                    value={clampedPage}
+                    total={totalPages}
+                    onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
+                  />
+                </Group>
+              )}
+            </Stack>
+          ) : (
+            <Text size="sm" c="dimmed" p="lg">
+              {normalizedSearch ? "No hair sales match your search." : "No hair sales on this page."}
+            </Text>
           )}
-        </Stack>
+        </>
       ) : (
-        <Card withBorder>
-          <Text size="sm" c="dimmed">
-            {searchValue.trim() ? "No hair sales match your search." : "No hair sales yet."}
-          </Text>
-        </Card>
+        <Text size="sm" c="dimmed">
+          No hair sales yet.
+        </Text>
       )}
 
       <CreateHairAssignedDialog
@@ -157,10 +169,10 @@ function CustomerHairSalesRoute() {
         clientId={customerId}
         appointmentId={null}
         invalidateKeys={[
-          { queryKey: trpc.customers.hairAssigned.list.queryKey(queryInput) },
+          { queryKey: trpc.customers.hairAssigned.list.queryKey() },
           { queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey },
         ]}
-        onSuccess={() => setHairCreateOpen(false)}
+        onSuccess={() => navigate({ search: { page: 1, search: searchValue }, replace: true })}
       />
       {hairEditItem && (
         <EditHairAssignedDialog
@@ -168,7 +180,7 @@ function CustomerHairSalesRoute() {
           onOpenChange={(open) => !open && setHairEditItem(null)}
           hairAssigned={hairEditItem}
           invalidateKeys={[
-            { queryKey: trpc.customers.hairAssigned.list.queryKey(queryInput) },
+            { queryKey: trpc.customers.hairAssigned.list.queryKey() },
             { queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey },
           ]}
         />
@@ -179,10 +191,10 @@ function CustomerHairSalesRoute() {
           onOpenChange={(open) => !open && setHairDeleteItem(null)}
           hairAssigned={hairDeleteItem}
           invalidateKeys={[
-            { queryKey: trpc.customers.hairAssigned.list.queryKey(queryInput) },
+            { queryKey: trpc.customers.hairAssigned.list.queryKey() },
             { queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey },
           ]}
-          onSuccess={() => setHairDeleteItem(null)}
+          onSuccess={() => navigate({ search: { page: 1, search: searchValue }, replace: true })}
         />
       )}
     </Section>
