@@ -2,6 +2,9 @@ import {
   createCustomer as insertCustomer,
   getCustomer as findCustomer,
   getCustomerSummary as fetchCustomerSummary,
+  listCustomerAppointments as fetchCustomerAppointments,
+  listCustomerHairAssigned as fetchCustomerHairAssigned,
+  listCustomerNotes as fetchCustomerNotes,
   listCustomers as fetchCustomers,
   updateCustomer as patchCustomer,
 } from "@prive-admin-tanstack/db"
@@ -20,6 +23,18 @@ type CustomerSummaryRow = {
 
 export async function listCustomers(input: { pageSize: number; offset: number; search?: string }) {
   return fetchCustomers(undefined, input)
+}
+
+export async function listCustomerAppointments(input: { customerId: string; pageSize: number; offset: number }) {
+  return fetchCustomerAppointments(undefined, input)
+}
+
+export async function listCustomerNotes(input: { customerId: string }) {
+  return fetchCustomerNotes(undefined, input)
+}
+
+export async function listCustomerHairAssigned(input: { customerId: string; pageSize: number; offset: number }) {
+  return fetchCustomerHairAssigned(undefined, input)
 }
 
 export async function getCustomer(id: string) {

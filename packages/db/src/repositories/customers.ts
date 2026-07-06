@@ -1,7 +1,10 @@
-import { asc, count, eq, ilike, or } from "drizzle-orm"
+import { asc, count, desc, eq, ilike, or } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { customer } from "../schema"
+import { appointment } from "../schema/appointment"
+import { hairAssigned } from "../schema/hair"
+import { note } from "../schema/note"
 
 export type CustomerListFilter = {
   pageSize: number
@@ -54,6 +57,50 @@ export async function getCustomerSummary(database: Db = db, id: string) {
       notes: { columns: { id: true } },
     },
   })
+}
+
+export async function listCustomerAppointments(
+  database: Db = db,
+  input: { customerId: string; pageSize: number; offset: number },
+) {
+  const where = eq(appointment.clientId, input.customerId)
+
+  const items = await database.query.appointment.findMany({
+    where,
+    with: { client: true, master: true, salon: true },
+    orderBy: (a) => [desc(a.startsAt)],
+    limit: input.pageSize,
+    offset: input.offset,
+  })
+
+  const [countRow] = await database.select({ totalCount: count() }).from(appointment).where(where)
+  return { items, totalCount: countRow?.totalCount ?? 0 }
+}
+
+export async function listCustomerNotes(database: Db = db, input: { customerId: string }) {
+  return database.query.note.findMany({
+    where: eq(note.customerId, input.customerId),
+    with: { createdBy: true },
+    orderBy: (n) => [desc(n.createdAt)],
+  })
+}
+
+export async function listCustomerHairAssigned(
+  database: Db = db,
+  input: { customerId: string; pageSize: number; offset: number },
+) {
+  const where = eq(hairAssigned.clientId, input.customerId)
+
+  const items = await database.query.hairAssigned.findMany({
+    where,
+    with: { client: true, hairOrder: true },
+    orderBy: (ha) => [desc(ha.createdAt)],
+    limit: input.pageSize,
+    offset: input.offset,
+  })
+
+  const [countRow] = await database.select({ totalCount: count() }).from(hairAssigned).where(where)
+  return { items, totalCount: countRow?.totalCount ?? 0 }
 }
 
 export async function createCustomer(database: Db = db, input: CustomerUpsertInput) {

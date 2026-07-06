@@ -15,6 +15,9 @@ const servicesMock = vi.hoisted(() => ({
   getBankAccount: vi.fn(),
   updateBankAccount: vi.fn(),
   listCustomers: vi.fn(),
+  listCustomerAppointments: vi.fn(),
+  listCustomerHairAssigned: vi.fn(),
+  listCustomerNotes: vi.fn(),
   createTransaction: vi.fn(),
   deleteTransaction: vi.fn(),
   listTransactions: vi.fn(),
@@ -103,6 +106,49 @@ describe("resource read routers", () => {
         pageSize: 10,
         offset: 10,
         search: "ann",
+      }),
+    )
+  })
+
+  it("lists customer appointments with page offset applied", async () => {
+    const caller = customersRouter.createCaller(ctx)
+    const appointmentRows = [{ id: "appointment-1", clientId: "customer-1" }]
+    servicesMock.listCustomerAppointments.mockResolvedValue({ items: appointmentRows, totalCount: 7 })
+
+    const result = await caller.appointments.list({ page: 3, pageSize: 10, customerId: "customer-1" })
+
+    expect(result).toEqual({ items: appointmentRows, page: 3, pageSize: 10, totalCount: 7 })
+    expect(servicesMock.listCustomerAppointments).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customerId: "customer-1",
+        pageSize: 10,
+        offset: 20,
+      }),
+    )
+  })
+
+  it("lists customer notes by customer id", async () => {
+    const caller = customersRouter.createCaller(ctx)
+    const noteRows = [{ id: "note-1", customerId: "customer-1" }]
+    servicesMock.listCustomerNotes.mockResolvedValue(noteRows)
+
+    await expect(caller.notes.list({ customerId: "customer-1" })).resolves.toBe(noteRows)
+    expect(servicesMock.listCustomerNotes).toHaveBeenCalledWith({ customerId: "customer-1" })
+  })
+
+  it("lists customer hair assignments with page offset applied", async () => {
+    const caller = customersRouter.createCaller(ctx)
+    const hairRows = [{ id: "hair-1", clientId: "customer-1" }]
+    servicesMock.listCustomerHairAssigned.mockResolvedValue({ items: hairRows, totalCount: 9 })
+
+    const result = await caller.hairAssigned.list({ page: 2, pageSize: 5, customerId: "customer-1" })
+
+    expect(result).toEqual({ items: hairRows, page: 2, pageSize: 5, totalCount: 9 })
+    expect(servicesMock.listCustomerHairAssigned).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customerId: "customer-1",
+        pageSize: 5,
+        offset: 5,
       }),
     )
   })

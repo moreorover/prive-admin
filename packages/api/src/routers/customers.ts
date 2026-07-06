@@ -2,9 +2,9 @@ import {
   createCustomer,
   getCustomer,
   getCustomerSummary,
-  listAppointments,
-  listHairAssigned,
-  listNotes,
+  listCustomerAppointments,
+  listCustomerHairAssigned,
+  listCustomerNotes,
   listCustomers,
   updateCustomer,
 } from "@prive-admin-tanstack/application/services"
@@ -27,38 +27,6 @@ const customerInputSchema = z.object({
 
 const customerListSchema = pageSchema.extend({ search: searchSchema })
 const customerScopedListSchema = pageSchema.extend({ customerId: z.string().min(1) })
-
-const customerAppointmentsRouter = router({
-  list: protectedProcedure.input(customerScopedListSchema).query(async ({ input }) => {
-    const result = await listAppointments({
-      pageSize: input.pageSize,
-      offset: getOffset(input),
-      customerId: input.customerId,
-    })
-    return pagedResult(result.items, input, result.totalCount)
-  }),
-})
-
-const customerNotesRouter = router({
-  list: protectedProcedure.input(z.object({ customerId: z.string().min(1) })).query(async ({ input }) => {
-    return listNotes({ customerId: input.customerId })
-  }),
-})
-
-const customerHairAssignedRouter = router({
-  list: protectedProcedure.input(customerScopedListSchema).query(async ({ input }) => {
-    try {
-      const result = await listHairAssigned({
-        pageSize: input.pageSize,
-        offset: getOffset(input),
-        customerId: input.customerId,
-      })
-      return pagedResult(result.items, input, result.totalCount)
-    } catch (error) {
-      throw toTrpcError(error)
-    }
-  }),
-})
 
 export const customersRouter = router({
   list: protectedProcedure.input(customerListSchema).query(async ({ input }) => {
@@ -98,7 +66,35 @@ export const customersRouter = router({
     }
   }),
 
-  appointments: customerAppointmentsRouter,
-  notes: customerNotesRouter,
-  hairAssigned: customerHairAssignedRouter,
+  appointments: router({
+    list: protectedProcedure.input(customerScopedListSchema).query(async ({ input }) => {
+      const result = await listCustomerAppointments({
+        customerId: input.customerId,
+        pageSize: input.pageSize,
+        offset: getOffset(input),
+      })
+      return pagedResult(result.items, input, result.totalCount)
+    }),
+  }),
+
+  notes: router({
+    list: protectedProcedure.input(z.object({ customerId: z.string().min(1) })).query(async ({ input }) => {
+      return listCustomerNotes({ customerId: input.customerId })
+    }),
+  }),
+
+  hairAssigned: router({
+    list: protectedProcedure.input(customerScopedListSchema).query(async ({ input }) => {
+      try {
+        const result = await listCustomerHairAssigned({
+          customerId: input.customerId,
+          pageSize: input.pageSize,
+          offset: getOffset(input),
+        })
+        return pagedResult(result.items, input, result.totalCount)
+      } catch (error) {
+        throw toTrpcError(error)
+      }
+    }),
+  }),
 })
