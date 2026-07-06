@@ -13,7 +13,7 @@ import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
 const searchSchema = z.object({
-  page: z.number().int().min(1).optional(),
+  page: z.coerce.number().int().min(1).optional(),
   search: z.string().optional(),
 })
 
@@ -61,7 +61,6 @@ function NotesRoute() {
   const totalCount = data?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const clampedPage = Math.min(page, totalPages)
-  const showPagination = totalCount > PAGE_SIZE
   const hasItemsOnCurrentPage = notes.length > 0
 
   useEffect(() => {
@@ -103,52 +102,44 @@ function NotesRoute() {
           </Button>
         </>
       }
-      padding={hasItemsOnCurrentPage || showPagination ? 0 : "lg"}
+      padding={hasItemsOnCurrentPage ? 0 : "lg"}
     >
-      {hasItemsOnCurrentPage || showPagination ? (
-        <>
-          {hasItemsOnCurrentPage ? (
-            <Stack gap="xs">
-              {notes.map((note) => (
-                <Card key={note.id} padding="sm">
-                  <Group justify="space-between" align="flex-start">
-                    <Stack gap={2}>
-                      <Text size="sm">{note.note}</Text>
-                      <Text size="xs" c="dimmed">
-                        {note.createdBy?.name ?? "Unknown"} · <ClientDate date={note.createdAt} />
-                      </Text>
-                    </Stack>
-                    <ActionIcon variant="subtle" color="red" onClick={() => deleteNoteMutation.mutate({ id: note.id })}>
-                      <IconTrash size={14} />
-                    </ActionIcon>
-                  </Group>
-                </Card>
-              ))}
-            </Stack>
-          ) : (
-            <Text size="sm" c="dimmed" p="lg">
-              {normalizedSearch ? "No notes match your search." : "No notes on this page."}
-            </Text>
-          )}
+      <Stack gap="md">
+        {hasItemsOnCurrentPage ? (
+          <Stack gap="xs">
+            {notes.map((note) => (
+              <Card key={note.id} padding="sm">
+                <Group justify="space-between" align="flex-start">
+                  <Stack gap={2}>
+                    <Text size="sm">{note.note}</Text>
+                    <Text size="xs" c="dimmed">
+                      {note.createdBy?.name ?? "Unknown"} · <ClientDate date={note.createdAt} />
+                    </Text>
+                  </Stack>
+                  <ActionIcon variant="subtle" color="red" onClick={() => deleteNoteMutation.mutate({ id: note.id })}>
+                    <IconTrash size={14} />
+                  </ActionIcon>
+                </Group>
+              </Card>
+            ))}
+          </Stack>
+        ) : (
+          <Text size="sm" c="dimmed" p="lg">
+            {normalizedSearch ? "No notes match your search." : "No notes on this page."}
+          </Text>
+        )}
 
-          {showPagination && (
-            <Group justify="space-between" p="md">
-              <Text size="sm" c="dimmed">
-                {totalCount} note{totalCount === 1 ? "" : "s"} · Page {clampedPage} of {totalPages}
-              </Text>
-              <Pagination
-                value={clampedPage}
-                total={totalPages}
-                onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
-              />
-            </Group>
-          )}
-        </>
-      ) : (
-        <Text size="sm" c="dimmed">
-          No notes yet.
-        </Text>
-      )}
+        <Group justify="space-between" px="md" pb="md">
+          <Text size="sm" c="dimmed">
+            {totalCount} note{totalCount === 1 ? "" : "s"} · Page {clampedPage} of {totalPages}
+          </Text>
+          <Pagination
+            value={clampedPage}
+            total={totalPages}
+            onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
+          />
+        </Group>
+      </Stack>
 
       <AddNoteDialog
         customerId={customerId}

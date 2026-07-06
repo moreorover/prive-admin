@@ -14,7 +14,7 @@ import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
 const searchSchema = z.object({
-  page: z.number().int().min(1).optional(),
+  page: z.coerce.number().int().min(1).optional(),
   search: z.string().optional(),
 })
 
@@ -58,7 +58,6 @@ function HairSalesRoute() {
   const totalCount = data?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const clampedPage = Math.min(page, totalPages)
-  const showPagination = totalCount > PAGE_SIZE
   const hasItemsOnCurrentPage = hairAssigned.length > 0
 
   useEffect(() => {
@@ -96,72 +95,64 @@ function HairSalesRoute() {
           </Button>
         </>
       }
-      padding={hasItemsOnCurrentPage || showPagination ? 0 : "lg"}
+      padding={hasItemsOnCurrentPage ? 0 : "lg"}
     >
-      {hasItemsOnCurrentPage || showPagination ? (
-        <>
-          {hasItemsOnCurrentPage ? (
-            <Stack>
-              <Card withBorder>
-                <Title order={5} mb="sm">
-                  Hair Sales through Appointment
-                </Title>
-                {throughAppointment.length > 0 ? (
-                  <HairAssignedTable
-                    items={throughAppointment}
-                    showHairOrderColumn
-                    onEdit={setHairEditItem}
-                    onDelete={setHairDeleteItem}
-                  />
-                ) : (
-                  <Text size="sm" c="dimmed">
-                    No appointment-tied hair sales on this page.
-                  </Text>
-                )}
-              </Card>
-
-              <Card withBorder>
-                <Title order={5} mb="sm">
-                  Hair Sales Individual
-                </Title>
-                {individual.length > 0 ? (
-                  <HairAssignedTable
-                    items={individual}
-                    showHairOrderColumn
-                    onEdit={setHairEditItem}
-                    onDelete={setHairDeleteItem}
-                  />
-                ) : (
-                  <Text size="sm" c="dimmed">
-                    No individual hair sales on this page.
-                  </Text>
-                )}
-              </Card>
-
-              {showPagination && (
-                <Group justify="space-between" px="md" pb="md">
-                  <Text size="sm" c="dimmed">
-                    {totalCount} hair sale{totalCount === 1 ? "" : "s"} · Page {clampedPage} of {totalPages}
-                  </Text>
-                  <Pagination
-                    value={clampedPage}
-                    total={totalPages}
-                    onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
-                  />
-                </Group>
+      <Stack gap="md">
+        {hasItemsOnCurrentPage ? (
+          <Stack>
+            <Card withBorder>
+              <Title order={5} mb="sm">
+                Hair Sales through Appointment
+              </Title>
+              {throughAppointment.length > 0 ? (
+                <HairAssignedTable
+                  items={throughAppointment}
+                  showHairOrderColumn
+                  onEdit={setHairEditItem}
+                  onDelete={setHairDeleteItem}
+                />
+              ) : (
+                <Text size="sm" c="dimmed">
+                  No appointment-tied hair sales on this page.
+                </Text>
               )}
-            </Stack>
-          ) : (
-            <Text size="sm" c="dimmed" p="lg">
-              {normalizedSearch ? "No hair sales match your search." : "No hair sales on this page."}
-            </Text>
-          )}
-        </>
-      ) : (
-        <Text size="sm" c="dimmed">
-          No hair sales yet.
-        </Text>
-      )}
+            </Card>
+
+            <Card withBorder>
+              <Title order={5} mb="sm">
+                Hair Sales Individual
+              </Title>
+              {individual.length > 0 ? (
+                <HairAssignedTable
+                  items={individual}
+                  showHairOrderColumn
+                  onEdit={setHairEditItem}
+                  onDelete={setHairDeleteItem}
+                />
+              ) : (
+                <Text size="sm" c="dimmed">
+                  No individual hair sales on this page.
+                </Text>
+              )}
+            </Card>
+          </Stack>
+        ) : (
+          <Text size="sm" c="dimmed" p="lg">
+            {normalizedSearch ? "No hair sales match your search." : "No hair sales on this page."}
+          </Text>
+        )}
+
+        <Group justify="space-between" px="md" pb="md">
+          <Text size="sm" c="dimmed">
+            {totalCount} hair sale{totalCount === 1 ? "" : "s"} · Page {clampedPage} of {totalPages}
+          </Text>
+          <Pagination
+            value={clampedPage}
+            total={totalPages}
+            onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
+          />
+        </Group>
+      </Stack>
 
       <CreateHairAssignedDialog
         open={hairCreateOpen}
