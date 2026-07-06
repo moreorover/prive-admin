@@ -14,3 +14,7 @@ Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.de
 - [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
 
 <!--VITE PLUS END-->
+
+## PR Titles
+
+Use a conventional-commits PR title when opening or editing PRs. Allowed types are `feat`, `fix`, `chore`, `ci`, `docs`, `refactor`, `perf`, `test`, `build`, `style`, and `revert`. Scope is optional, and the subject must start with a letter.
