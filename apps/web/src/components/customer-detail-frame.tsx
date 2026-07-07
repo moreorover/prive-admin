@@ -49,11 +49,17 @@ export function CustomerDetailFrame({
 
             {summaryCards}
 
-            <Tabs value={activeTab} onChange={onTabChange}>
+            <Tabs value={activeTab} onChange={onTabChange} variant="pills">
               <Tabs.List>
-                <Tabs.Tab value="appointments">Appointments</Tabs.Tab>
-                <Tabs.Tab value="notes">Notes</Tabs.Tab>
-                <Tabs.Tab value="hair-sales">Hair sales</Tabs.Tab>
+                <Tabs.Tab value="appointments" fw={500}>
+                  Appointments
+                </Tabs.Tab>
+                <Tabs.Tab value="notes" fw={500}>
+                  Notes
+                </Tabs.Tab>
+                <Tabs.Tab value="hair-sales" fw={500}>
+                  Hair sales
+                </Tabs.Tab>
               </Tabs.List>
             </Tabs>
           </Stack>

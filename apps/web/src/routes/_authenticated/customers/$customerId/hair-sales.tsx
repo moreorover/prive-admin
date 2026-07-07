@@ -78,7 +78,7 @@ function HairSalesRoute() {
       title="Hair sales"
       description="Hair sales tied to this customer."
       actions={
-        <>
+        <Group justify="flex-end" align="flex-end" gap="sm" wrap="nowrap">
           <TextInput
             label="Search"
             placeholder="Search hair sales"
@@ -87,7 +87,7 @@ function HairSalesRoute() {
             onChange={(event) => {
               navigate({ search: { page: 1, search: event.currentTarget.value }, replace: true })
             }}
-            w={260}
+            w={300}
           />
           <Button
             variant="default"
@@ -97,7 +97,7 @@ function HairSalesRoute() {
           >
             New
           </Button>
-        </>
+        </Group>
       }
       padding={hasItemsOnCurrentPage ? 0 : "lg"}
     >

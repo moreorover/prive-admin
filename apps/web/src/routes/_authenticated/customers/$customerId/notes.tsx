@@ -88,7 +88,7 @@ function NotesRoute() {
       title="Notes"
       description="Customer notes and internal reminders."
       actions={
-        <>
+        <Group justify="flex-end" align="flex-end" gap="sm" wrap="nowrap">
           <TextInput
             label="Search"
             placeholder="Search notes"
@@ -97,12 +97,12 @@ function NotesRoute() {
             onChange={(event) => {
               navigate({ search: { page: 1, search: event.currentTarget.value }, replace: true })
             }}
-            w={260}
+            w={300}
           />
           <Button variant="default" size="sm" leftSection={<IconPlus size={12} />} onClick={() => setDialogOpen(true)}>
             Add
           </Button>
-        </>
+        </Group>
       }
       padding={hasItemsOnCurrentPage ? 0 : "lg"}
     >
