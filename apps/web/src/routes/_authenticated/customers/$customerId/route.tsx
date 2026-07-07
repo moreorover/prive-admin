@@ -1,26 +1,13 @@
-import {
-  Anchor,
-  Button,
-  Card,
-  Container,
-  Group,
-  Modal,
-  SimpleGrid,
-  Stack,
-  Tabs,
-  Text,
-  TextInput,
-  Title,
-} from "@mantine/core"
+import { Button, Card, Modal, SimpleGrid, Stack, Text, TextInput, Title } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
-import { IconArrowLeft, IconPencil, IconPhone } from "@tabler/icons-react"
+import { IconPencil } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Link, Outlet, createFileRoute, useLocation } from "@tanstack/react-router"
+import { Outlet, createFileRoute, useLocation } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
-import { PageHeader } from "@/components/page-header"
+import { CustomerDetailFrame } from "@/components/customer-detail-frame"
 import { CURRENCIES, formatMinor } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
@@ -38,10 +25,10 @@ function CustomerDetailRoute() {
   const { customerId } = Route.useParams()
   const navigate = Route.useNavigate()
   const location = useLocation()
+  const [editOpen, setEditOpen] = useState(false)
 
   const { data: customer } = useQuery(trpc.customers.get.queryOptions({ id: customerId }))
   const { data: summary } = useQuery(trpc.customers.summary.queryOptions({ id: customerId }))
-  const [editOpen, setEditOpen] = useState(false)
 
   const activeTab = location.pathname.endsWith("/notes")
     ? "notes"
@@ -51,108 +38,79 @@ function CustomerDetailRoute() {
 
   if (!customer || !summary) {
     return (
-      <Container size="xl">
+      <Card withBorder radius="md" p="xl">
         <Text c="dimmed">Customer not found.</Text>
-      </Container>
+      </Card>
     )
   }
 
-  const handleTabChange = (value: string | null) => {
-    if (!value || value === activeTab) return
-    if (value === "appointments") {
-      navigate({ to: "/customers/$customerId/appointments", params: { customerId } })
-      return
-    }
-    if (value === "notes") {
-      navigate({ to: "/customers/$customerId/notes", params: { customerId } })
-      return
-    }
-    if (value === "hair-sales") {
-      navigate({ to: "/customers/$customerId/hair-sales", params: { customerId } })
-    }
-  }
-
   return (
-    <Container size="xl">
-      <Anchor component={Link} to="/customers" size="xs" c="dimmed" mb="xs" display="inline-block">
-        <Group gap={4}>
-          <IconArrowLeft size={12} />
-          Back to customers
-        </Group>
-      </Anchor>
-      <PageHeader
-        title={customer.name}
-        description={
-          customer.phoneNumber ? (
-            <Group gap={4}>
-              <IconPhone size={12} />
-              <Text size="sm" c="dimmed">
-                {customer.phoneNumber}
-              </Text>
-            </Group>
-          ) : undefined
-        }
-        actions={
-          <Button variant="default" leftSection={<IconPencil size={14} />} onClick={() => setEditOpen(true)}>
-            Edit
-          </Button>
-        }
-      />
-      <Stack>
-        <SimpleGrid cols={{ base: 2, sm: 3, lg: 4 }}>
-          <StatCard label="Appointments" value={String(summary.appointmentCount)} />
-          <Card padding="md">
-            <Text size="xs" c="dimmed">
-              Transactions
-            </Text>
-            <Title order={4}>
-              {(() => {
-                const parts = CURRENCIES.flatMap((currency) =>
-                  summary.transactionSumsMinor[currency] !== 0
-                    ? [formatMinor(summary.transactionSumsMinor[currency], currency)]
-                    : [],
-                )
-                return parts.length > 0 ? parts.join(" · ") : formatMinor(0, "EUR")
-              })()}
-            </Title>
-          </Card>
-          <StatCard label="Hair profit" value={`€${summary.hairAssignedProfitSum.toFixed(2)}`} />
-          <StatCard label="Hair sold for" value={`€${summary.hairAssignedSoldForSum.toFixed(2)}`} />
-          <StatCard label="Hair weight" value={`${summary.hairAssignedWeightInGramsSum}g`} />
-          <StatCard label="Notes" value={String(summary.noteCount)} />
-          <Card padding="md">
-            <Text size="xs" c="dimmed">
-              Joined
-            </Text>
-            <Title order={4}>
-              <ClientDate date={summary.customerCreatedAt} />
-            </Title>
-          </Card>
-        </SimpleGrid>
-
-        <Tabs value={activeTab} onChange={handleTabChange}>
-          <Tabs.List>
-            <Tabs.Tab value="appointments">Appointments</Tabs.Tab>
-            <Tabs.Tab value="notes">Notes</Tabs.Tab>
-            <Tabs.Tab value="hair-sales">Hair Sales</Tabs.Tab>
-          </Tabs.List>
-        </Tabs>
-
-        <Outlet />
-
-        <EditCustomerDialog customer={customer} open={editOpen} onOpenChange={setEditOpen} />
-      </Stack>
-    </Container>
+    <CustomerDetailFrame
+      customerName={customer.name}
+      customerPhone={customer.phoneNumber}
+      joinedLabel={<ClientDate date={summary.customerCreatedAt} />}
+      summaryCards={<CustomerSummaryGrid summary={summary} />}
+      quickActions={
+        <Button variant="default" leftSection={<IconPencil size={14} />} onClick={() => setEditOpen(true)}>
+          Edit customer
+        </Button>
+      }
+      activeTab={activeTab}
+      onTabChange={(value) => {
+        if (!value || value === activeTab) return
+        navigate({ to: `/customers/$customerId/${value}`, params: { customerId } })
+      }}
+    >
+      <Outlet />
+      <EditCustomerDialog customer={customer} open={editOpen} onOpenChange={setEditOpen} />
+    </CustomerDetailFrame>
   )
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function CustomerSummaryGrid({
+  summary,
+}: {
+  summary: {
+    appointmentCount: number
+    noteCount: number
+    transactionSumsMinor: Record<string, number>
+    hairAssignedProfitSum: number
+    hairAssignedSoldForSum: number
+  }
+}) {
+  const transactionParts = CURRENCIES.flatMap((currency) =>
+    summary.transactionSumsMinor[currency] !== 0 ? [formatMinor(summary.transactionSumsMinor[currency], currency)] : [],
+  )
+
   return (
-    <Card withBorder padding="md">
-      <Text size="xs" c="dimmed">
-        {label}
-      </Text>
-      <Title order={4}>{value}</Title>
+    <SimpleGrid cols={{ base: 1, sm: 2, lg: 5 }} spacing="md">
+      <SummaryCard label="Appointments" value={String(summary.appointmentCount)} detail="Total appointments" />
+      <SummaryCard label="Notes" value={String(summary.noteCount)} detail="Internal notes" />
+      <SummaryCard
+        label="Transactions"
+        value={transactionParts.length > 0 ? transactionParts.join(" · ") : formatMinor(0, "EUR")}
+        detail="Across currencies"
+      />
+      <SummaryCard label="Hair profit" value={`€${summary.hairAssignedProfitSum.toFixed(2)}`} detail="Net profit" />
+      <SummaryCard label="Hair sold for" value={`€${summary.hairAssignedSoldForSum.toFixed(2)}`} detail="Gross sales" />
+    </SimpleGrid>
+  )
+}
+
+function SummaryCard({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return (
+    <Card withBorder radius="md" p="md">
+      <Stack gap={4}>
+        <Text size="xs" c="dimmed" tt="uppercase" fw={700} lh={1.1}>
+          {label}
+        </Text>
+        <Title order={4} fw={700} lh={1.2}>
+          {value}
+        </Title>
+        <Text size="xs" c="dimmed">
+          {detail}
+        </Text>
+      </Stack>
     </Card>
   )
 }
@@ -198,13 +156,13 @@ function EditCustomerDialog({
   }
 
   return (
-    <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Customer">
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit customer">
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack>
           <TextInput label="Name" {...form.getInputProps("name")} />
-          <TextInput label="Phone Number" placeholder="+1234567890" {...form.getInputProps("phoneNumber")} />
+          <TextInput label="Phone number" placeholder="+1234567890" {...form.getInputProps("phoneNumber")} />
           <Button type="submit" loading={mutation.isPending}>
-            Save Changes
+            Save changes
           </Button>
         </Stack>
       </form>

@@ -75,7 +75,7 @@ function HairSalesRoute() {
 
   return (
     <Section
-      title="Hair Sales"
+      title="Hair sales"
       description="Hair sales tied to this customer."
       actions={
         <>
@@ -106,7 +106,7 @@ function HairSalesRoute() {
           <Stack>
             <Card withBorder>
               <Title order={5} mb="sm">
-                Hair Sales through Appointment
+                Hair sales through appointment
               </Title>
               {throughAppointment.length > 0 ? (
                 <HairAssignedTable
@@ -124,7 +124,7 @@ function HairSalesRoute() {
 
             <Card withBorder>
               <Title order={5} mb="sm">
-                Hair Sales Individual
+                Hair sales individual
               </Title>
               {individual.length > 0 ? (
                 <HairAssignedTable
