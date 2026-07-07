@@ -2,6 +2,9 @@ import {
   createCustomer,
   getCustomer,
   getCustomerSummary,
+  listCustomerAppointments,
+  listCustomerHairAssigned,
+  listCustomerNotes,
   listCustomers,
   updateCustomer,
 } from "@prive-admin-tanstack/application/services"
@@ -23,6 +26,7 @@ const customerInputSchema = z.object({
 })
 
 const customerListSchema = pageSchema.extend({ search: searchSchema })
+const customerScopedListSchema = pageSchema.extend({ customerId: z.string().min(1), search: searchSchema })
 
 export const customersRouter = router({
   list: protectedProcedure.input(customerListSchema).query(async ({ input }) => {
@@ -60,5 +64,45 @@ export const customersRouter = router({
     } catch (error) {
       throw toTrpcError(error)
     }
+  }),
+
+  appointments: router({
+    list: protectedProcedure.input(customerScopedListSchema).query(async ({ input }) => {
+      const result = await listCustomerAppointments({
+        customerId: input.customerId,
+        pageSize: input.pageSize,
+        offset: getOffset(input),
+        search: input.search,
+      })
+      return pagedResult(result.items, input, result.totalCount)
+    }),
+  }),
+
+  notes: router({
+    list: protectedProcedure.input(customerScopedListSchema).query(async ({ input }) => {
+      const result = await listCustomerNotes({
+        customerId: input.customerId,
+        pageSize: input.pageSize,
+        offset: getOffset(input),
+        search: input.search,
+      })
+      return pagedResult(result.items, input, result.totalCount)
+    }),
+  }),
+
+  hairAssigned: router({
+    list: protectedProcedure.input(customerScopedListSchema).query(async ({ input }) => {
+      try {
+        const result = await listCustomerHairAssigned({
+          customerId: input.customerId,
+          pageSize: input.pageSize,
+          offset: getOffset(input),
+          search: input.search,
+        })
+        return pagedResult(result.items, input, result.totalCount)
+      } catch (error) {
+        throw toTrpcError(error)
+      }
+    }),
   }),
 })

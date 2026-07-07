@@ -26,14 +26,18 @@ import { Route as AuthenticatedHairOrdersIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as AuthenticatedSalonsSalonIdRouteImport } from './routes/_authenticated/salons/$salonId'
 import { Route as AuthenticatedHairOrdersHairOrderIdRouteImport } from './routes/_authenticated/hair-orders/$hairOrderId'
-import { Route as AuthenticatedCustomersCustomerIdRouteImport } from './routes/_authenticated/customers/$customerId'
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments/$appointmentId'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdRouteRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/route'
+import { Route as AuthenticatedCustomersCustomerIdRouteRouteImport } from './routes/_authenticated/customers/$customerId/route'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdIndexRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/index'
+import { Route as AuthenticatedCustomersCustomerIdIndexRouteImport } from './routes/_authenticated/customers/$customerId/index'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdSalonsRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/salons'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdReportsRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/reports'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdOverviewRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/overview'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdDocumentsRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/documents'
+import { Route as AuthenticatedCustomersCustomerIdNotesRouteImport } from './routes/_authenticated/customers/$customerId/notes'
+import { Route as AuthenticatedCustomersCustomerIdHairSalesRouteImport } from './routes/_authenticated/customers/$customerId/hair-sales'
+import { Route as AuthenticatedCustomersCustomerIdAppointmentsRouteImport } from './routes/_authenticated/customers/$customerId/appointments'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/bank-accounts/index'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/bank-accounts/$bankAccountId'
 
@@ -130,12 +134,6 @@ const AuthenticatedHairOrdersHairOrderIdRoute =
     path: '/$hairOrderId',
     getParentRoute: () => AuthenticatedHairOrdersRouteRoute,
   } as any)
-const AuthenticatedCustomersCustomerIdRoute =
-  AuthenticatedCustomersCustomerIdRouteImport.update({
-    id: '/$customerId',
-    path: '/$customerId',
-    getParentRoute: () => AuthenticatedCustomersRouteRoute,
-  } as any)
 const AuthenticatedAppointmentsAppointmentIdRoute =
   AuthenticatedAppointmentsAppointmentIdRouteImport.update({
     id: '/$appointmentId',
@@ -148,11 +146,23 @@ const AuthenticatedLegalEntitiesLegalEntityIdRouteRoute =
     path: '/legal-entities/$legalEntityId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCustomersCustomerIdRouteRoute =
+  AuthenticatedCustomersCustomerIdRouteRouteImport.update({
+    id: '/$customerId',
+    path: '/$customerId',
+    getParentRoute: () => AuthenticatedCustomersRouteRoute,
+  } as any)
 const AuthenticatedLegalEntitiesLegalEntityIdIndexRoute =
   AuthenticatedLegalEntitiesLegalEntityIdIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedLegalEntitiesLegalEntityIdRouteRoute,
+  } as any)
+const AuthenticatedCustomersCustomerIdIndexRoute =
+  AuthenticatedCustomersCustomerIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedCustomersCustomerIdRouteRoute,
   } as any)
 const AuthenticatedLegalEntitiesLegalEntityIdSalonsRoute =
   AuthenticatedLegalEntitiesLegalEntityIdSalonsRouteImport.update({
@@ -177,6 +187,24 @@ const AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute =
     id: '/documents',
     path: '/documents',
     getParentRoute: () => AuthenticatedLegalEntitiesLegalEntityIdRouteRoute,
+  } as any)
+const AuthenticatedCustomersCustomerIdNotesRoute =
+  AuthenticatedCustomersCustomerIdNotesRouteImport.update({
+    id: '/notes',
+    path: '/notes',
+    getParentRoute: () => AuthenticatedCustomersCustomerIdRouteRoute,
+  } as any)
+const AuthenticatedCustomersCustomerIdHairSalesRoute =
+  AuthenticatedCustomersCustomerIdHairSalesRouteImport.update({
+    id: '/hair-sales',
+    path: '/hair-sales',
+    getParentRoute: () => AuthenticatedCustomersCustomerIdRouteRoute,
+  } as any)
+const AuthenticatedCustomersCustomerIdAppointmentsRoute =
+  AuthenticatedCustomersCustomerIdAppointmentsRouteImport.update({
+    id: '/appointments',
+    path: '/appointments',
+    getParentRoute: () => AuthenticatedCustomersCustomerIdRouteRoute,
   } as any)
 const AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRoute =
   AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRouteImport.update({
@@ -204,19 +232,23 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteRouteWithChildren
   '/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
-  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
   '/legal-entities/': typeof AuthenticatedLegalEntitiesIndexRoute
   '/salons/': typeof AuthenticatedSalonsIndexRoute
+  '/customers/$customerId/appointments': typeof AuthenticatedCustomersCustomerIdAppointmentsRoute
+  '/customers/$customerId/hair-sales': typeof AuthenticatedCustomersCustomerIdHairSalesRoute
+  '/customers/$customerId/notes': typeof AuthenticatedCustomersCustomerIdNotesRoute
   '/legal-entities/$legalEntityId/documents': typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute
   '/legal-entities/$legalEntityId/overview': typeof AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute
   '/legal-entities/$legalEntityId/reports': typeof AuthenticatedLegalEntitiesLegalEntityIdReportsRoute
   '/legal-entities/$legalEntityId/salons': typeof AuthenticatedLegalEntitiesLegalEntityIdSalonsRoute
+  '/customers/$customerId/': typeof AuthenticatedCustomersCustomerIdIndexRoute
   '/legal-entities/$legalEntityId/': typeof AuthenticatedLegalEntitiesLegalEntityIdIndexRoute
   '/legal-entities/$legalEntityId/bank-accounts/$bankAccountId': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRoute
   '/legal-entities/$legalEntityId/bank-accounts/': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRoute
@@ -231,17 +263,20 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
-  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/hair-orders': typeof AuthenticatedHairOrdersIndexRoute
   '/legal-entities': typeof AuthenticatedLegalEntitiesIndexRoute
   '/salons': typeof AuthenticatedSalonsIndexRoute
+  '/customers/$customerId/appointments': typeof AuthenticatedCustomersCustomerIdAppointmentsRoute
+  '/customers/$customerId/hair-sales': typeof AuthenticatedCustomersCustomerIdHairSalesRoute
+  '/customers/$customerId/notes': typeof AuthenticatedCustomersCustomerIdNotesRoute
   '/legal-entities/$legalEntityId/documents': typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute
   '/legal-entities/$legalEntityId/overview': typeof AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute
   '/legal-entities/$legalEntityId/reports': typeof AuthenticatedLegalEntitiesLegalEntityIdReportsRoute
   '/legal-entities/$legalEntityId/salons': typeof AuthenticatedLegalEntitiesLegalEntityIdSalonsRoute
+  '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdIndexRoute
   '/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdIndexRoute
   '/legal-entities/$legalEntityId/bank-accounts/$bankAccountId': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRoute
   '/legal-entities/$legalEntityId/bank-accounts': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRoute
@@ -259,19 +294,23 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteRouteWithChildren
   '/_authenticated/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren
   '/_authenticated/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
-  '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRoute
   '/_authenticated/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/_authenticated/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
   '/_authenticated/legal-entities/': typeof AuthenticatedLegalEntitiesIndexRoute
   '/_authenticated/salons/': typeof AuthenticatedSalonsIndexRoute
+  '/_authenticated/customers/$customerId/appointments': typeof AuthenticatedCustomersCustomerIdAppointmentsRoute
+  '/_authenticated/customers/$customerId/hair-sales': typeof AuthenticatedCustomersCustomerIdHairSalesRoute
+  '/_authenticated/customers/$customerId/notes': typeof AuthenticatedCustomersCustomerIdNotesRoute
   '/_authenticated/legal-entities/$legalEntityId/documents': typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute
   '/_authenticated/legal-entities/$legalEntityId/overview': typeof AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute
   '/_authenticated/legal-entities/$legalEntityId/reports': typeof AuthenticatedLegalEntitiesLegalEntityIdReportsRoute
   '/_authenticated/legal-entities/$legalEntityId/salons': typeof AuthenticatedLegalEntitiesLegalEntityIdSalonsRoute
+  '/_authenticated/customers/$customerId/': typeof AuthenticatedCustomersCustomerIdIndexRoute
   '/_authenticated/legal-entities/$legalEntityId/': typeof AuthenticatedLegalEntitiesLegalEntityIdIndexRoute
   '/_authenticated/legal-entities/$legalEntityId/bank-accounts/$bankAccountId': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRoute
   '/_authenticated/legal-entities/$legalEntityId/bank-accounts/': typeof AuthenticatedLegalEntitiesLegalEntityIdBankAccountsIndexRoute
@@ -289,19 +328,23 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/profile'
     | '/settings'
+    | '/customers/$customerId'
     | '/legal-entities/$legalEntityId'
     | '/appointments/$appointmentId'
-    | '/customers/$customerId'
     | '/hair-orders/$hairOrderId'
     | '/salons/$salonId'
     | '/customers/'
     | '/hair-orders/'
     | '/legal-entities/'
     | '/salons/'
+    | '/customers/$customerId/appointments'
+    | '/customers/$customerId/hair-sales'
+    | '/customers/$customerId/notes'
     | '/legal-entities/$legalEntityId/documents'
     | '/legal-entities/$legalEntityId/overview'
     | '/legal-entities/$legalEntityId/reports'
     | '/legal-entities/$legalEntityId/salons'
+    | '/customers/$customerId/'
     | '/legal-entities/$legalEntityId/'
     | '/legal-entities/$legalEntityId/bank-accounts/$bankAccountId'
     | '/legal-entities/$legalEntityId/bank-accounts/'
@@ -316,17 +359,20 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/appointments/$appointmentId'
-    | '/customers/$customerId'
     | '/hair-orders/$hairOrderId'
     | '/salons/$salonId'
     | '/customers'
     | '/hair-orders'
     | '/legal-entities'
     | '/salons'
+    | '/customers/$customerId/appointments'
+    | '/customers/$customerId/hair-sales'
+    | '/customers/$customerId/notes'
     | '/legal-entities/$legalEntityId/documents'
     | '/legal-entities/$legalEntityId/overview'
     | '/legal-entities/$legalEntityId/reports'
     | '/legal-entities/$legalEntityId/salons'
+    | '/customers/$customerId'
     | '/legal-entities/$legalEntityId'
     | '/legal-entities/$legalEntityId/bank-accounts/$bankAccountId'
     | '/legal-entities/$legalEntityId/bank-accounts'
@@ -343,19 +389,23 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/profile'
     | '/_authenticated/settings'
+    | '/_authenticated/customers/$customerId'
     | '/_authenticated/legal-entities/$legalEntityId'
     | '/_authenticated/appointments/$appointmentId'
-    | '/_authenticated/customers/$customerId'
     | '/_authenticated/hair-orders/$hairOrderId'
     | '/_authenticated/salons/$salonId'
     | '/_authenticated/customers/'
     | '/_authenticated/hair-orders/'
     | '/_authenticated/legal-entities/'
     | '/_authenticated/salons/'
+    | '/_authenticated/customers/$customerId/appointments'
+    | '/_authenticated/customers/$customerId/hair-sales'
+    | '/_authenticated/customers/$customerId/notes'
     | '/_authenticated/legal-entities/$legalEntityId/documents'
     | '/_authenticated/legal-entities/$legalEntityId/overview'
     | '/_authenticated/legal-entities/$legalEntityId/reports'
     | '/_authenticated/legal-entities/$legalEntityId/salons'
+    | '/_authenticated/customers/$customerId/'
     | '/_authenticated/legal-entities/$legalEntityId/'
     | '/_authenticated/legal-entities/$legalEntityId/bank-accounts/$bankAccountId'
     | '/_authenticated/legal-entities/$legalEntityId/bank-accounts/'
@@ -488,13 +538,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHairOrdersHairOrderIdRouteImport
       parentRoute: typeof AuthenticatedHairOrdersRouteRoute
     }
-    '/_authenticated/customers/$customerId': {
-      id: '/_authenticated/customers/$customerId'
-      path: '/$customerId'
-      fullPath: '/customers/$customerId'
-      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteImport
-      parentRoute: typeof AuthenticatedCustomersRouteRoute
-    }
     '/_authenticated/appointments/$appointmentId': {
       id: '/_authenticated/appointments/$appointmentId'
       path: '/$appointmentId'
@@ -509,12 +552,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/customers/$customerId': {
+      id: '/_authenticated/customers/$customerId'
+      path: '/$customerId'
+      fullPath: '/customers/$customerId'
+      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdRouteRouteImport
+      parentRoute: typeof AuthenticatedCustomersRouteRoute
+    }
     '/_authenticated/legal-entities/$legalEntityId/': {
       id: '/_authenticated/legal-entities/$legalEntityId/'
       path: '/'
       fullPath: '/legal-entities/$legalEntityId/'
       preLoaderRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdIndexRouteImport
       parentRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRoute
+    }
+    '/_authenticated/customers/$customerId/': {
+      id: '/_authenticated/customers/$customerId/'
+      path: '/'
+      fullPath: '/customers/$customerId/'
+      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdIndexRouteImport
+      parentRoute: typeof AuthenticatedCustomersCustomerIdRouteRoute
     }
     '/_authenticated/legal-entities/$legalEntityId/salons': {
       id: '/_authenticated/legal-entities/$legalEntityId/salons'
@@ -543,6 +600,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/legal-entities/$legalEntityId/documents'
       preLoaderRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRouteImport
       parentRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRoute
+    }
+    '/_authenticated/customers/$customerId/notes': {
+      id: '/_authenticated/customers/$customerId/notes'
+      path: '/notes'
+      fullPath: '/customers/$customerId/notes'
+      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdNotesRouteImport
+      parentRoute: typeof AuthenticatedCustomersCustomerIdRouteRoute
+    }
+    '/_authenticated/customers/$customerId/hair-sales': {
+      id: '/_authenticated/customers/$customerId/hair-sales'
+      path: '/hair-sales'
+      fullPath: '/customers/$customerId/hair-sales'
+      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdHairSalesRouteImport
+      parentRoute: typeof AuthenticatedCustomersCustomerIdRouteRoute
+    }
+    '/_authenticated/customers/$customerId/appointments': {
+      id: '/_authenticated/customers/$customerId/appointments'
+      path: '/appointments'
+      fullPath: '/customers/$customerId/appointments'
+      preLoaderRoute: typeof AuthenticatedCustomersCustomerIdAppointmentsRouteImport
+      parentRoute: typeof AuthenticatedCustomersCustomerIdRouteRoute
     }
     '/_authenticated/legal-entities/$legalEntityId/bank-accounts/': {
       id: '/_authenticated/legal-entities/$legalEntityId/bank-accounts/'
@@ -576,15 +654,39 @@ const AuthenticatedAppointmentsRouteRouteWithChildren =
     AuthenticatedAppointmentsRouteRouteChildren,
   )
 
+interface AuthenticatedCustomersCustomerIdRouteRouteChildren {
+  AuthenticatedCustomersCustomerIdAppointmentsRoute: typeof AuthenticatedCustomersCustomerIdAppointmentsRoute
+  AuthenticatedCustomersCustomerIdHairSalesRoute: typeof AuthenticatedCustomersCustomerIdHairSalesRoute
+  AuthenticatedCustomersCustomerIdNotesRoute: typeof AuthenticatedCustomersCustomerIdNotesRoute
+  AuthenticatedCustomersCustomerIdIndexRoute: typeof AuthenticatedCustomersCustomerIdIndexRoute
+}
+
+const AuthenticatedCustomersCustomerIdRouteRouteChildren: AuthenticatedCustomersCustomerIdRouteRouteChildren =
+  {
+    AuthenticatedCustomersCustomerIdAppointmentsRoute:
+      AuthenticatedCustomersCustomerIdAppointmentsRoute,
+    AuthenticatedCustomersCustomerIdHairSalesRoute:
+      AuthenticatedCustomersCustomerIdHairSalesRoute,
+    AuthenticatedCustomersCustomerIdNotesRoute:
+      AuthenticatedCustomersCustomerIdNotesRoute,
+    AuthenticatedCustomersCustomerIdIndexRoute:
+      AuthenticatedCustomersCustomerIdIndexRoute,
+  }
+
+const AuthenticatedCustomersCustomerIdRouteRouteWithChildren =
+  AuthenticatedCustomersCustomerIdRouteRoute._addFileChildren(
+    AuthenticatedCustomersCustomerIdRouteRouteChildren,
+  )
+
 interface AuthenticatedCustomersRouteRouteChildren {
-  AuthenticatedCustomersCustomerIdRoute: typeof AuthenticatedCustomersCustomerIdRoute
+  AuthenticatedCustomersCustomerIdRouteRoute: typeof AuthenticatedCustomersCustomerIdRouteRouteWithChildren
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
 }
 
 const AuthenticatedCustomersRouteRouteChildren: AuthenticatedCustomersRouteRouteChildren =
   {
-    AuthenticatedCustomersCustomerIdRoute:
-      AuthenticatedCustomersCustomerIdRoute,
+    AuthenticatedCustomersCustomerIdRouteRoute:
+      AuthenticatedCustomersCustomerIdRouteRouteWithChildren,
     AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
   }
 
