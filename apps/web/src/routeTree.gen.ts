@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCustomers2RouteImport } from './routes/_authenticated/customers2'
 import { Route as AuthenticatedCashRouteImport } from './routes/_authenticated/cash'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedHairOrdersRouteRouteImport } from './routes/_authenticated/hair-orders/route'
@@ -68,6 +69,11 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCustomers2Route = AuthenticatedCustomers2RouteImport.update({
+  id: '/customers2',
+  path: '/customers2',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCashRoute = AuthenticatedCashRouteImport.update({
@@ -229,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/hair-orders': typeof AuthenticatedHairOrdersRouteRouteWithChildren
   '/calendar': typeof AuthenticatedCalendarRoute
   '/cash': typeof AuthenticatedCashRoute
+  '/customers2': typeof AuthenticatedCustomers2Route
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -259,6 +266,7 @@ export interface FileRoutesByTo {
   '/appointments': typeof AuthenticatedAppointmentsRouteRouteWithChildren
   '/calendar': typeof AuthenticatedCalendarRoute
   '/cash': typeof AuthenticatedCashRoute
+  '/customers2': typeof AuthenticatedCustomers2Route
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
@@ -291,6 +299,7 @@ export interface FileRoutesById {
   '/_authenticated/hair-orders': typeof AuthenticatedHairOrdersRouteRouteWithChildren
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/cash': typeof AuthenticatedCashRoute
+  '/_authenticated/customers2': typeof AuthenticatedCustomers2Route
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
@@ -325,6 +334,7 @@ export interface FileRouteTypes {
     | '/hair-orders'
     | '/calendar'
     | '/cash'
+    | '/customers2'
     | '/dashboard'
     | '/profile'
     | '/settings'
@@ -355,6 +365,7 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/calendar'
     | '/cash'
+    | '/customers2'
     | '/dashboard'
     | '/profile'
     | '/settings'
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hair-orders'
     | '/_authenticated/calendar'
     | '/_authenticated/cash'
+    | '/_authenticated/customers2'
     | '/_authenticated/dashboard'
     | '/_authenticated/profile'
     | '/_authenticated/settings'
@@ -459,6 +471,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/customers2': {
+      id: '/_authenticated/customers2'
+      path: '/customers2'
+      fullPath: '/customers2'
+      preLoaderRoute: typeof AuthenticatedCustomers2RouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cash': {
@@ -751,6 +770,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHairOrdersRouteRoute: typeof AuthenticatedHairOrdersRouteRouteWithChildren
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedCashRoute: typeof AuthenticatedCashRoute
+  AuthenticatedCustomers2Route: typeof AuthenticatedCustomers2Route
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
@@ -769,6 +789,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedHairOrdersRouteRouteWithChildren,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedCashRoute: AuthenticatedCashRoute,
+  AuthenticatedCustomers2Route: AuthenticatedCustomers2Route,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,

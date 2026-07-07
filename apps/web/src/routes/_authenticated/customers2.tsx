@@ -3,8 +3,8 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { CustomersPage, PAGE_SIZE, customersListQueryOptions, searchSchema } from "@/components/customers-page"
 
-export const Route = createFileRoute("/_authenticated/customers/")({
-  component: CustomersRoute,
+export const Route = createFileRoute("/_authenticated/customers2")({
+  component: Customers2Route,
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({
     page: search.page ?? 1,
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/customers/")({
   },
 })
 
-function CustomersRoute() {
+function Customers2Route() {
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
   const page = search.page ?? 1
@@ -24,7 +24,7 @@ function CustomersRoute() {
 
   return (
     <CustomersPage
-      variant="informational"
+      variant="contextual"
       customers={data?.items ?? []}
       totalCount={data?.totalCount ?? 0}
       page={page}
