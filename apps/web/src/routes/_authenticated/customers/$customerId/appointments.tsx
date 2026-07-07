@@ -7,7 +7,7 @@ import { z } from "zod"
 
 import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
 import { ClientDate } from "@/components/client-date"
-import { Section } from "@/components/section"
+import { CustomerSubsection } from "@/components/customer-subsection"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
@@ -65,11 +65,11 @@ function CustomerAppointmentsRoute() {
   const hasItemsOnCurrentPage = appointments.length > 0
 
   return (
-    <Section
+    <CustomerSubsection
       title="Appointments"
       description="Appointment history for this customer."
       actions={
-        <Group justify="flex-end" align="flex-end" gap="sm" wrap="nowrap">
+        <>
           <TextInput
             label="Search"
             placeholder="Search appointments"
@@ -83,9 +83,9 @@ function CustomerAppointmentsRoute() {
           <Button variant="default" size="sm" leftSection={<IconPlus size={12} />} onClick={() => setDialogOpen(true)}>
             New
           </Button>
-        </Group>
+        </>
       }
-      padding={hasItemsOnCurrentPage ? 0 : "lg"}
+      bodyPadding={hasItemsOnCurrentPage ? 0 : "lg"}
     >
       <Stack gap="md">
         {hasItemsOnCurrentPage ? (
@@ -144,6 +144,6 @@ function CustomerAppointmentsRoute() {
         ]}
         navigateOnSuccess
       />
-    </Section>
+    </CustomerSubsection>
   )
 }

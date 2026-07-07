@@ -8,7 +8,7 @@ import { useState } from "react"
 import { z } from "zod"
 
 import { ClientDate } from "@/components/client-date"
-import { Section } from "@/components/section"
+import { CustomerSubsection } from "@/components/customer-subsection"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
@@ -84,11 +84,11 @@ function NotesRoute() {
   })
 
   return (
-    <Section
+    <CustomerSubsection
       title="Notes"
       description="Customer notes and internal reminders."
       actions={
-        <Group justify="flex-end" align="flex-end" gap="sm" wrap="nowrap">
+        <>
           <TextInput
             label="Search"
             placeholder="Search notes"
@@ -102,9 +102,9 @@ function NotesRoute() {
           <Button variant="default" size="sm" leftSection={<IconPlus size={12} />} onClick={() => setDialogOpen(true)}>
             Add
           </Button>
-        </Group>
+        </>
       }
-      padding={hasItemsOnCurrentPage ? 0 : "lg"}
+      bodyPadding={hasItemsOnCurrentPage ? 0 : "lg"}
     >
       <Stack gap="md">
         {hasItemsOnCurrentPage ? (
@@ -149,7 +149,7 @@ function NotesRoute() {
         onOpenChange={setDialogOpen}
         onSuccess={() => navigate({ search: { page: 1, search: searchValue }, replace: true })}
       />
-    </Section>
+    </CustomerSubsection>
   )
 }
 

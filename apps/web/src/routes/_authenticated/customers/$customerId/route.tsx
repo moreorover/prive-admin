@@ -1,4 +1,4 @@
-import { Button, Card, Modal, SimpleGrid, Stack, Text, TextInput, Title } from "@mantine/core"
+import { Box, Button, Modal, SimpleGrid, Stack, Text, TextInput, Title } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconPencil } from "@tabler/icons-react"
@@ -38,9 +38,9 @@ function CustomerDetailRoute() {
 
   if (!customer || !summary) {
     return (
-      <Card withBorder radius="md" p="xl">
+      <Box p="xl">
         <Text c="dimmed">Customer not found.</Text>
-      </Card>
+      </Box>
     )
   }
 
@@ -84,34 +84,36 @@ function CustomerSummaryGrid({
 
   return (
     <SimpleGrid cols={{ base: 1, sm: 2, lg: 5 }} spacing="md">
-      <SummaryCard label="Appointments" value={String(summary.appointmentCount)} detail="Total appointments" />
-      <SummaryCard label="Notes" value={String(summary.noteCount)} detail="Internal notes" />
-      <SummaryCard
+      <SummaryField label="Appointments" value={String(summary.appointmentCount)} detail="Total appointments" />
+      <SummaryField label="Notes" value={String(summary.noteCount)} detail="Internal notes" />
+      <SummaryField
         label="Transactions"
         value={transactionParts.length > 0 ? transactionParts.join(" · ") : formatMinor(0, "EUR")}
         detail="Across currencies"
       />
-      <SummaryCard label="Hair profit" value={`€${summary.hairAssignedProfitSum.toFixed(2)}`} detail="Net profit" />
-      <SummaryCard label="Hair sold for" value={`€${summary.hairAssignedSoldForSum.toFixed(2)}`} detail="Gross sales" />
+      <SummaryField label="Hair profit" value={`€${summary.hairAssignedProfitSum.toFixed(2)}`} detail="Net profit" />
+      <SummaryField
+        label="Hair sold for"
+        value={`€${summary.hairAssignedSoldForSum.toFixed(2)}`}
+        detail="Gross sales"
+      />
     </SimpleGrid>
   )
 }
 
-function SummaryCard({ label, value, detail }: { label: string; value: string; detail: string }) {
+function SummaryField({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
-    <Card withBorder radius="md" p="md">
-      <Stack gap={4}>
-        <Text size="xs" c="dimmed" tt="uppercase" fw={700} lh={1.1}>
-          {label}
-        </Text>
-        <Title order={4} fw={700} lh={1.2}>
-          {value}
-        </Title>
-        <Text size="xs" c="dimmed">
-          {detail}
-        </Text>
-      </Stack>
-    </Card>
+    <Stack gap={4} py="xs" style={{ borderTop: "1px solid var(--mantine-color-gray-2)" }}>
+      <Text size="xs" c="dimmed" tt="uppercase" fw={700} lh={1.1} style={{ letterSpacing: "0.08em" }}>
+        {label}
+      </Text>
+      <Title order={4} fw={700} lh={1.2}>
+        {value}
+      </Title>
+      <Text size="xs" c="dimmed">
+        {detail}
+      </Text>
+    </Stack>
   )
 }
 

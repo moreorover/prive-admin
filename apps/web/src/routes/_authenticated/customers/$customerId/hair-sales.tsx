@@ -1,15 +1,15 @@
-import { Button, Card, Group, Pagination, Stack, Text, TextInput, Title } from "@mantine/core"
+import { Button, Divider, Group, Pagination, Stack, Text, TextInput, Title } from "@mantine/core"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 import { useState } from "react"
 import { z } from "zod"
 
+import { CustomerSubsection } from "@/components/customer-subsection"
 import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
 import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
 import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
-import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
@@ -74,11 +74,11 @@ function HairSalesRoute() {
   const individual = hairAssigned.filter((ha) => !ha.appointmentId)
 
   return (
-    <Section
+    <CustomerSubsection
       title="Hair sales"
       description="Hair sales tied to this customer."
       actions={
-        <Group justify="flex-end" align="flex-end" gap="sm" wrap="nowrap">
+        <>
           <TextInput
             label="Search"
             placeholder="Search hair sales"
@@ -97,15 +97,15 @@ function HairSalesRoute() {
           >
             New
           </Button>
-        </Group>
+        </>
       }
-      padding={hasItemsOnCurrentPage ? 0 : "lg"}
+      bodyPadding={hasItemsOnCurrentPage ? 0 : "lg"}
     >
       <Stack gap="md">
         {hasItemsOnCurrentPage ? (
-          <Stack>
-            <Card withBorder>
-              <Title order={5} mb="sm">
+          <Stack gap="lg">
+            <Stack gap="xs">
+              <Title order={5} fw={600}>
                 Hair sales through appointment
               </Title>
               {throughAppointment.length > 0 ? (
@@ -120,10 +120,12 @@ function HairSalesRoute() {
                   No appointment-tied hair sales on this page.
                 </Text>
               )}
-            </Card>
+            </Stack>
 
-            <Card withBorder>
-              <Title order={5} mb="sm">
+            <Divider />
+
+            <Stack gap="xs">
+              <Title order={5} fw={600}>
                 Hair sales individual
               </Title>
               {individual.length > 0 ? (
@@ -138,7 +140,7 @@ function HairSalesRoute() {
                   No individual hair sales on this page.
                 </Text>
               )}
-            </Card>
+            </Stack>
           </Stack>
         ) : (
           <Text size="sm" c="dimmed" p="lg">
@@ -192,6 +194,6 @@ function HairSalesRoute() {
           onSuccess={() => navigate({ search: { page: 1, search: searchValue }, replace: true })}
         />
       )}
-    </Section>
+    </CustomerSubsection>
   )
 }
