@@ -1,2 +1,190 @@
-@import "@mantine/core/styles.css";
-@import "@mantine/notifications/styles.css";
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,20,1&family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap");
+@import "@mantine/core/styles.layer.css";
+@import "@mantine/notifications/styles.layer.css";
+
+:root {
+  --prive-obsidian: #11100e;
+  --prive-bone: #f4efe6;
+  --prive-bone-warm: #fffcf6;
+  --prive-champagne: #b58b43;
+  --prive-mulberry: #442338;
+  --prive-ledger: #51665b;
+  --prive-mist: #d8d2c8;
+  --prive-surface-alpha: color-mix(in srgb, var(--mantine-color-body) 88%, transparent);
+  --prive-border: light-dark(rgba(91, 73, 49, 0.16), rgba(244, 239, 230, 0.14));
+  --prive-border-strong: light-dark(rgba(91, 73, 49, 0.28), rgba(244, 239, 230, 0.24));
+  --prive-focus: light-dark(rgba(181, 139, 67, 0.38), rgba(216, 183, 117, 0.42));
+  --prive-selection: light-dark(rgba(181, 139, 67, 0.24), rgba(181, 139, 67, 0.34));
+  --mantine-color-body: light-dark(#f4efe6, #11100e);
+  --mantine-color-text: light-dark(#211c16, #f7efe2);
+  --mantine-color-dimmed: light-dark(#786b5b, #bdb3a4);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--mantine-color-body);
+  text-rendering: geometricprecision;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(
+      circle at 18% 8%,
+      light-dark(rgba(255, 249, 236, 0.95), rgba(181, 139, 67, 0.14)),
+      transparent 29rem
+    ),
+    radial-gradient(circle at 92% 14%, light-dark(rgba(68, 35, 56, 0.12), rgba(68, 35, 56, 0.42)), transparent 26rem),
+    linear-gradient(90deg, light-dark(rgba(91, 73, 49, 0.055), rgba(244, 239, 230, 0.045)) 1px, transparent 1px),
+    linear-gradient(light-dark(rgba(91, 73, 49, 0.045), rgba(244, 239, 230, 0.035)) 1px, transparent 1px),
+    var(--mantine-color-body);
+  background-attachment: fixed;
+  background-size:
+    auto,
+    auto,
+    72px 72px,
+    72px 72px,
+    auto;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-feature-settings:
+    "kern" 1,
+    "liga" 1,
+    "ss01" 1;
+}
+
+::selection {
+  background: var(--prive-selection);
+}
+
+a {
+  color: inherit;
+  text-decoration-color: color-mix(in srgb, var(--prive-champagne) 56%, transparent);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.2em;
+}
+
+.prive-focus:focus-visible {
+  outline: 2px solid var(--prive-focus);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--prive-focus) 28%, transparent);
+}
+
+.prive-active:active {
+  transform: translateY(1px) scale(0.995);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+[class^="mantine-Card-root"],
+[class*=" mantine-Card-root"],
+[class^="mantine-Paper-root"],
+[class*=" mantine-Paper-root"] {
+  background:
+    linear-gradient(
+      145deg,
+      light-dark(rgba(255, 252, 246, 0.92), rgba(42, 36, 32, 0.88)),
+      light-dark(rgba(255, 252, 246, 0.74), rgba(17, 16, 14, 0.78))
+    ),
+    var(--mantine-color-body);
+  border-color: var(--prive-border);
+  box-shadow:
+    inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.72), rgba(255, 252, 246, 0.08)),
+    0 16px 42px light-dark(rgba(74, 55, 24, 0.08), rgba(0, 0, 0, 0.28));
+  backdrop-filter: blur(18px);
+}
+
+[class^="mantine-Button-root"],
+[class*=" mantine-Button-root"] {
+  letter-spacing: -0.01em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 10px 24px light-dark(rgba(111, 77, 24, 0.16), rgba(0, 0, 0, 0.22));
+}
+
+[class^="mantine-Button-root"][data-variant="default"],
+[class*=" mantine-Button-root"][data-variant="default"] {
+  background: light-dark(rgba(255, 252, 246, 0.74), rgba(42, 36, 32, 0.78));
+  border-color: var(--prive-border-strong);
+  color: var(--mantine-color-text);
+}
+
+[class^="mantine-Button-root"][data-variant="default"]:hover,
+[class*=" mantine-Button-root"][data-variant="default"]:hover {
+  background: light-dark(rgba(255, 252, 246, 0.96), rgba(68, 56, 47, 0.86));
+  border-color: color-mix(in srgb, var(--prive-champagne) 48%, var(--prive-border-strong));
+}
+
+[class^="mantine-Input-input"],
+[class*=" mantine-Input-input"] {
+  background: light-dark(rgba(255, 252, 246, 0.72), rgba(42, 36, 32, 0.72));
+  border-color: var(--prive-border);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    background-color 140ms ease;
+}
+
+[class^="mantine-Input-input"]:focus,
+[class*=" mantine-Input-input"]:focus {
+  border-color: color-mix(in srgb, var(--prive-champagne) 72%, var(--prive-border-strong));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--prive-focus) 34%, transparent);
+}
+
+[class^="mantine-Input-label"],
+[class*=" mantine-Input-label"] {
+  margin-bottom: 0.35rem;
+  color: var(--mantine-color-text);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+[class^="mantine-Table-table"],
+[class*=" mantine-Table-table"] {
+  font-variant-numeric: tabular-nums;
+}
+
+[class^="mantine-Table-th"],
+[class*=" mantine-Table-th"] {
+  color: var(--mantine-color-dimmed);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+[class^="mantine-Table-tr"],
+[class*=" mantine-Table-tr"] {
+  border-color: var(--prive-border);
+}
+
+[class^="mantine-Menu-dropdown"],
+[class*=" mantine-Menu-dropdown"],
+[class^="mantine-Popover-dropdown"],
+[class*=" mantine-Popover-dropdown"] {
+  background: light-dark(rgba(255, 252, 246, 0.94), rgba(28, 24, 21, 0.94));
+  border-color: var(--prive-border-strong);
+  box-shadow: 0 22px 70px light-dark(rgba(74, 55, 24, 0.16), rgba(0, 0, 0, 0.42));
+  backdrop-filter: blur(20px);
+}
