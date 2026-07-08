@@ -327,7 +327,7 @@ function UserSection() {
 
       <Menu.Dropdown>
         <Menu.Label>My account</Menu.Label>
-        <Menu.Item disabled leftSection={<IconUserCircle size={16} color={theme.colors.blue[6]} stroke={1.5} />}>
+        <Menu.Item disabled leftSection={<IconUserCircle size={16} color={theme.colors.champagne[6]} stroke={1.5} />}>
           {user.email}
         </Menu.Item>
         <Menu.Item
