@@ -2,7 +2,8 @@
 @import "@mantine/core/styles.layer.css";
 @import "@mantine/notifications/styles.layer.css";
 
-:root {
+:root,
+[data-mantine-color-scheme="light"] {
   --prive-obsidian: #11100e;
   --prive-bone: #f4efe6;
   --prive-bone-warm: #fffcf6;
@@ -10,14 +11,50 @@
   --prive-mulberry: #442338;
   --prive-ledger: #51665b;
   --prive-mist: #d8d2c8;
+  --prive-page-glow-primary: rgba(255, 249, 236, 0.95);
+  --prive-page-glow-secondary: rgba(68, 35, 56, 0.12);
+  --prive-ledger-line-x: rgba(91, 73, 49, 0.055);
+  --prive-ledger-line-y: rgba(91, 73, 49, 0.045);
+  --prive-surface: rgba(255, 252, 246, 0.9);
+  --prive-surface-strong: rgba(255, 252, 246, 0.96);
+  --prive-surface-muted: rgba(255, 252, 246, 0.72);
+  --prive-surface-raised: rgba(255, 252, 246, 0.94);
+  --prive-surface-shadow: rgba(74, 55, 24, 0.1);
+  --prive-button-shadow: rgba(111, 77, 24, 0.16);
+  --prive-control-bg: rgba(255, 252, 246, 0.76);
+  --prive-control-bg-hover: rgba(255, 252, 246, 0.96);
   --prive-surface-alpha: color-mix(in srgb, var(--mantine-color-body) 88%, transparent);
-  --prive-border: light-dark(rgba(91, 73, 49, 0.16), rgba(244, 239, 230, 0.14));
-  --prive-border-strong: light-dark(rgba(91, 73, 49, 0.28), rgba(244, 239, 230, 0.24));
-  --prive-focus: light-dark(rgba(181, 139, 67, 0.38), rgba(216, 183, 117, 0.42));
-  --prive-selection: light-dark(rgba(181, 139, 67, 0.24), rgba(181, 139, 67, 0.34));
-  --mantine-color-body: light-dark(#f4efe6, #11100e);
-  --mantine-color-text: light-dark(#211c16, #f7efe2);
-  --mantine-color-dimmed: light-dark(#786b5b, #bdb3a4);
+  --prive-border: rgba(91, 73, 49, 0.16);
+  --prive-border-strong: rgba(91, 73, 49, 0.28);
+  --prive-focus: rgba(181, 139, 67, 0.38);
+  --prive-selection: rgba(181, 139, 67, 0.24);
+  --mantine-color-body: #f4efe6;
+  --mantine-color-text: #211c16;
+  --mantine-color-dimmed: #786b5b;
+  color-scheme: light;
+}
+
+[data-mantine-color-scheme="dark"] {
+  --prive-page-glow-primary: rgba(181, 139, 67, 0.1);
+  --prive-page-glow-secondary: rgba(68, 35, 56, 0.34);
+  --prive-ledger-line-x: rgba(244, 239, 230, 0.035);
+  --prive-ledger-line-y: rgba(244, 239, 230, 0.026);
+  --prive-surface: rgba(31, 28, 25, 0.94);
+  --prive-surface-strong: rgba(39, 35, 31, 0.98);
+  --prive-surface-muted: rgba(42, 37, 32, 0.86);
+  --prive-surface-raised: rgba(28, 25, 22, 0.98);
+  --prive-surface-shadow: rgba(0, 0, 0, 0.42);
+  --prive-button-shadow: rgba(0, 0, 0, 0.3);
+  --prive-control-bg: rgba(39, 35, 31, 0.92);
+  --prive-control-bg-hover: rgba(54, 48, 42, 0.98);
+  --prive-border: rgba(244, 239, 230, 0.16);
+  --prive-border-strong: rgba(244, 239, 230, 0.28);
+  --prive-focus: rgba(216, 183, 117, 0.44);
+  --prive-selection: rgba(181, 139, 67, 0.34);
+  --mantine-color-body: #11100e;
+  --mantine-color-text: #f8efe3;
+  --mantine-color-dimmed: #bfb4a6;
+  color-scheme: dark;
 }
 
 * {
@@ -34,15 +71,10 @@ body {
   min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(
-      circle at 18% 8%,
-      light-dark(rgba(255, 249, 236, 0.95), rgba(181, 139, 67, 0.14)),
-      transparent 29rem
-    ),
-    radial-gradient(circle at 92% 14%, light-dark(rgba(68, 35, 56, 0.12), rgba(68, 35, 56, 0.42)), transparent 26rem),
-    linear-gradient(90deg, light-dark(rgba(91, 73, 49, 0.055), rgba(244, 239, 230, 0.045)) 1px, transparent 1px),
-    linear-gradient(light-dark(rgba(91, 73, 49, 0.045), rgba(244, 239, 230, 0.035)) 1px, transparent 1px),
-    var(--mantine-color-body);
+    radial-gradient(circle at 18% 8%, var(--prive-page-glow-primary), transparent 29rem),
+    radial-gradient(circle at 92% 14%, var(--prive-page-glow-secondary), transparent 26rem),
+    linear-gradient(90deg, var(--prive-ledger-line-x) 1px, transparent 1px),
+    linear-gradient(var(--prive-ledger-line-y) 1px, transparent 1px), var(--mantine-color-body);
   background-attachment: fixed;
   background-size:
     auto,
@@ -99,17 +131,12 @@ a {
 [class*=" mantine-Card-root"],
 [class^="mantine-Paper-root"],
 [class*=" mantine-Paper-root"] {
-  background:
-    linear-gradient(
-      145deg,
-      light-dark(rgba(255, 252, 246, 0.92), rgba(42, 36, 32, 0.88)),
-      light-dark(rgba(255, 252, 246, 0.74), rgba(17, 16, 14, 0.78))
-    ),
-    var(--mantine-color-body);
+  background: linear-gradient(145deg, var(--prive-surface), var(--prive-surface-muted)), var(--mantine-color-body);
+  color: var(--mantine-color-text);
   border-color: var(--prive-border);
   box-shadow:
-    inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.72), rgba(255, 252, 246, 0.08)),
-    0 16px 42px light-dark(rgba(74, 55, 24, 0.08), rgba(0, 0, 0, 0.28));
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 16px 42px var(--prive-surface-shadow);
   backdrop-filter: blur(18px);
 }
 
@@ -118,25 +145,26 @@ a {
   letter-spacing: -0.01em;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 10px 24px light-dark(rgba(111, 77, 24, 0.16), rgba(0, 0, 0, 0.22));
+    0 10px 24px var(--prive-button-shadow);
 }
 
 [class^="mantine-Button-root"][data-variant="default"],
 [class*=" mantine-Button-root"][data-variant="default"] {
-  background: light-dark(rgba(255, 252, 246, 0.74), rgba(42, 36, 32, 0.78));
+  background: var(--prive-control-bg);
   border-color: var(--prive-border-strong);
   color: var(--mantine-color-text);
 }
 
 [class^="mantine-Button-root"][data-variant="default"]:hover,
 [class*=" mantine-Button-root"][data-variant="default"]:hover {
-  background: light-dark(rgba(255, 252, 246, 0.96), rgba(68, 56, 47, 0.86));
+  background: var(--prive-control-bg-hover);
   border-color: color-mix(in srgb, var(--prive-champagne) 48%, var(--prive-border-strong));
 }
 
 [class^="mantine-Input-input"],
 [class*=" mantine-Input-input"] {
-  background: light-dark(rgba(255, 252, 246, 0.72), rgba(42, 36, 32, 0.72));
+  background: var(--prive-control-bg);
+  color: var(--mantine-color-text);
   border-color: var(--prive-border);
   transition:
     border-color 140ms ease,
@@ -183,8 +211,9 @@ a {
 [class*=" mantine-Menu-dropdown"],
 [class^="mantine-Popover-dropdown"],
 [class*=" mantine-Popover-dropdown"] {
-  background: light-dark(rgba(255, 252, 246, 0.94), rgba(28, 24, 21, 0.94));
+  background: var(--prive-surface-raised);
+  color: var(--mantine-color-text);
   border-color: var(--prive-border-strong);
-  box-shadow: 0 22px 70px light-dark(rgba(74, 55, 24, 0.16), rgba(0, 0, 0, 0.42));
+  box-shadow: 0 22px 70px var(--prive-surface-shadow);
   backdrop-filter: blur(20px);
 }
