@@ -40,6 +40,10 @@ function emptyToNull(value: string | undefined | null): string | null {
   return trimmed.length === 0 ? null : trimmed
 }
 
+function isSwedbankOwnAccountTransfer(cols: string[]): boolean {
+  return (cols[4] ?? "").trim().toLowerCase() === "transfer between own accounts"
+}
+
 function parseSebCsv(content: string): BankCsvParse {
   const stripped = content.charCodeAt(0) === 0xfeff ? content.slice(1) : content
   const records = parseCsv(stripped, {
@@ -100,6 +104,7 @@ function parseSwedbankCsv(content: string): BankCsvParse {
 
   for (const cols of records.slice(1)) {
     if ((cols[1] ?? "").trim() !== "20") continue
+    if (isSwedbankOwnAccountTransfer(cols)) continue
 
     const iban = (cols[0] ?? "").trim()
     if (!accountIban) accountIban = iban
