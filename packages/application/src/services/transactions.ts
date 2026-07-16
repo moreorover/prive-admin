@@ -1,12 +1,14 @@
 import {
+  createAppointmentRepository,
   createTransaction as insertTransaction,
   deleteTransaction as removeTransaction,
-  getAppointment as findAppointment,
   listTransactions as fetchTransactions,
   updateTransaction as patchTransaction,
 } from "@prive-admin-tanstack/db"
 
 import { badRequest, notFound, unexpectedError } from "../errors"
+
+const appointments = createAppointmentRepository()
 
 export async function listTransactions(input: {
   pageSize: number
@@ -26,7 +28,7 @@ export async function createTransaction(input: {
   amount: number
   currency: "GBP" | "EUR"
 }) {
-  const appointment = await findAppointment(undefined, input.appointmentId)
+  const appointment = await appointments.get(input.appointmentId)
   if (!appointment) {
     throw notFound("Appointment not found")
   }
