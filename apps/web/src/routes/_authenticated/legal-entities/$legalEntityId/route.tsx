@@ -5,6 +5,7 @@ import { notifications } from "@mantine/notifications"
 import { IconArrowLeft, IconPencil } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, Outlet, createFileRoute, useLocation } from "@tanstack/react-router"
+import { TRPCClientError } from "@trpc/client"
 import { zodResolver } from "mantine-form-zod-resolver"
 
 import { PageHeader } from "@/components/page-header"
@@ -29,7 +30,10 @@ function LegalEntityLayout() {
   const activeSection = getLegalEntitySectionFromPath(location.pathname)
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
 
-  const legalEntityQuery = useQuery(trpc.legalEntities.get.queryOptions({ id: legalEntityId }))
+  const legalEntityQuery = useQuery({
+    ...trpc.legalEntities.get.queryOptions({ id: legalEntityId }),
+    retry: (failureCount, error) => !isNotFoundError(error) && failureCount < 3,
+  })
   const legalEntity = legalEntityQuery.data
   const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions({}))
   const { data: unassignedAttachments = [] } = useQuery(
@@ -58,7 +62,7 @@ function LegalEntityLayout() {
     })
   }
 
-  if (legalEntityQuery.isError || legalEntity === null) {
+  if (legalEntityQuery.isError && isNotFoundError(legalEntityQuery.error)) {
     return (
       <Container size="xl">
         <Stack gap="md">
@@ -69,6 +73,27 @@ function LegalEntityLayout() {
             </Group>
           </Anchor>
           <Text c="dimmed">Legal entity not found.</Text>
+        </Stack>
+      </Container>
+    )
+  }
+
+  if (legalEntityQuery.isError) {
+    return (
+      <Container size="xl">
+        <Stack gap="md">
+          <Anchor component={Link} to="/legal-entities" size="xs" c="dimmed">
+            <Group gap={4}>
+              <IconArrowLeft size={12} />
+              Back to legal entities
+            </Group>
+          </Anchor>
+          <Stack gap={4}>
+            <Text fw={600}>Unable to load legal entity</Text>
+            <Text c="dimmed" size="sm">
+              Refresh the page to try again.
+            </Text>
+          </Stack>
         </Stack>
       </Container>
     )
@@ -143,6 +168,10 @@ function LegalEntityLayout() {
       />
     </Container>
   )
+}
+
+function isNotFoundError(error: unknown) {
+  return error instanceof TRPCClientError && error.data?.code === "NOT_FOUND"
 }
 
 type EditValues = {
