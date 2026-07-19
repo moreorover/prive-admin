@@ -12,7 +12,8 @@ export const Route = createFileRoute("/_authenticated/legal-entities/")({
 })
 
 function LegalEntitiesIndex() {
-  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions({}))
+  const legalEntitiesQuery = useQuery(trpc.legalEntities.list.queryOptions({}))
+  const legalEntities = legalEntitiesQuery.data ?? []
   const { data: unassignedAttachments = [] } = useQuery(
     trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
   )
@@ -31,7 +32,24 @@ function LegalEntitiesIndex() {
           </Badge>
         </Group>
       ) : null}
-      {legalEntities.length === 0 ? (
+      {legalEntitiesQuery.isPending ? (
+        <Card withBorder padding="lg">
+          <Text size="sm" c="dimmed">
+            Loading legal entities...
+          </Text>
+        </Card>
+      ) : legalEntitiesQuery.isError ? (
+        <Card withBorder padding="lg">
+          <Stack gap={4}>
+            <Title order={4} fw={600}>
+              Unable to load legal entities
+            </Title>
+            <Text size="sm" c="dimmed">
+              Refresh the page to try again.
+            </Text>
+          </Stack>
+        </Card>
+      ) : legalEntities.length === 0 ? (
         <Card withBorder padding="lg">
           <Stack gap={4}>
             <Title order={4} fw={600}>

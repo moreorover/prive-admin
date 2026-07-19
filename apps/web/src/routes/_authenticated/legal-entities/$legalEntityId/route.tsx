@@ -29,7 +29,8 @@ function LegalEntityLayout() {
   const activeSection = getLegalEntitySectionFromPath(location.pathname)
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
 
-  const { data: legalEntity } = useQuery(trpc.legalEntities.get.queryOptions({ id: legalEntityId }))
+  const legalEntityQuery = useQuery(trpc.legalEntities.get.queryOptions({ id: legalEntityId }))
+  const legalEntity = legalEntityQuery.data
   const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions({}))
   const { data: unassignedAttachments = [] } = useQuery(
     trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
@@ -57,7 +58,7 @@ function LegalEntityLayout() {
     })
   }
 
-  if (legalEntity === null) {
+  if (legalEntityQuery.isError || legalEntity === null) {
     return (
       <Container size="xl">
         <Stack gap="md">
@@ -94,7 +95,7 @@ function LegalEntityLayout() {
               disabled={legalEntities.length <= 1}
               searchable={legalEntities.length > 5}
               size="sm"
-              w={220}
+              w={{ base: "100%", sm: 220 }}
             />
             <Button variant="default" leftSection={<IconPencil size={14} />} onClick={openEdit} disabled={!legalEntity}>
               Edit
