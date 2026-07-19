@@ -1,10 +1,10 @@
-import { Anchor, Container, Stack, Table } from "@mantine/core"
+import { Badge, Button, Card, Container, Group, SimpleGrid, Stack, Text, Title } from "@mantine/core"
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 
 import { PageHeader } from "@/components/page-header"
-import { Section } from "@/components/section"
 import { COUNTRY_FLAGS, COUNTRY_LABELS, type Country } from "@/lib/legal-entity"
+import { LEGAL_ENTITY_SECTIONS, getLegalEntitySectionPath } from "@/lib/legal-entity-navigation"
 import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/")({
@@ -13,44 +13,88 @@ export const Route = createFileRoute("/_authenticated/legal-entities/")({
 
 function LegalEntitiesIndex() {
   const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions({}))
+  const { data: unassignedAttachments = [] } = useQuery(
+    trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
+  )
+  const unassignedCount = unassignedAttachments.length
 
   return (
     <Container size="xl">
       <PageHeader title="Legal entities" description="Companies and sole-trader registrations." />
-      <Stack>
-        <Section padding={0}>
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Type</Table.Th>
-                <Table.Th>Country</Table.Th>
-                <Table.Th>Default currency</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {legalEntities.map((le) => (
-                <Table.Tr key={le.id}>
-                  <Table.Td>
-                    <Anchor
+      {legalEntities.length === 0 ? (
+        <Card withBorder padding="lg">
+          <Stack gap={4}>
+            <Title order={4} fw={600}>
+              No legal entities
+            </Title>
+            <Text size="sm" c="dimmed">
+              Legal entities will appear here once they have been added.
+            </Text>
+          </Stack>
+        </Card>
+      ) : (
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+          {legalEntities.map((legalEntity) => {
+            const country = legalEntity.country as Country
+
+            return (
+              <Card key={legalEntity.id} withBorder padding="lg">
+                <Stack gap="md">
+                  <Stack gap={4}>
+                    <Title
+                      order={3}
+                      fw={600}
                       renderRoot={(props) => (
-                        <Link to="/legal-entities/$legalEntityId" params={{ legalEntityId: le.id }} {...props} />
+                        <Link
+                          to="/legal-entities/$legalEntityId/overview"
+                          params={{ legalEntityId: legalEntity.id }}
+                          {...props}
+                        />
                       )}
                     >
-                      {le.name}
-                    </Anchor>
-                  </Table.Td>
-                  <Table.Td>{le.type}</Table.Td>
-                  <Table.Td>
-                    {COUNTRY_FLAGS[le.country as Country]} {COUNTRY_LABELS[le.country as Country]}
-                  </Table.Td>
-                  <Table.Td>{le.defaultCurrency}</Table.Td>
-                </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        </Section>
-      </Stack>
+                      {legalEntity.name}
+                    </Title>
+                    <Text size="sm" c="dimmed">
+                      {legalEntity.type} · {COUNTRY_FLAGS[country]} {COUNTRY_LABELS[country]} ·{" "}
+                      {legalEntity.defaultCurrency}
+                    </Text>
+                  </Stack>
+
+                  <Group gap="xs">
+                    {LEGAL_ENTITY_SECTIONS.map((section) => {
+                      const showBadge = section.value === "documents" && unassignedCount > 0
+
+                      return (
+                        <Button
+                          key={section.value}
+                          size="xs"
+                          variant={section.value === "overview" ? "filled" : "default"}
+                          renderRoot={(props) => (
+                            <Link
+                              to={getLegalEntitySectionPath(legalEntity.id, section.value)}
+                              params={{ legalEntityId: legalEntity.id }}
+                              {...props}
+                            />
+                          )}
+                          rightSection={
+                            showBadge ? (
+                              <Badge size="xs" variant="filled" color="orange" circle>
+                                {unassignedCount}
+                              </Badge>
+                            ) : null
+                          }
+                        >
+                          {section.label}
+                        </Button>
+                      )
+                    })}
+                  </Group>
+                </Stack>
+              </Card>
+            )
+          })}
+        </SimpleGrid>
+      )}
     </Container>
   )
 }
