@@ -588,7 +588,6 @@ const { data: assignedDocumentsData, isError: assignedDocumentsIsError } = useQu
     page: assignedDocumentsPage,
     pageSize: ASSIGNED_DOCUMENTS_PAGE_SIZE,
   }),
-  enabled: status === "assigned",
 })
 const assignedDocuments = assignedDocumentsData?.items ?? []
 const assignedDocumentsTotalCount = assignedDocumentsData?.totalCount ?? 0
