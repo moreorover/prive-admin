@@ -2,6 +2,7 @@ import {
   availableHairOrders,
   createHairAssigned,
   deleteHairAssigned,
+  getHairAssigned,
   listHairAssigned,
   updateHairAssigned,
 } from "@prive-admin-tanstack/application/services"
@@ -14,6 +15,10 @@ import { getOffset, pagedResult, pageSchema } from "../pagination"
 const hairAssignedListSchema = pageSchema.extend({
   appointmentId: z.string().optional(),
   customerId: z.string().optional(),
+  source: z.enum(["appointment", "individual"]).optional(),
+  search: z.string().trim().min(1).optional(),
+  from: z.coerce.date().optional(),
+  to: z.coerce.date().optional(),
 })
 
 export const hairAssignedRouter = router({
@@ -24,8 +29,20 @@ export const hairAssignedRouter = router({
         offset: getOffset(input),
         appointmentId: input.appointmentId,
         customerId: input.customerId,
+        source: input.source,
+        search: input.search,
+        from: input.from,
+        to: input.to,
       })
       return pagedResult(result.items, input, result.totalCount)
+    } catch (error) {
+      throw toTrpcError(error)
+    }
+  }),
+
+  get: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
+    try {
+      return await getHairAssigned(input.id)
     } catch (error) {
       throw toTrpcError(error)
     }

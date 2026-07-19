@@ -1,8 +1,8 @@
-import { ActionIcon, Badge, Card, Container, Group, SimpleGrid, Stack, Text, Title } from "@mantine/core"
+import { ActionIcon, Badge, Button, Card, Container, Group, SimpleGrid, Stack, Text, Title } from "@mantine/core"
 import { MonthPickerInput } from "@mantine/dates"
-import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
+import { IconChevronLeft, IconChevronRight, IconEye } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
-import { createFileRoute } from "@tanstack/react-router"
+import { Link, createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
 import { PageHeader } from "@/components/page-header"
@@ -131,16 +131,20 @@ function DashboardPage() {
           selected={selected}
         />
         <HairStatsSection
-          title="Hair assigned during appointments"
+          title="Appointment hair sales"
           currentYearData={appointmentsData}
           previousYearData={previousAppointmentsData}
           selected={selected}
+          source="appointment"
+          selectedMonthKey={selectedMonthKey}
         />
         <HairStatsSection
-          title="Hair assigned during sale"
+          title="Individual hair sales"
           currentYearData={salesData}
           previousYearData={previousSalesData}
           selected={selected}
+          source="individual"
+          selectedMonthKey={selectedMonthKey}
         />
       </Stack>
     </Container>
@@ -200,16 +204,32 @@ function HairStatsSection({
   currentYearData,
   previousYearData,
   selected,
+  source,
+  selectedMonthKey,
 }: {
   title: string
   currentYearData: HairMonthlyBreakdown | undefined
   previousYearData: HairMonthlyBreakdown | undefined
   selected: { year: number; month: number }
+  source: "appointment" | "individual"
+  selectedMonthKey: string
 }) {
   const { current, previous } = selectedMonthData(currentYearData, previousYearData, selected)
 
   return (
-    <Section title={title}>
+    <Section
+      title={title}
+      actions={
+        <Button
+          renderRoot={(props) => <Link to="/hair-sales" search={{ source, month: selectedMonthKey }} {...props} />}
+          variant="default"
+          size="sm"
+          leftSection={<IconEye size={14} />}
+        >
+          View sales
+        </Button>
+      }
+    >
       <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
         <MetricCard
           label="Weight"
