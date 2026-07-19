@@ -21,6 +21,16 @@ function LegalEntitiesIndex() {
   return (
     <Container size="xl">
       <PageHeader title="Legal entities" description="Companies and sole-trader registrations." />
+      {unassignedCount > 0 ? (
+        <Group gap="xs" mb="md">
+          <Text size="sm" c="dimmed">
+            Unassigned documents
+          </Text>
+          <Badge size="sm" variant="filled" color="orange">
+            {unassignedCount}
+          </Badge>
+        </Group>
+      ) : null}
       {legalEntities.length === 0 ? (
         <Card withBorder padding="lg">
           <Stack gap={4}>
@@ -62,8 +72,6 @@ function LegalEntitiesIndex() {
 
                   <Group gap="xs">
                     {LEGAL_ENTITY_SECTIONS.map((section) => {
-                      const showBadge = section.value === "documents" && unassignedCount > 0
-
                       return (
                         <Button
                           key={section.value}
@@ -76,13 +84,6 @@ function LegalEntitiesIndex() {
                               {...props}
                             />
                           )}
-                          rightSection={
-                            showBadge ? (
-                              <Badge size="xs" variant="filled" color="orange" circle>
-                                {unassignedCount}
-                              </Badge>
-                            ) : null
-                          }
                         >
                           {section.label}
                         </Button>
