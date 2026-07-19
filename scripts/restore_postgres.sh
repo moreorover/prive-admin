@@ -71,16 +71,31 @@ fi
 
 op_read() {
   local ref="$1"
-  op read "${ref}" 2>/dev/null || err "failed to read ${ref} from 1Password"
+  local value
+  if ! value="$(op read "${ref}" 2>&1)"; then
+    err "failed to read ${ref} from 1Password: ${value}"
+  fi
+  printf '%s' "${value}"
 }
 
-: "${R2_ACCOUNT_ID:=$(op_read 'op://prive-admin/Cloudflare R2/account-id')}"
-: "${R2_ACCESS_KEY_ID:=$(op_read 'op://prive-admin/Cloudflare R2/access-key-id')}"
-: "${R2_SECRET_ACCESS_KEY:=$(op_read 'op://prive-admin/Cloudflare R2/secret-access-key')}"
-: "${R2_BUCKET_NAME:=$(op_read 'op://prive-admin/Cloudflare R2/bucket-name')}"
+load_secret() {
+  local var_name="$1"
+  local ref="$2"
+  local value="${!var_name:-}"
+
+  if [[ -z "${value}" ]]; then
+    value="$(op_read "${ref}")"
+    printf -v "${var_name}" '%s' "${value}"
+  fi
+}
+
+load_secret R2_ACCOUNT_ID 'op://prive-admin/Cloudflare R2/account-id'
+load_secret R2_ACCESS_KEY_ID 'op://prive-admin/Cloudflare R2/access-key-id'
+load_secret R2_SECRET_ACCESS_KEY 'op://prive-admin/Cloudflare R2/secret-access-key'
+load_secret R2_BUCKET_NAME 'op://prive-admin/Cloudflare R2/bucket-name'
 # Production role name — the dump references it as the owner of the
 # database/objects, so it must exist locally before restore.
-: "${PROD_PG_USER:=$(op_read 'op://prive-admin/prive-admin-prod/postgres/POSTGRES_USER')}"
+load_secret PROD_PG_USER 'op://prive-admin/prive-admin-prod/server/POSTGRES_USER'
 export R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET_NAME PROD_PG_USER
 
 S3CFG="$(mktemp)"
