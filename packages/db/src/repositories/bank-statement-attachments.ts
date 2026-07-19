@@ -72,7 +72,7 @@ export async function listAssignedBankStatementAttachments(
     .innerJoin(bankStatementEntry, eq(bankStatementAttachment.bankStatementEntryId, bankStatementEntry.id))
     .innerJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
     .where(where)
-    .orderBy(desc(bankStatementEntry.date), desc(bankStatementAttachment.uploadedAt))
+    .orderBy(desc(bankStatementEntry.date), desc(bankStatementAttachment.uploadedAt), desc(bankStatementAttachment.id))
     .limit(input.pageSize)
     .offset(input.offset)
 

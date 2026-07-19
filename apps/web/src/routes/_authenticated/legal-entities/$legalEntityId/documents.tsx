@@ -40,7 +40,7 @@ function DocumentsTab() {
   const [status, setStatus] = useState<DocumentStatus>("unassigned")
   const [assignedDocumentsPage, setAssignedDocumentsPage] = useState(1)
 
-  const { data: unassignedDocuments = [] } = useQuery(
+  const { data: unassignedDocuments = [], isError: unassignedDocumentsIsError } = useQuery(
     trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
   )
 
@@ -57,8 +57,9 @@ function DocumentsTab() {
   const showAssignedDocumentsPagination = assignedDocumentsTotalCount > ASSIGNED_DOCUMENTS_PAGE_SIZE
 
   useEffect(() => {
+    if (!assignedDocumentsData) return
     setAssignedDocumentsPage((page) => Math.min(page, assignedDocumentsTotalPages))
-  }, [assignedDocumentsTotalPages])
+  }, [assignedDocumentsData, assignedDocumentsTotalPages])
 
   const { data: assignableEntriesData } = useQuery(
     trpc.bankStatementEntries.list.queryOptions({
@@ -195,6 +196,7 @@ function DocumentsTab() {
               setAssignableEntriesPage={setAssignableEntriesPage}
               showAssignableEntriesPagination={showAssignableEntriesPagination}
               items={unassignedDocuments}
+              unassignedDocumentsIsError={unassignedDocumentsIsError}
               entryOptions={entryOptions}
               assignPending={assign.isPending}
               onAssign={(id, entryId) => assign.mutate({ id, entryId })}
@@ -230,6 +232,7 @@ function UnassignedDocumentsView({
   setAssignableEntriesPage,
   showAssignableEntriesPagination,
   items,
+  unassignedDocumentsIsError,
   entryOptions,
   assignPending,
   onAssign,
@@ -248,6 +251,7 @@ function UnassignedDocumentsView({
     contentType: string
     uploadedAt: string | Date
   }>
+  unassignedDocumentsIsError: boolean
   entryOptions: Array<{ value: string; label: string }>
   assignPending: boolean
   onAssign: (id: string, entryId: string) => void
@@ -255,6 +259,14 @@ function UnassignedDocumentsView({
   onRemove: (id: string) => void
   onPreview: (attachment: AttachmentPreview) => void
 }) {
+  if (unassignedDocumentsIsError) {
+    return (
+      <Text size="sm" c="red">
+        Unable to load unassigned documents.
+      </Text>
+    )
+  }
+
   return (
     <>
       {showAssignableEntriesPagination && (

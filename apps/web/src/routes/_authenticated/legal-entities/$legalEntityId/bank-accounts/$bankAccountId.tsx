@@ -407,6 +407,7 @@ function AttachmentsCell({
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.list.queryKey() }),
       queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.counts.queryKey() }),
+      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.listAssigned.queryKey() }),
     ])
   }
 
