@@ -77,18 +77,6 @@
   font-size: 11px;
 }
 
-.entitySubNav {
-  margin-left: 16px;
-  padding-left: 10px;
-  border-left: 1px solid var(--prive-border);
-}
-
-.subNavLink {
-  border-radius: var(--mantine-radius-lg);
-  padding: 6px 10px;
-  font-size: var(--mantine-font-size-sm);
-}
-
 .user {
   color: var(--mantine-color-text);
   padding: 6px 8px;

@@ -1,13 +1,21 @@
-import { Button, Container, Group, Modal, Stack, TextInput } from "@mantine/core"
+import { Anchor, Badge, Button, Container, Group, Modal, Select, Stack, Tabs, Text, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { useDisclosure } from "@mantine/hooks"
 import { notifications } from "@mantine/notifications"
+import { IconArrowLeft, IconPencil } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Outlet, createFileRoute } from "@tanstack/react-router"
+import { Link, Outlet, createFileRoute, useLocation } from "@tanstack/react-router"
+import { TRPCClientError } from "@trpc/client"
 import { zodResolver } from "mantine-form-zod-resolver"
 
 import { PageHeader } from "@/components/page-header"
 import { COUNTRY_FLAGS, COUNTRY_LABELS, type Country } from "@/lib/legal-entity"
+import {
+  LEGAL_ENTITY_SECTIONS,
+  type LegalEntitySectionValue,
+  getLegalEntitySectionFromPath,
+  getLegalEntitySectionPath,
+} from "@/lib/legal-entity-navigation"
 import { legalEntityUpdateSchema } from "@/lib/schemas"
 import { trpc } from "@/utils/trpc"
 
@@ -17,27 +25,130 @@ export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntit
 
 function LegalEntityLayout() {
   const { legalEntityId } = Route.useParams()
+  const navigate = Route.useNavigate()
+  const location = useLocation()
+  const activeSection = getLegalEntitySectionFromPath(location.pathname)
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
 
-  const { data: legalEntity } = useQuery(trpc.legalEntities.get.queryOptions({ id: legalEntityId }))
+  const legalEntityQuery = useQuery({
+    ...trpc.legalEntities.get.queryOptions({ id: legalEntityId }),
+    retry: (failureCount, error) => !isNotFoundError(error) && failureCount < 3,
+  })
+  const legalEntity = legalEntityQuery.data
+  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions({}))
+  const { data: unassignedAttachments = [] } = useQuery(
+    trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
+  )
+  const unassignedCount = unassignedAttachments.length
 
   const country = legalEntity?.country as Country | undefined
   const description = legalEntity
     ? `${legalEntity.type}${country ? ` · ${COUNTRY_FLAGS[country]} ${COUNTRY_LABELS[country]}` : ""} · ${legalEntity.defaultCurrency}`
     : undefined
 
+  const handleSectionChange = (value: string | null) => {
+    if (!value || value === activeSection) return
+    navigate({
+      to: getLegalEntitySectionPath(legalEntityId, value as LegalEntitySectionValue),
+      params: { legalEntityId },
+    })
+  }
+
+  const handleEntityChange = (nextLegalEntityId: string | null) => {
+    if (!nextLegalEntityId || nextLegalEntityId === legalEntityId) return
+    navigate({
+      to: getLegalEntitySectionPath(nextLegalEntityId, activeSection),
+      params: { legalEntityId: nextLegalEntityId },
+    })
+  }
+
+  if (legalEntityQuery.isError && isNotFoundError(legalEntityQuery.error)) {
+    return (
+      <Container size="xl">
+        <Stack gap="md">
+          <Anchor component={Link} to="/legal-entities" size="xs" c="dimmed">
+            <Group gap={4}>
+              <IconArrowLeft size={12} />
+              Back to legal entities
+            </Group>
+          </Anchor>
+          <Text c="dimmed">Legal entity not found.</Text>
+        </Stack>
+      </Container>
+    )
+  }
+
+  if (legalEntityQuery.isError) {
+    return (
+      <Container size="xl">
+        <Stack gap="md">
+          <Anchor component={Link} to="/legal-entities" size="xs" c="dimmed">
+            <Group gap={4}>
+              <IconArrowLeft size={12} />
+              Back to legal entities
+            </Group>
+          </Anchor>
+          <Stack gap={4}>
+            <Text fw={600}>Unable to load legal entity</Text>
+            <Text c="dimmed" size="sm">
+              Refresh the page to try again.
+            </Text>
+          </Stack>
+        </Stack>
+      </Container>
+    )
+  }
+
   return (
     <Container size="xl">
+      <Anchor component={Link} to="/legal-entities" size="xs" c="dimmed" mb="xs" display="inline-block">
+        <Group gap={4}>
+          <IconArrowLeft size={12} />
+          Back to legal entities
+        </Group>
+      </Anchor>
       <PageHeader
         title={legalEntity?.name ?? "Legal entity"}
         description={description}
         actions={
-          <Button variant="default" onClick={openEdit} disabled={!legalEntity}>
-            Edit
-          </Button>
+          <>
+            <Select
+              aria-label="Switch legal entity"
+              data={legalEntities.map((entity) => ({ value: entity.id, label: entity.name }))}
+              value={legalEntityId}
+              onChange={handleEntityChange}
+              disabled={legalEntities.length <= 1}
+              searchable={legalEntities.length > 5}
+              size="sm"
+              w={{ base: "100%", sm: 220 }}
+            />
+            <Button variant="default" leftSection={<IconPencil size={14} />} onClick={openEdit} disabled={!legalEntity}>
+              Edit
+            </Button>
+          </>
         }
       />
       <Stack>
+        <Tabs value={activeSection} onChange={handleSectionChange}>
+          <Tabs.List>
+            {LEGAL_ENTITY_SECTIONS.map((section) => (
+              <Tabs.Tab
+                key={section.value}
+                value={section.value}
+                rightSection={
+                  section.value === "documents" && unassignedCount > 0 ? (
+                    <Badge size="xs" variant="filled" color="orange" circle>
+                      {unassignedCount}
+                    </Badge>
+                  ) : null
+                }
+              >
+                {section.label}
+              </Tabs.Tab>
+            ))}
+          </Tabs.List>
+        </Tabs>
+
         <Outlet />
       </Stack>
 
@@ -57,6 +168,10 @@ function LegalEntityLayout() {
       />
     </Container>
   )
+}
+
+function isNotFoundError(error: unknown) {
+  return error instanceof TRPCClientError && error.data?.code === "NOT_FOUND"
 }
 
 type EditValues = {

@@ -11,7 +11,6 @@ import {
   Card,
   Group,
   Menu,
-  NavLink as MantineNavLink,
   ScrollArea,
   Stack,
   Text,
@@ -28,7 +27,6 @@ import {
   IconCash,
   IconChevronDown,
   IconDeviceDesktop,
-  IconFileText,
   IconLayoutDashboard,
   IconLogout,
   IconMoon,
@@ -39,7 +37,6 @@ import {
   IconSun,
   IconUserCircle,
   IconUsers,
-  IconWallet,
 } from "@tabler/icons-react"
 import { useQuery, useQueryErrorResetBoundary } from "@tanstack/react-query"
 import { Link, Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouter } from "@tanstack/react-router"
@@ -71,13 +68,6 @@ const manageNav: NavItem[] = [
 ]
 
 const footerNav: NavItem[] = [{ to: "/settings", label: "Settings", icon: IconSettings }]
-
-const LEGAL_ENTITY_TABS = [
-  { value: "overview", label: "Overview", icon: IconLayoutDashboard },
-  { value: "documents", label: "Documents", icon: IconFileText, badgeKey: "unassigned" as const },
-  { value: "bank-accounts", label: "Bank accounts", icon: IconWallet },
-  { value: "salons", label: "Salons", icon: IconScissors },
-]
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -159,16 +149,6 @@ function AuthenticatedLayout() {
 }
 
 function SidebarNav({ badges, onNavigate }: { badges: { unassigned: number }; onNavigate: () => void }) {
-  const location = useLocation()
-  const entityMatch = location.pathname.match(/^\/legal-entities\/([^/]+)(?:\/([^/]+))?/)
-  const entityId = entityMatch?.[1]
-  const entityTab = entityMatch?.[2] ?? "overview"
-
-  const { data: entity } = useQuery({
-    ...trpc.legalEntities.get.queryOptions({ id: entityId ?? "" }),
-    enabled: !!entityId,
-  })
-
   return (
     <Stack gap="md">
       <Box>
@@ -197,45 +177,6 @@ function SidebarNav({ badges, onNavigate }: { badges: { unassigned: number }; on
             />
           ))}
         </Stack>
-
-        {entityId && (
-          <Box mt={6} className={classes.entitySubNav}>
-            <Text size="xs" fw={600} c="dimmed" px="sm" py={4} truncate>
-              {entity?.name ?? "…"}
-            </Text>
-            <Stack gap={2}>
-              {LEGAL_ENTITY_TABS.map((t) => {
-                const Icon = t.icon
-                const active = entityTab === t.value
-                const badge = t.badgeKey ? badges[t.badgeKey] : 0
-                return (
-                  <MantineNavLink
-                    key={t.value}
-                    renderRoot={(props) => (
-                      <Link
-                        to={`/legal-entities/$legalEntityId/${t.value}`}
-                        params={{ legalEntityId: entityId }}
-                        {...props}
-                      />
-                    )}
-                    label={t.label}
-                    leftSection={<Icon size={16} stroke={1.6} />}
-                    rightSection={
-                      badge > 0 ? (
-                        <Badge size="xs" variant="filled" color="orange" circle>
-                          {badge}
-                        </Badge>
-                      ) : null
-                    }
-                    active={active}
-                    onClick={onNavigate}
-                    className={classes.subNavLink}
-                  />
-                )
-              })}
-            </Stack>
-          </Box>
-        )}
       </Box>
     </Stack>
   )
