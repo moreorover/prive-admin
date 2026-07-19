@@ -32,6 +32,7 @@ import {
   IconLayoutDashboard,
   IconLogout,
   IconMoon,
+  IconReceipt,
   IconRefresh,
   IconScissors,
   IconSettings,
@@ -61,6 +62,7 @@ const workspaceNav: NavItem[] = [
   { to: "/customers", label: "Customers", icon: IconUsers },
   { to: "/calendar", label: "Calendar", icon: IconCalendar },
   { to: "/hair-orders", label: "Hair orders", icon: IconScissors },
+  { to: "/hair-sales", label: "Hair sales", icon: IconReceipt },
   { to: "/cash", label: "Cash", icon: IconCash },
 ]
 
