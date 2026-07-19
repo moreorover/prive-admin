@@ -1,3 +1,4 @@
+import { and, eq, isNotNull } from "drizzle-orm"
 import { describe, expect, it, vi } from "vite-plus/test"
 
 import { bankAccount } from "../schema/bank-account"
@@ -126,7 +127,11 @@ describe("bank statement attachment repository", () => {
       bankStatementEntry,
       bankAccount,
     ])
-    expect(calls.where).toHaveLength(2)
+    const expectedWhere = and(
+      isNotNull(bankStatementAttachment.bankStatementEntryId),
+      eq(bankAccount.legalEntityId, "legal-entity-1"),
+    )
+    expect(calls.where).toEqual([expectedWhere, expectedWhere])
     expect(calls.orderBy).toHaveLength(1)
     expect(calls.limit).toEqual([25])
     expect(calls.offset).toEqual([50])
