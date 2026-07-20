@@ -1,5 +1,4 @@
 .header {
-  position: relative;
   background: color-mix(in srgb, var(--mantine-color-body) 78%, transparent);
   border-bottom: 1px solid var(--prive-border);
   backdrop-filter: blur(18px);
@@ -12,19 +11,13 @@
 
 .tabsRow {
   display: none;
-  height: 56px;
+  height: 34px;
   align-items: center;
   box-sizing: border-box;
-  padding-top: 0;
-  padding-bottom: 22px;
 }
 
 .ledgerRule {
   display: none;
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
   height: 22px;
   border-top: 1px solid color-mix(in srgb, var(--prive-champagne) 58%, var(--prive-border));
   color: var(--mantine-color-text);
@@ -78,7 +71,7 @@
 
 .main {
   min-height: 100vh;
-  padding: var(--mantine-spacing-lg) 0 var(--mantine-spacing-xl);
+  padding: calc(var(--app-shell-header-offset, 0px) + var(--mantine-spacing-lg)) 0 var(--mantine-spacing-xl);
   background: transparent;
 }
 

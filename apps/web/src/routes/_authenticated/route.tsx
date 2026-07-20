@@ -258,7 +258,7 @@ function UserSection() {
       withinPortal
     >
       <Menu.Target>
-        <UnstyledButton className={triggerClass}>
+        <UnstyledButton className={triggerClass} aria-label="Open user menu">
           <Group gap={7} wrap="nowrap">
             <Avatar radius="xl" size={24} color="initials" name={user.name} />
             <Text fw={500} size="sm" lh={1} mr={3} visibleFrom="sm">
