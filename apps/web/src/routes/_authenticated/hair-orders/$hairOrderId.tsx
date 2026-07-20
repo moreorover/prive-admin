@@ -175,7 +175,14 @@ function HairOrderDetailPage() {
             }
             padding={0}
           >
-            <HairAssignedTable items={hairOrder.hairAssigned ?? []} onEdit={setEditItem} onDelete={setDeleteItem} />
+            <HairAssignedTable items={hairOrder.hairAssigned ?? []}>
+              <HairAssignedTable.Client />
+              <HairAssignedTable.Weight />
+              <HairAssignedTable.SoldFor />
+              <HairAssignedTable.Profit />
+              <HairAssignedTable.PricePerGram />
+              <HairAssignedTable.Actions onEdit={setEditItem} onDelete={setDeleteItem} />
+            </HairAssignedTable>
           </Section>
 
           <Section title="Notes">

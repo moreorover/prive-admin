@@ -101,13 +101,16 @@ function HairSalesRoute() {
       >
         <Stack gap="md">
           {hasItemsOnCurrentPage ? (
-            <HairAssignedTable
-              items={hairAssigned}
-              showSourceColumn
-              showHairOrderColumn
-              onEdit={setHairEditItem}
-              onDelete={setHairDeleteItem}
-            />
+            <HairAssignedTable items={hairAssigned}>
+              <HairAssignedTable.Client />
+              <HairAssignedTable.Source />
+              <HairAssignedTable.HairOrder />
+              <HairAssignedTable.Weight />
+              <HairAssignedTable.SoldFor />
+              <HairAssignedTable.Profit />
+              <HairAssignedTable.PricePerGram />
+              <HairAssignedTable.Actions onEdit={setHairEditItem} onDelete={setHairDeleteItem} />
+            </HairAssignedTable>
           ) : (
             <Text size="sm" c="dimmed" p="lg">
               {normalizedSearch ? "No hair sales match your search." : "No hair sales on this page."}

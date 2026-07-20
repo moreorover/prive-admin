@@ -375,7 +375,15 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
               Add
             </Button>
           </Group>
-          <HairAssignedTable items={hairAssigned} showHairOrderColumn onEdit={setEditItem} onDelete={setDeleteItem} />
+          <HairAssignedTable items={hairAssigned}>
+            <HairAssignedTable.Client />
+            <HairAssignedTable.HairOrder />
+            <HairAssignedTable.Weight />
+            <HairAssignedTable.SoldFor />
+            <HairAssignedTable.Profit />
+            <HairAssignedTable.PricePerGram />
+            <HairAssignedTable.Actions onEdit={setEditItem} onDelete={setDeleteItem} />
+          </HairAssignedTable>
           {showHairAssignedPagination && (
             <Group justify="space-between" mt="md">
               <Text size="sm" c="dimmed">
