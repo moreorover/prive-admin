@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from "react"
 
-import { ActionIcon, Badge, Group, Table, Text } from "@mantine/core"
+import { ActionIcon, Badge, Group, Pagination, Table, Text } from "@mantine/core"
 import { IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { Children, createContext, isValidElement, useContext } from "react"
@@ -28,6 +28,18 @@ type HairAssignedActionsProps = {
   onDelete: (item: HairAssignedRow) => void
 }
 
+type HairAssignedPaginationProps = {
+  page: number
+  pageSize: number
+  itemCount: number
+  totalCount: number
+  onChange: (page: number) => void
+  label?: ReactNode
+  mt?: "md"
+  px?: "md"
+  pb?: "md"
+}
+
 type HairAssignedColumnComponent<Props = object> = ((props: Props) => ReactElement | null) & {
   columnLabel: string
   Header: () => ReactElement
@@ -35,6 +47,10 @@ type HairAssignedColumnComponent<Props = object> = ((props: Props) => ReactEleme
 }
 
 type HairAssignedColumnElement = ReactElement<object, HairAssignedColumnComponent<object>>
+type HairAssignedPaginationElement = ReactElement<HairAssignedPaginationProps, HairAssignedPaginationComponent>
+type HairAssignedPaginationComponent = ((props: HairAssignedPaginationProps) => ReactElement) & {
+  isTablePagination: true
+}
 
 type HairAssignedTableComponent = ((props: HairAssignedTableRootProps) => ReactElement) & {
   Client: HairAssignedColumnComponent
@@ -45,6 +61,7 @@ type HairAssignedTableComponent = ((props: HairAssignedTableRootProps) => ReactE
   Profit: HairAssignedColumnComponent
   PricePerGram: HairAssignedColumnComponent
   Actions: HairAssignedColumnComponent<HairAssignedActionsProps>
+  Pagination: HairAssignedPaginationComponent
 }
 
 const HairAssignedRowContext = createContext<HairAssignedRow | null>(null)
@@ -61,12 +78,24 @@ function getHairAssignedColumns(children: ReactNode) {
   return Children.toArray(children).filter(isValidHairAssignedColumn)
 }
 
+function getHairAssignedPagination(children: ReactNode) {
+  return Children.toArray(children).find(isValidHairAssignedPagination) ?? null
+}
+
 function isValidHairAssignedColumn(child: ReactNode): child is HairAssignedColumnElement {
   return isValidElement(child) && typeof child.type !== "string" && "Header" in child.type && "Cell" in child.type
 }
 
+function isValidHairAssignedPagination(child: ReactNode): child is HairAssignedPaginationElement {
+  return isValidElement(child) && typeof child.type !== "string" && "isTablePagination" in child.type
+}
+
 export function getHairAssignedTableColumnLabels(children: ReactNode) {
   return getHairAssignedColumns(children).map((child) => child.type.columnLabel)
+}
+
+export function getHairAssignedTableHasPagination(children: ReactNode) {
+  return getHairAssignedPagination(children) !== null
 }
 
 function createColumn(label: string, Cell: () => ReactElement): HairAssignedColumnComponent {
@@ -101,41 +130,66 @@ function createActionsColumn(): HairAssignedColumnComponent<HairAssignedActionsP
 
 function HairAssignedTableRoot({ items, children }: HairAssignedTableRootProps) {
   const columns = getHairAssignedColumns(children)
+  const pagination = getHairAssignedPagination(children)
 
   if (items.length === 0) {
     return (
-      <Text size="sm" c="dimmed">
-        No hair assigned yet.
-      </Text>
+      <>
+        <Text size="sm" c="dimmed">
+          No hair assigned yet.
+        </Text>
+        {pagination ? <pagination.type {...pagination.props} /> : null}
+      </>
     )
   }
 
   return (
-    <Table>
-      <Table.Thead>
-        <Table.Tr>
-          {columns.map((column, index) => (
-            <column.type.Header key={index} />
-          ))}
-        </Table.Tr>
-      </Table.Thead>
-      <Table.Tbody>
-        {items.map((row) => {
-          const needsAttention = row.weightInGrams === 0 || row.soldFor === 0
-          return (
-            <HairAssignedRowContext.Provider key={row.id} value={row}>
-              <Table.Tr bg={needsAttention ? "var(--mantine-color-red-0)" : undefined}>
-                {columns.map((column, index) => (
-                  <column.type.Cell key={index} {...column.props} />
-                ))}
-              </Table.Tr>
-            </HairAssignedRowContext.Provider>
-          )
-        })}
-      </Table.Tbody>
-    </Table>
+    <>
+      <Table>
+        <Table.Thead>
+          <Table.Tr>
+            {columns.map((column, index) => (
+              <column.type.Header key={index} />
+            ))}
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {items.map((row) => {
+            const needsAttention = row.weightInGrams === 0 || row.soldFor === 0
+            return (
+              <HairAssignedRowContext.Provider key={row.id} value={row}>
+                <Table.Tr bg={needsAttention ? "var(--mantine-color-red-0)" : undefined}>
+                  {columns.map((column, index) => (
+                    <column.type.Cell key={index} {...column.props} />
+                  ))}
+                </Table.Tr>
+              </HairAssignedRowContext.Provider>
+            )
+          })}
+        </Table.Tbody>
+      </Table>
+      {pagination ? <pagination.type {...pagination.props} /> : null}
+    </>
   )
 }
+
+const TablePagination = Object.assign(
+  ({ page, pageSize, totalCount, onChange, label, mt = "md", px, pb }: HairAssignedPaginationProps) => {
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+    const clampedPage = Math.min(page, totalPages)
+    return (
+      <Group justify={label ? "space-between" : "flex-end"} mt={mt} px={px} pb={pb}>
+        {label ? (
+          <Text size="sm" c="dimmed">
+            {label}
+          </Text>
+        ) : null}
+        <Pagination total={totalPages} value={clampedPage} onChange={onChange} />
+      </Group>
+    )
+  },
+  { isTablePagination: true as const },
+)
 
 const Client = createColumn("Client", () => {
   const row = useHairAssignedRow()
@@ -218,4 +272,5 @@ export const HairAssignedTable = Object.assign(HairAssignedTableRoot, {
   Profit,
   PricePerGram,
   Actions: createActionsColumn(),
+  Pagination: TablePagination,
 }) satisfies HairAssignedTableComponent

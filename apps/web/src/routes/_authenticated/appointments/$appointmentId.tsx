@@ -7,7 +7,6 @@ import {
   Group,
   Menu,
   Modal,
-  Pagination,
   ScrollArea,
   Select,
   Stack,
@@ -348,21 +347,19 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
                 <TransactionsTable.Name />
                 <TransactionsTable.Amount />
                 <TransactionsTable.Actions onEdit={setEditTx} onDelete={setDeleteTx} />
+                {showTransactionsPagination ? (
+                  <TransactionsTable.Pagination
+                    page={transactionsPage}
+                    pageSize={APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE}
+                    itemCount={txRows.length}
+                    totalCount={transactionsTotalCount}
+                    onChange={setTransactionsPage}
+                    label={`Page ${Math.min(transactionsPage, transactionsTotalPages)} of ${transactionsTotalPages}`}
+                  />
+                ) : null}
               </TransactionsTable>
             )
           })()}
-          {showTransactionsPagination && (
-            <Group justify="space-between" mt="md">
-              <Text size="sm" c="dimmed">
-                Page {Math.min(transactionsPage, transactionsTotalPages)} of {transactionsTotalPages}
-              </Text>
-              <Pagination
-                total={transactionsTotalPages}
-                value={Math.min(transactionsPage, transactionsTotalPages)}
-                onChange={setTransactionsPage}
-              />
-            </Group>
-          )}
         </Card>
 
         <Card withBorder>
@@ -390,19 +387,17 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
             <HairAssignedTable.Profit />
             <HairAssignedTable.PricePerGram />
             <HairAssignedTable.Actions onEdit={setEditItem} onDelete={setDeleteItem} />
-          </HairAssignedTable>
-          {showHairAssignedPagination && (
-            <Group justify="space-between" mt="md">
-              <Text size="sm" c="dimmed">
-                Page {Math.min(hairAssignedPage, hairAssignedTotalPages)} of {hairAssignedTotalPages}
-              </Text>
-              <Pagination
-                total={hairAssignedTotalPages}
-                value={Math.min(hairAssignedPage, hairAssignedTotalPages)}
+            {showHairAssignedPagination ? (
+              <HairAssignedTable.Pagination
+                page={hairAssignedPage}
+                pageSize={APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE}
+                itemCount={hairAssigned.length}
+                totalCount={hairAssignedTotalCount}
                 onChange={setHairAssignedPage}
+                label={`Page ${Math.min(hairAssignedPage, hairAssignedTotalPages)} of ${hairAssignedTotalPages}`}
               />
-            </Group>
-          )}
+            ) : null}
+          </HairAssignedTable>
         </Card>
 
         <Card withBorder>

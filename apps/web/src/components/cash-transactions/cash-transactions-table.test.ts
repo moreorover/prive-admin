@@ -1,7 +1,11 @@
 import { createElement } from "react"
 import { describe, expect, it } from "vite-plus/test"
 
-import { CashTransactionsTable, getCashTransactionsTableColumnLabels } from "./cash-transactions-table"
+import {
+  CashTransactionsTable,
+  getCashTransactionsTableColumnLabels,
+  getCashTransactionsTableHasPagination,
+} from "./cash-transactions-table"
 
 describe("cash transactions table compound columns", () => {
   it("reports declared column labels in child order", () => {
@@ -15,5 +19,19 @@ describe("cash transactions table compound columns", () => {
         createElement(CashTransactionsTable.Actions, { key: "actions", onEdit: () => {}, onDelete: () => {} }),
       ]),
     ).toEqual(["Date", "Customer", "Description", "Amount", "Created by", "Actions"])
+  })
+
+  it("detects a declared pagination footer", () => {
+    expect(
+      getCashTransactionsTableHasPagination(
+        createElement(CashTransactionsTable.Pagination, {
+          page: 2,
+          pageSize: 25,
+          itemCount: 25,
+          totalCount: 80,
+          onChange: () => {},
+        }),
+      ),
+    ).toBe(true)
   })
 })

@@ -2,7 +2,11 @@ import { createElement } from "react"
 import { describe, expect, it } from "vite-plus/test"
 
 import { getHairAssignedSource } from "./hair-assigned-source"
-import { HairAssignedTable, getHairAssignedTableColumnLabels } from "./hair-assigned-table"
+import {
+  HairAssignedTable,
+  getHairAssignedTableColumnLabels,
+  getHairAssignedTableHasPagination,
+} from "./hair-assigned-table"
 
 describe("hair assigned table", () => {
   it("labels appointment-tied and individual hair sales", () => {
@@ -18,6 +22,20 @@ describe("hair assigned table", () => {
       color: "grape",
       label: "Individual",
     })
+  })
+
+  it("detects a declared pagination footer", () => {
+    expect(
+      getHairAssignedTableHasPagination(
+        createElement(HairAssignedTable.Pagination, {
+          page: 2,
+          pageSize: 25,
+          itemCount: 25,
+          totalCount: 80,
+          onChange: () => {},
+        }),
+      ),
+    ).toBe(true)
   })
 })
 

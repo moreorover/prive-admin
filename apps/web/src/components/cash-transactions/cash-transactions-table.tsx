@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from "react"
 
-import { ActionIcon, Menu, Table, Text } from "@mantine/core"
+import { ActionIcon, Group, Menu, Pagination, Table, Text } from "@mantine/core"
 import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import dayjs from "dayjs"
@@ -33,6 +33,18 @@ type CashTransactionActionsProps = {
   onDelete: (item: CashTransactionRow) => void
 }
 
+type CashTransactionPaginationProps = {
+  page: number
+  pageSize: number
+  itemCount: number
+  totalCount: number
+  onChange: (page: number) => void
+  label?: ReactNode
+  mt?: "md"
+  px?: "md"
+  pb?: "md"
+}
+
 type CashTransactionColumnComponent<Props = object> = ((props: Props) => ReactElement | null) & {
   columnLabel: string
   Header: () => ReactElement
@@ -40,6 +52,10 @@ type CashTransactionColumnComponent<Props = object> = ((props: Props) => ReactEl
 }
 
 type CashTransactionColumnElement = ReactElement<object, CashTransactionColumnComponent<object>>
+type CashTransactionPaginationElement = ReactElement<CashTransactionPaginationProps, CashTransactionPaginationComponent>
+type CashTransactionPaginationComponent = ((props: CashTransactionPaginationProps) => ReactElement) & {
+  isTablePagination: true
+}
 
 type CashTransactionsTableComponent = ((props: CashTransactionsTableRootProps) => ReactElement) & {
   Date: CashTransactionColumnComponent
@@ -48,6 +64,7 @@ type CashTransactionsTableComponent = ((props: CashTransactionsTableRootProps) =
   Amount: CashTransactionColumnComponent
   CreatedBy: CashTransactionColumnComponent
   Actions: CashTransactionColumnComponent<CashTransactionActionsProps>
+  Pagination: CashTransactionPaginationComponent
 }
 
 const CashTransactionRowContext = createContext<CashTransactionRow | null>(null)
@@ -62,12 +79,24 @@ function getCashTransactionColumns(children: ReactNode) {
   return Children.toArray(children).filter(isValidCashTransactionColumn)
 }
 
+function getCashTransactionPagination(children: ReactNode) {
+  return Children.toArray(children).find(isValidCashTransactionPagination) ?? null
+}
+
 function isValidCashTransactionColumn(child: ReactNode): child is CashTransactionColumnElement {
   return isValidElement(child) && typeof child.type !== "string" && "Header" in child.type && "Cell" in child.type
 }
 
+function isValidCashTransactionPagination(child: ReactNode): child is CashTransactionPaginationElement {
+  return isValidElement(child) && typeof child.type !== "string" && "isTablePagination" in child.type
+}
+
 export function getCashTransactionsTableColumnLabels(children: ReactNode) {
   return getCashTransactionColumns(children).map((child) => child.type.columnLabel)
+}
+
+export function getCashTransactionsTableHasPagination(children: ReactNode) {
+  return getCashTransactionPagination(children) !== null
 }
 
 function createColumn(label: string, Cell: () => ReactElement): CashTransactionColumnComponent {
@@ -109,38 +138,63 @@ function createActionsColumn(): CashTransactionColumnComponent<CashTransactionAc
 
 function CashTransactionsTableRoot({ items, children }: CashTransactionsTableRootProps) {
   const columns = getCashTransactionColumns(children)
+  const pagination = getCashTransactionPagination(children)
 
   if (items.length === 0) {
     return (
-      <Text size="sm" c="dimmed">
-        No cash transactions.
-      </Text>
+      <>
+        <Text size="sm" c="dimmed">
+          No cash transactions.
+        </Text>
+        {pagination ? <pagination.type {...pagination.props} /> : null}
+      </>
     )
   }
 
   return (
-    <Table>
-      <Table.Thead>
-        <Table.Tr>
-          {columns.map((column, index) => (
-            <column.type.Header key={index} />
+    <>
+      <Table>
+        <Table.Thead>
+          <Table.Tr>
+            {columns.map((column, index) => (
+              <column.type.Header key={index} />
+            ))}
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {items.map((row) => (
+            <CashTransactionRowContext.Provider key={row.id} value={row}>
+              <Table.Tr>
+                {columns.map((column, index) => (
+                  <column.type.Cell key={index} {...column.props} />
+                ))}
+              </Table.Tr>
+            </CashTransactionRowContext.Provider>
           ))}
-        </Table.Tr>
-      </Table.Thead>
-      <Table.Tbody>
-        {items.map((row) => (
-          <CashTransactionRowContext.Provider key={row.id} value={row}>
-            <Table.Tr>
-              {columns.map((column, index) => (
-                <column.type.Cell key={index} {...column.props} />
-              ))}
-            </Table.Tr>
-          </CashTransactionRowContext.Provider>
-        ))}
-      </Table.Tbody>
-    </Table>
+        </Table.Tbody>
+      </Table>
+      {pagination ? <pagination.type {...pagination.props} /> : null}
+    </>
   )
 }
+
+const TablePagination = Object.assign(
+  ({ page, pageSize, totalCount, onChange, label, mt = "md", px, pb }: CashTransactionPaginationProps) => {
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+    const clampedPage = Math.min(page, totalPages)
+    return (
+      <Group justify={label ? "space-between" : "flex-end"} mt={mt} px={px} pb={pb}>
+        {label ? (
+          <Text size="sm" c="dimmed">
+            {label}
+          </Text>
+        ) : null}
+        <Pagination total={totalPages} value={clampedPage} onChange={onChange} />
+      </Group>
+    )
+  },
+  { isTablePagination: true as const },
+)
 
 const Date = createColumn("Date", () => {
   const row = useCashTransactionRow()
@@ -184,4 +238,5 @@ export const CashTransactionsTable = Object.assign(CashTransactionsTableRoot, {
   Amount,
   CreatedBy,
   Actions: createActionsColumn(),
+  Pagination: TablePagination,
 }) satisfies CashTransactionsTableComponent
