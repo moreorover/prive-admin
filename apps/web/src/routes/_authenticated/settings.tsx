@@ -1,6 +1,7 @@
 import { Container, Group, Stack, Text } from "@mantine/core"
 import { createFileRoute } from "@tanstack/react-router"
 
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
@@ -15,6 +16,7 @@ function SettingsPage() {
 
   return (
     <Container size="md">
+      <BreadcrumbItem label="Settings" order={10} />
       <PageHeader title="Settings" description="Read-only workspace preferences detected from your browser." />
       <Section title="Locale & timezone" description="Used to format dates, times and currency throughout the app.">
         <Stack gap="xs">

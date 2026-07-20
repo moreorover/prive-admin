@@ -1,24 +1,12 @@
-import {
-  Anchor,
-  Button,
-  Card,
-  Container,
-  Group,
-  Modal,
-  SimpleGrid,
-  Stack,
-  Tabs,
-  Text,
-  TextInput,
-  Title,
-} from "@mantine/core"
+import { Button, Card, Container, Group, Modal, SimpleGrid, Stack, Tabs, Text, TextInput, Title } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
-import { IconArrowLeft, IconPencil, IconPhone } from "@tabler/icons-react"
+import { IconPencil, IconPhone } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Link, Outlet, createFileRoute, useLocation } from "@tanstack/react-router"
+import { Outlet, createFileRoute, useLocation } from "@tanstack/react-router"
 import { useState } from "react"
 
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
 import { CURRENCIES, formatMinor } from "@/lib/currency"
@@ -74,12 +62,7 @@ function CustomerDetailRoute() {
 
   return (
     <Container size="xl">
-      <Anchor component={Link} to="/customers" size="xs" c="dimmed" mb="xs" display="inline-block">
-        <Group gap={4}>
-          <IconArrowLeft size={12} />
-          Back to customers
-        </Group>
-      </Anchor>
+      <BreadcrumbItem label={customer.name} to={`/customers/${customerId}/appointments`} order={20} />
       <PageHeader
         title={customer.name}
         description={

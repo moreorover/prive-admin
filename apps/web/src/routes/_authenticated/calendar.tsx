@@ -6,6 +6,7 @@ import dayjs from "dayjs"
 import { useCallback, useMemo, useState } from "react"
 
 import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
@@ -91,6 +92,7 @@ function CalendarPage() {
 
   return (
     <Container size="xl">
+      <BreadcrumbItem label="Calendar" order={10} />
       <PageHeader title="Calendar" description="Click a slot to book or open an existing appointment." />
       <Stack>
         {hasHiddenAppointments && (

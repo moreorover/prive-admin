@@ -20,6 +20,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import Loader2 from "@/components/loader"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
@@ -87,6 +88,7 @@ function ProfilePage() {
 
   return (
     <Container size="md">
+      <BreadcrumbItem label="Profile" order={10} />
       <PageHeader title="Profile" description="Manage account details, password, and active sessions." />
       <Stack>
         <Section

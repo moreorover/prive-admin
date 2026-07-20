@@ -1,8 +1,9 @@
 import { Anchor, Badge, Card, Container, Group, SimpleGrid, Stack, Text, Title } from "@mantine/core"
-import { IconArrowLeft, IconCalendar, IconScissors, IconUser } from "@tabler/icons-react"
+import { IconCalendar, IconScissors, IconUser } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
@@ -31,12 +32,7 @@ function HairSaleDetailPage() {
 
   return (
     <Container size="xl">
-      <Anchor component={Link} to="/hair-sales" size="xs" c="dimmed" mb="xs" display="inline-block">
-        <Group gap={4}>
-          <IconArrowLeft size={12} />
-          Back to hair sales
-        </Group>
-      </Anchor>
+      <BreadcrumbItem label="Hair sale" order={20} />
       <PageHeader
         title={
           <Group gap="sm">

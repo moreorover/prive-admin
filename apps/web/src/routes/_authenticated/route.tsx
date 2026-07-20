@@ -34,6 +34,7 @@ import { useQuery, useQueryErrorResetBoundary } from "@tanstack/react-query"
 import { Link, Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
 
+import { BreadcrumbProvider } from "@/components/breadcrumbs"
 import { appNavGroups, flatAppNavItems, type AppNavItem } from "@/lib/app-navigation"
 import { authClient } from "@/lib/auth-client"
 import { trpc } from "@/utils/trpc"
@@ -67,17 +68,19 @@ function AuthenticatedLayout() {
   const badges = { unassigned: unassignedAttachments.length }
 
   return (
-    <AppShell header={{ height: { base: 64, lg: 102 } }} padding={0}>
-      <AppShell.Header className={classes.header}>
-        <HeaderTop opened={mobileOpened} onToggle={toggleMobile} />
-        <DesktopTabs badges={badges} />
-      </AppShell.Header>
-      <MobileNavigationDrawer opened={mobileOpened} onClose={closeMobile} badges={badges} />
+    <BreadcrumbProvider>
+      <AppShell header={{ height: { base: 64, lg: 102 } }} padding={0}>
+        <AppShell.Header className={classes.header}>
+          <HeaderTop opened={mobileOpened} onToggle={toggleMobile} />
+          <DesktopTabs badges={badges} />
+        </AppShell.Header>
+        <MobileNavigationDrawer opened={mobileOpened} onClose={closeMobile} badges={badges} />
 
-      <AppShell.Main className={classes.main}>
-        <Outlet />
-      </AppShell.Main>
-    </AppShell>
+        <AppShell.Main className={classes.main}>
+          <Outlet />
+        </AppShell.Main>
+      </AppShell>
+    </BreadcrumbProvider>
   )
 }
 
