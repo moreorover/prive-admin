@@ -2,6 +2,8 @@ import type { ReactNode } from "react"
 
 import { Box, Group, Stack, Title } from "@mantine/core"
 
+import { BreadcrumbPortal } from "@/components/breadcrumbs"
+
 export function PageHeader({
   title,
   description,
@@ -13,7 +15,8 @@ export function PageHeader({
 }) {
   return (
     <Group justify="space-between" align="flex-start" wrap="wrap" mb="lg" gap="md">
-      <Stack gap={4} miw={0} flex="1 1 22rem">
+      <Stack gap={2} miw={0} flex="1 1 22rem">
+        <BreadcrumbPortal />
         <Title order={2} fw={600} lh={1.2}>
           {title}
         </Title>

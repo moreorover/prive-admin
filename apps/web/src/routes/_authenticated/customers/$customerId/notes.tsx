@@ -7,6 +7,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router"
 import { useState } from "react"
 import { z } from "zod"
 
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { ClientDate } from "@/components/client-date"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
@@ -84,72 +85,80 @@ function NotesRoute() {
   })
 
   return (
-    <Section
-      title="Notes"
-      description="Customer notes and internal reminders."
-      actions={
-        <>
-          <TextInput
-            label="Search"
-            placeholder="Search notes"
-            leftSection={<IconSearch size={16} />}
-            value={searchValue}
-            onChange={(event) => {
-              navigate({ search: { page: 1, search: event.currentTarget.value }, replace: true })
-            }}
-            w={260}
-          />
-          <Button variant="default" size="sm" leftSection={<IconPlus size={12} />} onClick={() => setDialogOpen(true)}>
-            Add
-          </Button>
-        </>
-      }
-      padding={hasItemsOnCurrentPage ? 0 : "lg"}
-    >
-      <Stack gap="md">
-        {hasItemsOnCurrentPage ? (
-          <Stack gap="xs">
-            {notes.map((note) => (
-              <Card key={note.id} padding="sm">
-                <Group justify="space-between" align="flex-start">
-                  <Stack gap={2}>
-                    <Text size="sm">{note.note}</Text>
-                    <Text size="xs" c="dimmed">
-                      {note.createdBy?.name ?? "Unknown"} · <ClientDate date={note.createdAt} />
-                    </Text>
-                  </Stack>
-                  <ActionIcon variant="subtle" color="red" onClick={() => deleteNoteMutation.mutate({ id: note.id })}>
-                    <IconTrash size={14} />
-                  </ActionIcon>
-                </Group>
-              </Card>
-            ))}
-          </Stack>
-        ) : (
-          <Text size="sm" c="dimmed" p="lg">
-            {normalizedSearch ? "No notes match your search." : "No notes on this page."}
-          </Text>
-        )}
+    <>
+      <BreadcrumbItem label="Notes" order={30} />
+      <Section
+        title="Notes"
+        description="Customer notes and internal reminders."
+        actions={
+          <>
+            <TextInput
+              label="Search"
+              placeholder="Search notes"
+              leftSection={<IconSearch size={16} />}
+              value={searchValue}
+              onChange={(event) => {
+                navigate({ search: { page: 1, search: event.currentTarget.value }, replace: true })
+              }}
+              w={260}
+            />
+            <Button
+              variant="default"
+              size="sm"
+              leftSection={<IconPlus size={12} />}
+              onClick={() => setDialogOpen(true)}
+            >
+              Add
+            </Button>
+          </>
+        }
+        padding={hasItemsOnCurrentPage ? 0 : "lg"}
+      >
+        <Stack gap="md">
+          {hasItemsOnCurrentPage ? (
+            <Stack gap="xs">
+              {notes.map((note) => (
+                <Card key={note.id} padding="sm">
+                  <Group justify="space-between" align="flex-start">
+                    <Stack gap={2}>
+                      <Text size="sm">{note.note}</Text>
+                      <Text size="xs" c="dimmed">
+                        {note.createdBy?.name ?? "Unknown"} · <ClientDate date={note.createdAt} />
+                      </Text>
+                    </Stack>
+                    <ActionIcon variant="subtle" color="red" onClick={() => deleteNoteMutation.mutate({ id: note.id })}>
+                      <IconTrash size={14} />
+                    </ActionIcon>
+                  </Group>
+                </Card>
+              ))}
+            </Stack>
+          ) : (
+            <Text size="sm" c="dimmed" p="lg">
+              {normalizedSearch ? "No notes match your search." : "No notes on this page."}
+            </Text>
+          )}
 
-        <Group justify="space-between" px="md" pb="md">
-          <Text size="sm" c="dimmed">
-            {totalCount} note{totalCount === 1 ? "" : "s"} · Page {clampedPage} of {totalPages}
-          </Text>
-          <Pagination
-            value={clampedPage}
-            total={totalPages}
-            onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
-          />
-        </Group>
-      </Stack>
+          <Group justify="space-between" px="md" pb="md">
+            <Text size="sm" c="dimmed">
+              {totalCount} note{totalCount === 1 ? "" : "s"} · Page {clampedPage} of {totalPages}
+            </Text>
+            <Pagination
+              value={clampedPage}
+              total={totalPages}
+              onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
+            />
+          </Group>
+        </Stack>
 
-      <AddNoteDialog
-        customerId={customerId}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSuccess={() => navigate({ search: { page: 1, search: searchValue }, replace: true })}
-      />
-    </Section>
+        <AddNoteDialog
+          customerId={customerId}
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          onSuccess={() => navigate({ search: { page: 1, search: searchValue }, replace: true })}
+        />
+      </Section>
+    </>
   )
 }
 

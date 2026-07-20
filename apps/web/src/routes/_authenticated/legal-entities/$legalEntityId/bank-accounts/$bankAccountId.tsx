@@ -24,20 +24,14 @@ import { MonthPickerInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
 import { useDisclosure } from "@mantine/hooks"
 import { notifications } from "@mantine/notifications"
-import {
-  IconArrowLeft,
-  IconDotsVertical,
-  IconDownload,
-  IconLinkOff,
-  IconPaperclip,
-  IconTrash,
-} from "@tabler/icons-react"
+import { IconDotsVertical, IconDownload, IconLinkOff, IconPaperclip, IconTrash } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useState } from "react"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { CURRENCY_OPTIONS, type Currency, formatMinor } from "@/lib/currency"
 import { bankAccountSchema } from "@/lib/schemas"
 import { trpc } from "@/utils/trpc"
@@ -56,6 +50,7 @@ function BankAccountRoute() {
 type StatusFilter = "PENDING" | "IGNORED" | "ALL"
 
 function BankAccountShow({ id }: { id: string }) {
+  const { legalEntityId } = Route.useParams()
   const queryClient = useQueryClient()
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
   const [file, setFile] = useState<File | null>(null)
@@ -133,26 +128,9 @@ function BankAccountShow({ id }: { id: string }) {
 
   return (
     <>
+      <BreadcrumbItem label="Bank accounts" to={`/legal-entities/${legalEntityId}/bank-accounts`} order={30} />
+      <BreadcrumbItem label={bankAccount?.displayName ?? "Bank account"} order={40} />
       <Stack>
-        {bankAccount?.legalEntity && (
-          <Anchor
-            renderRoot={(props) => (
-              <Link
-                to="/legal-entities/$legalEntityId/bank-accounts"
-                params={{ legalEntityId: bankAccount.legalEntity!.id }}
-                {...props}
-              />
-            )}
-            size="xs"
-            c="dimmed"
-          >
-            <Group gap={4}>
-              <IconArrowLeft size={12} />
-              Back to {bankAccount.legalEntity.name}
-            </Group>
-          </Anchor>
-        )}
-
         <Group justify="space-between">
           <Title order={3}>{bankAccount?.displayName ?? "Bank account"}</Title>
           <Button onClick={openEdit} disabled={!bankAccount}>
@@ -697,6 +675,8 @@ function BankAccountNew() {
 
   return (
     <Stack>
+      <BreadcrumbItem label="Bank accounts" to={`/legal-entities/${pathLegalEntityId}/bank-accounts`} order={30} />
+      <BreadcrumbItem label="New bank account" order={40} />
       <Title order={3}>New bank account</Title>
       <Card withBorder>
         <form onSubmit={form.onSubmit((values) => save.mutate(values))}>

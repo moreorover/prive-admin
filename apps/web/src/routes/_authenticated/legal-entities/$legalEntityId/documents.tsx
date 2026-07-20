@@ -18,6 +18,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { Section } from "@/components/section"
 import { type Currency, formatMinor } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
@@ -143,6 +144,7 @@ function DocumentsTab() {
 
   return (
     <>
+      <BreadcrumbItem label="Documents" order={30} />
       <Section
         title="Documents"
         description={

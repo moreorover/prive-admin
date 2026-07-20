@@ -2,6 +2,7 @@ import { Badge, Button, Card, Container, Group, SimpleGrid, Stack, Text, Title }
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { COUNTRY_FLAGS, COUNTRY_LABELS, type Country } from "@/lib/legal-entity"
 import { LEGAL_ENTITY_SECTIONS, getLegalEntitySectionPath } from "@/lib/legal-entity-navigation"
@@ -21,6 +22,7 @@ function LegalEntitiesIndex() {
 
   return (
     <Container size="xl">
+      <BreadcrumbItem label="Legal entities" order={10} />
       <PageHeader title="Legal entities" description="Companies and sole-trader registrations." />
       {unassignedCount > 0 ? (
         <Group gap="xs" mb="md">

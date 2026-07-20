@@ -6,6 +6,7 @@ import { useState } from "react"
 import { z } from "zod"
 
 import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { ClientDate } from "@/components/client-date"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
@@ -65,85 +66,97 @@ function CustomerAppointmentsRoute() {
   const hasItemsOnCurrentPage = appointments.length > 0
 
   return (
-    <Section
-      title="Appointments"
-      description="Appointment history for this customer."
-      actions={
-        <>
-          <TextInput
-            label="Search"
-            placeholder="Search appointments"
-            leftSection={<IconSearch size={16} />}
-            value={searchValue}
-            onChange={(event) => {
-              navigate({ search: { page: 1, search: event.currentTarget.value }, replace: true })
-            }}
-            w={260}
-          />
-          <Button variant="default" size="sm" leftSection={<IconPlus size={12} />} onClick={() => setDialogOpen(true)}>
-            New
-          </Button>
-        </>
-      }
-      padding={hasItemsOnCurrentPage ? 0 : "lg"}
-    >
-      <Stack gap="md">
-        {hasItemsOnCurrentPage ? (
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Date</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {appointments.map((appointment) => (
-                <Table.Tr key={appointment.id}>
-                  <Table.Td>
-                    <Text
-                      renderRoot={(props) => (
-                        <Link to="/appointments/$appointmentId" params={{ appointmentId: appointment.id }} {...props} />
-                      )}
-                      c="blue"
-                    >
-                      {appointment.name}
-                    </Text>
-                  </Table.Td>
-                  <Table.Td c="dimmed">
-                    <ClientDate date={appointment.startsAt} />
-                  </Table.Td>
+    <>
+      <BreadcrumbItem label="Appointments" order={30} />
+      <Section
+        title="Appointments"
+        description="Appointment history for this customer."
+        actions={
+          <>
+            <TextInput
+              label="Search"
+              placeholder="Search appointments"
+              leftSection={<IconSearch size={16} />}
+              value={searchValue}
+              onChange={(event) => {
+                navigate({ search: { page: 1, search: event.currentTarget.value }, replace: true })
+              }}
+              w={260}
+            />
+            <Button
+              variant="default"
+              size="sm"
+              leftSection={<IconPlus size={12} />}
+              onClick={() => setDialogOpen(true)}
+            >
+              New
+            </Button>
+          </>
+        }
+        padding={hasItemsOnCurrentPage ? 0 : "lg"}
+      >
+        <Stack gap="md">
+          {hasItemsOnCurrentPage ? (
+            <Table>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Name</Table.Th>
+                  <Table.Th>Date</Table.Th>
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        ) : (
-          <Text size="sm" c="dimmed" p="lg">
-            {normalizedSearch ? "No appointments match your search." : "No appointments on this page."}
-          </Text>
-        )}
+              </Table.Thead>
+              <Table.Tbody>
+                {appointments.map((appointment) => (
+                  <Table.Tr key={appointment.id}>
+                    <Table.Td>
+                      <Text
+                        renderRoot={(props) => (
+                          <Link
+                            to="/appointments/$appointmentId"
+                            params={{ appointmentId: appointment.id }}
+                            {...props}
+                          />
+                        )}
+                        c="blue"
+                      >
+                        {appointment.name}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td c="dimmed">
+                      <ClientDate date={appointment.startsAt} />
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          ) : (
+            <Text size="sm" c="dimmed" p="lg">
+              {normalizedSearch ? "No appointments match your search." : "No appointments on this page."}
+            </Text>
+          )}
 
-        <Group justify="space-between" px="md" pb="md">
-          <Text size="sm" c="dimmed">
-            {totalCount} appointment{totalCount === 1 ? "" : "s"} · Page {clampedPage} of {totalPages}
-          </Text>
-          <Pagination
-            value={clampedPage}
-            total={totalPages}
-            onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
-          />
-        </Group>
-      </Stack>
+          <Group justify="space-between" px="md" pb="md">
+            <Text size="sm" c="dimmed">
+              {totalCount} appointment{totalCount === 1 ? "" : "s"} · Page {clampedPage} of {totalPages}
+            </Text>
+            <Pagination
+              value={clampedPage}
+              total={totalPages}
+              onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
+            />
+          </Group>
+        </Stack>
 
-      <CreateAppointmentDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        defaultClientId={customerId}
-        invalidateKeys={[
-          { queryKey: trpc.customers.appointments.list.queryKey() },
-          { queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey },
-        ]}
-        navigateOnSuccess
-      />
-    </Section>
+        <CreateAppointmentDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          defaultClientId={customerId}
+          invalidateKeys={[
+            { queryKey: trpc.customers.appointments.list.queryKey() },
+            { queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey },
+          ]}
+          navigateOnSuccess
+        />
+      </Section>
+    </>
   )
 }

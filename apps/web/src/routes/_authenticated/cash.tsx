@@ -16,6 +16,7 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { CashTransactionsTable, type CashTransactionRow } from "@/components/cash-transactions/cash-transactions-table"
 import { CreateCashTransactionDialog } from "@/components/cash-transactions/create-cash-transaction-dialog"
 import { DeleteCashTransactionDialog } from "@/components/cash-transactions/delete-cash-transaction-dialog"
@@ -98,6 +99,7 @@ function CashPage() {
 
   return (
     <Container size="xl">
+      <BreadcrumbItem label="Cash" order={10} />
       <PageHeader
         title="Cash"
         description="Record manual cash received from or paid to customers."

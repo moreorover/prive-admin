@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { BankAccountReportBlock } from "@/components/reports-cards"
 import { trpc } from "@/utils/trpc"
 
@@ -30,6 +31,7 @@ function OverviewTab() {
 
   return (
     <Stack gap="lg">
+      <BreadcrumbItem label="Overview" order={30} />
       <Group justify="space-between" align="flex-end">
         <Stack gap={2}>
           <Title order={4} fw={600} lh={1.3}>

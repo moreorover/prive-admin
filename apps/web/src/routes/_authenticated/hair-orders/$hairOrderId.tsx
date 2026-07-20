@@ -1,5 +1,4 @@
 import {
-  Anchor,
   Badge,
   Button,
   Card,
@@ -16,11 +15,12 @@ import {
 import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
-import { IconArrowLeft, IconCalculator, IconPencil, IconPlus, IconUser } from "@tabler/icons-react"
+import { IconCalculator, IconPencil, IconPlus, IconUser } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { ClientDate } from "@/components/client-date"
 import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
 import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
@@ -83,12 +83,7 @@ function HairOrderDetailPage() {
 
   return (
     <Container size="xl">
-      <Anchor component={Link} to="/hair-orders" size="xs" c="dimmed" mb="xs" display="inline-block">
-        <Group gap={4}>
-          <IconArrowLeft size={12} />
-          Back to hair orders
-        </Group>
-      </Anchor>
+      <BreadcrumbItem label={`#${hairOrder.uid}`} order={20} />
       <PageHeader
         title={
           <Group gap="sm">

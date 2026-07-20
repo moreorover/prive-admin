@@ -21,6 +21,7 @@ import { Link, Outlet, createFileRoute, useLocation } from "@tanstack/react-rout
 import { TRPCClientError } from "@trpc/client"
 import { zodResolver } from "mantine-form-zod-resolver"
 
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { COUNTRY_FLAGS, COUNTRY_LABELS, type Country } from "@/lib/legal-entity"
 import {
@@ -114,12 +115,12 @@ function LegalEntityLayout() {
 
   return (
     <Container size="xl">
-      <Anchor component={Link} to="/legal-entities" size="xs" c="dimmed" mb="xs" display="inline-block">
-        <Group gap={4}>
-          <IconArrowLeft size={12} />
-          Back to legal entities
-        </Group>
-      </Anchor>
+      <BreadcrumbItem label="Legal entities" to="/legal-entities" order={10} />
+      <BreadcrumbItem
+        label={legalEntity?.name ?? "Legal entity"}
+        to={`/legal-entities/${legalEntityId}/overview`}
+        order={20}
+      />
       <PageHeader
         title={legalEntity?.name ?? "Legal entity"}
         description={description}

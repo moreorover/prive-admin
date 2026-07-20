@@ -2,6 +2,7 @@ import { Button } from "@mantine/core"
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 
+import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { SalonsTable } from "@/components/salons-table"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
@@ -14,20 +15,23 @@ function SalonsTab() {
   const { data: salons = [] } = useQuery(trpc.salons.list.queryOptions({}))
 
   return (
-    <Section
-      title="Salons"
-      description="Locations associated with this legal entity."
-      actions={
-        <Button
-          size="sm"
-          variant="default"
-          renderRoot={(props) => <Link to="/salons/$salonId" params={{ salonId: "new" }} {...props} />}
-        >
-          New salon
-        </Button>
-      }
-    >
-      <SalonsTable salons={salons} />
-    </Section>
+    <>
+      <BreadcrumbItem label="Salons" order={30} />
+      <Section
+        title="Salons"
+        description="Locations associated with this legal entity."
+        actions={
+          <Button
+            size="sm"
+            variant="default"
+            renderRoot={(props) => <Link to="/salons/$salonId" params={{ salonId: "new" }} {...props} />}
+          >
+            New salon
+          </Button>
+        }
+      >
+        <SalonsTable salons={salons} />
+      </Section>
+    </>
   )
 }
