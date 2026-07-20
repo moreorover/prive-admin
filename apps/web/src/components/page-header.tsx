@@ -12,8 +12,8 @@ export function PageHeader({
   actions?: ReactNode
 }) {
   return (
-    <Group justify="space-between" align="flex-start" wrap="wrap" mb="lg">
-      <Stack gap={4} miw={0} flex={1}>
+    <Group justify="space-between" align="flex-start" wrap="wrap" mb="lg" gap="md">
+      <Stack gap={4} miw={0} flex="1 1 22rem">
         <Title order={2} fw={600} lh={1.2}>
           {title}
         </Title>
@@ -24,7 +24,7 @@ export function PageHeader({
         ) : null}
       </Stack>
       {actions ? (
-        <Group gap="xs" wrap="wrap" w={{ base: "100%", sm: "auto" }}>
+        <Group gap="xs" wrap="wrap" className="prive-page-header-actions" w={{ base: "100%", sm: "auto" }}>
           {actions}
         </Group>
       ) : null}

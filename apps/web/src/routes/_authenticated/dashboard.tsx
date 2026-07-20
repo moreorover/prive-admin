@@ -105,7 +105,7 @@ function DashboardPage() {
         title="Dashboard"
         description="Monthly performance against the previous month."
         actions={
-          <Group gap="xs" wrap="nowrap">
+          <Group gap="xs" wrap="nowrap" w={{ base: "100%", sm: "auto" }}>
             <ActionIcon variant="default" aria-label="Previous month" onClick={() => changeMonth(-1)}>
               <IconChevronLeft size={16} />
             </ActionIcon>
@@ -115,7 +115,8 @@ function DashboardPage() {
               onChange={(value) => goToMonth(value ? new Date(value) : null)}
               valueFormat="MMMM YYYY"
               popoverProps={{ withinPortal: false }}
-              w={190}
+              flex={{ base: 1, sm: "unset" }}
+              miw={170}
             />
             <ActionIcon variant="default" aria-label="Next month" onClick={() => changeMonth(1)}>
               <IconChevronRight size={16} />

@@ -1,4 +1,17 @@
-import { Anchor, Badge, Button, Container, Group, Modal, Select, Stack, Tabs, Text, TextInput } from "@mantine/core"
+import {
+  Anchor,
+  Badge,
+  Box,
+  Button,
+  Container,
+  Group,
+  Modal,
+  Select,
+  Stack,
+  Tabs,
+  Text,
+  TextInput,
+} from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { useDisclosure } from "@mantine/hooks"
 import { notifications } from "@mantine/notifications"
@@ -130,23 +143,25 @@ function LegalEntityLayout() {
       />
       <Stack>
         <Tabs value={activeSection} onChange={handleSectionChange}>
-          <Tabs.List>
-            {LEGAL_ENTITY_SECTIONS.map((section) => (
-              <Tabs.Tab
-                key={section.value}
-                value={section.value}
-                rightSection={
-                  section.value === "documents" && unassignedCount > 0 ? (
-                    <Badge size="xs" variant="filled" color="orange" circle>
-                      {unassignedCount}
-                    </Badge>
-                  ) : null
-                }
-              >
-                {section.label}
-              </Tabs.Tab>
-            ))}
-          </Tabs.List>
+          <Box style={{ overflowX: "auto" }}>
+            <Tabs.List style={{ flexWrap: "nowrap", minWidth: "max-content" }}>
+              {LEGAL_ENTITY_SECTIONS.map((section) => (
+                <Tabs.Tab
+                  key={section.value}
+                  value={section.value}
+                  rightSection={
+                    section.value === "documents" && unassignedCount > 0 ? (
+                      <Badge size="xs" variant="filled" color="orange" circle>
+                        {unassignedCount}
+                      </Badge>
+                    ) : null
+                  }
+                >
+                  {section.label}
+                </Tabs.Tab>
+              ))}
+            </Tabs.List>
+          </Box>
         </Tabs>
 
         <Outlet />

@@ -116,43 +116,47 @@ function CustomersPage() {
             {totalCount} customer{totalCount === 1 ? "" : "s"}
           </Text>
         </Group>
-        <Table>
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Phone</Table.Th>
-              <Table.Th>Created</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {customers.map((c) => (
-              <Table.Tr key={c.id}>
-                <Table.Td>
-                  <Text
-                    renderRoot={(props) => (
-                      <Link to="/customers/$customerId" params={{ customerId: c.id }} {...props} />
-                    )}
-                    c="blue"
-                    fw={500}
-                  >
-                    {c.name}
-                  </Text>
-                </Table.Td>
-                <Table.Td c="dimmed">{c.phoneNumber ?? "—"}</Table.Td>
-                <Table.Td c="dimmed">
-                  <ClientDate date={c.createdAt} />
-                </Table.Td>
-              </Table.Tr>
-            ))}
-            {customers.length === 0 && (
+        <Table.ScrollContainer minWidth={640}>
+          <Table>
+            <Table.Thead>
               <Table.Tr>
-                <Table.Td colSpan={3} ta="center" c="dimmed">
-                  {searchValue.trim() ? "No customers match your search." : "No customers yet. Create your first one."}
-                </Table.Td>
+                <Table.Th>Name</Table.Th>
+                <Table.Th>Phone</Table.Th>
+                <Table.Th>Created</Table.Th>
               </Table.Tr>
-            )}
-          </Table.Tbody>
-        </Table>
+            </Table.Thead>
+            <Table.Tbody>
+              {customers.map((c) => (
+                <Table.Tr key={c.id}>
+                  <Table.Td>
+                    <Text
+                      renderRoot={(props) => (
+                        <Link to="/customers/$customerId" params={{ customerId: c.id }} {...props} />
+                      )}
+                      c="blue"
+                      fw={500}
+                    >
+                      {c.name}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td c="dimmed">{c.phoneNumber ?? "—"}</Table.Td>
+                  <Table.Td c="dimmed">
+                    <ClientDate date={c.createdAt} />
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+              {customers.length === 0 && (
+                <Table.Tr>
+                  <Table.Td colSpan={3} ta="center" c="dimmed">
+                    {searchValue.trim()
+                      ? "No customers match your search."
+                      : "No customers yet. Create your first one."}
+                  </Table.Td>
+                </Table.Tr>
+              )}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
         <Group justify="space-between" p="md">
           <Text size="sm" c="dimmed">
             Page {Math.min(page, totalPages)} of {totalPages}
