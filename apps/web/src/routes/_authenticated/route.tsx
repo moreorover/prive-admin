@@ -89,7 +89,7 @@ function HeaderTop({ opened, onToggle }: { opened: boolean; onToggle: () => void
   return (
     <Group className={classes.topRow} px="lg" justify="space-between" wrap="nowrap">
       <Group gap="sm" wrap="nowrap">
-        <Burger opened={opened} onClick={onToggle} hiddenFrom="sm" size="sm" aria-label="Toggle navigation" />
+        <Burger opened={opened} onClick={onToggle} hiddenFrom="lg" size="sm" aria-label="Toggle navigation" />
         <Title order={4} fw={600} className={classes.brand}>
           Privé
         </Title>
