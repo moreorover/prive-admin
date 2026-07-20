@@ -9,9 +9,9 @@ import {
   Burger,
   Button,
   Card,
+  Drawer,
   Group,
   Menu,
-  ScrollArea,
   Stack,
   Text,
   Title,
@@ -22,52 +22,23 @@ import {
 import { useDisclosure } from "@mantine/hooks"
 import {
   IconAlertCircle,
-  IconBuildingBank,
-  IconCalendar,
-  IconCash,
   IconChevronDown,
   IconDeviceDesktop,
-  IconLayoutDashboard,
   IconLogout,
   IconMoon,
-  IconReceipt,
   IconRefresh,
-  IconScissors,
-  IconSettings,
   IconSun,
   IconUserCircle,
-  IconUsers,
 } from "@tabler/icons-react"
 import { useQuery, useQueryErrorResetBoundary } from "@tanstack/react-query"
 import { Link, Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
 
+import { appNavGroups, flatAppNavItems, getActiveAppNavItem, type AppNavItem } from "@/lib/app-navigation"
 import { authClient } from "@/lib/auth-client"
 import { trpc } from "@/utils/trpc"
 
 import classes from "./route.module.css"
-
-type NavItem = {
-  to: string
-  label: string
-  icon: typeof IconUsers
-  badgeKey?: "unassigned"
-}
-
-const workspaceNav: NavItem[] = [
-  { to: "/dashboard", label: "Dashboard", icon: IconLayoutDashboard },
-  { to: "/customers", label: "Customers", icon: IconUsers },
-  { to: "/calendar", label: "Calendar", icon: IconCalendar },
-  { to: "/hair-orders", label: "Hair orders", icon: IconScissors },
-  { to: "/hair-sales", label: "Hair sales", icon: IconReceipt },
-  { to: "/cash", label: "Cash", icon: IconCash },
-]
-
-const manageNav: NavItem[] = [
-  { to: "/legal-entities", label: "Legal entities", icon: IconBuildingBank, badgeKey: "unassigned" },
-]
-
-const footerNav: NavItem[] = [{ to: "/settings", label: "Settings", icon: IconSettings }]
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -89,57 +60,23 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedLayout() {
   const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] = useDisclosure(false)
+  const location = useLocation()
 
   const { data: unassignedAttachments = [] } = useQuery(
     trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
   )
   const badges = { unassigned: unassignedAttachments.length }
+  const activeItem = getActiveAppNavItem(location.pathname)
+  const activeBadge = activeItem?.badgeKey ? badges[activeItem.badgeKey] : 0
 
   return (
-    <AppShell
-      layout="alt"
-      header={{ height: 56 }}
-      navbar={{ width: 248, breakpoint: "sm", collapsed: { mobile: !mobileOpened } }}
-      padding="lg"
-    >
+    <AppShell header={{ height: { base: 64, sm: 112 } }} padding={0}>
       <AppShell.Header className={classes.header}>
-        <Group h="100%" px="lg" justify="space-between" wrap="nowrap">
-          <Group gap="sm" wrap="nowrap">
-            <Burger
-              opened={mobileOpened}
-              onClick={toggleMobile}
-              hiddenFrom="sm"
-              size="sm"
-              aria-label="Toggle navigation"
-            />
-          </Group>
-          <Group gap="xs" wrap="nowrap">
-            <ColorSchemeToggle />
-            <UserSection />
-          </Group>
-        </Group>
+        <HeaderTop opened={mobileOpened} onToggle={toggleMobile} />
+        <DesktopTabs badges={badges} />
+        <LedgerRule activeLabel={activeItem?.label ?? "Admin"} activeBadge={activeBadge} />
       </AppShell.Header>
-
-      <AppShell.Navbar className={classes.navbar}>
-        <AppShell.Section className={classes.navBrand}>
-          <Group gap="sm" wrap="nowrap" px="md" py="md">
-            <Title order={4} fw={600} className={classes.brand}>
-              Privé
-            </Title>
-          </Group>
-        </AppShell.Section>
-        <AppShell.Section grow component={ScrollArea} px="xs" py="sm">
-          <SidebarNav badges={badges} onNavigate={closeMobile} />
-        </AppShell.Section>
-        <AppShell.Section px="xs" py="sm" className={classes.navFooter}>
-          <NavSectionLabel>Account</NavSectionLabel>
-          <Stack gap={2}>
-            {footerNav.map((item) => (
-              <TopLink key={item.to} item={item} badge={0} onNavigate={closeMobile} />
-            ))}
-          </Stack>
-        </AppShell.Section>
-      </AppShell.Navbar>
+      <MobileNavigationDrawer opened={mobileOpened} onClose={closeMobile} badges={badges} />
 
       <AppShell.Main className={classes.main}>
         <Outlet />
@@ -148,49 +85,113 @@ function AuthenticatedLayout() {
   )
 }
 
-function SidebarNav({ badges, onNavigate }: { badges: { unassigned: number }; onNavigate: () => void }) {
+function HeaderTop({ opened, onToggle }: { opened: boolean; onToggle: () => void }) {
   return (
-    <Stack gap="md">
-      <Box>
-        <NavSectionLabel>Workspace</NavSectionLabel>
-        <Stack gap={2}>
-          {workspaceNav.map((item) => (
-            <TopLink
-              key={item.to}
-              item={item}
-              badge={item.badgeKey ? badges[item.badgeKey] : 0}
-              onNavigate={onNavigate}
-            />
-          ))}
-        </Stack>
-      </Box>
-
-      <Box>
-        <NavSectionLabel>Manage</NavSectionLabel>
-        <Stack gap={2}>
-          {manageNav.map((item) => (
-            <TopLink
-              key={item.to}
-              item={item}
-              badge={item.badgeKey ? badges[item.badgeKey] : 0}
-              onNavigate={onNavigate}
-            />
-          ))}
-        </Stack>
-      </Box>
-    </Stack>
+    <Group className={classes.topRow} px="lg" justify="space-between" wrap="nowrap">
+      <Group gap="sm" wrap="nowrap">
+        <Burger opened={opened} onClick={onToggle} hiddenFrom="sm" size="sm" aria-label="Toggle navigation" />
+        <Title order={4} fw={600} className={classes.brand}>
+          Privé
+        </Title>
+        <Text size="xs" c="dimmed" fw={600} tt="uppercase" visibleFrom="sm">
+          Atelier Ledger
+        </Text>
+      </Group>
+      <Group gap="xs" wrap="nowrap">
+        <ColorSchemeToggle />
+        <UserSection />
+      </Group>
+    </Group>
   )
 }
 
-function NavSectionLabel({ children }: { children: React.ReactNode }) {
+function DesktopTabs({ badges }: { badges: { unassigned: number } }) {
   return (
-    <Text size="xs" fw={600} c="dimmed" tt="uppercase" px="sm" py={6} className={classes.sectionLabel}>
-      {children}
-    </Text>
+    <Group className={classes.tabsRow} px="lg" gap={2} wrap="nowrap">
+      {flatAppNavItems.map((item) => (
+        <NavLinkButton key={item.to} item={item} badge={item.badgeKey ? badges[item.badgeKey] : 0} variant="desktop" />
+      ))}
+    </Group>
   )
 }
 
-function TopLink({ item, badge, onNavigate }: { item: NavItem; badge: number; onNavigate: () => void }) {
+function LedgerRule({ activeLabel, activeBadge }: { activeLabel: string; activeBadge: number }) {
+  return (
+    <Group className={classes.ledgerRule} px="lg" gap="xs" wrap="nowrap">
+      <Text size="xs" fw={700} tt="uppercase">
+        {activeLabel}
+      </Text>
+      {activeBadge > 0 ? (
+        <Badge size="xs" variant="light" color="yellow">
+          {activeBadge}
+        </Badge>
+      ) : null}
+    </Group>
+  )
+}
+
+function MobileNavigationDrawer({
+  opened,
+  onClose,
+  badges,
+}: {
+  opened: boolean
+  onClose: () => void
+  badges: { unassigned: number }
+}) {
+  return (
+    <Drawer opened={opened} onClose={onClose} title="Privé" size="xs" padding="md">
+      <Stack gap="lg">
+        {appNavGroups.map((group) => (
+          <DrawerNavGroup key={group.label} label={group.label} items={group.items} badges={badges} onClose={onClose} />
+        ))}
+      </Stack>
+    </Drawer>
+  )
+}
+
+function DrawerNavGroup({
+  label,
+  items,
+  badges,
+  onClose,
+}: {
+  label: string
+  items: AppNavItem[]
+  badges: { unassigned: number }
+  onClose: () => void
+}) {
+  return (
+    <Box>
+      <Text size="xs" fw={700} c="dimmed" tt="uppercase" mb={6}>
+        {label}
+      </Text>
+      <Stack gap={2}>
+        {items.map((item) => (
+          <NavLinkButton
+            key={item.to}
+            item={item}
+            badge={item.badgeKey ? badges[item.badgeKey] : 0}
+            variant="drawer"
+            onNavigate={onClose}
+          />
+        ))}
+      </Stack>
+    </Box>
+  )
+}
+
+function NavLinkButton({
+  item,
+  badge,
+  variant,
+  onNavigate,
+}: {
+  item: AppNavItem
+  badge: number
+  variant: "desktop" | "drawer"
+  onNavigate?: () => void
+}) {
   const location = useLocation()
   const active = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)
   const Icon = item.icon
@@ -201,17 +202,17 @@ function TopLink({ item, badge, onNavigate }: { item: NavItem; badge: number; on
       to={item.to}
       onClick={onNavigate}
       data-active={active || undefined}
-      className={classes.navLink}
+      className={variant === "desktop" ? classes.desktopNavLink : classes.drawerNavLink}
     >
       <Group gap="sm" wrap="nowrap" justify="space-between">
         <Group gap="sm" wrap="nowrap">
-          <Icon size={18} stroke={1.6} />
+          <Icon size={18} stroke={1.6} className={classes.navLinkIcon} />
           <Text size="sm" fw={500}>
-            {item.label}
+            {variant === "desktop" ? (item.shortLabel ?? item.label) : item.label}
           </Text>
         </Group>
         {badge > 0 ? (
-          <Badge size="xs" variant="filled" color="orange" circle>
+          <Badge size="xs" variant="filled" color="yellow" circle>
             {badge}
           </Badge>
         ) : null}
