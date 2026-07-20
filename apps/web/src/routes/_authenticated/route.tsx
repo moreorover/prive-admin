@@ -34,7 +34,7 @@ import { useQuery, useQueryErrorResetBoundary } from "@tanstack/react-query"
 import { Link, Outlet, createFileRoute, redirect, useLocation, useNavigate, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { appNavGroups, flatAppNavItems, getActiveAppNavItem, type AppNavItem } from "@/lib/app-navigation"
+import { appNavGroups, flatAppNavItems, type AppNavItem } from "@/lib/app-navigation"
 import { authClient } from "@/lib/auth-client"
 import { trpc } from "@/utils/trpc"
 
@@ -60,21 +60,17 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedLayout() {
   const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] = useDisclosure(false)
-  const location = useLocation()
 
   const { data: unassignedAttachments = [] } = useQuery(
     trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
   )
   const badges = { unassigned: unassignedAttachments.length }
-  const activeItem = getActiveAppNavItem(location.pathname)
-  const activeBadge = activeItem?.badgeKey ? badges[activeItem.badgeKey] : 0
 
   return (
-    <AppShell header={{ height: { base: 64, lg: 112 } }} padding={0}>
+    <AppShell header={{ height: { base: 64, lg: 102 } }} padding={0}>
       <AppShell.Header className={classes.header}>
         <HeaderTop opened={mobileOpened} onToggle={toggleMobile} />
         <DesktopTabs badges={badges} />
-        <LedgerRule activeLabel={activeItem?.label ?? "Admin"} activeBadge={activeBadge} />
       </AppShell.Header>
       <MobileNavigationDrawer opened={mobileOpened} onClose={closeMobile} badges={badges} />
 
@@ -93,9 +89,6 @@ function HeaderTop({ opened, onToggle }: { opened: boolean; onToggle: () => void
         <Title order={4} fw={600} className={classes.brand}>
           Privé
         </Title>
-        <Text size="xs" c="dimmed" fw={600} tt="uppercase" visibleFrom="sm">
-          Atelier Ledger
-        </Text>
       </Group>
       <Group gap="xs" wrap="nowrap">
         <ColorSchemeToggle />
@@ -111,21 +104,6 @@ function DesktopTabs({ badges }: { badges: { unassigned: number } }) {
       {flatAppNavItems.map((item) => (
         <NavLinkButton key={item.to} item={item} badge={item.badgeKey ? badges[item.badgeKey] : 0} variant="desktop" />
       ))}
-    </Group>
-  )
-}
-
-function LedgerRule({ activeLabel, activeBadge }: { activeLabel: string; activeBadge: number }) {
-  return (
-    <Group className={classes.ledgerRule} px="lg" gap="xs" wrap="nowrap">
-      <Text size="xs" fw={700} tt="uppercase">
-        {activeLabel}
-      </Text>
-      {activeBadge > 0 ? (
-        <Badge size="xs" variant="light" color="yellow">
-          {activeBadge}
-        </Badge>
-      ) : null}
     </Group>
   )
 }
@@ -206,7 +184,7 @@ function NavLinkButton({
     >
       <Group gap="sm" wrap="nowrap" justify="space-between">
         <Group gap="sm" wrap="nowrap">
-          <Icon size={18} stroke={1.6} className={classes.navLinkIcon} />
+          {variant === "drawer" ? <Icon size={18} stroke={1.6} className={classes.navLinkIcon} /> : null}
           <Text size="sm" fw={500}>
             {variant === "desktop" ? (item.shortLabel ?? item.label) : item.label}
           </Text>

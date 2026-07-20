@@ -10,13 +10,14 @@ The current web app uses Mantine AppShell with a persistent left navbar, a slim 
 
 The redesign is inspired by Mantine top-header patterns, but it should not copy them directly. It should use the existing Privé visual identity and adapt it to a data-heavy admin workflow.
 
-## Direction: Atelier Ledger Header
+## Direction: Light Header Tabs
 
 Use a two-tier top header on desktop:
 
 - First row: Privé brand, compact app context, color scheme toggle, and user menu.
-- Second row: primary route tabs for the main admin destinations.
-- A thin ledger-style rule beneath the tabs carries the active route label and, when present, route badges such as unassigned documents.
+- Second row: primary route tabs for the main admin destinations, following Mantine's `HeaderTabs` proportions more closely.
+- Active tabs use a light raised-tab treatment instead of a heavy bordered pill or status band.
+- Route badges such as unassigned documents stay inline with the relevant tab or drawer item.
 - Main content starts directly below the header with more horizontal space than the sidebar layout.
 
 Use a drawer on mobile:
@@ -44,7 +45,7 @@ Typography:
 
 Signature element:
 
-- Introduce a restrained ledger rule bar under the top tabs. It marks the active section and carries compact operational metadata that already exists in the shell, starting with the unassigned documents count.
+- Use a simple raised active tab in the global header. The distinctive Privé identity comes from the existing typography and palette rather than an additional status strip.
 
 ## Layout Behavior
 

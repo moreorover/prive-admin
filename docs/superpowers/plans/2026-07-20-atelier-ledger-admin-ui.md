@@ -8,6 +8,8 @@
 
 **Tech Stack:** React, TanStack Router, TanStack Query, Mantine 9, Tabler Icons, Vite+, Vitest.
 
+**Revision:** After implementation review, the visual direction was lightened to follow Mantine's `HeaderTabs` example more closely. The final shell uses a simple raised active tab and no separate ledger rule/status band.
+
 ## Global Constraints
 
 - Work on branch `feat/atelier-ledger-admin-ui`.

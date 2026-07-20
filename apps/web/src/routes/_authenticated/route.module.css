@@ -1,26 +1,19 @@
 .header {
-  background: color-mix(in srgb, var(--mantine-color-body) 78%, transparent);
+  background: var(--prive-surface-strong);
   border-bottom: 1px solid var(--prive-border);
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(12px);
 }
 
 .topRow {
   height: 64px;
-  border-bottom: 1px solid var(--prive-border);
 }
 
 .tabsRow {
   display: none;
-  height: 34px;
-  align-items: center;
+  height: 46px;
+  align-items: flex-end;
   box-sizing: border-box;
-}
-
-.ledgerRule {
-  display: none;
-  height: 22px;
-  border-top: 1px solid color-mix(in srgb, var(--prive-champagne) 58%, var(--prive-border));
-  color: var(--mantine-color-text);
+  border-top: 1px solid color-mix(in srgb, var(--prive-border) 76%, transparent);
 }
 
 .desktopNavLink,
@@ -34,20 +27,46 @@
     color 80ms ease;
 
   &:hover {
-    background-color: color-mix(in srgb, var(--prive-surface-muted) 74%, transparent);
-    border-color: var(--prive-border);
+    background-color: color-mix(in srgb, var(--mantine-color-default-hover) 80%, transparent);
     color: var(--mantine-color-text);
   }
 
   &[data-active] {
-    border-color: color-mix(in srgb, var(--prive-champagne) 72%, var(--prive-border));
     color: var(--mantine-color-text);
     font-weight: 600;
   }
 }
 
 .desktopNavLink {
-  padding: 5px 10px;
+  position: relative;
+  bottom: -1px;
+  height: 38px;
+  padding: 0 14px;
+  border-color: transparent;
+  border-radius: var(--mantine-radius-sm) var(--mantine-radius-sm) 0 0;
+  background: transparent;
+
+  &[data-active] {
+    background: var(--mantine-color-body);
+    border-color: var(--prive-border);
+    border-bottom-color: var(--mantine-color-body);
+  }
+}
+
+.desktopNavLink:hover {
+  border-color: var(--prive-border);
+  border-bottom-color: transparent;
+}
+
+.desktopNavLink[data-active]:hover {
+  border-bottom-color: var(--mantine-color-body);
+}
+
+.desktopNavLink [class*="mantine-Group-root"] {
+  height: 100%;
+}
+
+.desktopNavLink .mantine-Badge-root {
   border-radius: var(--mantine-radius-sm);
 }
 
@@ -79,7 +98,7 @@
   color: var(--mantine-color-text);
   padding: 6px 8px;
   border: 1px solid transparent;
-  border-radius: var(--mantine-radius-xl);
+  border-radius: var(--mantine-radius-sm);
   transition:
     background-color 100ms ease,
     border-color 100ms ease;
@@ -101,7 +120,7 @@
   }
 
   .tabsRow,
-  .ledgerRule {
+  .desktopNavLink {
     display: flex;
   }
 }
