@@ -27,7 +27,7 @@ function renderCashTransactionsTable(children: ReactNode) {
     createElement(
       MantineProvider,
       null,
-      createElement(CashTransactionsTable, { items: cashTransactionRows }, children),
+      createElement(CashTransactionsTable, { items: cashTransactionRows, children }),
     ),
   )
 }

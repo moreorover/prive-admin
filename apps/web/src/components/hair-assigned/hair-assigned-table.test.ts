@@ -23,7 +23,7 @@ const hairAssignedRows = [
 
 function renderHairAssignedTable(children: ReactNode) {
   return renderToStaticMarkup(
-    createElement(MantineProvider, null, createElement(HairAssignedTable, { items: hairAssignedRows }, children)),
+    createElement(MantineProvider, null, createElement(HairAssignedTable, { items: hairAssignedRows, children })),
   )
 }
 

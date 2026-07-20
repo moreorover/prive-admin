@@ -22,7 +22,7 @@ const transactionRows = [
 
 function renderTransactionsTable(children: ReactNode) {
   return renderToStaticMarkup(
-    createElement(MantineProvider, null, createElement(TransactionsTable, { items: transactionRows }, children)),
+    createElement(MantineProvider, null, createElement(TransactionsTable, { items: transactionRows, children })),
   )
 }
 

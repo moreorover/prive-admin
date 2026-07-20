@@ -25,11 +25,13 @@ export function getCompoundTablePagination<Props = object>(children: ReactNode) 
 }
 
 function isCompoundTableColumn(child: ReactNode): child is CompoundTableColumnElement {
-  return isValidElement(child) && hasComponentMetadata(child.type) && "Header" in child.type && "Cell" in child.type
+  return (
+    isValidElement(child) && hasObjectLikeComponentType(child.type) && "Header" in child.type && "Cell" in child.type
+  )
 }
 
 function isCompoundTablePagination<Props>(child: ReactNode): child is CompoundTablePaginationElement<Props> {
-  return isValidElement(child) && hasComponentMetadata(child.type) && "isTablePagination" in child.type
+  return isValidElement(child) && hasObjectLikeComponentType(child.type) && "isTablePagination" in child.type
 }
 
 function getCompoundTableChildren(children: ReactNode): ReactNode[] {
@@ -41,6 +43,6 @@ function getCompoundTableChildren(children: ReactNode): ReactNode[] {
   })
 }
 
-function hasComponentMetadata(type: ReactElement["type"]): type is Record<string, unknown> {
+function hasObjectLikeComponentType(type: ReactElement["type"]) {
   return (typeof type === "function" || typeof type === "object") && type !== null
 }
