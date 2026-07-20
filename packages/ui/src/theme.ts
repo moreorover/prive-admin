@@ -150,9 +150,9 @@ export const theme = createTheme({
     Card: Card.extend({
       defaultProps: {
         withBorder: true,
-        radius: "xl",
+        radius: "md",
         padding: "lg",
-        shadow: "sm",
+        shadow: "xs",
       },
     }),
     Divider: Divider.extend({
@@ -196,7 +196,7 @@ export const theme = createTheme({
     }),
     Paper: Paper.extend({
       defaultProps: {
-        radius: "xl",
+        radius: "md",
         shadow: "sm",
       },
     }),

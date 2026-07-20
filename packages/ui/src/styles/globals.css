@@ -116,6 +116,26 @@ a {
   transform: translateY(1px) scale(0.995);
 }
 
+.prive-section {
+  overflow: hidden;
+}
+
+.prive-section-body {
+  min-width: 0;
+}
+
+.prive-page-header-actions,
+.prive-section-actions {
+  --group-justify: flex-start;
+}
+
+@media (min-width: 48em) {
+  .prive-page-header-actions,
+  .prive-section-actions {
+    --group-justify: flex-end;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -191,6 +211,11 @@ a {
 [class^="mantine-Table-table"],
 [class*=" mantine-Table-table"] {
   font-variant-numeric: tabular-nums;
+}
+
+[class^="mantine-Table-ScrollContainer-root"],
+[class*=" mantine-Table-ScrollContainer-root"] {
+  border-color: var(--prive-border);
 }
 
 [class^="mantine-Table-th"],
