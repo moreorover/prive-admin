@@ -3,6 +3,7 @@ import type { ReactElement, ReactNode } from "react"
 import { Children, isValidElement } from "react"
 
 export type CompoundTableColumnComponent<Props = object> = ((props: Props) => ReactElement | null) & {
+  columnKey: string
   columnLabel: string
   Header: () => ReactElement
   Cell: (props: Props) => ReactElement

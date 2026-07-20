@@ -78,12 +78,17 @@ export function getTransactionsTableColumnLabels(children: ReactNode) {
   return getTransactionColumns(children).map((child) => child.type.columnLabel)
 }
 
+export function getTransactionsTableColumnKeys(children: ReactNode) {
+  return getTransactionColumns(children).map((child) => child.type.columnKey)
+}
+
 export function getTransactionsTableHasPagination(children: ReactNode) {
   return getTransactionPagination(children) !== null
 }
 
-function createColumn(label: string, Cell: () => ReactElement): TransactionColumnComponent {
+function createColumn(columnKey: string, label: string, Cell: () => ReactElement): TransactionColumnComponent {
   const Column = (() => null) as unknown as TransactionColumnComponent
+  Column.columnKey = columnKey
   Column.columnLabel = label
   Column.Header = () => <Table.Th>{label}</Table.Th>
   Column.Cell = Cell
@@ -92,6 +97,7 @@ function createColumn(label: string, Cell: () => ReactElement): TransactionColum
 
 function createActionsColumn(): TransactionColumnComponent<TransactionActionsProps> {
   const Column = (() => null) as unknown as TransactionColumnComponent<TransactionActionsProps>
+  Column.columnKey = "actions"
   Column.columnLabel = ""
   Column.Header = () => <Table.Th />
   Column.Cell = ({ onEdit, onDelete }) => {
@@ -139,8 +145,8 @@ function TransactionsTableRoot({ items, children }: TransactionsTableRootProps) 
       <Table>
         <Table.Thead>
           <Table.Tr>
-            {columns.map((column, index) => (
-              <column.type.Header key={index} />
+            {columns.map((column) => (
+              <column.type.Header key={column.type.columnKey} />
             ))}
           </Table.Tr>
         </Table.Thead>
@@ -148,8 +154,8 @@ function TransactionsTableRoot({ items, children }: TransactionsTableRootProps) 
           {items.map((row) => (
             <TransactionRowContext.Provider key={row.id} value={row}>
               <Table.Tr>
-                {columns.map((column, index) => (
-                  <column.type.Cell key={index} {...column.props} />
+                {columns.map((column) => (
+                  <column.type.Cell key={column.type.columnKey} {...column.props} />
                 ))}
               </Table.Tr>
             </TransactionRowContext.Provider>
@@ -179,7 +185,7 @@ const TablePagination = Object.assign(
   { isTablePagination: true as const },
 )
 
-const Customer = createColumn("Customer", () => {
+const Customer = createColumn("customer", "Customer", () => {
   const row = useTransactionRow()
   return (
     <Table.Td>
@@ -199,12 +205,12 @@ const Customer = createColumn("Customer", () => {
   )
 })
 
-const Name = createColumn("Name", () => {
+const Name = createColumn("name", "Name", () => {
   const row = useTransactionRow()
   return <Table.Td>{row.name ?? <Text c="dimmed">—</Text>}</Table.Td>
 })
 
-const Amount = createColumn("Amount", () => {
+const Amount = createColumn("amount", "Amount", () => {
   const row = useTransactionRow()
   return <Table.Td>{formatMinor(row.amount, row.currency)}</Table.Td>
 })

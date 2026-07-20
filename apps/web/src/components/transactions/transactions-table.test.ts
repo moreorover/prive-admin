@@ -3,6 +3,7 @@ import { describe, expect, it } from "vite-plus/test"
 
 import {
   TransactionsTable,
+  getTransactionsTableColumnKeys,
   getTransactionsTableColumnLabels,
   getTransactionsTableHasPagination,
 } from "./transactions-table"
@@ -17,6 +18,16 @@ describe("transactions table compound columns", () => {
         createElement(TransactionsTable.Actions, { key: "actions", onEdit: () => {}, onDelete: () => {} }),
       ]),
     ).toEqual(["Customer", "Name", "Amount", ""])
+  })
+
+  it("reports stable declared column keys in child order", () => {
+    expect(
+      getTransactionsTableColumnKeys([
+        createElement(TransactionsTable.Customer, { key: "customer" }),
+        createElement(TransactionsTable.Name, { key: "name" }),
+        createElement(TransactionsTable.Actions, { key: "actions", onEdit: () => {}, onDelete: () => {} }),
+      ]),
+    ).toEqual(["customer", "name", "actions"])
   })
 
   it("supports omitting customer when a route wants a narrower table", () => {

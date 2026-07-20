@@ -85,12 +85,17 @@ export function getCashTransactionsTableColumnLabels(children: ReactNode) {
   return getCashTransactionColumns(children).map((child) => child.type.columnLabel)
 }
 
+export function getCashTransactionsTableColumnKeys(children: ReactNode) {
+  return getCashTransactionColumns(children).map((child) => child.type.columnKey)
+}
+
 export function getCashTransactionsTableHasPagination(children: ReactNode) {
   return getCashTransactionPagination(children) !== null
 }
 
-function createColumn(label: string, Cell: () => ReactElement): CashTransactionColumnComponent {
+function createColumn(columnKey: string, label: string, Cell: () => ReactElement): CashTransactionColumnComponent {
   const Column = (() => null) as unknown as CashTransactionColumnComponent
+  Column.columnKey = columnKey
   Column.columnLabel = label
   Column.Header = () => <Table.Th>{label}</Table.Th>
   Column.Cell = Cell
@@ -99,6 +104,7 @@ function createColumn(label: string, Cell: () => ReactElement): CashTransactionC
 
 function createActionsColumn(): CashTransactionColumnComponent<CashTransactionActionsProps> {
   const Column = (() => null) as unknown as CashTransactionColumnComponent<CashTransactionActionsProps>
+  Column.columnKey = "actions"
   Column.columnLabel = "Actions"
   Column.Header = () => <Table.Th>Actions</Table.Th>
   Column.Cell = ({ onEdit, onDelete }) => {
@@ -146,8 +152,8 @@ function CashTransactionsTableRoot({ items, children }: CashTransactionsTableRoo
       <Table>
         <Table.Thead>
           <Table.Tr>
-            {columns.map((column, index) => (
-              <column.type.Header key={index} />
+            {columns.map((column) => (
+              <column.type.Header key={column.type.columnKey} />
             ))}
           </Table.Tr>
         </Table.Thead>
@@ -155,8 +161,8 @@ function CashTransactionsTableRoot({ items, children }: CashTransactionsTableRoo
           {items.map((row) => (
             <CashTransactionRowContext.Provider key={row.id} value={row}>
               <Table.Tr>
-                {columns.map((column, index) => (
-                  <column.type.Cell key={index} {...column.props} />
+                {columns.map((column) => (
+                  <column.type.Cell key={column.type.columnKey} {...column.props} />
                 ))}
               </Table.Tr>
             </CashTransactionRowContext.Provider>
@@ -186,12 +192,12 @@ const TablePagination = Object.assign(
   { isTablePagination: true as const },
 )
 
-const Date = createColumn("Date", () => {
+const Date = createColumn("date", "Date", () => {
   const row = useCashTransactionRow()
   return <Table.Td>{dayjs(row.createdAt).format("YYYY-MM-DD")}</Table.Td>
 })
 
-const Customer = createColumn("Customer", () => {
+const Customer = createColumn("customer", "Customer", () => {
   const row = useCashTransactionRow()
   return (
     <Table.Td>
@@ -205,18 +211,18 @@ const Customer = createColumn("Customer", () => {
   )
 })
 
-const Description = createColumn("Description", () => {
+const Description = createColumn("description", "Description", () => {
   const row = useCashTransactionRow()
   return <Table.Td>{row.description ?? <Text c="dimmed">—</Text>}</Table.Td>
 })
 
-const Amount = createColumn("Amount", () => {
+const Amount = createColumn("amount", "Amount", () => {
   const row = useCashTransactionRow()
   return <Table.Td ta="right">{formatMinor(row.amount, coerceCashTransactionCurrency(row.currency))}</Table.Td>
 })
 Amount.Header = () => <Table.Th ta="right">Amount</Table.Th>
 
-const CreatedBy = createColumn("Created by", () => {
+const CreatedBy = createColumn("created-by", "Created by", () => {
   const row = useCashTransactionRow()
   return <Table.Td>{row.createdBy.name}</Table.Td>
 })

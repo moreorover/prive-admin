@@ -6,6 +6,7 @@ import { getCompoundTableColumns, getCompoundTablePagination } from "./compound-
 describe("compound table helpers", () => {
   it("separates columns from pagination children", () => {
     const Column = Object.assign(() => null, {
+      columnKey: "name",
       columnLabel: "Name",
       Header: () => null,
       Cell: () => null,
@@ -22,6 +23,7 @@ describe("compound table helpers", () => {
 
     expect(getCompoundTableColumns(children)).toHaveLength(1)
     expect(getCompoundTableColumns(children)[0]?.type).toBe(Column)
+    expect(getCompoundTableColumns(children)[0]?.type.columnKey).toBe("name")
     expect(getCompoundTablePagination(children)?.type).toBe(Pagination)
   })
 })

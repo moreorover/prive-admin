@@ -85,12 +85,17 @@ export function getHairAssignedTableColumnLabels(children: ReactNode) {
   return getHairAssignedColumns(children).map((child) => child.type.columnLabel)
 }
 
+export function getHairAssignedTableColumnKeys(children: ReactNode) {
+  return getHairAssignedColumns(children).map((child) => child.type.columnKey)
+}
+
 export function getHairAssignedTableHasPagination(children: ReactNode) {
   return getHairAssignedPagination(children) !== null
 }
 
-function createColumn(label: string, Cell: () => ReactElement): HairAssignedColumnComponent {
+function createColumn(columnKey: string, label: string, Cell: () => ReactElement): HairAssignedColumnComponent {
   const Column = (() => null) as unknown as HairAssignedColumnComponent
+  Column.columnKey = columnKey
   Column.columnLabel = label
   Column.Header = () => <Table.Th>{label}</Table.Th>
   Column.Cell = Cell
@@ -99,6 +104,7 @@ function createColumn(label: string, Cell: () => ReactElement): HairAssignedColu
 
 function createActionsColumn(): HairAssignedColumnComponent<HairAssignedActionsProps> {
   const Column = (() => null) as unknown as HairAssignedColumnComponent<HairAssignedActionsProps>
+  Column.columnKey = "actions"
   Column.columnLabel = ""
   Column.Header = () => <Table.Th />
   Column.Cell = ({ onEdit, onDelete }) => {
@@ -139,8 +145,8 @@ function HairAssignedTableRoot({ items, children }: HairAssignedTableRootProps) 
       <Table>
         <Table.Thead>
           <Table.Tr>
-            {columns.map((column, index) => (
-              <column.type.Header key={index} />
+            {columns.map((column) => (
+              <column.type.Header key={column.type.columnKey} />
             ))}
           </Table.Tr>
         </Table.Thead>
@@ -150,8 +156,8 @@ function HairAssignedTableRoot({ items, children }: HairAssignedTableRootProps) 
             return (
               <HairAssignedRowContext.Provider key={row.id} value={row}>
                 <Table.Tr bg={needsAttention ? "var(--mantine-color-red-0)" : undefined}>
-                  {columns.map((column, index) => (
-                    <column.type.Cell key={index} {...column.props} />
+                  {columns.map((column) => (
+                    <column.type.Cell key={column.type.columnKey} {...column.props} />
                   ))}
                 </Table.Tr>
               </HairAssignedRowContext.Provider>
@@ -182,7 +188,7 @@ const TablePagination = Object.assign(
   { isTablePagination: true as const },
 )
 
-const Client = createColumn("Client", () => {
+const Client = createColumn("client", "Client", () => {
   const row = useHairAssignedRow()
   return (
     <Table.Td>
@@ -202,7 +208,7 @@ const Client = createColumn("Client", () => {
   )
 })
 
-const Source = createColumn("Source", () => {
+const Source = createColumn("source", "Source", () => {
   const row = useHairAssignedRow()
   const source = getHairAssignedSource(row)
   return (
@@ -214,7 +220,7 @@ const Source = createColumn("Source", () => {
   )
 })
 
-const HairOrder = createColumn("Hair Order", () => {
+const HairOrder = createColumn("hair-order", "Hair Order", () => {
   const row = useHairAssignedRow()
   return (
     <Table.Td>
@@ -234,22 +240,22 @@ const HairOrder = createColumn("Hair Order", () => {
   )
 })
 
-const Weight = createColumn("Weight", () => {
+const Weight = createColumn("weight", "Weight", () => {
   const row = useHairAssignedRow()
   return <Table.Td>{row.weightInGrams}g</Table.Td>
 })
 
-const SoldFor = createColumn("Sold For", () => {
+const SoldFor = createColumn("sold-for", "Sold For", () => {
   const row = useHairAssignedRow()
   return <Table.Td>{formatCents(row.soldFor)}</Table.Td>
 })
 
-const Profit = createColumn("Profit", () => {
+const Profit = createColumn("profit", "Profit", () => {
   const row = useHairAssignedRow()
   return <Table.Td>{formatCents(row.profit)}</Table.Td>
 })
 
-const PricePerGram = createColumn("€/g", () => {
+const PricePerGram = createColumn("price-per-gram", "€/g", () => {
   const row = useHairAssignedRow()
   return <Table.Td>{formatCents(row.pricePerGram)}</Table.Td>
 })
