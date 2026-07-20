@@ -3,7 +3,6 @@ import { describe, expect, it } from "vite-plus/test"
 
 import {
   CashTransactionsTable,
-  getCashTransactionsTableColumnKeys,
   getCashTransactionsTableColumnLabels,
   getCashTransactionsTableHasPagination,
 } from "./cash-transactions-table"
@@ -20,16 +19,6 @@ describe("cash transactions table compound columns", () => {
         createElement(CashTransactionsTable.Actions, { key: "actions", onEdit: () => {}, onDelete: () => {} }),
       ]),
     ).toEqual(["Date", "Customer", "Description", "Amount", "Created by", "Actions"])
-  })
-
-  it("reports stable declared column keys in child order", () => {
-    expect(
-      getCashTransactionsTableColumnKeys([
-        createElement(CashTransactionsTable.Date, { key: "date" }),
-        createElement(CashTransactionsTable.Customer, { key: "customer" }),
-        createElement(CashTransactionsTable.Actions, { key: "actions", onEdit: () => {}, onDelete: () => {} }),
-      ]),
-    ).toEqual(["date", "customer", "actions"])
   })
 
   it("detects a declared pagination footer", () => {

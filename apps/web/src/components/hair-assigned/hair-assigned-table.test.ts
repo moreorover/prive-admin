@@ -4,7 +4,6 @@ import { describe, expect, it } from "vite-plus/test"
 import { getHairAssignedSource } from "./hair-assigned-source"
 import {
   HairAssignedTable,
-  getHairAssignedTableColumnKeys,
   getHairAssignedTableColumnLabels,
   getHairAssignedTableHasPagination,
 } from "./hair-assigned-table"
@@ -50,16 +49,6 @@ describe("hair assigned table compound columns", () => {
         createElement(HairAssignedTable.Actions, { key: "actions", onEdit: () => {}, onDelete: () => {} }),
       ]),
     ).toEqual(["Client", "Source", "Hair Order", ""])
-  })
-
-  it("reports stable declared column keys in child order", () => {
-    expect(
-      getHairAssignedTableColumnKeys([
-        createElement(HairAssignedTable.Client, { key: "client" }),
-        createElement(HairAssignedTable.Source, { key: "source" }),
-        createElement(HairAssignedTable.Actions, { key: "actions", onEdit: () => {}, onDelete: () => {} }),
-      ]),
-    ).toEqual(["client", "source", "actions"])
   })
 
   it("omits columns that are not declared", () => {

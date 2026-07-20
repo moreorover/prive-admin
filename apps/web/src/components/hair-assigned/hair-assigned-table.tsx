@@ -85,10 +85,6 @@ export function getHairAssignedTableColumnLabels(children: ReactNode) {
   return getHairAssignedColumns(children).map((child) => child.type.columnLabel)
 }
 
-export function getHairAssignedTableColumnKeys(children: ReactNode) {
-  return getHairAssignedColumns(children).map((child) => child.type.columnKey)
-}
-
 export function getHairAssignedTableHasPagination(children: ReactNode) {
   return getHairAssignedPagination(children) !== null
 }

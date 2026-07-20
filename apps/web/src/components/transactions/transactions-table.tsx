@@ -78,10 +78,6 @@ export function getTransactionsTableColumnLabels(children: ReactNode) {
   return getTransactionColumns(children).map((child) => child.type.columnLabel)
 }
 
-export function getTransactionsTableColumnKeys(children: ReactNode) {
-  return getTransactionColumns(children).map((child) => child.type.columnKey)
-}
-
 export function getTransactionsTableHasPagination(children: ReactNode) {
   return getTransactionPagination(children) !== null
 }

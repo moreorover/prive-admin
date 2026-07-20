@@ -85,10 +85,6 @@ export function getCashTransactionsTableColumnLabels(children: ReactNode) {
   return getCashTransactionColumns(children).map((child) => child.type.columnLabel)
 }
 
-export function getCashTransactionsTableColumnKeys(children: ReactNode) {
-  return getCashTransactionColumns(children).map((child) => child.type.columnKey)
-}
-
 export function getCashTransactionsTableHasPagination(children: ReactNode) {
   return getCashTransactionPagination(children) !== null
 }
