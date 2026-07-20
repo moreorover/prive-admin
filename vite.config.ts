@@ -44,4 +44,8 @@ export default defineConfig({
       },
     ],
   },
+  test: {
+    include: ["{apps,packages}/**/src/**/*.test.{ts,tsx}"],
+    exclude: ["**/dist/**", "**/node_modules/**", ".worktrees/**"],
+  },
 })
