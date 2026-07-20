@@ -2,6 +2,7 @@ import {
   assignBankStatementAttachment,
   countBankStatementAttachments,
   deleteBankStatementAttachmentFile,
+  listAssignedBankStatementAttachments,
   listBankStatementAttachments,
   unassignBankStatementAttachment,
 } from "@prive-admin-tanstack/application/services"
@@ -9,6 +10,7 @@ import { z } from "zod"
 
 import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
+import { getOffset, pagedResult, pageSchema } from "../pagination"
 
 export const bankStatementAttachmentsRouter = router({
   list: protectedProcedure
@@ -21,6 +23,25 @@ export const bankStatementAttachmentsRouter = router({
     .query(async ({ input }) => {
       try {
         return await listBankStatementAttachments(input)
+      } catch (error) {
+        throw toTrpcError(error)
+      }
+    }),
+
+  listAssigned: protectedProcedure
+    .input(
+      pageSchema.extend({
+        legalEntityId: z.string().min(1),
+      }),
+    )
+    .query(async ({ input }) => {
+      try {
+        const result = await listAssignedBankStatementAttachments({
+          legalEntityId: input.legalEntityId,
+          pageSize: input.pageSize,
+          offset: getOffset(input),
+        })
+        return pagedResult(result.items, input, result.totalCount)
       } catch (error) {
         throw toTrpcError(error)
       }

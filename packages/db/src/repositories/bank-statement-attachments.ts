@@ -1,6 +1,7 @@
-import { and, desc, eq, gte, isNotNull, isNull, lte } from "drizzle-orm"
+import { and, count, desc, eq, gte, isNotNull, isNull, lte } from "drizzle-orm"
 
 import { db, type Db } from "../index"
+import { bankAccount } from "../schema/bank-account"
 import { bankStatementAttachment } from "../schema/bank-statement-attachment"
 import { bankStatementEntry } from "../schema/bank-statement-entry"
 
@@ -39,6 +40,50 @@ export async function listBankStatementAttachments(
     where: conditions.length > 0 ? and(...conditions) : undefined,
     orderBy: [desc(bankStatementAttachment.uploadedAt)],
   })
+}
+
+export type AssignedBankStatementAttachmentRow = {
+  attachment: typeof bankStatementAttachment.$inferSelect
+  entry: typeof bankStatementEntry.$inferSelect
+  bankAccount: Pick<typeof bankAccount.$inferSelect, "id" | "displayName" | "bankName" | "currency">
+}
+
+export async function listAssignedBankStatementAttachments(
+  database: Db = db,
+  input: { legalEntityId: string; pageSize: number; offset: number },
+) {
+  const where = and(
+    isNotNull(bankStatementAttachment.bankStatementEntryId),
+    eq(bankAccount.legalEntityId, input.legalEntityId),
+  )
+
+  const items = await database
+    .select({
+      attachment: bankStatementAttachment,
+      entry: bankStatementEntry,
+      bankAccount: {
+        id: bankAccount.id,
+        displayName: bankAccount.displayName,
+        bankName: bankAccount.bankName,
+        currency: bankAccount.currency,
+      },
+    })
+    .from(bankStatementAttachment)
+    .innerJoin(bankStatementEntry, eq(bankStatementAttachment.bankStatementEntryId, bankStatementEntry.id))
+    .innerJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
+    .where(where)
+    .orderBy(desc(bankStatementEntry.date), desc(bankStatementAttachment.uploadedAt), desc(bankStatementAttachment.id))
+    .limit(input.pageSize)
+    .offset(input.offset)
+
+  const [countRow] = await database
+    .select({ totalCount: count() })
+    .from(bankStatementAttachment)
+    .innerJoin(bankStatementEntry, eq(bankStatementAttachment.bankStatementEntryId, bankStatementEntry.id))
+    .innerJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
+    .where(where)
+
+  return { items, totalCount: countRow?.totalCount ?? 0 }
 }
 
 export async function countBankStatementAttachments(database: Db = db) {

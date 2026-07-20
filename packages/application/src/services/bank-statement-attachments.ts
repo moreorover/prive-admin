@@ -5,6 +5,7 @@ import {
   countBankStatementAttachments as fetchBankStatementAttachmentCounts,
   getBankStatementAttachment as findBankStatementAttachment,
   getBankStatementEntry as findBankStatementEntry,
+  listAssignedBankStatementAttachments as fetchAssignedBankStatementAttachments,
   deleteBankStatementAttachment as removeBankStatementAttachment,
   listBankStatementAttachmentExportRows as fetchBankStatementAttachmentExportRows,
   listBankStatementAttachments as fetchBankStatementAttachments,
@@ -40,6 +41,14 @@ const ZipArchive = (
 
 export async function listBankStatementAttachments(input: { entryId?: string; assigned?: boolean } = {}) {
   return fetchBankStatementAttachments(undefined, input)
+}
+
+export async function listAssignedBankStatementAttachments(input: {
+  legalEntityId: string
+  pageSize: number
+  offset: number
+}) {
+  return fetchAssignedBankStatementAttachments(undefined, input)
 }
 
 export async function countBankStatementAttachments() {
