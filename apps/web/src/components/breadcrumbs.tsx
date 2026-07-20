@@ -89,10 +89,6 @@ export function BreadcrumbItem({ label, to }: BreadcrumbDefinition) {
   return null
 }
 
-export function BreadcrumbItems({ items }: { items: readonly BreadcrumbDefinition[] }) {
-  return items.map((item) => <BreadcrumbItem key={`${item.to ?? "current"}-${String(item.label)}`} {...item} />)
-}
-
 function useBreadcrumbContext() {
   const context = useContext(BreadcrumbPortalContext)
 
