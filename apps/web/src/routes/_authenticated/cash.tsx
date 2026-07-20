@@ -189,7 +189,14 @@ function CashPage() {
         <Box pos="relative">
           <LoadingOverlay visible={isFetching} />
           <Table.ScrollContainer minWidth={760}>
-            <CashTransactionsTable items={result?.items ?? []} onEdit={setEditing} onDelete={setDeleting} />
+            <CashTransactionsTable items={result?.items ?? []}>
+              <CashTransactionsTable.Date />
+              <CashTransactionsTable.Customer />
+              <CashTransactionsTable.Description />
+              <CashTransactionsTable.Amount />
+              <CashTransactionsTable.CreatedBy />
+              <CashTransactionsTable.Actions onEdit={setEditing} onDelete={setDeleting} />
+            </CashTransactionsTable>
           </Table.ScrollContainer>
         </Box>
 

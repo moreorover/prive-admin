@@ -1,0 +1,19 @@
+import { createElement } from "react"
+import { describe, expect, it } from "vite-plus/test"
+
+import { CashTransactionsTable, getCashTransactionsTableColumnLabels } from "./cash-transactions-table"
+
+describe("cash transactions table compound columns", () => {
+  it("reports declared column labels in child order", () => {
+    expect(
+      getCashTransactionsTableColumnLabels([
+        createElement(CashTransactionsTable.Date, { key: "date" }),
+        createElement(CashTransactionsTable.Customer, { key: "customer" }),
+        createElement(CashTransactionsTable.Description, { key: "description" }),
+        createElement(CashTransactionsTable.Amount, { key: "amount" }),
+        createElement(CashTransactionsTable.CreatedBy, { key: "created-by" }),
+        createElement(CashTransactionsTable.Actions, { key: "actions", onEdit: () => {}, onDelete: () => {} }),
+      ]),
+    ).toEqual(["Date", "Customer", "Description", "Amount", "Created by", "Actions"])
+  })
+})
