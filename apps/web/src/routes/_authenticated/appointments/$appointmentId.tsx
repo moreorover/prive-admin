@@ -342,7 +342,14 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
               ...t,
               currency: (CURRENCIES as readonly string[]).includes(t.currency) ? (t.currency as Currency) : "EUR",
             }))
-            return <TransactionsTable items={txRows} onEdit={setEditTx} onDelete={setDeleteTx} />
+            return (
+              <TransactionsTable items={txRows}>
+                <TransactionsTable.Customer />
+                <TransactionsTable.Name />
+                <TransactionsTable.Amount />
+                <TransactionsTable.Actions onEdit={setEditTx} onDelete={setDeleteTx} />
+              </TransactionsTable>
+            )
           })()}
           {showTransactionsPagination && (
             <Group justify="space-between" mt="md">
