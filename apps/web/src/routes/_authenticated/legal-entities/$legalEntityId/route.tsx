@@ -144,7 +144,7 @@ function LegalEntityLayout() {
       <Stack>
         <Tabs value={activeSection} onChange={handleSectionChange}>
           <Box style={{ overflowX: "auto" }}>
-            <Tabs.List>
+            <Tabs.List style={{ flexWrap: "nowrap", minWidth: "max-content" }}>
               {LEGAL_ENTITY_SECTIONS.map((section) => (
                 <Tabs.Tab
                   key={section.value}
