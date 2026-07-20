@@ -6,7 +6,8 @@ import { Link } from "@tanstack/react-router"
 import dayjs from "dayjs"
 import { Children, createContext, isValidElement, useContext } from "react"
 
-import { formatMinor } from "../../lib/currency"
+import { formatMinor } from "@/lib/currency"
+
 import { coerceCashTransactionCurrency } from "./currency"
 
 export type CashTransactionRow = {

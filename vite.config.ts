@@ -1,6 +1,11 @@
 import { defineConfig } from "vite-plus"
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@": new URL("./apps/web/src", import.meta.url).pathname,
+    },
+  },
   staged: {
     "*": "vp check --fix",
   },

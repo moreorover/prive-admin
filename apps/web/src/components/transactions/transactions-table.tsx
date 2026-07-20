@@ -5,7 +5,7 @@ import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { Children, createContext, isValidElement, useContext } from "react"
 
-import { type Currency, formatMinor } from "../../lib/currency"
+import { type Currency, formatMinor } from "@/lib/currency"
 
 export type TransactionRow = {
   id: string
