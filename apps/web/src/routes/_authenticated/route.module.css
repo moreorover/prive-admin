@@ -13,7 +13,6 @@
   height: 46px;
   align-items: flex-end;
   box-sizing: border-box;
-  border-top: 1px solid color-mix(in srgb, var(--prive-border) 76%, transparent);
 }
 
 .desktopNavLink,
