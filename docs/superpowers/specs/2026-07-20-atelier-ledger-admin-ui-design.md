@@ -14,7 +14,7 @@ The redesign is inspired by Mantine top-header patterns, but it should not copy 
 
 Use a two-tier top header on desktop:
 
-- First row: Privé brand, compact app context, color scheme toggle, and user menu.
+- First row: Privé brand, color scheme toggle, and user menu.
 - Second row: primary route tabs for the main admin destinations, following Mantine's `HeaderTabs` proportions more closely.
 - Active tabs use a light raised-tab treatment instead of a heavy bordered pill or status band.
 - Route badges such as unassigned documents stay inline with the relevant tab or drawer item.
