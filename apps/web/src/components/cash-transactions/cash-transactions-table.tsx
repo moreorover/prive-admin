@@ -81,18 +81,9 @@ function getCashTransactionPagination(children: ReactNode) {
   return getCompoundTablePagination<CashTransactionPaginationProps>(children)
 }
 
-export function getCashTransactionsTableColumnLabels(children: ReactNode) {
-  return getCashTransactionColumns(children).map((child) => child.type.columnLabel)
-}
-
-export function getCashTransactionsTableHasPagination(children: ReactNode) {
-  return getCashTransactionPagination(children) !== null
-}
-
 function createColumn(columnKey: string, label: string, Cell: () => ReactElement): CashTransactionColumnComponent {
   const Column = (() => null) as unknown as CashTransactionColumnComponent
   Column.columnKey = columnKey
-  Column.columnLabel = label
   Column.Header = () => <Table.Th>{label}</Table.Th>
   Column.Cell = Cell
   return Column
@@ -101,7 +92,6 @@ function createColumn(columnKey: string, label: string, Cell: () => ReactElement
 function createActionsColumn(): CashTransactionColumnComponent<CashTransactionActionsProps> {
   const Column = (() => null) as unknown as CashTransactionColumnComponent<CashTransactionActionsProps>
   Column.columnKey = "actions"
-  Column.columnLabel = "Actions"
   Column.Header = () => <Table.Th>Actions</Table.Th>
   Column.Cell = ({ onEdit, onDelete }) => {
     const row = useCashTransactionRow()

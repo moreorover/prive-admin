@@ -1,44 +1,71 @@
-import { createElement } from "react"
+import type { ReactNode } from "react"
+
+import { MantineProvider } from "@mantine/core"
+import { createElement, Fragment } from "react"
+import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vite-plus/test"
 
-import {
-  TransactionsTable,
-  getTransactionsTableColumnLabels,
-  getTransactionsTableHasPagination,
-} from "./transactions-table"
+import { TransactionsTable } from "./transactions-table"
+
+const transactionRows = [
+  {
+    id: "transaction-1",
+    name: "Deposit",
+    notes: null,
+    amount: 12345,
+    currency: "EUR" as const,
+    customerId: null,
+    appointmentId: null,
+    customer: null,
+  },
+]
+
+function renderTransactionsTable(children: ReactNode) {
+  return renderToStaticMarkup(
+    createElement(MantineProvider, null, createElement(TransactionsTable, { items: transactionRows }, children)),
+  )
+}
 
 describe("transactions table compound columns", () => {
-  it("reports declared column labels in child order", () => {
-    expect(
-      getTransactionsTableColumnLabels([
-        createElement(TransactionsTable.Customer, { key: "customer" }),
-        createElement(TransactionsTable.Name, { key: "name" }),
-        createElement(TransactionsTable.Amount, { key: "amount" }),
-        createElement(TransactionsTable.Actions, { key: "actions", onEdit: () => {}, onDelete: () => {} }),
-      ]),
-    ).toEqual(["Customer", "Name", "Amount", ""])
+  it("renders declared columns", () => {
+    const markup = renderTransactionsTable(
+      createElement(
+        Fragment,
+        null,
+        createElement(TransactionsTable.Customer),
+        createElement(TransactionsTable.Name),
+        createElement(TransactionsTable.Amount),
+        createElement(TransactionsTable.Actions, { onEdit: () => {}, onDelete: () => {} }),
+      ),
+    )
+
+    expect(markup).toContain("Customer")
+    expect(markup).toContain("Name")
+    expect(markup).toContain("Amount")
   })
 
   it("supports omitting customer when a route wants a narrower table", () => {
-    expect(
-      getTransactionsTableColumnLabels([
-        createElement(TransactionsTable.Name, { key: "name" }),
-        createElement(TransactionsTable.Amount, { key: "amount" }),
-      ]),
-    ).toEqual(["Name", "Amount"])
+    const markup = renderTransactionsTable(
+      createElement(Fragment, null, createElement(TransactionsTable.Name), createElement(TransactionsTable.Amount)),
+    )
+
+    expect(markup).toContain("Name")
+    expect(markup).toContain("Amount")
+    expect(markup).not.toContain("Customer")
   })
 
-  it("detects a declared pagination footer", () => {
+  it("renders a declared pagination footer", () => {
     expect(
-      getTransactionsTableHasPagination(
+      renderTransactionsTable(
         createElement(TransactionsTable.Pagination, {
           page: 2,
           pageSize: 25,
           itemCount: 25,
           totalCount: 80,
           onChange: () => {},
+          label: "Showing transactions",
         }),
       ),
-    ).toBe(true)
+    ).toContain("Showing transactions")
   })
 })

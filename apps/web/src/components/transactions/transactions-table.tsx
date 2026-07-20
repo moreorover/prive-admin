@@ -74,18 +74,9 @@ function getTransactionPagination(children: ReactNode) {
   return getCompoundTablePagination<TransactionPaginationProps>(children)
 }
 
-export function getTransactionsTableColumnLabels(children: ReactNode) {
-  return getTransactionColumns(children).map((child) => child.type.columnLabel)
-}
-
-export function getTransactionsTableHasPagination(children: ReactNode) {
-  return getTransactionPagination(children) !== null
-}
-
 function createColumn(columnKey: string, label: string, Cell: () => ReactElement): TransactionColumnComponent {
   const Column = (() => null) as unknown as TransactionColumnComponent
   Column.columnKey = columnKey
-  Column.columnLabel = label
   Column.Header = () => <Table.Th>{label}</Table.Th>
   Column.Cell = Cell
   return Column
@@ -94,7 +85,6 @@ function createColumn(columnKey: string, label: string, Cell: () => ReactElement
 function createActionsColumn(): TransactionColumnComponent<TransactionActionsProps> {
   const Column = (() => null) as unknown as TransactionColumnComponent<TransactionActionsProps>
   Column.columnKey = "actions"
-  Column.columnLabel = ""
   Column.Header = () => <Table.Th />
   Column.Cell = ({ onEdit, onDelete }) => {
     const row = useTransactionRow()

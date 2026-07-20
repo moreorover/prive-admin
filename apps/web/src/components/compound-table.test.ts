@@ -7,7 +7,6 @@ describe("compound table helpers", () => {
   it("separates columns from pagination children", () => {
     const Column = Object.assign(() => null, {
       columnKey: "name",
-      columnLabel: "Name",
       Header: () => null,
       Cell: () => null,
     })

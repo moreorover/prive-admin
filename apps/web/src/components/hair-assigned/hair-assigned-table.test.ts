@@ -1,12 +1,31 @@
-import { createElement } from "react"
+import type { ReactNode } from "react"
+
+import { MantineProvider } from "@mantine/core"
+import { createElement, Fragment } from "react"
+import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vite-plus/test"
 
 import { getHairAssignedSource } from "./hair-assigned-source"
-import {
-  HairAssignedTable,
-  getHairAssignedTableColumnLabels,
-  getHairAssignedTableHasPagination,
-} from "./hair-assigned-table"
+import { HairAssignedTable } from "./hair-assigned-table"
+
+const hairAssignedRows = [
+  {
+    id: "hair-assigned-1",
+    appointmentId: null,
+    weightInGrams: 12,
+    soldFor: 3400,
+    profit: 1200,
+    pricePerGram: 283,
+    client: null,
+    hairOrder: null,
+  },
+]
+
+function renderHairAssignedTable(children: ReactNode) {
+  return renderToStaticMarkup(
+    createElement(MantineProvider, null, createElement(HairAssignedTable, { items: hairAssignedRows }, children)),
+  )
+}
 
 describe("hair assigned table", () => {
   it("labels appointment-tied and individual hair sales", () => {
@@ -24,40 +43,54 @@ describe("hair assigned table", () => {
     })
   })
 
-  it("detects a declared pagination footer", () => {
+  it("renders a declared pagination footer", () => {
     expect(
-      getHairAssignedTableHasPagination(
+      renderHairAssignedTable(
         createElement(HairAssignedTable.Pagination, {
           page: 2,
           pageSize: 25,
           itemCount: 25,
           totalCount: 80,
           onChange: () => {},
+          label: "Showing hair assignments",
         }),
       ),
-    ).toBe(true)
+    ).toContain("Showing hair assignments")
   })
 })
 
 describe("hair assigned table compound columns", () => {
-  it("reports declared column labels in child order", () => {
-    expect(
-      getHairAssignedTableColumnLabels([
-        createElement(HairAssignedTable.Client, { key: "client" }),
-        createElement(HairAssignedTable.Source, { key: "source" }),
-        createElement(HairAssignedTable.HairOrder, { key: "hair-order" }),
-        createElement(HairAssignedTable.Actions, { key: "actions", onEdit: () => {}, onDelete: () => {} }),
-      ]),
-    ).toEqual(["Client", "Source", "Hair Order", ""])
+  it("renders declared columns", () => {
+    const markup = renderHairAssignedTable(
+      createElement(
+        Fragment,
+        null,
+        createElement(HairAssignedTable.Client),
+        createElement(HairAssignedTable.Source),
+        createElement(HairAssignedTable.HairOrder),
+        createElement(HairAssignedTable.Actions, { onEdit: () => {}, onDelete: () => {} }),
+      ),
+    )
+
+    expect(markup).toContain("Client")
+    expect(markup).toContain("Source")
+    expect(markup).toContain("Hair Order")
   })
 
   it("omits columns that are not declared", () => {
-    expect(
-      getHairAssignedTableColumnLabels([
-        createElement(HairAssignedTable.Client, { key: "client" }),
-        createElement(HairAssignedTable.Weight, { key: "weight" }),
-        createElement(HairAssignedTable.Actions, { key: "actions", onEdit: () => {}, onDelete: () => {} }),
-      ]),
-    ).toEqual(["Client", "Weight", ""])
+    const markup = renderHairAssignedTable(
+      createElement(
+        Fragment,
+        null,
+        createElement(HairAssignedTable.Client),
+        createElement(HairAssignedTable.Weight),
+        createElement(HairAssignedTable.Actions, { onEdit: () => {}, onDelete: () => {} }),
+      ),
+    )
+
+    expect(markup).toContain("Client")
+    expect(markup).toContain("Weight")
+    expect(markup).not.toContain("Source")
+    expect(markup).not.toContain("Hair Order")
   })
 })

@@ -81,18 +81,9 @@ function getHairAssignedPagination(children: ReactNode) {
   return getCompoundTablePagination<HairAssignedPaginationProps>(children)
 }
 
-export function getHairAssignedTableColumnLabels(children: ReactNode) {
-  return getHairAssignedColumns(children).map((child) => child.type.columnLabel)
-}
-
-export function getHairAssignedTableHasPagination(children: ReactNode) {
-  return getHairAssignedPagination(children) !== null
-}
-
 function createColumn(columnKey: string, label: string, Cell: () => ReactElement): HairAssignedColumnComponent {
   const Column = (() => null) as unknown as HairAssignedColumnComponent
   Column.columnKey = columnKey
-  Column.columnLabel = label
   Column.Header = () => <Table.Th>{label}</Table.Th>
   Column.Cell = Cell
   return Column
@@ -101,7 +92,6 @@ function createColumn(columnKey: string, label: string, Cell: () => ReactElement
 function createActionsColumn(): HairAssignedColumnComponent<HairAssignedActionsProps> {
   const Column = (() => null) as unknown as HairAssignedColumnComponent<HairAssignedActionsProps>
   Column.columnKey = "actions"
-  Column.columnLabel = ""
   Column.Header = () => <Table.Th />
   Column.Cell = ({ onEdit, onDelete }) => {
     const row = useHairAssignedRow()
