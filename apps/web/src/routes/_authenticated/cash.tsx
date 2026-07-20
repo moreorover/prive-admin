@@ -7,6 +7,7 @@ import {
   NativeSelect,
   Pagination,
   Select,
+  Table,
   TextInput,
 } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
@@ -108,7 +109,7 @@ function CashPage() {
       />
 
       <Section padding="lg">
-        <Group align="flex-end" mb="md">
+        <Group align="flex-end" mb="md" gap="sm" wrap="wrap">
           <TextInput
             label="Search"
             placeholder="Description, notes, or customer"
@@ -117,8 +118,7 @@ function CashPage() {
             onChange={(event) => {
               updateFilters({ search: event.currentTarget.value })
             }}
-            miw={260}
-            flex={1}
+            flex="1 1 18rem"
           />
           <Select
             label="Customer"
@@ -134,6 +134,7 @@ function CashPage() {
               const option = customerOptions.find((candidate) => candidate.value === value)
               setSelectedCustomerOption(option ?? null)
             }}
+            w={{ base: "100%", xs: 180 }}
           />
           <NativeSelect
             label="Currency"
@@ -146,6 +147,7 @@ function CashPage() {
             onChange={(event) => {
               updateFilters({ currency: event.currentTarget.value as CashTransactionCurrencyFilter })
             }}
+            w={{ base: "100%", xs: 180 }}
           />
           <NativeSelect
             label="Direction"
@@ -158,6 +160,7 @@ function CashPage() {
             onChange={(event) => {
               updateFilters({ direction: event.currentTarget.value as CashTransactionDirection })
             }}
+            w={{ base: "100%", xs: 180 }}
           />
           <DateInput
             label="From"
@@ -167,6 +170,7 @@ function CashPage() {
             onChange={(value) => {
               updateFilters({ dateFrom: value ?? "" })
             }}
+            w={{ base: "100%", xs: 180 }}
           />
           <DateInput
             label="To"
@@ -176,12 +180,15 @@ function CashPage() {
             onChange={(value) => {
               updateFilters({ dateTo: value ?? "" })
             }}
+            w={{ base: "100%", xs: 180 }}
           />
         </Group>
 
         <Box pos="relative">
           <LoadingOverlay visible={isFetching} />
-          <CashTransactionsTable items={result?.items ?? []} onEdit={setEditing} onDelete={setDeleting} />
+          <Table.ScrollContainer minWidth={760}>
+            <CashTransactionsTable items={result?.items ?? []} onEdit={setEditing} onDelete={setDeleting} />
+          </Table.ScrollContainer>
         </Box>
 
         <Group justify="flex-end" mt="md">

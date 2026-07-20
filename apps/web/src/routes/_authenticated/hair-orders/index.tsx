@@ -1,4 +1,4 @@
-import { Button, Container, Group, Modal, NumberInput, Select, Stack, Text } from "@mantine/core"
+import { Button, Container, Group, Modal, NumberInput, Select, Stack, Table, Text } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
@@ -125,7 +125,9 @@ function HairOrdersPage() {
         }
       />
       <Section padding="lg">
-        <HairOrdersTable hairOrders={hairOrders} isLoading={isLoading} />
+        <Table.ScrollContainer minWidth={760}>
+          <HairOrdersTable hairOrders={hairOrders} isLoading={isLoading} />
+        </Table.ScrollContainer>
         {showPagination && (
           <Group justify="space-between" mt="md">
             <Text size="sm" c="dimmed">
