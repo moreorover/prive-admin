@@ -9,7 +9,7 @@ import {
   IconUsers,
 } from "@tabler/icons-react"
 
-export type AppNavBadgeKey = "unassigned"
+type AppNavBadgeKey = "unassigned"
 
 export type AppNavItem = {
   to: string
