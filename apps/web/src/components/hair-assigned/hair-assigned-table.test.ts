@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 
-import { getHairAssignedSource } from "./hair-assigned-table"
+import { getHairAssignedSource } from "./hair-assigned-source"
 
 describe("hair assigned table", () => {
   it("labels appointment-tied and individual hair sales", () => {

@@ -2,6 +2,8 @@ import { ActionIcon, Badge, Group, Table, Text } from "@mantine/core"
 import { IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 
+import { getHairAssignedSource } from "./hair-assigned-source"
+
 export type HairAssignedRow = {
   id: string
   appointmentId?: string | null
@@ -22,10 +24,6 @@ type HairAssignedTableProps = {
 }
 
 const formatCents = (cents: number) => `€${(cents / 100).toFixed(2)}`
-
-export function getHairAssignedSource(item: { appointmentId?: string | null }) {
-  return item.appointmentId ? { color: "blue", label: "Appointment" } : { color: "grape", label: "Individual" }
-}
 
 export function HairAssignedTable({
   items,
