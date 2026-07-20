@@ -126,13 +126,13 @@ a {
 
 .prive-page-header-actions,
 .prive-section-actions {
-  --group-justify: flex-start;
+  justify-content: flex-start !important;
 }
 
 @media (min-width: 48em) {
   .prive-page-header-actions,
   .prive-section-actions {
-    --group-justify: flex-end;
+    justify-content: flex-end !important;
   }
 }
 
