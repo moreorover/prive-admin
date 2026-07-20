@@ -4,8 +4,13 @@ import { ActionIcon, Group, Menu, Pagination, Table, Text } from "@mantine/core"
 import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import dayjs from "dayjs"
-import { Children, createContext, isValidElement, useContext } from "react"
+import { createContext, useContext } from "react"
 
+import {
+  type CompoundTableColumnComponent,
+  getCompoundTableColumns,
+  getCompoundTablePagination,
+} from "@/components/compound-table"
 import { formatMinor } from "@/lib/currency"
 
 import { coerceCashTransactionCurrency } from "./currency"
@@ -45,14 +50,7 @@ type CashTransactionPaginationProps = {
   pb?: "md"
 }
 
-type CashTransactionColumnComponent<Props = object> = ((props: Props) => ReactElement | null) & {
-  columnLabel: string
-  Header: () => ReactElement
-  Cell: (props: Props) => ReactElement
-}
-
-type CashTransactionColumnElement = ReactElement<object, CashTransactionColumnComponent<object>>
-type CashTransactionPaginationElement = ReactElement<CashTransactionPaginationProps, CashTransactionPaginationComponent>
+type CashTransactionColumnComponent<Props = object> = CompoundTableColumnComponent<Props>
 type CashTransactionPaginationComponent = ((props: CashTransactionPaginationProps) => ReactElement) & {
   isTablePagination: true
 }
@@ -76,19 +74,11 @@ function useCashTransactionRow() {
 }
 
 function getCashTransactionColumns(children: ReactNode) {
-  return Children.toArray(children).filter(isValidCashTransactionColumn)
+  return getCompoundTableColumns(children)
 }
 
 function getCashTransactionPagination(children: ReactNode) {
-  return Children.toArray(children).find(isValidCashTransactionPagination) ?? null
-}
-
-function isValidCashTransactionColumn(child: ReactNode): child is CashTransactionColumnElement {
-  return isValidElement(child) && typeof child.type !== "string" && "Header" in child.type && "Cell" in child.type
-}
-
-function isValidCashTransactionPagination(child: ReactNode): child is CashTransactionPaginationElement {
-  return isValidElement(child) && typeof child.type !== "string" && "isTablePagination" in child.type
+  return getCompoundTablePagination<CashTransactionPaginationProps>(children)
 }
 
 export function getCashTransactionsTableColumnLabels(children: ReactNode) {

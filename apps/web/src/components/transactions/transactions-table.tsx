@@ -3,8 +3,13 @@ import type { ReactElement, ReactNode } from "react"
 import { ActionIcon, Group, Menu, Pagination, Table, Text } from "@mantine/core"
 import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
-import { Children, createContext, isValidElement, useContext } from "react"
+import { createContext, useContext } from "react"
 
+import {
+  type CompoundTableColumnComponent,
+  getCompoundTableColumns,
+  getCompoundTablePagination,
+} from "@/components/compound-table"
 import { type Currency, formatMinor } from "@/lib/currency"
 
 export type TransactionRow = {
@@ -40,14 +45,7 @@ type TransactionPaginationProps = {
   pb?: "md"
 }
 
-type TransactionColumnComponent<Props = object> = ((props: Props) => ReactElement | null) & {
-  columnLabel: string
-  Header: () => ReactElement
-  Cell: (props: Props) => ReactElement
-}
-
-type TransactionColumnElement = ReactElement<object, TransactionColumnComponent<object>>
-type TransactionPaginationElement = ReactElement<TransactionPaginationProps, TransactionPaginationComponent>
+type TransactionColumnComponent<Props = object> = CompoundTableColumnComponent<Props>
 type TransactionPaginationComponent = ((props: TransactionPaginationProps) => ReactElement) & {
   isTablePagination: true
 }
@@ -69,19 +67,11 @@ function useTransactionRow() {
 }
 
 function getTransactionColumns(children: ReactNode) {
-  return Children.toArray(children).filter(isValidTransactionColumn)
+  return getCompoundTableColumns(children)
 }
 
 function getTransactionPagination(children: ReactNode) {
-  return Children.toArray(children).find(isValidTransactionPagination) ?? null
-}
-
-function isValidTransactionColumn(child: ReactNode): child is TransactionColumnElement {
-  return isValidElement(child) && typeof child.type !== "string" && "Header" in child.type && "Cell" in child.type
-}
-
-function isValidTransactionPagination(child: ReactNode): child is TransactionPaginationElement {
-  return isValidElement(child) && typeof child.type !== "string" && "isTablePagination" in child.type
+  return getCompoundTablePagination<TransactionPaginationProps>(children)
 }
 
 export function getTransactionsTableColumnLabels(children: ReactNode) {

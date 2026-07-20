@@ -3,7 +3,13 @@ import type { ReactElement, ReactNode } from "react"
 import { ActionIcon, Badge, Group, Pagination, Table, Text } from "@mantine/core"
 import { IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
-import { Children, createContext, isValidElement, useContext } from "react"
+import { createContext, useContext } from "react"
+
+import {
+  type CompoundTableColumnComponent,
+  getCompoundTableColumns,
+  getCompoundTablePagination,
+} from "@/components/compound-table"
 
 import { getHairAssignedSource } from "./hair-assigned-source"
 
@@ -40,14 +46,7 @@ type HairAssignedPaginationProps = {
   pb?: "md"
 }
 
-type HairAssignedColumnComponent<Props = object> = ((props: Props) => ReactElement | null) & {
-  columnLabel: string
-  Header: () => ReactElement
-  Cell: (props: Props) => ReactElement
-}
-
-type HairAssignedColumnElement = ReactElement<object, HairAssignedColumnComponent<object>>
-type HairAssignedPaginationElement = ReactElement<HairAssignedPaginationProps, HairAssignedPaginationComponent>
+type HairAssignedColumnComponent<Props = object> = CompoundTableColumnComponent<Props>
 type HairAssignedPaginationComponent = ((props: HairAssignedPaginationProps) => ReactElement) & {
   isTablePagination: true
 }
@@ -75,19 +74,11 @@ function useHairAssignedRow() {
 }
 
 function getHairAssignedColumns(children: ReactNode) {
-  return Children.toArray(children).filter(isValidHairAssignedColumn)
+  return getCompoundTableColumns(children)
 }
 
 function getHairAssignedPagination(children: ReactNode) {
-  return Children.toArray(children).find(isValidHairAssignedPagination) ?? null
-}
-
-function isValidHairAssignedColumn(child: ReactNode): child is HairAssignedColumnElement {
-  return isValidElement(child) && typeof child.type !== "string" && "Header" in child.type && "Cell" in child.type
-}
-
-function isValidHairAssignedPagination(child: ReactNode): child is HairAssignedPaginationElement {
-  return isValidElement(child) && typeof child.type !== "string" && "isTablePagination" in child.type
+  return getCompoundTablePagination<HairAssignedPaginationProps>(children)
 }
 
 export function getHairAssignedTableColumnLabels(children: ReactNode) {
