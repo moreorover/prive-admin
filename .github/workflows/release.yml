@@ -92,9 +92,6 @@ jobs:
     name: Pre-deploy Postgres Backup
     needs: promote-release
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: https://prive.salon
     timeout-minutes: 15
     permissions:
       contents: read
@@ -174,9 +171,6 @@ jobs:
     name: Deploy to prive
     needs: [promote-release, pre-deploy-backup]
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: https://prive.salon
     timeout-minutes: 15
     permissions:
       contents: read
