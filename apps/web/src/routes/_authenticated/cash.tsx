@@ -1,15 +1,4 @@
-import {
-  Box,
-  Button,
-  Container,
-  Group,
-  LoadingOverlay,
-  NativeSelect,
-  Pagination,
-  Select,
-  Table,
-  TextInput,
-} from "@mantine/core"
+import { Box, Button, Container, Group, LoadingOverlay, NativeSelect, Select, Table, TextInput } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
@@ -89,7 +78,6 @@ function CashPage() {
     selectedCustomerOption,
   )
   const totalCount = result?.totalCount ?? 0
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
   const resetPage = () => setPage(1)
   const updateFilters = (nextFilters: Partial<CashTransactionFilters>) => {
@@ -189,13 +177,23 @@ function CashPage() {
         <Box pos="relative">
           <LoadingOverlay visible={isFetching} />
           <Table.ScrollContainer minWidth={760}>
-            <CashTransactionsTable items={result?.items ?? []} onEdit={setEditing} onDelete={setDeleting} />
+            <CashTransactionsTable items={result?.items ?? []}>
+              <CashTransactionsTable.Date />
+              <CashTransactionsTable.Customer />
+              <CashTransactionsTable.Description />
+              <CashTransactionsTable.Amount />
+              <CashTransactionsTable.CreatedBy />
+              <CashTransactionsTable.Actions onEdit={setEditing} onDelete={setDeleting} />
+              <CashTransactionsTable.Pagination
+                page={page}
+                pageSize={PAGE_SIZE}
+                itemCount={result?.items.length ?? 0}
+                totalCount={totalCount}
+                onChange={setPage}
+              />
+            </CashTransactionsTable>
           </Table.ScrollContainer>
         </Box>
-
-        <Group justify="flex-end" mt="md">
-          <Pagination total={totalPages} value={Math.min(page, totalPages)} onChange={setPage} />
-        </Group>
       </Section>
 
       <CreateCashTransactionDialog open={createOpen} onOpenChange={setCreateOpen} />

@@ -7,7 +7,6 @@ import {
   Group,
   Menu,
   Modal,
-  Pagination,
   ScrollArea,
   Select,
   Stack,
@@ -342,20 +341,25 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
               ...t,
               currency: (CURRENCIES as readonly string[]).includes(t.currency) ? (t.currency as Currency) : "EUR",
             }))
-            return <TransactionsTable items={txRows} onEdit={setEditTx} onDelete={setDeleteTx} />
+            return (
+              <TransactionsTable items={txRows}>
+                <TransactionsTable.Customer />
+                <TransactionsTable.Name />
+                <TransactionsTable.Amount />
+                <TransactionsTable.Actions onEdit={setEditTx} onDelete={setDeleteTx} />
+                {showTransactionsPagination ? (
+                  <TransactionsTable.Pagination
+                    page={transactionsPage}
+                    pageSize={APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE}
+                    itemCount={txRows.length}
+                    totalCount={transactionsTotalCount}
+                    onChange={setTransactionsPage}
+                    label={`Page ${Math.min(transactionsPage, transactionsTotalPages)} of ${transactionsTotalPages}`}
+                  />
+                ) : null}
+              </TransactionsTable>
+            )
           })()}
-          {showTransactionsPagination && (
-            <Group justify="space-between" mt="md">
-              <Text size="sm" c="dimmed">
-                Page {Math.min(transactionsPage, transactionsTotalPages)} of {transactionsTotalPages}
-              </Text>
-              <Pagination
-                total={transactionsTotalPages}
-                value={Math.min(transactionsPage, transactionsTotalPages)}
-                onChange={setTransactionsPage}
-              />
-            </Group>
-          )}
         </Card>
 
         <Card withBorder>
@@ -375,19 +379,25 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
               Add
             </Button>
           </Group>
-          <HairAssignedTable items={hairAssigned} showHairOrderColumn onEdit={setEditItem} onDelete={setDeleteItem} />
-          {showHairAssignedPagination && (
-            <Group justify="space-between" mt="md">
-              <Text size="sm" c="dimmed">
-                Page {Math.min(hairAssignedPage, hairAssignedTotalPages)} of {hairAssignedTotalPages}
-              </Text>
-              <Pagination
-                total={hairAssignedTotalPages}
-                value={Math.min(hairAssignedPage, hairAssignedTotalPages)}
+          <HairAssignedTable items={hairAssigned}>
+            <HairAssignedTable.Client />
+            <HairAssignedTable.HairOrder />
+            <HairAssignedTable.Weight />
+            <HairAssignedTable.SoldFor />
+            <HairAssignedTable.Profit />
+            <HairAssignedTable.PricePerGram />
+            <HairAssignedTable.Actions onEdit={setEditItem} onDelete={setDeleteItem} />
+            {showHairAssignedPagination ? (
+              <HairAssignedTable.Pagination
+                page={hairAssignedPage}
+                pageSize={APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE}
+                itemCount={hairAssigned.length}
+                totalCount={hairAssignedTotalCount}
                 onChange={setHairAssignedPage}
+                label={`Page ${Math.min(hairAssignedPage, hairAssignedTotalPages)} of ${hairAssignedTotalPages}`}
               />
-            </Group>
-          )}
+            ) : null}
+          </HairAssignedTable>
         </Card>
 
         <Card withBorder>

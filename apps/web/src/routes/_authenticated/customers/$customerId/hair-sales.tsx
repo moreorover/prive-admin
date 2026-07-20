@@ -1,4 +1,4 @@
-import { Button, Group, Pagination, Stack, Text, TextInput } from "@mantine/core"
+import { Button, Stack, Text, TextInput } from "@mantine/core"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
@@ -101,29 +101,31 @@ function HairSalesRoute() {
       >
         <Stack gap="md">
           {hasItemsOnCurrentPage ? (
-            <HairAssignedTable
-              items={hairAssigned}
-              showSourceColumn
-              showHairOrderColumn
-              onEdit={setHairEditItem}
-              onDelete={setHairDeleteItem}
-            />
+            <HairAssignedTable items={hairAssigned}>
+              <HairAssignedTable.Client />
+              <HairAssignedTable.Source />
+              <HairAssignedTable.HairOrder />
+              <HairAssignedTable.Weight />
+              <HairAssignedTable.SoldFor />
+              <HairAssignedTable.Profit />
+              <HairAssignedTable.PricePerGram />
+              <HairAssignedTable.Actions onEdit={setHairEditItem} onDelete={setHairDeleteItem} />
+              <HairAssignedTable.Pagination
+                page={clampedPage}
+                pageSize={PAGE_SIZE}
+                itemCount={hairAssigned.length}
+                totalCount={totalCount}
+                onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
+                label={`${totalCount} hair sale${totalCount === 1 ? "" : "s"} · Page ${clampedPage} of ${totalPages}`}
+                px="md"
+                pb="md"
+              />
+            </HairAssignedTable>
           ) : (
             <Text size="sm" c="dimmed" p="lg">
               {normalizedSearch ? "No hair sales match your search." : "No hair sales on this page."}
             </Text>
           )}
-
-          <Group justify="space-between" px="md" pb="md">
-            <Text size="sm" c="dimmed">
-              {totalCount} hair sale{totalCount === 1 ? "" : "s"} · Page {clampedPage} of {totalPages}
-            </Text>
-            <Pagination
-              value={clampedPage}
-              total={totalPages}
-              onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
-            />
-          </Group>
         </Stack>
 
         <CreateHairAssignedDialog
