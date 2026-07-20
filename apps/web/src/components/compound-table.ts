@@ -8,16 +8,13 @@ export type CompoundTableColumnComponent<Props = object> = ((props: Props) => Re
   Cell: (props: Props) => ReactElement
 }
 
-export type CompoundTableColumnElement = ReactElement<object, CompoundTableColumnComponent<object>>
+type CompoundTableColumnElement = ReactElement<object, CompoundTableColumnComponent<object>>
 
-export type CompoundTablePaginationComponent<Props = object> = ((props: Props) => ReactElement) & {
+type CompoundTablePaginationComponent<Props = object> = ((props: Props) => ReactElement) & {
   isTablePagination: true
 }
 
-export type CompoundTablePaginationElement<Props = object> = ReactElement<
-  Props,
-  CompoundTablePaginationComponent<Props>
->
+type CompoundTablePaginationElement<Props = object> = ReactElement<Props, CompoundTablePaginationComponent<Props>>
 
 export function getCompoundTableColumns(children: ReactNode) {
   return Children.toArray(children).filter(isCompoundTableColumn)
