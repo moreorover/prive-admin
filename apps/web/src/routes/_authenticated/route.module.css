@@ -6,17 +6,21 @@
 }
 
 .topRow {
-  height: 56px;
+  height: 64px;
   border-bottom: 1px solid var(--prive-border);
 }
 
 .tabsRow {
+  display: none;
   height: 56px;
-  align-items: flex-start;
-  padding-top: 7px;
+  align-items: center;
+  box-sizing: border-box;
+  padding-top: 0;
+  padding-bottom: 22px;
 }
 
 .ledgerRule {
+  display: none;
   position: absolute;
   right: 0;
   bottom: 0;
@@ -50,7 +54,7 @@
 }
 
 .desktopNavLink {
-  padding: 7px 10px;
+  padding: 5px 10px;
   border-radius: var(--mantine-radius-sm);
 }
 
@@ -98,14 +102,13 @@
   border-color: var(--prive-border);
 }
 
-@media (max-width: 47.9375em) {
+@media (min-width: 75em) {
   .topRow {
-    height: 64px;
-    padding-inline: var(--mantine-spacing-md);
+    height: 56px;
   }
 
   .tabsRow,
   .ledgerRule {
-    display: none;
+    display: flex;
   }
 }

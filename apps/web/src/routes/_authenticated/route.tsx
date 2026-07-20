@@ -70,7 +70,7 @@ function AuthenticatedLayout() {
   const activeBadge = activeItem?.badgeKey ? badges[activeItem.badgeKey] : 0
 
   return (
-    <AppShell header={{ height: { base: 64, sm: 112 } }} padding={0}>
+    <AppShell header={{ height: { base: 64, lg: 112 } }} padding={0}>
       <AppShell.Header className={classes.header}>
         <HeaderTop opened={mobileOpened} onToggle={toggleMobile} />
         <DesktopTabs badges={badges} />
