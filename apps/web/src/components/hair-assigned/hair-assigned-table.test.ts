@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import type { ComponentProps, ReactNode } from "react"
 
 import { MantineProvider } from "@mantine/core"
 import { createElement, Fragment } from "react"
@@ -23,7 +23,15 @@ const hairAssignedRows = [
 
 function renderHairAssignedTable(children: ReactNode) {
   return renderToStaticMarkup(
-    createElement(MantineProvider, null, createElement(HairAssignedTable, { items: hairAssignedRows, children })),
+    createElement(
+      MantineProvider,
+      null,
+      createElement(
+        HairAssignedTable,
+        { items: hairAssignedRows } as ComponentProps<typeof HairAssignedTable>,
+        children,
+      ),
+    ),
   )
 }
 

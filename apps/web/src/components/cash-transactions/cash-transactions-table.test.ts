@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import type { ComponentProps, ReactNode } from "react"
 
 import { MantineProvider } from "@mantine/core"
 import { createElement, Fragment } from "react"
@@ -27,7 +27,11 @@ function renderCashTransactionsTable(children: ReactNode) {
     createElement(
       MantineProvider,
       null,
-      createElement(CashTransactionsTable, { items: cashTransactionRows, children }),
+      createElement(
+        CashTransactionsTable,
+        { items: cashTransactionRows } as ComponentProps<typeof CashTransactionsTable>,
+        children,
+      ),
     ),
   )
 }

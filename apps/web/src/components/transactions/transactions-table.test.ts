@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import type { ComponentProps, ReactNode } from "react"
 
 import { MantineProvider } from "@mantine/core"
 import { createElement, Fragment } from "react"
@@ -22,7 +22,15 @@ const transactionRows = [
 
 function renderTransactionsTable(children: ReactNode) {
   return renderToStaticMarkup(
-    createElement(MantineProvider, null, createElement(TransactionsTable, { items: transactionRows, children })),
+    createElement(
+      MantineProvider,
+      null,
+      createElement(
+        TransactionsTable,
+        { items: transactionRows } as ComponentProps<typeof TransactionsTable>,
+        children,
+      ),
+    ),
   )
 }
 
