@@ -1,9 +1,12 @@
-import { ActionIcon, Group, Table, Text } from "@mantine/core"
+import { ActionIcon, Badge, Group, Table, Text } from "@mantine/core"
 import { IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 
+import { getHairAssignedSource } from "./hair-assigned-source"
+
 export type HairAssignedRow = {
   id: string
+  appointmentId?: string | null
   weightInGrams: number
   soldFor: number
   profit: number
@@ -14,6 +17,7 @@ export type HairAssignedRow = {
 
 type HairAssignedTableProps = {
   items: HairAssignedRow[]
+  showSourceColumn?: boolean
   showHairOrderColumn?: boolean
   onEdit: (item: HairAssignedRow) => void
   onDelete: (item: HairAssignedRow) => void
@@ -21,7 +25,13 @@ type HairAssignedTableProps = {
 
 const formatCents = (cents: number) => `€${(cents / 100).toFixed(2)}`
 
-export function HairAssignedTable({ items, showHairOrderColumn = false, onEdit, onDelete }: HairAssignedTableProps) {
+export function HairAssignedTable({
+  items,
+  showSourceColumn = false,
+  showHairOrderColumn = false,
+  onEdit,
+  onDelete,
+}: HairAssignedTableProps) {
   if (items.length === 0) {
     return (
       <Text size="sm" c="dimmed">
@@ -35,6 +45,7 @@ export function HairAssignedTable({ items, showHairOrderColumn = false, onEdit, 
       <Table.Thead>
         <Table.Tr>
           <Table.Th>Client</Table.Th>
+          {showSourceColumn && <Table.Th>Source</Table.Th>}
           {showHairOrderColumn && <Table.Th>Hair Order</Table.Th>}
           <Table.Th>Weight</Table.Th>
           <Table.Th>Sold For</Table.Th>
@@ -46,6 +57,7 @@ export function HairAssignedTable({ items, showHairOrderColumn = false, onEdit, 
       <Table.Tbody>
         {items.map((ha) => {
           const needsAttention = ha.weightInGrams === 0 || ha.soldFor === 0
+          const source = getHairAssignedSource(ha)
           return (
             <Table.Tr key={ha.id} bg={needsAttention ? "var(--mantine-color-red-0)" : undefined}>
               <Table.Td>
@@ -62,6 +74,13 @@ export function HairAssignedTable({ items, showHairOrderColumn = false, onEdit, 
                   "—"
                 )}
               </Table.Td>
+              {showSourceColumn && (
+                <Table.Td>
+                  <Badge variant="light" color={source.color}>
+                    {source.label}
+                  </Badge>
+                </Table.Td>
+              )}
               {showHairOrderColumn && (
                 <Table.Td>
                   {ha.hairOrder ? (

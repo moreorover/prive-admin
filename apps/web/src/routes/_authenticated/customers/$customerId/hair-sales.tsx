@@ -1,4 +1,4 @@
-import { Button, Card, Group, Pagination, Stack, Text, TextInput, Title } from "@mantine/core"
+import { Button, Group, Pagination, Stack, Text, TextInput } from "@mantine/core"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
@@ -50,8 +50,6 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId/hair
   },
 })
 
-type HairAssignedItem = HairAssignedRow & { appointmentId?: string | null }
-
 function HairSalesRoute() {
   const { customerId } = Route.useParams()
   const search = Route.useSearch()
@@ -65,14 +63,11 @@ function HairSalesRoute() {
   const normalizedSearch = searchValue.trim()
   const queryOptions = hairSalesQueryOptions(customerId, page, searchValue)
   const { data } = useQuery(queryOptions)
-  const hairAssigned = (data?.items ?? []) as HairAssignedItem[]
+  const hairAssigned = (data?.items ?? []) as HairAssignedRow[]
   const totalCount = data?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const clampedPage = Math.min(page, totalPages)
   const hasItemsOnCurrentPage = hairAssigned.length > 0
-
-  const throughAppointment = hairAssigned.filter((ha) => !!ha.appointmentId)
-  const individual = hairAssigned.filter((ha) => !ha.appointmentId)
 
   return (
     <>
@@ -106,43 +101,13 @@ function HairSalesRoute() {
       >
         <Stack gap="md">
           {hasItemsOnCurrentPage ? (
-            <Stack>
-              <Card withBorder>
-                <Title order={5} mb="sm">
-                  Hair Sales through Appointment
-                </Title>
-                {throughAppointment.length > 0 ? (
-                  <HairAssignedTable
-                    items={throughAppointment}
-                    showHairOrderColumn
-                    onEdit={setHairEditItem}
-                    onDelete={setHairDeleteItem}
-                  />
-                ) : (
-                  <Text size="sm" c="dimmed">
-                    No appointment-tied hair sales on this page.
-                  </Text>
-                )}
-              </Card>
-
-              <Card withBorder>
-                <Title order={5} mb="sm">
-                  Hair Sales Individual
-                </Title>
-                {individual.length > 0 ? (
-                  <HairAssignedTable
-                    items={individual}
-                    showHairOrderColumn
-                    onEdit={setHairEditItem}
-                    onDelete={setHairDeleteItem}
-                  />
-                ) : (
-                  <Text size="sm" c="dimmed">
-                    No individual hair sales on this page.
-                  </Text>
-                )}
-              </Card>
-            </Stack>
+            <HairAssignedTable
+              items={hairAssigned}
+              showSourceColumn
+              showHairOrderColumn
+              onEdit={setHairEditItem}
+              onDelete={setHairDeleteItem}
+            />
           ) : (
             <Text size="sm" c="dimmed" p="lg">
               {normalizedSearch ? "No hair sales match your search." : "No hair sales on this page."}
