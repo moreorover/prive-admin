@@ -13,10 +13,10 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@mantine/core": "^9.3.1",
-    "@mantine/hooks": "^9.3.1",
-    "@mantine/modals": "^9.3.1",
-    "@mantine/notifications": "^9.3.1",
+    "@mantine/core": "^9.4.1",
+    "@mantine/hooks": "^9.4.1",
+    "@mantine/modals": "^9.4.1",
+    "@mantine/notifications": "^9.4.1",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
@@ -24,7 +24,7 @@
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "postcss": "^8.5.15",
+    "postcss": "^8.5.19",
     "postcss-preset-mantine": "^1.18.0",
     "postcss-simple-vars": "^7.0.1",
     "typescript": "catalog:"
