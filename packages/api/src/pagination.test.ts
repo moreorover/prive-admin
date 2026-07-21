@@ -4,7 +4,7 @@ import { getOffset, pageSchema, pagedResult, searchSchema } from "./pagination"
 
 describe("pagination helpers", () => {
   it("defaults page and pageSize", () => {
-    expect(pageSchema.parse({})).toEqual({ page: 1, pageSize: 25 })
+    expect(pageSchema.parse({})).toEqual({ page: 1, pageSize: 10 })
   })
 
   it("rejects unsafe page sizes", () => {

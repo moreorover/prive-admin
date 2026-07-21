@@ -28,68 +28,9 @@ export async function getBankStatementAttachment(database: Db = db, id: string) 
   })
 }
 
-export async function listBankStatementAttachments(
-  database: Db = db,
-  filter: { entryId?: string; assigned?: boolean } = {},
-) {
-  const conditions = []
-  if (filter.entryId) conditions.push(eq(bankStatementAttachment.bankStatementEntryId, filter.entryId))
-  if (filter.assigned === false) conditions.push(isNull(bankStatementAttachment.bankStatementEntryId))
-  if (filter.assigned === true) conditions.push(isNotNull(bankStatementAttachment.bankStatementEntryId))
+export type BankStatementAttachmentAssignmentStatus = "assigned" | "unassigned" | "all"
 
-  return database.query.bankStatementAttachment.findMany({
-    where: conditions.length > 0 ? and(...conditions) : undefined,
-    orderBy: [desc(bankStatementAttachment.uploadedAt)],
-  })
-}
-
-export type AssignedBankStatementAttachmentRow = {
-  attachment: typeof bankStatementAttachment.$inferSelect
-  entry: typeof bankStatementEntry.$inferSelect
-  bankAccount: Pick<typeof bankAccount.$inferSelect, "id" | "displayName" | "bankName" | "currency">
-}
-
-export async function listAssignedBankStatementAttachments(
-  database: Db = db,
-  input: { legalEntityId: string; pageSize: number; offset: number },
-) {
-  const where = and(
-    isNotNull(bankStatementAttachment.bankStatementEntryId),
-    eq(bankAccount.legalEntityId, input.legalEntityId),
-  )
-
-  const items = await database
-    .select({
-      attachment: bankStatementAttachment,
-      entry: bankStatementEntry,
-      bankAccount: {
-        id: bankAccount.id,
-        displayName: bankAccount.displayName,
-        bankName: bankAccount.bankName,
-        currency: bankAccount.currency,
-      },
-    })
-    .from(bankStatementAttachment)
-    .innerJoin(bankStatementEntry, eq(bankStatementAttachment.bankStatementEntryId, bankStatementEntry.id))
-    .innerJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
-    .where(where)
-    .orderBy(desc(bankStatementEntry.date), desc(bankStatementAttachment.uploadedAt), desc(bankStatementAttachment.id))
-    .limit(input.pageSize)
-    .offset(input.offset)
-
-  const [countRow] = await database
-    .select({ totalCount: count() })
-    .from(bankStatementAttachment)
-    .innerJoin(bankStatementEntry, eq(bankStatementAttachment.bankStatementEntryId, bankStatementEntry.id))
-    .innerJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
-    .where(where)
-
-  return { items, totalCount: countRow?.totalCount ?? 0 }
-}
-
-export type GlobalBankStatementAttachmentStatus = "assigned" | "unassigned" | "all"
-
-export type GlobalBankStatementAttachmentRow = {
+export type BankStatementAttachmentRow = {
   attachment: typeof bankStatementAttachment.$inferSelect
   assignmentState: "assigned" | "unassigned"
   entry: typeof bankStatementEntry.$inferSelect | null
@@ -97,16 +38,22 @@ export type GlobalBankStatementAttachmentRow = {
   legalEntity: Pick<typeof legalEntity.$inferSelect, "id" | "name"> | null
 }
 
-export async function listGlobalBankStatementAttachments(
+export async function listBankStatementAttachments(
   database: Db = db,
-  input: { status: GlobalBankStatementAttachmentStatus; pageSize: number; offset: number },
+  filter: {
+    assignmentStatus: BankStatementAttachmentAssignmentStatus
+    pageSize: number
+    offset: number
+    entryId?: string
+    legalEntityId?: string
+  },
 ) {
-  const where =
-    input.status === "assigned"
-      ? isNotNull(bankStatementAttachment.bankStatementEntryId)
-      : input.status === "unassigned"
-        ? isNull(bankStatementAttachment.bankStatementEntryId)
-        : undefined
+  const conditions = []
+  if (filter.entryId) conditions.push(eq(bankStatementAttachment.bankStatementEntryId, filter.entryId))
+  if (filter.legalEntityId) conditions.push(eq(bankAccount.legalEntityId, filter.legalEntityId))
+  if (filter.assignmentStatus === "assigned") conditions.push(isNotNull(bankStatementAttachment.bankStatementEntryId))
+  if (filter.assignmentStatus === "unassigned") conditions.push(isNull(bankStatementAttachment.bankStatementEntryId))
+  const where = conditions.length === 1 ? conditions[0] : conditions.length > 1 ? and(...conditions) : undefined
 
   const itemsQuery = database
     .select({
@@ -137,8 +84,8 @@ export async function listGlobalBankStatementAttachments(
   const items = await itemsQuery
     .where(where)
     .orderBy(desc(bankStatementAttachment.uploadedAt), desc(bankStatementAttachment.id))
-    .limit(input.pageSize)
-    .offset(input.offset)
+    .limit(filter.pageSize)
+    .offset(filter.offset)
 
   const countQuery = database
     .select({ totalCount: count() })

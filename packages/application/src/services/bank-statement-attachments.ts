@@ -5,8 +5,6 @@ import {
   countBankStatementAttachments as fetchBankStatementAttachmentCounts,
   getBankStatementAttachment as findBankStatementAttachment,
   getBankStatementEntry as findBankStatementEntry,
-  listAssignedBankStatementAttachments as fetchAssignedBankStatementAttachments,
-  listGlobalBankStatementAttachments as fetchGlobalBankStatementAttachments,
   deleteBankStatementAttachment as removeBankStatementAttachment,
   listBankStatementAttachmentExportRows as fetchBankStatementAttachmentExportRows,
   listBankStatementAttachments as fetchBankStatementAttachments,
@@ -40,24 +38,17 @@ const ZipArchive = (
   }
 ).ZipArchive
 
-export async function listBankStatementAttachments(input: { entryId?: string; assigned?: boolean } = {}) {
-  return fetchBankStatementAttachments(undefined, input)
-}
-
-export async function listAssignedBankStatementAttachments(input: {
-  legalEntityId: string
+export async function listBankStatementAttachments(input: {
+  assignmentStatus?: "assigned" | "unassigned" | "all"
   pageSize: number
   offset: number
+  entryId?: string
+  legalEntityId?: string
 }) {
-  return fetchAssignedBankStatementAttachments(undefined, input)
-}
-
-export async function listGlobalBankStatementAttachments(input: {
-  status: "assigned" | "unassigned" | "all"
-  pageSize: number
-  offset: number
-}) {
-  return fetchGlobalBankStatementAttachments(undefined, input)
+  return fetchBankStatementAttachments(undefined, {
+    ...input,
+    assignmentStatus: input.assignmentStatus ?? "all",
+  })
 }
 
 export async function countBankStatementAttachments() {

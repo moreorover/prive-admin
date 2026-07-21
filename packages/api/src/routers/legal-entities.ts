@@ -3,6 +3,7 @@ import { z } from "zod"
 
 import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
+import { getOffset, pagedResult, pageSchema } from "../pagination"
 
 const legalEntityUpdateSchema = z.object({
   id: z.string().min(1),
@@ -12,8 +13,9 @@ const legalEntityUpdateSchema = z.object({
 })
 
 export const legalEntitiesRouter = router({
-  list: protectedProcedure.input(z.object({}).optional().default({})).query(() => {
-    return listLegalEntities()
+  list: protectedProcedure.input(pageSchema).query(async ({ input }) => {
+    const result = await listLegalEntities({ pageSize: input.pageSize, offset: getOffset(input) })
+    return pagedResult(result.items, input, result.totalCount)
   }),
 
   get: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {

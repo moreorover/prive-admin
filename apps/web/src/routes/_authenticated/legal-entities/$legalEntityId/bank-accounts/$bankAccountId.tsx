@@ -370,22 +370,23 @@ function AttachmentsCell({
   const [busy, setBusy] = useState(false)
   const [fileInputKey, setFileInputKey] = useState(0)
 
-  const listQueryOptions = trpc.bankStatementAttachments.list.queryOptions({ entryId })
-  const { data: attachments = [], isLoading: attachmentsLoading } = useQuery({
+  const listQueryOptions = trpc.bankStatementAttachments.list.queryOptions({ entryId, pageSize: 100 })
+  const { data: attachmentsData, isLoading: attachmentsLoading } = useQuery({
     ...listQueryOptions,
     enabled: opened,
   })
+  const attachments = attachmentsData?.items.map((row) => row.attachment) ?? []
 
-  const { data: unassignedAttachments = [] } = useQuery({
-    ...trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
+  const { data: unassignedAttachmentsData } = useQuery({
+    ...trpc.bankStatementAttachments.list.queryOptions({ assignmentStatus: "unassigned", pageSize: 100 }),
     enabled: opened,
   })
+  const unassignedAttachments = unassignedAttachmentsData?.items.map((row) => row.attachment) ?? []
 
   const invalidate = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.list.queryKey() }),
       queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.counts.queryKey() }),
-      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.listAssigned.queryKey() }),
     ])
   }
 
@@ -569,7 +570,8 @@ function EditBankAccountModal({
   initial: FormValues
 }) {
   const queryClient = useQueryClient()
-  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions({}))
+  const { data: legalEntitiesData } = useQuery(trpc.legalEntities.list.queryOptions({ pageSize: 100 }))
+  const legalEntities = legalEntitiesData?.items ?? []
 
   const form = useForm<FormValues & { id: string }>({
     initialValues: {
@@ -642,7 +644,8 @@ function BankAccountNew() {
   const { legalEntityId: pathLegalEntityId } = Route.useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions({}))
+  const { data: legalEntitiesData } = useQuery(trpc.legalEntities.list.queryOptions({ pageSize: 100 }))
+  const legalEntities = legalEntitiesData?.items ?? []
 
   const form = useForm<FormValues>({
     initialValues: {

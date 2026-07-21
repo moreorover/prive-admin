@@ -25,6 +25,7 @@ const hairOrderInputSchema = z.object({
 const hairOrderListSchema = pageSchema.extend({
   customerId: z.string().optional(),
   status: z.enum(["PENDING", "COMPLETED"]).optional(),
+  availability: z.enum(["availableForAssignment"]).optional(),
 })
 
 export const hairOrdersRouter = router({
@@ -35,6 +36,7 @@ export const hairOrdersRouter = router({
         offset: getOffset(input),
         customerId: input.customerId,
         status: input.status,
+        availability: input.availability,
       })
       return pagedResult(result.items, input, result.totalCount)
     } catch (error) {

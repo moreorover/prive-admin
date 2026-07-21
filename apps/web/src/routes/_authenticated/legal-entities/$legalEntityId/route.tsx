@@ -36,7 +36,8 @@ function LegalEntityLayout() {
     retry: (failureCount, error) => !isNotFoundError(error) && failureCount < 3,
   })
   const legalEntity = legalEntityQuery.data
-  const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions({}))
+  const { data: legalEntitiesData } = useQuery(trpc.legalEntities.list.queryOptions({ pageSize: 100 }))
+  const legalEntities = legalEntitiesData?.items ?? []
   const country = legalEntity?.country as Country | undefined
   const description = legalEntity
     ? `${legalEntity.type}${country ? ` · ${COUNTRY_FLAGS[country]} ${COUNTRY_LABELS[country]}` : ""} · ${legalEntity.defaultCurrency}`
@@ -196,7 +197,7 @@ function EditLegalEntityForm({
   onClose: () => void
 }) {
   const queryClient = useQueryClient()
-  const legalEntitiesQueryOptions = trpc.legalEntities.list.queryOptions({})
+  const legalEntitiesQueryOptions = trpc.legalEntities.list.queryOptions({ pageSize: 100 })
   const legalEntityQueryOptions = trpc.legalEntities.get.queryOptions({ id: initialValues.id })
 
   const form = useForm<EditValues & { id: string }>({

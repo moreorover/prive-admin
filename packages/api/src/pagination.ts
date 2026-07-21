@@ -2,7 +2,7 @@ import { z } from "zod"
 
 export const pageSchema = z.object({
   page: z.number().int().min(1).max(1000).default(1),
-  pageSize: z.number().int().min(1).max(100).default(25),
+  pageSize: z.number().int().min(1).max(100).default(10),
 })
 
 export const searchSchema = z

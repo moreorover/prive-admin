@@ -24,14 +24,18 @@ export function CreateHairAssignedDialog({
 }: CreateHairAssignedDialogProps) {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const queryClient = useQueryClient()
-  const availableOrdersQueryOptions = trpc.hairAssigned.availableOrders.queryOptions()
+  const availableOrdersQueryOptions = trpc.hairOrders.list.queryOptions({
+    availability: "availableForAssignment",
+    pageSize: 100,
+  })
   const hairAssignedListQueryKey = trpc.hairAssigned.list.queryKey()
   const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
 
-  const { data: availableOrders, isLoading } = useQuery({
+  const { data: availableOrdersData, isLoading } = useQuery({
     ...availableOrdersQueryOptions,
     enabled: open,
   })
+  const availableOrders = availableOrdersData?.items ?? []
 
   const mutation = useMutation({
     ...trpc.hairAssigned.create.mutationOptions(),
@@ -66,7 +70,7 @@ export function CreateHairAssignedDialog({
           <Text size="sm" c="dimmed">
             Loading…
           </Text>
-        ) : availableOrders && availableOrders.length > 0 ? (
+        ) : availableOrders.length > 0 ? (
           <Radio.Group value={selectedOrderId} onChange={setSelectedOrderId}>
             <Table>
               <Table.Thead>

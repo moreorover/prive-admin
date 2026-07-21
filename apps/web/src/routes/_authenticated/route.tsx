@@ -62,10 +62,10 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] = useDisclosure(false)
 
-  const { data: unassignedAttachments = [] } = useQuery(
-    trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
+  const { data: unassignedAttachments } = useQuery(
+    trpc.bankStatementAttachments.list.queryOptions({ assignmentStatus: "unassigned" }),
   )
-  const badges = { unassigned: unassignedAttachments.length }
+  const badges = { unassigned: unassignedAttachments?.totalCount ?? 0 }
 
   return (
     <BreadcrumbProvider>

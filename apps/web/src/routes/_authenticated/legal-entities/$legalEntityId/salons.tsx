@@ -12,7 +12,8 @@ export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntit
 })
 
 function SalonsTab() {
-  const { data: salons = [] } = useQuery(trpc.salons.list.queryOptions({}))
+  const { data: salonsData } = useQuery(trpc.salons.list.queryOptions({ pageSize: 100 }))
+  const salons = salonsData?.items ?? []
 
   return (
     <>
