@@ -39,6 +39,7 @@ import { Route as AuthenticatedLegalEntitiesLegalEntityIdSalonsRouteImport } fro
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdReportsRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/reports'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdOverviewRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/overview'
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdDocumentsRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/documents'
+import { Route as AuthenticatedDocumentsDocumentIdMatchRouteImport } from './routes/_authenticated/documents/$documentId/match'
 import { Route as AuthenticatedCustomersCustomerIdNotesRouteImport } from './routes/_authenticated/customers/$customerId/notes'
 import { Route as AuthenticatedCustomersCustomerIdHairSalesRouteImport } from './routes/_authenticated/customers/$customerId/hair-sales'
 import { Route as AuthenticatedCustomersCustomerIdAppointmentsRouteImport } from './routes/_authenticated/customers/$customerId/appointments'
@@ -215,6 +216,12 @@ const AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute =
     path: '/documents',
     getParentRoute: () => AuthenticatedLegalEntitiesLegalEntityIdRouteRoute,
   } as any)
+const AuthenticatedDocumentsDocumentIdMatchRoute =
+  AuthenticatedDocumentsDocumentIdMatchRouteImport.update({
+    id: '/$documentId/match',
+    path: '/$documentId/match',
+    getParentRoute: () => AuthenticatedDocumentsRoute,
+  } as any)
 const AuthenticatedCustomersCustomerIdNotesRoute =
   AuthenticatedCustomersCustomerIdNotesRouteImport.update({
     id: '/notes',
@@ -258,7 +265,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof AuthenticatedCalendarRoute
   '/cash': typeof AuthenticatedCashRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/documents': typeof AuthenticatedDocumentsRoute
+  '/documents': typeof AuthenticatedDocumentsRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteRouteWithChildren
@@ -275,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/customers/$customerId/appointments': typeof AuthenticatedCustomersCustomerIdAppointmentsRoute
   '/customers/$customerId/hair-sales': typeof AuthenticatedCustomersCustomerIdHairSalesRoute
   '/customers/$customerId/notes': typeof AuthenticatedCustomersCustomerIdNotesRoute
+  '/documents/$documentId/match': typeof AuthenticatedDocumentsDocumentIdMatchRoute
   '/legal-entities/$legalEntityId/documents': typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute
   '/legal-entities/$legalEntityId/overview': typeof AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute
   '/legal-entities/$legalEntityId/reports': typeof AuthenticatedLegalEntitiesLegalEntityIdReportsRoute
@@ -291,7 +299,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof AuthenticatedCalendarRoute
   '/cash': typeof AuthenticatedCashRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/documents': typeof AuthenticatedDocumentsRoute
+  '/documents': typeof AuthenticatedDocumentsRouteWithChildren
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
@@ -306,6 +314,7 @@ export interface FileRoutesByTo {
   '/customers/$customerId/appointments': typeof AuthenticatedCustomersCustomerIdAppointmentsRoute
   '/customers/$customerId/hair-sales': typeof AuthenticatedCustomersCustomerIdHairSalesRoute
   '/customers/$customerId/notes': typeof AuthenticatedCustomersCustomerIdNotesRoute
+  '/documents/$documentId/match': typeof AuthenticatedDocumentsDocumentIdMatchRoute
   '/legal-entities/$legalEntityId/documents': typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute
   '/legal-entities/$legalEntityId/overview': typeof AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute
   '/legal-entities/$legalEntityId/reports': typeof AuthenticatedLegalEntitiesLegalEntityIdReportsRoute
@@ -327,7 +336,7 @@ export interface FileRoutesById {
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/cash': typeof AuthenticatedCashRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
+  '/_authenticated/documents': typeof AuthenticatedDocumentsRouteWithChildren
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteRouteWithChildren
@@ -344,6 +353,7 @@ export interface FileRoutesById {
   '/_authenticated/customers/$customerId/appointments': typeof AuthenticatedCustomersCustomerIdAppointmentsRoute
   '/_authenticated/customers/$customerId/hair-sales': typeof AuthenticatedCustomersCustomerIdHairSalesRoute
   '/_authenticated/customers/$customerId/notes': typeof AuthenticatedCustomersCustomerIdNotesRoute
+  '/_authenticated/documents/$documentId/match': typeof AuthenticatedDocumentsDocumentIdMatchRoute
   '/_authenticated/legal-entities/$legalEntityId/documents': typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute
   '/_authenticated/legal-entities/$legalEntityId/overview': typeof AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute
   '/_authenticated/legal-entities/$legalEntityId/reports': typeof AuthenticatedLegalEntitiesLegalEntityIdReportsRoute
@@ -382,6 +392,7 @@ export interface FileRouteTypes {
     | '/customers/$customerId/appointments'
     | '/customers/$customerId/hair-sales'
     | '/customers/$customerId/notes'
+    | '/documents/$documentId/match'
     | '/legal-entities/$legalEntityId/documents'
     | '/legal-entities/$legalEntityId/overview'
     | '/legal-entities/$legalEntityId/reports'
@@ -413,6 +424,7 @@ export interface FileRouteTypes {
     | '/customers/$customerId/appointments'
     | '/customers/$customerId/hair-sales'
     | '/customers/$customerId/notes'
+    | '/documents/$documentId/match'
     | '/legal-entities/$legalEntityId/documents'
     | '/legal-entities/$legalEntityId/overview'
     | '/legal-entities/$legalEntityId/reports'
@@ -450,6 +462,7 @@ export interface FileRouteTypes {
     | '/_authenticated/customers/$customerId/appointments'
     | '/_authenticated/customers/$customerId/hair-sales'
     | '/_authenticated/customers/$customerId/notes'
+    | '/_authenticated/documents/$documentId/match'
     | '/_authenticated/legal-entities/$legalEntityId/documents'
     | '/_authenticated/legal-entities/$legalEntityId/overview'
     | '/_authenticated/legal-entities/$legalEntityId/reports'
@@ -678,6 +691,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRouteImport
       parentRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRoute
     }
+    '/_authenticated/documents/$documentId/match': {
+      id: '/_authenticated/documents/$documentId/match'
+      path: '/$documentId/match'
+      fullPath: '/documents/$documentId/match'
+      preLoaderRoute: typeof AuthenticatedDocumentsDocumentIdMatchRouteImport
+      parentRoute: typeof AuthenticatedDocumentsRoute
+    }
     '/_authenticated/customers/$customerId/notes': {
       id: '/_authenticated/customers/$customerId/notes'
       path: '/notes'
@@ -806,6 +826,21 @@ const AuthenticatedHairSalesRouteRouteWithChildren =
     AuthenticatedHairSalesRouteRouteChildren,
   )
 
+interface AuthenticatedDocumentsRouteChildren {
+  AuthenticatedDocumentsDocumentIdMatchRoute: typeof AuthenticatedDocumentsDocumentIdMatchRoute
+}
+
+const AuthenticatedDocumentsRouteChildren: AuthenticatedDocumentsRouteChildren =
+  {
+    AuthenticatedDocumentsDocumentIdMatchRoute:
+      AuthenticatedDocumentsDocumentIdMatchRoute,
+  }
+
+const AuthenticatedDocumentsRouteWithChildren =
+  AuthenticatedDocumentsRoute._addFileChildren(
+    AuthenticatedDocumentsRouteChildren,
+  )
+
 interface AuthenticatedLegalEntitiesLegalEntityIdRouteRouteChildren {
   AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdDocumentsRoute
   AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdOverviewRoute
@@ -847,7 +882,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedCashRoute: typeof AuthenticatedCashRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
+  AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRouteWithChildren
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedLegalEntitiesLegalEntityIdRouteRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren
@@ -868,7 +903,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedCashRoute: AuthenticatedCashRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
+  AuthenticatedDocumentsRoute: AuthenticatedDocumentsRouteWithChildren,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedLegalEntitiesLegalEntityIdRouteRoute:
