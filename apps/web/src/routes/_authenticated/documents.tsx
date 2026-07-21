@@ -34,6 +34,7 @@ import { type Currency, formatMinor } from "@/lib/currency"
 import {
   filterDocumentMatchCandidates,
   formatCandidateAmount,
+  getDocumentMatchCandidatePage,
   getDocumentMatchFilterOptions,
   type DocumentMatchCandidate,
   type DocumentMatchCandidateFilters,
@@ -46,6 +47,7 @@ export const Route = createFileRoute("/_authenticated/documents")({
 
 const PAGE_SIZE = 25
 const ASSIGNABLE_ENTRIES_PAGE_SIZE = 100
+const DRAWER_CANDIDATES_PAGE_SIZE = 10
 type DocumentStatus = "unassigned" | "assigned" | "all"
 type MatchableDocument = {
   id: string
@@ -433,9 +435,17 @@ function MatchDocumentDrawer({
   })
   const { legalEntities, bankAccounts } = getDocumentMatchFilterOptions(candidates, filters.legalEntityId)
   const filteredCandidates = filterDocumentMatchCandidates(candidates, filters)
+  const [drawerPage, setDrawerPage] = useState(1)
+  const candidatePageResult = getDocumentMatchCandidatePage(filteredCandidates, drawerPage, DRAWER_CANDIDATES_PAGE_SIZE)
+  const visibleCandidates = candidatePageResult.items
   const updateFilters = (nextFilters: Partial<DocumentMatchCandidateFilters>) => {
     setFilters((currentFilters) => ({ ...currentFilters, ...nextFilters }))
+    setDrawerPage(1)
   }
+
+  useEffect(() => {
+    setDrawerPage(1)
+  }, [candidatePage, document?.id])
 
   return (
     <Drawer opened={!!document} onClose={onClose} title="Match document" position="right" size="xl">
@@ -517,13 +527,13 @@ function MatchDocumentDrawer({
                   Pending entries
                 </Text>
                 <Text size="sm" c="dimmed">
-                  {filteredCandidates.length} of {candidates.length} shown
+                  {candidatePageResult.start}-{candidatePageResult.end} of {filteredCandidates.length} shown
                 </Text>
               </Group>
 
               {filteredCandidates.length > 0 ? (
                 <Stack gap="xs">
-                  {filteredCandidates.map((candidate) => (
+                  {visibleCandidates.map((candidate) => (
                     <CandidateCard
                       key={candidate.id}
                       candidate={candidate}
@@ -537,14 +547,25 @@ function MatchDocumentDrawer({
                   {candidates.length > 0 ? "No candidates match these filters." : "No pending entries on this page."}
                 </Text>
               )}
+
+              {candidatePageResult.totalPages > 1 ? (
+                <Group justify="flex-end">
+                  <Pagination
+                    size="sm"
+                    total={candidatePageResult.totalPages}
+                    value={candidatePageResult.page}
+                    onChange={setDrawerPage}
+                  />
+                </Group>
+              ) : null}
             </>
           )}
 
           {candidateTotalCount > ASSIGNABLE_ENTRIES_PAGE_SIZE ? (
             <Group justify="space-between">
               <Text size="sm" c="dimmed">
-                {candidateTotalCount} pending entries · Page {Math.min(candidatePage, candidateTotalPages)} of{" "}
-                {candidateTotalPages}
+                Loaded candidate page {Math.min(candidatePage, candidateTotalPages)} of {candidateTotalPages} ·{" "}
+                {candidateTotalCount} total pending entries
               </Text>
               <Pagination
                 size="sm"
@@ -592,7 +613,7 @@ function CandidateCard({
             <Text size="xs" c="dimmed">
               {candidate.date}
             </Text>
-            <Text size="sm">{candidate.counterpartyName ?? "-"}</Text>
+            <Text size="sm">{candidate.counterpartyName ?? "No counterparty"}</Text>
           </Stack>
           <Stack gap="xs" align="flex-end">
             <Text size="sm" fw={700}>
