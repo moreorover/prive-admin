@@ -17,8 +17,9 @@ import {
 import { notifications } from "@mantine/notifications"
 import { IconLinkOff, IconTrash } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Link, createFileRoute } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
+import { Link, createFileRoute, redirect } from "@tanstack/react-router"
+import { useState } from "react"
+import { z } from "zod"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
@@ -27,39 +28,55 @@ import { Section } from "@/components/section"
 import { type Currency, formatMinor } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
-export const Route = createFileRoute("/_authenticated/documents/")({
-  component: DocumentsPage,
+const PAGE_SIZE = 25
+const documentStatusSchema = z.enum(["unassigned", "assigned", "all"])
+const searchSchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  status: documentStatusSchema.optional(),
 })
 
-const PAGE_SIZE = 25
-type DocumentStatus = "unassigned" | "assigned" | "all"
+type DocumentStatus = z.infer<typeof documentStatusSchema>
+
+function documentsQueryOptions(input: { status: DocumentStatus; page: number }) {
+  return trpc.bankStatementAttachments.listGlobal.queryOptions(
+    { status: input.status, page: input.page, pageSize: PAGE_SIZE },
+    { placeholderData: (previousData) => previousData },
+  )
+}
+
+export const Route = createFileRoute("/_authenticated/documents/")({
+  component: DocumentsPage,
+  validateSearch: searchSchema,
+  loaderDeps: ({ search }) => ({
+    page: search.page ?? 1,
+    status: search.status ?? "unassigned",
+  }),
+  loader: async ({ context, deps }) => {
+    const data = await context.queryClient.ensureQueryData(documentsQueryOptions(deps))
+    const totalPages = Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE))
+    if (deps.page > totalPages) {
+      throw redirect({
+        to: "/documents",
+        search: { page: totalPages, status: deps.status },
+      })
+    }
+  },
+})
 
 function DocumentsPage() {
+  const search = Route.useSearch()
+  const navigate = Route.useNavigate()
   const queryClient = useQueryClient()
-  const [status, setStatus] = useState<DocumentStatus>("unassigned")
-  const [page, setPage] = useState(1)
+  const status = search.status ?? "unassigned"
+  const page = search.page ?? 1
   const [busy, setBusy] = useState(false)
   const [fileInputKey, setFileInputKey] = useState(0)
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
 
-  const documentsQuery = useQuery(
-    trpc.bankStatementAttachments.listGlobal.queryOptions(
-      { status, page, pageSize: PAGE_SIZE },
-      { placeholderData: (previousData) => previousData },
-    ),
-  )
+  const documentsQuery = useQuery(documentsQueryOptions({ status, page }))
   const documents = documentsQuery.data?.items ?? []
   const totalCount = documentsQuery.data?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
-
-  useEffect(() => {
-    setPage(1)
-  }, [status])
-
-  useEffect(() => {
-    if (!documentsQuery.data) return
-    setPage((currentPage) => Math.min(currentPage, totalPages))
-  }, [documentsQuery.data, totalPages])
 
   const invalidate = async () => {
     await Promise.all([
@@ -134,7 +151,12 @@ function DocumentsPage() {
           <Group px={documents.length > 0 ? "md" : 0} pt={documents.length > 0 ? "md" : 0} justify="space-between">
             <SegmentedControl
               value={status}
-              onChange={(value) => setStatus(value as DocumentStatus)}
+              onChange={(value) =>
+                navigate({
+                  search: { page: 1, status: value as DocumentStatus },
+                  replace: true,
+                })
+              }
               data={[
                 { label: "Unassigned", value: "unassigned" },
                 { label: "Assigned", value: "assigned" },
@@ -173,7 +195,12 @@ function DocumentsPage() {
               <Text size="sm" c="dimmed">
                 {totalCount} document{totalCount === 1 ? "" : "s"} · Page {Math.min(page, totalPages)} of {totalPages}
               </Text>
-              <Pagination size="sm" total={totalPages} value={Math.min(page, totalPages)} onChange={setPage} />
+              <Pagination
+                size="sm"
+                total={totalPages}
+                value={Math.min(page, totalPages)}
+                onChange={(nextPage) => navigate({ search: { page: nextPage, status }, replace: true })}
+              />
             </Group>
           ) : null}
         </Stack>

@@ -18,8 +18,9 @@ import { DateInput } from "@mantine/dates"
 import { notifications } from "@mantine/notifications"
 import { IconArrowLeft } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
+import { Link, createFileRoute, redirect } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
+import { z } from "zod"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
@@ -35,18 +36,51 @@ import {
 } from "@/lib/document-match-candidates"
 import { trpc } from "@/utils/trpc"
 
-export const Route = createFileRoute("/_authenticated/documents/$documentId/match")({
-  component: DocumentMatchPage,
-})
-
 const MATCH_CANDIDATES_PAGE_SIZE = 100
 const VISIBLE_CANDIDATES_PAGE_SIZE = 10
+const searchSchema = z.object({
+  candidatePage: z.coerce.number().int().min(1).optional(),
+})
+
+function documentQueryOptions(documentId: string) {
+  return trpc.bankStatementAttachments.get.queryOptions({ id: documentId })
+}
+
+function matchCandidatesQueryOptions(candidatePage: number) {
+  return trpc.bankStatementEntries.listMatchCandidates.queryOptions({
+    page: candidatePage,
+    pageSize: MATCH_CANDIDATES_PAGE_SIZE,
+  })
+}
+
+export const Route = createFileRoute("/_authenticated/documents/$documentId/match")({
+  component: DocumentMatchPage,
+  validateSearch: searchSchema,
+  loaderDeps: ({ search }) => ({
+    candidatePage: search.candidatePage ?? 1,
+  }),
+  loader: async ({ context, deps, params }) => {
+    const [, candidatesData] = await Promise.all([
+      context.queryClient.ensureQueryData(documentQueryOptions(params.documentId)),
+      context.queryClient.ensureQueryData(matchCandidatesQueryOptions(deps.candidatePage)),
+    ])
+    const totalPages = Math.max(1, Math.ceil(candidatesData.totalCount / MATCH_CANDIDATES_PAGE_SIZE))
+    if (deps.candidatePage > totalPages) {
+      throw redirect({
+        to: "/documents/$documentId/match",
+        params: { documentId: params.documentId },
+        search: { candidatePage: totalPages },
+      })
+    }
+  },
+})
 
 function DocumentMatchPage() {
   const { documentId } = Route.useParams()
-  const navigate = useNavigate()
+  const search = Route.useSearch()
+  const navigate = Route.useNavigate()
   const queryClient = useQueryClient()
-  const [candidatePage, setCandidatePage] = useState(1)
+  const candidatePage = search.candidatePage ?? 1
   const [visiblePage, setVisiblePage] = useState(1)
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
   const [filters, setFilters] = useState<DocumentMatchCandidateFilters>({
@@ -57,14 +91,11 @@ function DocumentMatchPage() {
     amount: "",
   })
 
-  const documentQuery = useQuery(trpc.bankStatementAttachments.get.queryOptions({ id: documentId }))
+  const documentQuery = useQuery(documentQueryOptions(documentId))
   const document = documentQuery.data
 
   const { data: matchCandidatesData, isError: matchCandidatesIsError } = useQuery(
-    trpc.bankStatementEntries.listMatchCandidates.queryOptions({
-      page: candidatePage,
-      pageSize: MATCH_CANDIDATES_PAGE_SIZE,
-    }),
+    matchCandidatesQueryOptions(candidatePage),
   )
   const candidates = matchCandidatesData?.items ?? []
   const candidatesTotalCount = matchCandidatesData?.totalCount ?? 0
@@ -274,7 +305,7 @@ function DocumentMatchPage() {
                         size="sm"
                         total={candidatesTotalPages}
                         value={Math.min(candidatePage, candidatesTotalPages)}
-                        onChange={setCandidatePage}
+                        onChange={(nextPage) => navigate({ search: { candidatePage: nextPage }, replace: true })}
                       />
                     </Group>
                   ) : null}
