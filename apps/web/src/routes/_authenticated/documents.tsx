@@ -20,6 +20,7 @@ import {
   Tooltip,
   UnstyledButton,
 } from "@mantine/core"
+import { DateInput } from "@mantine/dates"
 import { notifications } from "@mantine/notifications"
 import { IconLinkOff, IconTrash } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
@@ -502,11 +503,13 @@ function MatchDocumentDrawer({
               value={filters.counterparty}
               onChange={(event) => updateFilters({ counterparty: event.currentTarget.value })}
             />
-            <TextInput
+            <DateInput
               label="Date"
               placeholder="YYYY-MM-DD"
+              valueFormat="YYYY-MM-DD"
+              clearable
               value={filters.date}
-              onChange={(event) => updateFilters({ date: event.currentTarget.value })}
+              onChange={(value) => updateFilters({ date: value ?? "" })}
             />
             <TextInput
               label="Amount"
