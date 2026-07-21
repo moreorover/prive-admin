@@ -13,7 +13,16 @@ describe("app navigation", () => {
     expect(getActiveAppNavItem("/hair-orders/order-1")?.to).toBe("/hair-orders")
   })
 
-  it("keeps the unassigned badge on legal entities", () => {
-    expect(flatAppNavItems.find((item) => item.to === "/legal-entities")?.badgeKey).toBe("unassigned")
+  it("includes top-level documents navigation with the unassigned badge", () => {
+    expect(flatAppNavItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          to: "/documents",
+          label: "Documents",
+          badgeKey: "unassigned",
+        }),
+      ]),
+    )
+    expect(flatAppNavItems.find((item) => item.to === "/legal-entities")?.badgeKey).toBeUndefined()
   })
 })

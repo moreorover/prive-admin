@@ -6,6 +6,7 @@ import {
   getBankStatementAttachment as findBankStatementAttachment,
   getBankStatementEntry as findBankStatementEntry,
   listAssignedBankStatementAttachments as fetchAssignedBankStatementAttachments,
+  listGlobalBankStatementAttachments as fetchGlobalBankStatementAttachments,
   deleteBankStatementAttachment as removeBankStatementAttachment,
   listBankStatementAttachmentExportRows as fetchBankStatementAttachmentExportRows,
   listBankStatementAttachments as fetchBankStatementAttachments,
@@ -49,6 +50,14 @@ export async function listAssignedBankStatementAttachments(input: {
   offset: number
 }) {
   return fetchAssignedBankStatementAttachments(undefined, input)
+}
+
+export async function listGlobalBankStatementAttachments(input: {
+  status: "assigned" | "unassigned" | "all"
+  pageSize: number
+  offset: number
+}) {
+  return fetchGlobalBankStatementAttachments(undefined, input)
 }
 
 export async function countBankStatementAttachments() {

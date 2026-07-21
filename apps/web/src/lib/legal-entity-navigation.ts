@@ -1,4 +1,4 @@
-export type LegalEntitySectionValue = "overview" | "documents" | "bank-accounts" | "salons"
+export type LegalEntitySectionValue = "overview" | "bank-accounts" | "salons"
 
 export type LegalEntitySection = {
   value: LegalEntitySectionValue
@@ -7,7 +7,6 @@ export type LegalEntitySection = {
 
 export const LEGAL_ENTITY_SECTIONS = [
   { value: "overview", label: "Overview" },
-  { value: "documents", label: "Documents" },
   { value: "bank-accounts", label: "Bank accounts" },
   { value: "salons", label: "Salons" },
 ] as const satisfies readonly LegalEntitySection[]

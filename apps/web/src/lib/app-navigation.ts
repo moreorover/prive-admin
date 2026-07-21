@@ -2,6 +2,7 @@ import {
   IconBuildingBank,
   IconCalendar,
   IconCash,
+  IconFileDescription,
   IconLayoutDashboard,
   IconReceipt,
   IconScissors,
@@ -29,6 +30,7 @@ export const appNavGroups: AppNavGroup[] = [
     label: "Workspace",
     items: [
       { to: "/dashboard", label: "Dashboard", icon: IconLayoutDashboard },
+      { to: "/documents", label: "Documents", icon: IconFileDescription, badgeKey: "unassigned" },
       { to: "/customers", label: "Customers", icon: IconUsers },
       { to: "/calendar", label: "Calendar", icon: IconCalendar },
       { to: "/hair-orders", label: "Hair orders", shortLabel: "Orders", icon: IconScissors },
@@ -44,7 +46,6 @@ export const appNavGroups: AppNavGroup[] = [
         label: "Legal entities",
         shortLabel: "Entities",
         icon: IconBuildingBank,
-        badgeKey: "unassigned",
       },
     ],
   },

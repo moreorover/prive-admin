@@ -2,8 +2,10 @@ import {
   assignBankStatementAttachment,
   countBankStatementAttachments,
   deleteBankStatementAttachmentFile,
+  getBankStatementAttachment,
   listAssignedBankStatementAttachments,
   listBankStatementAttachments,
+  listGlobalBankStatementAttachments,
   unassignBankStatementAttachment,
 } from "@prive-admin-tanstack/application/services"
 import { z } from "zod"
@@ -47,9 +49,36 @@ export const bankStatementAttachmentsRouter = router({
       }
     }),
 
+  listGlobal: protectedProcedure
+    .input(
+      pageSchema.extend({
+        status: z.enum(["assigned", "unassigned", "all"]).default("unassigned"),
+      }),
+    )
+    .query(async ({ input }) => {
+      try {
+        const result = await listGlobalBankStatementAttachments({
+          status: input.status,
+          pageSize: input.pageSize,
+          offset: getOffset(input),
+        })
+        return pagedResult(result.items, input, result.totalCount)
+      } catch (error) {
+        throw toTrpcError(error)
+      }
+    }),
+
   counts: protectedProcedure.query(async () => {
     try {
       return await countBankStatementAttachments()
+    } catch (error) {
+      throw toTrpcError(error)
+    }
+  }),
+
+  get: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
+    try {
+      return await getBankStatementAttachment(input.id)
     } catch (error) {
       throw toTrpcError(error)
     }

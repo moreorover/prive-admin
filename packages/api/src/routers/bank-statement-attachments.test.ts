@@ -6,8 +6,10 @@ const servicesMock = vi.hoisted(() => ({
   assignBankStatementAttachment: vi.fn(),
   countBankStatementAttachments: vi.fn(),
   deleteBankStatementAttachmentFile: vi.fn(),
+  getBankStatementAttachment: vi.fn(),
   listAssignedBankStatementAttachments: vi.fn(),
   listBankStatementAttachments: vi.fn(),
+  listGlobalBankStatementAttachments: vi.fn(),
   unassignBankStatementAttachment: vi.fn(),
 }))
 
@@ -37,5 +39,41 @@ describe("bank statement attachments router", () => {
       pageSize: 10,
       offset: 20,
     })
+  })
+
+  it("lists global documents in the standard page envelope", async () => {
+    const caller = bankStatementAttachmentsRouter.createCaller(ctx)
+    const rows = [
+      {
+        attachment: { id: "attachment-1" },
+        assignmentState: "assigned",
+        entry: { id: "entry-1" },
+        bankAccount: { id: "bank-account-1" },
+        legalEntity: { id: "legal-entity-1", name: "Prive LT" },
+      },
+    ]
+    servicesMock.listGlobalBankStatementAttachments.mockResolvedValue({ items: rows, totalCount: 12 })
+
+    const result = await caller.listGlobal({
+      status: "assigned",
+      page: 2,
+      pageSize: 10,
+    })
+
+    expect(result).toEqual({ items: rows, page: 2, pageSize: 10, totalCount: 12 })
+    expect(servicesMock.listGlobalBankStatementAttachments).toHaveBeenCalledWith({
+      status: "assigned",
+      pageSize: 10,
+      offset: 10,
+    })
+  })
+
+  it("gets a document by id", async () => {
+    const caller = bankStatementAttachmentsRouter.createCaller(ctx)
+    const row = { id: "attachment-1", originalName: "receipt.pdf", bankStatementEntryId: null }
+    servicesMock.getBankStatementAttachment.mockResolvedValue(row)
+
+    await expect(caller.get({ id: "attachment-1" })).resolves.toBe(row)
+    expect(servicesMock.getBankStatementAttachment).toHaveBeenCalledWith("attachment-1")
   })
 })

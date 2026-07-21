@@ -1,17 +1,4 @@
-import {
-  Anchor,
-  Badge,
-  Box,
-  Button,
-  Container,
-  Group,
-  Modal,
-  Select,
-  Stack,
-  Tabs,
-  Text,
-  TextInput,
-} from "@mantine/core"
+import { Anchor, Box, Button, Container, Group, Modal, Select, Stack, Tabs, Text, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { useDisclosure } from "@mantine/hooks"
 import { notifications } from "@mantine/notifications"
@@ -50,11 +37,6 @@ function LegalEntityLayout() {
   })
   const legalEntity = legalEntityQuery.data
   const { data: legalEntities = [] } = useQuery(trpc.legalEntities.list.queryOptions({}))
-  const { data: unassignedAttachments = [] } = useQuery(
-    trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
-  )
-  const unassignedCount = unassignedAttachments.length
-
   const country = legalEntity?.country as Country | undefined
   const description = legalEntity
     ? `${legalEntity.type}${country ? ` · ${COUNTRY_FLAGS[country]} ${COUNTRY_LABELS[country]}` : ""} · ${legalEntity.defaultCurrency}`
@@ -147,17 +129,7 @@ function LegalEntityLayout() {
           <Box style={{ overflowX: "auto" }}>
             <Tabs.List style={{ flexWrap: "nowrap", minWidth: "max-content" }}>
               {LEGAL_ENTITY_SECTIONS.map((section) => (
-                <Tabs.Tab
-                  key={section.value}
-                  value={section.value}
-                  rightSection={
-                    section.value === "documents" && unassignedCount > 0 ? (
-                      <Badge size="xs" variant="filled" color="orange" circle>
-                        {unassignedCount}
-                      </Badge>
-                    ) : null
-                  }
-                >
+                <Tabs.Tab key={section.value} value={section.value}>
                   {section.label}
                 </Tabs.Tab>
               ))}
