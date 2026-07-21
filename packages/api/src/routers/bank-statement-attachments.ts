@@ -4,6 +4,7 @@ import {
   deleteBankStatementAttachmentFile,
   listAssignedBankStatementAttachments,
   listBankStatementAttachments,
+  listGlobalBankStatementAttachments,
   unassignBankStatementAttachment,
 } from "@prive-admin-tanstack/application/services"
 import { z } from "zod"
@@ -38,6 +39,25 @@ export const bankStatementAttachmentsRouter = router({
       try {
         const result = await listAssignedBankStatementAttachments({
           legalEntityId: input.legalEntityId,
+          pageSize: input.pageSize,
+          offset: getOffset(input),
+        })
+        return pagedResult(result.items, input, result.totalCount)
+      } catch (error) {
+        throw toTrpcError(error)
+      }
+    }),
+
+  listGlobal: protectedProcedure
+    .input(
+      pageSchema.extend({
+        status: z.enum(["assigned", "unassigned", "all"]).default("unassigned"),
+      }),
+    )
+    .query(async ({ input }) => {
+      try {
+        const result = await listGlobalBankStatementAttachments({
+          status: input.status,
           pageSize: input.pageSize,
           offset: getOffset(input),
         })
