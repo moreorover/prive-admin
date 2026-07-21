@@ -134,8 +134,8 @@ export async function listGlobalBankStatementAttachments(
     .leftJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
     .leftJoin(legalEntity, eq(bankAccount.legalEntityId, legalEntity.id))
 
-  const filteredItemsQuery = where ? itemsQuery.where(where) : itemsQuery
-  const items = await filteredItemsQuery
+  const items = await itemsQuery
+    .where(where)
     .orderBy(desc(bankStatementAttachment.uploadedAt), desc(bankStatementAttachment.id))
     .limit(input.pageSize)
     .offset(input.offset)
@@ -147,7 +147,7 @@ export async function listGlobalBankStatementAttachments(
     .leftJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
     .leftJoin(legalEntity, eq(bankAccount.legalEntityId, legalEntity.id))
 
-  const [countRow] = await (where ? countQuery.where(where) : countQuery)
+  const [countRow] = await countQuery.where(where)
 
   return { items, totalCount: countRow?.totalCount ?? 0 }
 }

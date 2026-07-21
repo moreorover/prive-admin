@@ -209,7 +209,7 @@ describe("bank statement attachment repository", () => {
       offset: 0,
     })
 
-    expect(calls.where).toEqual([])
+    expect(calls.where).toEqual([undefined, undefined])
   })
 })
 
@@ -258,7 +258,6 @@ function createSelectBuilders(itemsRows: unknown[], countRows: unknown[]) {
       calls.leftJoin.push({ table, condition })
       return countBuilder
     }),
-    then: vi.fn((resolve: (value: unknown[]) => unknown) => Promise.resolve(resolve(countRows))),
     where: vi.fn(async (condition: unknown) => {
       calls.where.push(condition)
       return countRows
