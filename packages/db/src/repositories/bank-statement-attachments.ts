@@ -1,9 +1,10 @@
-import { and, count, desc, eq, gte, isNotNull, isNull, lte } from "drizzle-orm"
+import { and, count, desc, eq, gte, isNotNull, isNull, lte, sql } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { bankAccount } from "../schema/bank-account"
 import { bankStatementAttachment } from "../schema/bank-statement-attachment"
 import { bankStatementEntry } from "../schema/bank-statement-entry"
+import { legalEntity } from "../schema/legal-entity"
 
 export async function createBankStatementAttachment(
   database: Db = db,
@@ -82,6 +83,71 @@ export async function listAssignedBankStatementAttachments(
     .innerJoin(bankStatementEntry, eq(bankStatementAttachment.bankStatementEntryId, bankStatementEntry.id))
     .innerJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
     .where(where)
+
+  return { items, totalCount: countRow?.totalCount ?? 0 }
+}
+
+export type GlobalBankStatementAttachmentStatus = "assigned" | "unassigned" | "all"
+
+export type GlobalBankStatementAttachmentRow = {
+  attachment: typeof bankStatementAttachment.$inferSelect
+  assignmentState: "assigned" | "unassigned"
+  entry: typeof bankStatementEntry.$inferSelect | null
+  bankAccount: Pick<typeof bankAccount.$inferSelect, "id" | "displayName" | "bankName" | "currency"> | null
+  legalEntity: Pick<typeof legalEntity.$inferSelect, "id" | "name"> | null
+}
+
+export async function listGlobalBankStatementAttachments(
+  database: Db = db,
+  input: { status: GlobalBankStatementAttachmentStatus; pageSize: number; offset: number },
+) {
+  const where =
+    input.status === "assigned"
+      ? isNotNull(bankStatementAttachment.bankStatementEntryId)
+      : input.status === "unassigned"
+        ? isNull(bankStatementAttachment.bankStatementEntryId)
+        : undefined
+
+  const itemsQuery = database
+    .select({
+      attachment: bankStatementAttachment,
+      assignmentState: sql<"assigned" | "unassigned">`
+        case
+          when ${bankStatementAttachment.bankStatementEntryId} is null then 'unassigned'
+          else 'assigned'
+        end
+      `,
+      entry: bankStatementEntry,
+      bankAccount: {
+        id: bankAccount.id,
+        displayName: bankAccount.displayName,
+        bankName: bankAccount.bankName,
+        currency: bankAccount.currency,
+      },
+      legalEntity: {
+        id: legalEntity.id,
+        name: legalEntity.name,
+      },
+    })
+    .from(bankStatementAttachment)
+    .leftJoin(bankStatementEntry, eq(bankStatementAttachment.bankStatementEntryId, bankStatementEntry.id))
+    .leftJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
+    .leftJoin(legalEntity, eq(bankAccount.legalEntityId, legalEntity.id))
+
+  const filteredItemsQuery = where ? itemsQuery.where(where) : itemsQuery
+  const items = await filteredItemsQuery
+    .orderBy(desc(bankStatementAttachment.uploadedAt), desc(bankStatementAttachment.id))
+    .limit(input.pageSize)
+    .offset(input.offset)
+
+  const countQuery = database
+    .select({ totalCount: count() })
+    .from(bankStatementAttachment)
+    .leftJoin(bankStatementEntry, eq(bankStatementAttachment.bankStatementEntryId, bankStatementEntry.id))
+    .leftJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
+    .leftJoin(legalEntity, eq(bankAccount.legalEntityId, legalEntity.id))
+
+  const [countRow] = await (where ? countQuery.where(where) : countQuery)
 
   return { items, totalCount: countRow?.totalCount ?? 0 }
 }
