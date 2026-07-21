@@ -1,7 +1,9 @@
 import {
   ActionIcon,
+  Badge,
   Box,
   Button,
+  Card,
   Container,
   Drawer,
   FileInput,
@@ -9,6 +11,8 @@ import {
   LoadingOverlay,
   Pagination,
   SegmentedControl,
+  Select,
+  SimpleGrid,
   Stack,
   Table,
   Text,
@@ -27,6 +31,13 @@ import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { type Currency, formatMinor } from "@/lib/currency"
+import {
+  filterDocumentMatchCandidates,
+  formatCandidateAmount,
+  getDocumentMatchFilterOptions,
+  type DocumentMatchCandidate,
+  type DocumentMatchCandidateFilters,
+} from "@/lib/document-match-candidates"
 import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/documents")({
@@ -402,21 +413,7 @@ function MatchDocumentDrawer({
   onPreview,
 }: {
   document: MatchableDocument | null
-  candidates: Array<{
-    id: string
-    date: string
-    amount: number
-    currency: string
-    direction: string
-    counterpartyName: string | null
-    status: string
-    bankAccount: {
-      id: string
-      displayName: string
-      bankName: string | null
-      legalEntity: { id: string; name: string }
-    }
-  }>
+  candidates: DocumentMatchCandidate[]
   candidatesIsError: boolean
   candidatePage: number
   candidateTotalPages: number
@@ -427,27 +424,18 @@ function MatchDocumentDrawer({
   onMatch: (entryId: string) => void
   onPreview: (attachment: AttachmentPreview) => void
 }) {
-  const [search, setSearch] = useState("")
-  const query = search.trim().toLowerCase()
-  const filteredCandidates = query
-    ? candidates.filter((candidate) => {
-        const amount = `${candidate.direction === "C" ? "+" : "-"}${formatMinor(
-          candidate.amount,
-          candidate.currency as Currency,
-        )}`
-        return [
-          candidate.date,
-          amount,
-          candidate.counterpartyName,
-          candidate.status,
-          candidate.bankAccount.displayName,
-          candidate.bankAccount.bankName,
-          candidate.bankAccount.legalEntity.name,
-        ]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(query))
-      })
-    : candidates
+  const [filters, setFilters] = useState<DocumentMatchCandidateFilters>({
+    legalEntityId: "",
+    bankAccountId: "",
+    counterparty: "",
+    date: "",
+    amount: "",
+  })
+  const { legalEntities, bankAccounts } = getDocumentMatchFilterOptions(candidates, filters.legalEntityId)
+  const filteredCandidates = filterDocumentMatchCandidates(candidates, filters)
+  const updateFilters = (nextFilters: Partial<DocumentMatchCandidateFilters>) => {
+    setFilters((currentFilters) => ({ ...currentFilters, ...nextFilters }))
+  }
 
   return (
     <Drawer opened={!!document} onClose={onClose} title="Match document" position="right" size="xl">
@@ -477,47 +465,79 @@ function MatchDocumentDrawer({
             </Stack>
           </Section>
 
-          <TextInput
-            label="Search candidates"
-            placeholder="Legal entity, bank account, counterparty, amount, or date"
-            value={search}
-            onChange={(event) => setSearch(event.currentTarget.value)}
-          />
+          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+            <Select
+              label="Legal entity"
+              placeholder="All legal entities"
+              clearable
+              searchable
+              data={legalEntities}
+              value={filters.legalEntityId}
+              onChange={(value) => {
+                updateFilters({ legalEntityId: value ?? "", bankAccountId: "" })
+              }}
+            />
+            <Select
+              label="Bank account"
+              placeholder="All bank accounts"
+              clearable
+              searchable
+              data={bankAccounts}
+              value={filters.bankAccountId}
+              onChange={(value) => updateFilters({ bankAccountId: value ?? "" })}
+            />
+            <TextInput
+              label="Counterparty"
+              placeholder="Name or description"
+              value={filters.counterparty}
+              onChange={(event) => updateFilters({ counterparty: event.currentTarget.value })}
+            />
+            <TextInput
+              label="Date"
+              placeholder="YYYY-MM-DD"
+              value={filters.date}
+              onChange={(event) => updateFilters({ date: event.currentTarget.value })}
+            />
+            <TextInput
+              label="Amount"
+              placeholder="50.00"
+              value={filters.amount}
+              onChange={(event) => updateFilters({ amount: event.currentTarget.value })}
+            />
+          </SimpleGrid>
 
           {candidatesIsError ? (
             <Text size="sm" c="red">
               Unable to load match candidates.
             </Text>
-          ) : filteredCandidates.length > 0 ? (
-            <Stack gap="xs">
-              {filteredCandidates.map((candidate) => (
-                <Group key={candidate.id} justify="space-between" align="flex-start" wrap="nowrap">
-                  <Stack gap={2}>
-                    <Text size="sm" fw={600}>
-                      {candidate.bankAccount.legalEntity.name}
-                    </Text>
-                    <Text size="xs" c="dimmed">
-                      {candidate.bankAccount.displayName}
-                      {candidate.bankAccount.bankName ? ` · ${candidate.bankAccount.bankName}` : ""}
-                    </Text>
-                    <Text size="sm">
-                      {candidate.date} · {candidate.direction === "C" ? "+" : "-"}
-                      {formatMinor(candidate.amount, candidate.currency as Currency)}
-                    </Text>
-                    <Text size="xs" c="dimmed">
-                      {candidate.counterpartyName ?? "-"} · {candidate.status}
-                    </Text>
-                  </Stack>
-                  <Button size="xs" loading={assignPending} onClick={() => onMatch(candidate.id)}>
-                    Match document
-                  </Button>
-                </Group>
-              ))}
-            </Stack>
           ) : (
-            <Text size="sm" c="dimmed">
-              No matching candidates on this page.
-            </Text>
+            <>
+              <Group justify="space-between" align="center">
+                <Text size="sm" fw={600}>
+                  Pending entries
+                </Text>
+                <Text size="sm" c="dimmed">
+                  {filteredCandidates.length} of {candidates.length} shown
+                </Text>
+              </Group>
+
+              {filteredCandidates.length > 0 ? (
+                <Stack gap="xs">
+                  {filteredCandidates.map((candidate) => (
+                    <CandidateCard
+                      key={candidate.id}
+                      candidate={candidate}
+                      assignPending={assignPending}
+                      onMatch={() => onMatch(candidate.id)}
+                    />
+                  ))}
+                </Stack>
+              ) : (
+                <Text size="sm" c="dimmed">
+                  {candidates.length > 0 ? "No candidates match these filters." : "No pending entries on this page."}
+                </Text>
+              )}
+            </>
           )}
 
           {candidateTotalCount > ASSIGNABLE_ENTRIES_PAGE_SIZE ? (
@@ -537,5 +557,53 @@ function MatchDocumentDrawer({
         </Stack>
       ) : null}
     </Drawer>
+  )
+}
+
+function CandidateCard({
+  candidate,
+  assignPending,
+  onMatch,
+}: {
+  candidate: DocumentMatchCandidate
+  assignPending: boolean
+  onMatch: () => void
+}) {
+  return (
+    <Card withBorder padding="sm" radius="sm">
+      <Stack gap="xs">
+        <Group justify="space-between" align="flex-start" wrap="nowrap">
+          <Stack gap={2}>
+            <Text size="sm" fw={600}>
+              {candidate.bankAccount.legalEntity.name}
+            </Text>
+            <Text size="xs" c="dimmed">
+              {candidate.bankAccount.displayName}
+              {candidate.bankAccount.bankName ? ` · ${candidate.bankAccount.bankName}` : ""}
+            </Text>
+          </Stack>
+          <Badge size="xs" variant="light" color="gray">
+            {candidate.status}
+          </Badge>
+        </Group>
+
+        <Group justify="space-between" align="flex-end" gap="md" wrap="nowrap">
+          <Stack gap={2}>
+            <Text size="xs" c="dimmed">
+              {candidate.date}
+            </Text>
+            <Text size="sm">{candidate.counterpartyName ?? "-"}</Text>
+          </Stack>
+          <Stack gap="xs" align="flex-end">
+            <Text size="sm" fw={700}>
+              {formatCandidateAmount(candidate)}
+            </Text>
+            <Button size="xs" loading={assignPending} onClick={onMatch}>
+              Match document
+            </Button>
+          </Stack>
+        </Group>
+      </Stack>
+    </Card>
   )
 }
