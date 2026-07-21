@@ -4,6 +4,7 @@ import {
   getBankStatementEntry,
   ignoreBankStatementEntry,
   importBankStatementEntries,
+  listBankStatementEntryMatchCandidates,
   listBankStatementEntries,
   undoBankStatementEntry,
 } from "@prive-admin-tanstack/application/services"
@@ -74,6 +75,18 @@ export const bankStatementEntriesRouter = router({
         offset: getOffset(input),
         bankAccountId: input.bankAccountId,
         status: input.status,
+      })
+      return pagedResult(result.items, input, result.totalCount)
+    } catch (error) {
+      throw toTrpcError(error)
+    }
+  }),
+
+  listMatchCandidates: protectedProcedure.input(pageSchema).query(async ({ input }) => {
+    try {
+      const result = await listBankStatementEntryMatchCandidates({
+        pageSize: input.pageSize,
+        offset: getOffset(input),
       })
       return pagedResult(result.items, input, result.totalCount)
     } catch (error) {
