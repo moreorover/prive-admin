@@ -6,6 +6,7 @@ const servicesMock = vi.hoisted(() => ({
   assignBankStatementAttachment: vi.fn(),
   countBankStatementAttachments: vi.fn(),
   deleteBankStatementAttachmentFile: vi.fn(),
+  getBankStatementAttachment: vi.fn(),
   listAssignedBankStatementAttachments: vi.fn(),
   listBankStatementAttachments: vi.fn(),
   listGlobalBankStatementAttachments: vi.fn(),
@@ -65,5 +66,14 @@ describe("bank statement attachments router", () => {
       pageSize: 10,
       offset: 10,
     })
+  })
+
+  it("gets a document by id", async () => {
+    const caller = bankStatementAttachmentsRouter.createCaller(ctx)
+    const row = { id: "attachment-1", originalName: "receipt.pdf", bankStatementEntryId: null }
+    servicesMock.getBankStatementAttachment.mockResolvedValue(row)
+
+    await expect(caller.get({ id: "attachment-1" })).resolves.toBe(row)
+    expect(servicesMock.getBankStatementAttachment).toHaveBeenCalledWith("attachment-1")
   })
 })

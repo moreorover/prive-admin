@@ -2,6 +2,7 @@ import {
   assignBankStatementAttachment,
   countBankStatementAttachments,
   deleteBankStatementAttachmentFile,
+  getBankStatementAttachment,
   listAssignedBankStatementAttachments,
   listBankStatementAttachments,
   listGlobalBankStatementAttachments,
@@ -70,6 +71,14 @@ export const bankStatementAttachmentsRouter = router({
   counts: protectedProcedure.query(async () => {
     try {
       return await countBankStatementAttachments()
+    } catch (error) {
+      throw toTrpcError(error)
+    }
+  }),
+
+  get: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
+    try {
+      return await getBankStatementAttachment(input.id)
     } catch (error) {
       throw toTrpcError(error)
     }
