@@ -19,7 +19,7 @@ import { notifications } from "@mantine/notifications"
 import { IconArrowLeft } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute, redirect } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { z } from "zod"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
@@ -40,6 +40,7 @@ const MATCH_CANDIDATES_PAGE_SIZE = 100
 const VISIBLE_CANDIDATES_PAGE_SIZE = 10
 const searchSchema = z.object({
   candidatePage: z.coerce.number().int().min(1).optional(),
+  page: z.coerce.number().int().min(1).optional(),
 })
 
 function documentQueryOptions(documentId: string) {
@@ -81,7 +82,7 @@ function DocumentMatchPage() {
   const navigate = Route.useNavigate()
   const queryClient = useQueryClient()
   const candidatePage = search.candidatePage ?? 1
-  const [visiblePage, setVisiblePage] = useState(1)
+  const visiblePage = search.page ?? 1
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
   const [filters, setFilters] = useState<DocumentMatchCandidateFilters>({
     legalEntityId: "",
@@ -104,13 +105,9 @@ function DocumentMatchPage() {
   const filteredCandidates = filterDocumentMatchCandidates(candidates, filters)
   const visibleCandidates = getDocumentMatchCandidatePage(filteredCandidates, visiblePage, VISIBLE_CANDIDATES_PAGE_SIZE)
 
-  useEffect(() => {
-    setVisiblePage(1)
-  }, [candidatePage, documentId])
-
   const updateFilters = (nextFilters: Partial<DocumentMatchCandidateFilters>) => {
     setFilters((currentFilters) => ({ ...currentFilters, ...nextFilters }))
-    setVisiblePage(1)
+    navigate({ search: (currentSearch) => ({ ...currentSearch, page: 1 }), replace: true })
   }
 
   const invalidate = async () => {
@@ -288,7 +285,9 @@ function DocumentMatchPage() {
                             size="sm"
                             total={visibleCandidates.totalPages}
                             value={visibleCandidates.page}
-                            onChange={setVisiblePage}
+                            onChange={(nextPage) =>
+                              navigate({ search: (currentSearch) => ({ ...currentSearch, page: nextPage }) })
+                            }
                           />
                         </Group>
                       ) : null}
@@ -305,7 +304,12 @@ function DocumentMatchPage() {
                         size="sm"
                         total={candidatesTotalPages}
                         value={Math.min(candidatePage, candidatesTotalPages)}
-                        onChange={(nextPage) => navigate({ search: { candidatePage: nextPage }, replace: true })}
+                        onChange={(nextPage) =>
+                          navigate({
+                            search: (currentSearch) => ({ ...currentSearch, candidatePage: nextPage, page: 1 }),
+                            replace: true,
+                          })
+                        }
                       />
                     </Group>
                   ) : null}
