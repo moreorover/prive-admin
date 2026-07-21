@@ -1,16 +1,18 @@
 import {
   ActionIcon,
   Box,
+  Button,
   Container,
+  Drawer,
   FileInput,
   Group,
   LoadingOverlay,
   Pagination,
   SegmentedControl,
-  Select,
   Stack,
   Table,
   Text,
+  TextInput,
   Tooltip,
   UnstyledButton,
 } from "@mantine/core"
@@ -34,12 +36,19 @@ export const Route = createFileRoute("/_authenticated/documents")({
 const PAGE_SIZE = 25
 const ASSIGNABLE_ENTRIES_PAGE_SIZE = 100
 type DocumentStatus = "unassigned" | "assigned" | "all"
+type MatchableDocument = {
+  id: string
+  originalName: string
+  contentType: string
+  uploadedAt: string | Date
+}
 
 function DocumentsPage() {
   const queryClient = useQueryClient()
   const [status, setStatus] = useState<DocumentStatus>("unassigned")
   const [page, setPage] = useState(1)
-  const [assignableEntriesPage, setAssignableEntriesPage] = useState(1)
+  const [matchingDocument, setMatchingDocument] = useState<MatchableDocument | null>(null)
+  const [candidatePage, setCandidatePage] = useState(1)
   const [busy, setBusy] = useState(false)
   const [fileInputKey, setFileInputKey] = useState(0)
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
@@ -63,24 +72,15 @@ function DocumentsPage() {
     setPage((currentPage) => Math.min(currentPage, totalPages))
   }, [documentsQuery.data, totalPages])
 
-  const { data: assignableEntriesData } = useQuery(
-    trpc.bankStatementEntries.list.queryOptions({
-      status: "PENDING",
-      page: assignableEntriesPage,
+  const { data: matchCandidatesData, isError: matchCandidatesIsError } = useQuery(
+    trpc.bankStatementEntries.listMatchCandidates.queryOptions({
+      page: candidatePage,
       pageSize: ASSIGNABLE_ENTRIES_PAGE_SIZE,
     }),
   )
-  const assignableEntries = assignableEntriesData?.items ?? []
-  const assignableEntriesTotalCount = assignableEntriesData?.totalCount ?? 0
-  const assignableEntriesTotalPages = Math.max(1, Math.ceil(assignableEntriesTotalCount / ASSIGNABLE_ENTRIES_PAGE_SIZE))
-
-  const entryOptions = assignableEntries.map((entry) => ({
-    value: entry.id,
-    label: `${entry.date} · ${entry.direction === "C" ? "+" : "-"}${formatMinor(
-      entry.amount,
-      entry.currency as Currency,
-    )} · ${entry.counterpartyName ?? "-"}`,
-  }))
+  const matchCandidates = matchCandidatesData?.items ?? []
+  const matchCandidatesTotalCount = matchCandidatesData?.totalCount ?? 0
+  const matchCandidatesTotalPages = Math.max(1, Math.ceil(matchCandidatesTotalCount / ASSIGNABLE_ENTRIES_PAGE_SIZE))
 
   const invalidate = async () => {
     await Promise.all([
@@ -115,6 +115,7 @@ function DocumentsPage() {
     ...trpc.bankStatementAttachments.assign.mutationOptions(),
     onSuccess: async () => {
       notifications.show({ color: "green", message: "Assigned" })
+      setMatchingDocument(null)
       await invalidate()
     },
     onError: (err) => notifications.show({ color: "red", message: err.message }),
@@ -172,19 +173,6 @@ function DocumentsPage() {
               ]}
               size="sm"
             />
-            {assignableEntriesTotalPages > 1 ? (
-              <Group gap="xs">
-                <Text size="sm" c="dimmed">
-                  {assignableEntriesTotalCount} pending entries
-                </Text>
-                <Pagination
-                  size="sm"
-                  total={assignableEntriesTotalPages}
-                  value={Math.min(assignableEntriesPage, assignableEntriesTotalPages)}
-                  onChange={setAssignableEntriesPage}
-                />
-              </Group>
-            ) : null}
           </Group>
 
           <Box pos="relative">
@@ -197,11 +185,9 @@ function DocumentsPage() {
               <Table.ScrollContainer minWidth={980}>
                 <DocumentsTable
                   documents={documents}
-                  entryOptions={entryOptions}
-                  assignPending={assign.isPending}
                   unassignPending={unassign.isPending}
                   removePending={remove.isPending}
-                  onAssign={(id, entryId) => assign.mutate({ id, entryId })}
+                  onMatch={setMatchingDocument}
                   onUnassign={(id) => unassign.mutate({ id })}
                   onRemove={(id) => remove.mutate({ id })}
                   onPreview={setPreviewAttachment}
@@ -226,17 +212,30 @@ function DocumentsPage() {
       </Section>
 
       <AttachmentPreviewDialog attachment={previewAttachment} onClose={() => setPreviewAttachment(null)} />
+      <MatchDocumentDrawer
+        document={matchingDocument}
+        candidates={matchCandidates}
+        candidatesIsError={matchCandidatesIsError}
+        candidatePage={candidatePage}
+        candidateTotalPages={matchCandidatesTotalPages}
+        candidateTotalCount={matchCandidatesTotalCount}
+        assignPending={assign.isPending}
+        onCandidatePageChange={setCandidatePage}
+        onClose={() => setMatchingDocument(null)}
+        onMatch={(entryId) => {
+          if (matchingDocument) assign.mutate({ id: matchingDocument.id, entryId })
+        }}
+        onPreview={setPreviewAttachment}
+      />
     </Container>
   )
 }
 
 function DocumentsTable({
   documents,
-  entryOptions,
-  assignPending,
   unassignPending,
   removePending,
-  onAssign,
+  onMatch,
   onUnassign,
   onRemove,
   onPreview,
@@ -269,11 +268,9 @@ function DocumentsTable({
       name: string
     } | null
   }>
-  entryOptions: Array<{ value: string; label: string }>
-  assignPending: boolean
   unassignPending: boolean
   removePending: boolean
-  onAssign: (id: string, entryId: string) => void
+  onMatch: (document: MatchableDocument) => void
   onUnassign: (id: string) => void
   onRemove: (id: string) => void
   onPreview: (attachment: AttachmentPreview) => void
@@ -318,17 +315,9 @@ function DocumentsTable({
             </Table.Td>
             <Table.Td>
               {assignmentState === "unassigned" ? (
-                <Select
-                  placeholder="Pick entry..."
-                  searchable
-                  data={entryOptions}
-                  value={null}
-                  onChange={(entryId) => {
-                    if (entryId) onAssign(attachment.id, entryId)
-                  }}
-                  disabled={assignPending}
-                  w={260}
-                />
+                <Button size="xs" variant="default" onClick={() => onMatch(attachment)}>
+                  Match
+                </Button>
               ) : (
                 <Text size="sm">Assigned</Text>
               )}
@@ -396,5 +385,157 @@ function DocumentsTable({
         ))}
       </Table.Tbody>
     </Table>
+  )
+}
+
+function MatchDocumentDrawer({
+  document,
+  candidates,
+  candidatesIsError,
+  candidatePage,
+  candidateTotalPages,
+  candidateTotalCount,
+  assignPending,
+  onCandidatePageChange,
+  onClose,
+  onMatch,
+  onPreview,
+}: {
+  document: MatchableDocument | null
+  candidates: Array<{
+    id: string
+    date: string
+    amount: number
+    currency: string
+    direction: string
+    counterpartyName: string | null
+    status: string
+    bankAccount: {
+      id: string
+      displayName: string
+      bankName: string | null
+      legalEntity: { id: string; name: string }
+    }
+  }>
+  candidatesIsError: boolean
+  candidatePage: number
+  candidateTotalPages: number
+  candidateTotalCount: number
+  assignPending: boolean
+  onCandidatePageChange: (page: number) => void
+  onClose: () => void
+  onMatch: (entryId: string) => void
+  onPreview: (attachment: AttachmentPreview) => void
+}) {
+  const [search, setSearch] = useState("")
+  const query = search.trim().toLowerCase()
+  const filteredCandidates = query
+    ? candidates.filter((candidate) => {
+        const amount = `${candidate.direction === "C" ? "+" : "-"}${formatMinor(
+          candidate.amount,
+          candidate.currency as Currency,
+        )}`
+        return [
+          candidate.date,
+          amount,
+          candidate.counterpartyName,
+          candidate.status,
+          candidate.bankAccount.displayName,
+          candidate.bankAccount.bankName,
+          candidate.bankAccount.legalEntity.name,
+        ]
+          .filter(Boolean)
+          .some((value) => String(value).toLowerCase().includes(query))
+      })
+    : candidates
+
+  return (
+    <Drawer opened={!!document} onClose={onClose} title="Match document" position="right" size="xl">
+      {document ? (
+        <Stack gap="md">
+          <Section padding="md">
+            <Stack gap={4}>
+              <Text fw={600} style={{ wordBreak: "break-all" }}>
+                {document.originalName}
+              </Text>
+              <Text size="xs" c="dimmed">
+                Uploaded {new Date(document.uploadedAt).toLocaleString()}
+              </Text>
+              <Button
+                size="xs"
+                variant="default"
+                onClick={() =>
+                  onPreview({
+                    id: document.id,
+                    originalName: document.originalName,
+                    contentType: document.contentType,
+                  })
+                }
+              >
+                Preview document
+              </Button>
+            </Stack>
+          </Section>
+
+          <TextInput
+            label="Search candidates"
+            placeholder="Legal entity, bank account, counterparty, amount, or date"
+            value={search}
+            onChange={(event) => setSearch(event.currentTarget.value)}
+          />
+
+          {candidatesIsError ? (
+            <Text size="sm" c="red">
+              Unable to load match candidates.
+            </Text>
+          ) : filteredCandidates.length > 0 ? (
+            <Stack gap="xs">
+              {filteredCandidates.map((candidate) => (
+                <Group key={candidate.id} justify="space-between" align="flex-start" wrap="nowrap">
+                  <Stack gap={2}>
+                    <Text size="sm" fw={600}>
+                      {candidate.bankAccount.legalEntity.name}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {candidate.bankAccount.displayName}
+                      {candidate.bankAccount.bankName ? ` · ${candidate.bankAccount.bankName}` : ""}
+                    </Text>
+                    <Text size="sm">
+                      {candidate.date} · {candidate.direction === "C" ? "+" : "-"}
+                      {formatMinor(candidate.amount, candidate.currency as Currency)}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {candidate.counterpartyName ?? "-"} · {candidate.status}
+                    </Text>
+                  </Stack>
+                  <Button size="xs" loading={assignPending} onClick={() => onMatch(candidate.id)}>
+                    Match document
+                  </Button>
+                </Group>
+              ))}
+            </Stack>
+          ) : (
+            <Text size="sm" c="dimmed">
+              No matching candidates on this page.
+            </Text>
+          )}
+
+          {candidateTotalCount > ASSIGNABLE_ENTRIES_PAGE_SIZE ? (
+            <Group justify="space-between">
+              <Text size="sm" c="dimmed">
+                {candidateTotalCount} pending entries · Page {Math.min(candidatePage, candidateTotalPages)} of{" "}
+                {candidateTotalPages}
+              </Text>
+              <Pagination
+                size="sm"
+                total={candidateTotalPages}
+                value={Math.min(candidatePage, candidateTotalPages)}
+                onChange={onCandidatePageChange}
+              />
+            </Group>
+          ) : null}
+        </Stack>
+      ) : null}
+    </Drawer>
   )
 }
