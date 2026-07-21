@@ -27,6 +27,10 @@ Do not add procedures named after pages, components, drawers, tabs, or UI workfl
 
 Do not create REST/Hono adapters solely to satisfy this rule. Keep using tRPC for the internal web app unless a task explicitly asks for REST endpoints or HTTP-specific behavior such as uploads, downloads, redirects, streaming, caching semantics, or third-party integration.
 
+## Frontend Data Ownership
+
+Reusable components should not initiate route data fetching. Start read queries in route/page owners, preferably through TanStack Router loaders with `queryClient.ensureQueryData` or `prefetchQuery`, and pass the data or view-ready options into child components. Component-level read queries are an exception for user-initiated, highly localized, polling, or subscription-style behavior that would be worse at the route boundary.
+
 ## PR Titles
 
 Use a conventional-commits PR title when opening or editing PRs. Allowed types are `feat`, `fix`, `chore`, `ci`, `docs`, `refactor`, `perf`, `test`, `build`, `style`, and `revert`. Scope is optional, and the subject must start with a letter.

@@ -12,6 +12,7 @@ import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
+const APPOINTMENT_OPTION_PAGE_SIZE = 100
 const searchSchema = z.object({
   page: z.coerce.number().int().min(1).optional(),
   search: z.string().optional(),
@@ -26,6 +27,18 @@ function appointmentsQueryOptions(customerId: string, page: number, search: stri
   })
 }
 
+function appointmentMasterOptionsQueryOptions(search: string) {
+  return trpc.customers.list.queryOptions({
+    page: 1,
+    pageSize: APPOINTMENT_OPTION_PAGE_SIZE,
+    search: search.trim() || undefined,
+  })
+}
+
+function appointmentSalonOptionsQueryOptions() {
+  return trpc.salons.list.queryOptions({ page: 1, pageSize: APPOINTMENT_OPTION_PAGE_SIZE })
+}
+
 export const Route = createFileRoute("/_authenticated/customers/$customerId/appointments")({
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({
@@ -33,9 +46,11 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId/appo
     search: search.search ?? "",
   }),
   loader: async ({ context, deps, params }) => {
-    const data = await context.queryClient.ensureQueryData(
-      appointmentsQueryOptions(params.customerId, deps.page, deps.search),
-    )
+    const [data] = await Promise.all([
+      context.queryClient.ensureQueryData(appointmentsQueryOptions(params.customerId, deps.page, deps.search)),
+      context.queryClient.prefetchQuery(appointmentMasterOptionsQueryOptions("")),
+      context.queryClient.prefetchQuery(appointmentSalonOptionsQueryOptions()),
+    ])
     const totalPages = Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE))
     if (deps.page > totalPages) {
       throw redirect({
@@ -53,12 +68,20 @@ function CustomerAppointmentsRoute() {
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [masterSearch, setMasterSearch] = useState("")
 
   const page = search.page ?? 1
   const searchValue = search.search ?? ""
   const normalizedSearch = searchValue.trim()
   const queryOptions = appointmentsQueryOptions(customerId, page, searchValue)
   const { data } = useQuery(queryOptions)
+  const { data: masterCustomersData } = useQuery(appointmentMasterOptionsQueryOptions(masterSearch))
+  const { data: salonsData } = useQuery(appointmentSalonOptionsQueryOptions())
+  const masterOptions = (masterCustomersData?.items ?? []).map((customer) => ({
+    value: customer.id,
+    label: customer.name,
+  }))
+  const salonOptions = (salonsData?.items ?? []).map((salon) => ({ value: salon.id, label: salon.name }))
   const appointments = data?.items ?? []
   const totalCount = data?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
@@ -155,6 +178,13 @@ function CustomerAppointmentsRoute() {
             { queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey },
           ]}
           navigateOnSuccess
+          clientOptions={[]}
+          masterOptions={masterOptions}
+          salonOptions={salonOptions}
+          clientSearch=""
+          masterSearch={masterSearch}
+          onClientSearchChange={() => {}}
+          onMasterSearchChange={setMasterSearch}
         />
       </Section>
     </>

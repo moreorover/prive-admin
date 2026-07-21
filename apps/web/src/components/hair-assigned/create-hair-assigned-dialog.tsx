@@ -1,6 +1,6 @@
 import { Button, Group, Modal, Radio, Stack, Table, Text } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 
 import { trpc } from "@/utils/trpc"
@@ -12,6 +12,14 @@ type CreateHairAssignedDialogProps = {
   appointmentId?: string | null
   invalidateKeys: { queryKey: readonly unknown[] }[]
   onSuccess?: () => void
+  availableOrders: Array<{
+    id: string
+    uid: number
+    weightReceived: number
+    weightUsed: number
+    customer: { name: string }
+  }>
+  availableOrdersLoading?: boolean
 }
 
 export function CreateHairAssignedDialog({
@@ -21,6 +29,8 @@ export function CreateHairAssignedDialog({
   appointmentId,
   invalidateKeys,
   onSuccess,
+  availableOrders,
+  availableOrdersLoading = false,
 }: CreateHairAssignedDialogProps) {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const queryClient = useQueryClient()
@@ -30,12 +40,6 @@ export function CreateHairAssignedDialog({
   })
   const hairAssignedListQueryKey = trpc.hairAssigned.list.queryKey()
   const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
-
-  const { data: availableOrdersData, isLoading } = useQuery({
-    ...availableOrdersQueryOptions,
-    enabled: open,
-  })
-  const availableOrders = availableOrdersData?.items ?? []
 
   const mutation = useMutation({
     ...trpc.hairAssigned.create.mutationOptions(),
@@ -66,7 +70,7 @@ export function CreateHairAssignedDialog({
         <Text size="sm" c="dimmed">
           Select a hair order with available stock.
         </Text>
-        {isLoading ? (
+        {availableOrdersLoading ? (
           <Text size="sm" c="dimmed">
             Loading…
           </Text>

@@ -33,11 +33,22 @@ import { trpc } from "@/utils/trpc"
 export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")({
   component: HairOrderDetailPage,
   loader: async ({ context, params }) => {
-    await context.queryClient.ensureQueryData(trpc.hairOrders.get.queryOptions({ id: params.hairOrderId }))
+    await Promise.all([
+      context.queryClient.ensureQueryData(trpc.hairOrders.get.queryOptions({ id: params.hairOrderId })),
+      context.queryClient.prefetchQuery(availableHairOrdersQueryOptions()),
+    ])
   },
 })
 
+const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
 const formatCents = (cents: number) => `€${(cents / 100).toFixed(2)}`
+
+function availableHairOrdersQueryOptions() {
+  return trpc.hairOrders.list.queryOptions({
+    availability: "availableForAssignment",
+    pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
+  })
+}
 
 function HairOrderDetailPage() {
   const { hairOrderId } = Route.useParams()
@@ -51,6 +62,10 @@ function HairOrderDetailPage() {
   const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
 
   const { data: hairOrder } = useQuery(hairOrderQueryOptions)
+  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
+    availableHairOrdersQueryOptions(),
+  )
+  const availableHairOrders = availableHairOrdersData?.items ?? []
 
   const assignedClientSummaryKeys = Array.from(
     new Set([
@@ -210,6 +225,8 @@ function HairOrderDetailPage() {
           onOpenChange={setCreateOpen}
           clientId={hairOrder.customer.id}
           invalidateKeys={invalidateKeys}
+          availableOrders={availableHairOrders}
+          availableOrdersLoading={availableHairOrdersLoading}
         />
         {editItem && (
           <EditHairAssignedDialog
