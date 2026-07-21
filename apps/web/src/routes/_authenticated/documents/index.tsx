@@ -27,7 +27,7 @@ import { Section } from "@/components/section"
 import { type Currency, formatMinor } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
-export const Route = createFileRoute("/_authenticated/documents")({
+export const Route = createFileRoute("/_authenticated/documents/")({
   component: DocumentsPage,
 })
 
