@@ -65,20 +65,6 @@ export function getDocumentMatchFilterOptions(candidates: DocumentMatchCandidate
   return { legalEntities, bankAccounts }
 }
 
-export function getDocumentMatchCandidatePage<T>(candidates: T[], page: number, pageSize: number) {
-  const totalPages = Math.max(1, Math.ceil(candidates.length / pageSize))
-  const clampedPage = Math.min(Math.max(1, page), totalPages)
-  const startIndex = (clampedPage - 1) * pageSize
-  const items = candidates.slice(startIndex, startIndex + pageSize)
-  return {
-    items,
-    page: clampedPage,
-    totalPages,
-    start: candidates.length === 0 ? 0 : startIndex + 1,
-    end: startIndex + items.length,
-  }
-}
-
 export function formatCandidateAmount(candidate: Pick<DocumentMatchCandidate, "amount" | "currency" | "direction">) {
   return `${candidate.direction === "C" ? "+" : "-"}${formatMinor(
     Math.abs(candidate.amount),

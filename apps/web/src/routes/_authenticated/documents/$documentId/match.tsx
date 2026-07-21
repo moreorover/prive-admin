@@ -29,17 +29,14 @@ import { Section } from "@/components/section"
 import {
   filterDocumentMatchCandidates,
   formatCandidateAmount,
-  getDocumentMatchCandidatePage,
   getDocumentMatchFilterOptions,
   type DocumentMatchCandidate,
   type DocumentMatchCandidateFilters,
 } from "@/lib/document-match-candidates"
 import { trpc } from "@/utils/trpc"
 
-const MATCH_CANDIDATES_PAGE_SIZE = 100
-const VISIBLE_CANDIDATES_PAGE_SIZE = 10
+const MATCH_CANDIDATES_PAGE_SIZE = 10
 const searchSchema = z.object({
-  candidatePage: z.coerce.number().int().min(1).optional(),
   page: z.coerce.number().int().min(1).optional(),
 })
 
@@ -47,9 +44,9 @@ function documentQueryOptions(documentId: string) {
   return trpc.bankStatementAttachments.get.queryOptions({ id: documentId })
 }
 
-function matchCandidatesQueryOptions(candidatePage: number) {
+function matchCandidatesQueryOptions(page: number) {
   return trpc.bankStatementEntries.listMatchCandidates.queryOptions({
-    page: candidatePage,
+    page,
     pageSize: MATCH_CANDIDATES_PAGE_SIZE,
   })
 }
@@ -58,19 +55,19 @@ export const Route = createFileRoute("/_authenticated/documents/$documentId/matc
   component: DocumentMatchPage,
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({
-    candidatePage: search.candidatePage ?? 1,
+    page: search.page ?? 1,
   }),
   loader: async ({ context, deps, params }) => {
     const [, candidatesData] = await Promise.all([
       context.queryClient.ensureQueryData(documentQueryOptions(params.documentId)),
-      context.queryClient.ensureQueryData(matchCandidatesQueryOptions(deps.candidatePage)),
+      context.queryClient.ensureQueryData(matchCandidatesQueryOptions(deps.page)),
     ])
     const totalPages = Math.max(1, Math.ceil(candidatesData.totalCount / MATCH_CANDIDATES_PAGE_SIZE))
-    if (deps.candidatePage > totalPages) {
+    if (deps.page > totalPages) {
       throw redirect({
         to: "/documents/$documentId/match",
         params: { documentId: params.documentId },
-        search: { candidatePage: totalPages },
+        search: { page: totalPages },
       })
     }
   },
@@ -81,8 +78,7 @@ function DocumentMatchPage() {
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
   const queryClient = useQueryClient()
-  const candidatePage = search.candidatePage ?? 1
-  const visiblePage = search.page ?? 1
+  const page = search.page ?? 1
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
   const [filters, setFilters] = useState<DocumentMatchCandidateFilters>({
     legalEntityId: "",
@@ -95,19 +91,17 @@ function DocumentMatchPage() {
   const documentQuery = useQuery(documentQueryOptions(documentId))
   const document = documentQuery.data
 
-  const { data: matchCandidatesData, isError: matchCandidatesIsError } = useQuery(
-    matchCandidatesQueryOptions(candidatePage),
-  )
+  const { data: matchCandidatesData, isError: matchCandidatesIsError } = useQuery(matchCandidatesQueryOptions(page))
   const candidates = matchCandidatesData?.items ?? []
   const candidatesTotalCount = matchCandidatesData?.totalCount ?? 0
-  const candidatesTotalPages = Math.max(1, Math.ceil(candidatesTotalCount / MATCH_CANDIDATES_PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(candidatesTotalCount / MATCH_CANDIDATES_PAGE_SIZE))
   const { legalEntities, bankAccounts } = getDocumentMatchFilterOptions(candidates, filters.legalEntityId)
   const filteredCandidates = filterDocumentMatchCandidates(candidates, filters)
-  const visibleCandidates = getDocumentMatchCandidatePage(filteredCandidates, visiblePage, VISIBLE_CANDIDATES_PAGE_SIZE)
+  const start = candidatesTotalCount === 0 ? 0 : (page - 1) * MATCH_CANDIDATES_PAGE_SIZE + 1
+  const end = Math.min((page - 1) * MATCH_CANDIDATES_PAGE_SIZE + candidates.length, candidatesTotalCount)
 
   const updateFilters = (nextFilters: Partial<DocumentMatchCandidateFilters>) => {
     setFilters((currentFilters) => ({ ...currentFilters, ...nextFilters }))
-    navigate({ search: (currentSearch) => ({ ...currentSearch, page: 1 }), replace: true })
   }
 
   const invalidate = async () => {
@@ -255,13 +249,13 @@ function DocumentMatchPage() {
                           Pending entries
                         </Text>
                         <Text size="sm" c="dimmed">
-                          {visibleCandidates.start}-{visibleCandidates.end} of {filteredCandidates.length} shown
+                          {start}-{end} of {candidatesTotalCount} shown
                         </Text>
                       </Group>
 
                       {filteredCandidates.length > 0 ? (
                         <Stack gap="xs">
-                          {visibleCandidates.items.map((candidate) => (
+                          {filteredCandidates.map((candidate) => (
                             <CandidateCard
                               key={candidate.id}
                               candidate={candidate}
@@ -279,12 +273,12 @@ function DocumentMatchPage() {
                         </Text>
                       )}
 
-                      {visibleCandidates.totalPages > 1 ? (
+                      {totalPages > 1 ? (
                         <Group justify="flex-end">
                           <Pagination
                             size="sm"
-                            total={visibleCandidates.totalPages}
-                            value={visibleCandidates.page}
+                            total={totalPages}
+                            value={Math.min(page, totalPages)}
                             onChange={(nextPage) =>
                               navigate({ search: (currentSearch) => ({ ...currentSearch, page: nextPage }) })
                             }
@@ -293,26 +287,6 @@ function DocumentMatchPage() {
                       ) : null}
                     </>
                   )}
-
-                  {candidatesTotalCount > MATCH_CANDIDATES_PAGE_SIZE ? (
-                    <Group justify="space-between">
-                      <Text size="sm" c="dimmed">
-                        Loaded candidate page {Math.min(candidatePage, candidatesTotalPages)} of {candidatesTotalPages}{" "}
-                        · {candidatesTotalCount} total pending entries
-                      </Text>
-                      <Pagination
-                        size="sm"
-                        total={candidatesTotalPages}
-                        value={Math.min(candidatePage, candidatesTotalPages)}
-                        onChange={(nextPage) =>
-                          navigate({
-                            search: (currentSearch) => ({ ...currentSearch, candidatePage: nextPage, page: 1 }),
-                            replace: true,
-                          })
-                        }
-                      />
-                    </Group>
-                  ) : null}
                 </Stack>
               </Section>
             </Grid.Col>

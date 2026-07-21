@@ -3,7 +3,6 @@ import { describe, expect, it } from "vite-plus/test"
 import {
   filterDocumentMatchCandidates,
   formatCandidateAmount,
-  getDocumentMatchCandidatePage,
   getDocumentMatchFilterOptions,
   type DocumentMatchCandidate,
 } from "./document-match-candidates"
@@ -61,27 +60,6 @@ describe("document match candidates", () => {
         { value: "entity-2", label: "Prive LT MB" },
       ],
       bankAccounts: [{ value: "account-1", label: "LT307300010202470914 · Swedbank" }],
-    })
-  })
-
-  it("pages filtered candidates within the drawer", () => {
-    const page = getDocumentMatchCandidatePage(
-      [
-        ...candidates,
-        { ...candidates[0], id: "entry-3" },
-        { ...candidates[1], id: "entry-4" },
-        { ...candidates[0], id: "entry-5" },
-      ],
-      2,
-      2,
-    )
-
-    expect(page).toEqual({
-      items: [expect.objectContaining({ id: "entry-3" }), expect.objectContaining({ id: "entry-4" })],
-      page: 2,
-      totalPages: 3,
-      start: 3,
-      end: 4,
     })
   })
 
