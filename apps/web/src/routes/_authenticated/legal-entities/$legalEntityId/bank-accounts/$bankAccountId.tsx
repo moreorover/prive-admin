@@ -25,7 +25,7 @@ import { useForm } from "@mantine/form"
 import { useDisclosure } from "@mantine/hooks"
 import { notifications } from "@mantine/notifications"
 import { IconDotsVertical, IconDownload, IconLinkOff, IconPaperclip, IconTrash } from "@tabler/icons-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useState } from "react"
@@ -35,6 +35,13 @@ import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { CURRENCY_OPTIONS, type Currency, formatMinor } from "@/lib/currency"
 import { bankAccountSchema } from "@/lib/schemas"
 import { trpc } from "@/utils/trpc"
+
+import {
+  type BankAccountFormValues,
+  useBankAccountActions,
+  useBankEntryAttachmentActions,
+  useBankStatementEntryActions,
+} from "./-bank-account-actions"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/bank-accounts/$bankAccountId")({
   component: BankAccountRoute,
@@ -51,7 +58,6 @@ type StatusFilter = "PENDING" | "IGNORED" | "ALL"
 
 function BankAccountShow({ id }: { id: string }) {
   const { legalEntityId } = Route.useParams()
-  const queryClient = useQueryClient()
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
   const [file, setFile] = useState<File | null>(null)
   const [importResult, setImportResult] = useState<{
@@ -85,45 +91,19 @@ function BankAccountShow({ id }: { id: string }) {
 
   const { data: attachmentCounts } = useQuery(trpc.bankStatementAttachments.counts.queryOptions())
 
-  const importMutation = useMutation({
-    ...trpc.bankStatementEntries.importCsv.mutationOptions(),
-    onSuccess: async (result) => {
+  const { importCsv, ignore, undo } = useBankStatementEntryActions({
+    onImported: (result) => {
       setImportResult(result)
       setFile(null)
       setEntriesPage(1)
-      notifications.show({
-        color: "green",
-        message: `Imported ${result.inserted} new entries (${result.skipped} duplicates skipped)`,
-      })
-      await queryClient.invalidateQueries({ queryKey: trpc.bankStatementEntries.list.queryKey() })
     },
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
-  })
-
-  const ignoreMutation = useMutation({
-    ...trpc.bankStatementEntries.ignore.mutationOptions(),
-    onSuccess: async () => {
-      setEntriesPage(1)
-      notifications.show({ color: "yellow", message: "Marked as ignored" })
-      await queryClient.invalidateQueries({ queryKey: trpc.bankStatementEntries.list.queryKey() })
-    },
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
-  })
-
-  const undoMutation = useMutation({
-    ...trpc.bankStatementEntries.undo.mutationOptions(),
-    onSuccess: async () => {
-      setEntriesPage(1)
-      notifications.show({ color: "green", message: "Restored to pending" })
-      await queryClient.invalidateQueries({ queryKey: trpc.bankStatementEntries.list.queryKey() })
-    },
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
+    onStatusChanged: () => setEntriesPage(1),
   })
 
   const handleUpload = async () => {
     if (!file) return
     const text = await file.text()
-    importMutation.mutate({ csv: text })
+    importCsv.mutate({ csv: text })
   }
 
   return (
@@ -179,7 +159,7 @@ function BankAccountShow({ id }: { id: string }) {
                 accept=".csv,text/csv"
                 w={400}
               />
-              <Button onClick={handleUpload} loading={importMutation.isPending} disabled={!file}>
+              <Button onClick={handleUpload} loading={importCsv.isPending} disabled={!file}>
                 Import
               </Button>
             </Group>
@@ -298,11 +278,11 @@ function BankAccountShow({ id }: { id: string }) {
                         </Menu.Target>
                         <Menu.Dropdown>
                           {e.status === "PENDING" ? (
-                            <Menu.Item color="gray" onClick={() => ignoreMutation.mutate({ id: e.id })}>
+                            <Menu.Item color="gray" onClick={() => ignore.mutate({ id: e.id })}>
                               Ignore
                             </Menu.Item>
                           ) : (
-                            <Menu.Item onClick={() => undoMutation.mutate({ id: e.id })}>Undo ({e.status})</Menu.Item>
+                            <Menu.Item onClick={() => undo.mutate({ id: e.id })}>Undo ({e.status})</Menu.Item>
                           )}
                         </Menu.Dropdown>
                       </Menu>
@@ -365,7 +345,6 @@ function AttachmentsCell({
   count: number
   onPreview: (a: { id: string; originalName: string; contentType: string }) => void
 }) {
-  const queryClient = useQueryClient()
   const [opened, setOpened] = useState(false)
   const [busy, setBusy] = useState(false)
   const [fileInputKey, setFileInputKey] = useState(0)
@@ -383,53 +362,12 @@ function AttachmentsCell({
   })
   const unassignedAttachments = unassignedAttachmentsData?.items.map((row) => row.attachment) ?? []
 
-  const invalidate = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.list.queryKey() }),
-      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.counts.queryKey() }),
-    ])
-  }
-
-  const remove = useMutation({
-    ...trpc.bankStatementAttachments.delete.mutationOptions(),
-    onSuccess: async () => {
-      notifications.show({ color: "green", message: "Deleted" })
-      await invalidate()
-    },
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
-  })
-
-  const unassign = useMutation({
-    ...trpc.bankStatementAttachments.unassign.mutationOptions(),
-    onSuccess: async () => {
-      notifications.show({ color: "green", message: "Unassigned" })
-      await invalidate()
-    },
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
-  })
-
-  const assign = useMutation({
-    ...trpc.bankStatementAttachments.assign.mutationOptions(),
-    onSuccess: async () => {
-      notifications.show({ color: "green", message: "Attached" })
-      await invalidate()
-    },
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
-  })
+  const { assign, remove, unassign, upload: uploadAttachment } = useBankEntryAttachmentActions()
 
   const upload = async (file: File) => {
     setBusy(true)
     try {
-      const fd = new FormData()
-      fd.append("entryId", entryId)
-      fd.append("file", file)
-      const res = await fetch("/api/statement-attachments/upload", { method: "POST", body: fd })
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        throw new Error(body.error ?? `Upload failed (${res.status})`)
-      }
-      notifications.show({ color: "green", message: "Uploaded" })
-      await invalidate()
+      await uploadAttachment(file, entryId)
     } catch (err) {
       notifications.show({ color: "red", message: (err as Error).message })
     } finally {
@@ -549,15 +487,6 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
-type FormValues = {
-  legalEntityId: string
-  iban: string
-  currency: Currency
-  bankName: string
-  swift: string
-  displayName: string
-}
-
 function EditBankAccountModal({
   opened,
   onClose,
@@ -567,13 +496,12 @@ function EditBankAccountModal({
   opened: boolean
   onClose: () => void
   bankAccountId: string
-  initial: FormValues
+  initial: BankAccountFormValues
 }) {
-  const queryClient = useQueryClient()
   const { data: legalEntitiesData } = useQuery(trpc.legalEntities.list.queryOptions({ pageSize: 100 }))
   const legalEntities = legalEntitiesData?.items ?? []
 
-  const form = useForm<FormValues & { id: string }>({
+  const form = useForm<BankAccountFormValues & { id: string }>({
     initialValues: {
       id: bankAccountId,
       ...initial,
@@ -581,26 +509,11 @@ function EditBankAccountModal({
     validate: zodResolver(bankAccountSchema),
   })
 
-  const save = useMutation({
-    ...trpc.bankAccounts.update.mutationOptions(),
-    onSuccess: async (_, values) => {
-      notifications.show({ color: "green", message: "Saved" })
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: trpc.bankAccounts.get.queryOptions({ id: bankAccountId }).queryKey,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: trpc.legalEntities.get.queryOptions({ id: values.legalEntityId }).queryKey,
-        }),
-      ])
-      onClose()
-    },
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
-  })
+  const { update } = useBankAccountActions({ bankAccountId, onUpdated: onClose })
 
   return (
     <Modal opened={opened} onClose={onClose} title="Edit bank account">
-      <form onSubmit={form.onSubmit((values) => save.mutate({ ...values, id: bankAccountId }))}>
+      <form onSubmit={form.onSubmit((values) => update.mutate({ ...values, id: bankAccountId }))}>
         <Stack>
           <TextInput label="Display name" required {...form.getInputProps("displayName")} />
           <Select
@@ -630,7 +543,7 @@ function EditBankAccountModal({
             <Button variant="subtle" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" loading={save.isPending}>
+            <Button type="submit" loading={update.isPending}>
               Save
             </Button>
           </Group>
@@ -643,11 +556,10 @@ function EditBankAccountModal({
 function BankAccountNew() {
   const { legalEntityId: pathLegalEntityId } = Route.useParams()
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const { data: legalEntitiesData } = useQuery(trpc.legalEntities.list.queryOptions({ pageSize: 100 }))
   const legalEntities = legalEntitiesData?.items ?? []
 
-  const form = useForm<FormValues>({
+  const form = useForm<BankAccountFormValues>({
     initialValues: {
       legalEntityId: pathLegalEntityId,
       iban: "",
@@ -659,19 +571,13 @@ function BankAccountNew() {
     validate: zodResolver(bankAccountSchema),
   })
 
-  const save = useMutation({
-    ...trpc.bankAccounts.create.mutationOptions(),
-    onSuccess: async (_, values) => {
-      notifications.show({ color: "green", message: "Saved" })
-      await queryClient.invalidateQueries({
-        queryKey: trpc.legalEntities.get.queryOptions({ id: values.legalEntityId }).queryKey,
-      })
+  const { create } = useBankAccountActions({
+    onCreated: (values) => {
       navigate({
         to: "/legal-entities/$legalEntityId/bank-accounts",
         params: { legalEntityId: values.legalEntityId },
       })
     },
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
   })
 
   const cancelTarget = form.values.legalEntityId || pathLegalEntityId
@@ -682,7 +588,7 @@ function BankAccountNew() {
       <BreadcrumbItem label="New bank account" order={40} />
       <Title order={3}>New bank account</Title>
       <Card withBorder>
-        <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
+        <form onSubmit={form.onSubmit((values) => create.mutate(values))}>
           <Stack>
             <TextInput label="Display name" required {...form.getInputProps("displayName")} />
             <Select
@@ -709,7 +615,7 @@ function BankAccountNew() {
             <TextInput label="Bank name" placeholder="AB SEB BANKAS" {...form.getInputProps("bankName")} />
             <TextInput label="SWIFT" placeholder="CBVILT2X" {...form.getInputProps("swift")} />
             <Group>
-              <Button type="submit" loading={save.isPending}>
+              <Button type="submit" loading={create.isPending}>
                 Save
               </Button>
               <Button

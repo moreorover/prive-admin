@@ -16,7 +16,7 @@ import {
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconAlertCircle, IconDeviceLaptop, IconDeviceMobile } from "@tabler/icons-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -28,11 +28,11 @@ import { authClient } from "@/lib/auth-client"
 import { CURRENCY_OPTIONS, type Currency } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
+import { sessionsQueryKey, useRevokeSessionAction, useUpdateUserProfileAction } from "./profile/-profile-actions"
+
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
 })
-
-const sessionsQueryKey = ["auth", "sessions"] as const
 
 type ParsedUA = { isMobile: boolean; os: string; browser: string }
 
@@ -58,7 +58,6 @@ function ProfilePage() {
   const [pwOpen, setPwOpen] = useState(false)
   const [verifyPending, setVerifyPending] = useState(false)
   const [terminatingId, setTerminatingId] = useState<string | undefined>()
-  const queryClient = useQueryClient()
 
   const { data: sessionsResult } = useQuery({
     queryKey: sessionsQueryKey,
@@ -69,15 +68,7 @@ function ProfilePage() {
   const userSettingsQueryOptions = trpc.userSettings.get.queryOptions()
   const { data: settings } = useQuery(userSettingsQueryOptions)
 
-  const revokeMutation = useMutation({
-    mutationFn: (token: string) => authClient.revokeSession({ token }),
-    onSuccess: (_, token) => {
-      queryClient.invalidateQueries({ queryKey: sessionsQueryKey })
-      notifications.show({ color: "green", message: "Session terminated" })
-      void token
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
+  const revokeSession = useRevokeSessionAction({ onRevoked: () => setTerminatingId(undefined) })
 
   if (isPending || !current) {
     return <Loader2 />
@@ -176,14 +167,13 @@ function ProfilePage() {
                       size="xs"
                       variant="subtle"
                       color="red"
-                      disabled={revokeMutation.isPending && terminatingId === s.id}
+                      disabled={revokeSession.isPending && terminatingId === s.id}
                       onClick={async () => {
                         setTerminatingId(s.id)
-                        await revokeMutation.mutateAsync(s.token)
-                        setTerminatingId(undefined)
+                        await revokeSession.mutateAsync(s.token)
                       }}
                     >
-                      {revokeMutation.isPending && terminatingId === s.id ? (
+                      {revokeSession.isPending && terminatingId === s.id ? (
                         <Loader size={14} />
                       ) : isCurrent ? (
                         "Sign out"
@@ -219,47 +209,16 @@ type EditUserModalProps = {
 }
 
 function EditUserModal({ open, onOpenChange, initialName, initialCurrency }: EditUserModalProps) {
-  const queryClient = useQueryClient()
-  const [submitting, setSubmitting] = useState(false)
-  const userSettingsQueryOptions = trpc.userSettings.get.queryOptions()
   const safeInitialCurrency: Currency = initialCurrency === "GBP" || initialCurrency === "EUR" ? initialCurrency : "EUR"
   const form = useForm({ initialValues: { name: initialName, preferredCurrency: safeInitialCurrency } })
-
-  const settingsMutation = useMutation({
-    ...trpc.userSettings.update.mutationOptions(),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: userSettingsQueryOptions.queryKey }),
+  const { submitting, updateUserProfile } = useUpdateUserProfileAction({
+    initialName,
+    initialCurrency: safeInitialCurrency,
+    onUpdated: () => onOpenChange(false),
   })
 
   const handleSubmit = async (values: { name: string; preferredCurrency: Currency }) => {
-    setSubmitting(true)
-    try {
-      const tasks: Promise<unknown>[] = []
-      if (values.name !== initialName) {
-        tasks.push(
-          new Promise<void>((resolve, reject) => {
-            authClient.updateUser({
-              name: values.name,
-              fetchOptions: {
-                onSuccess: () => resolve(),
-                onError: (error) => reject(new Error(error.error.message)),
-              },
-            })
-          }),
-        )
-      }
-      if (values.preferredCurrency !== safeInitialCurrency) {
-        tasks.push(settingsMutation.mutateAsync({ preferredCurrency: values.preferredCurrency }))
-      }
-      await Promise.all(tasks)
-      queryClient.invalidateQueries({ queryKey: ["auth"] })
-      queryClient.invalidateQueries({ queryKey: userSettingsQueryOptions.queryKey })
-      notifications.show({ color: "green", message: "Profile updated" })
-      onOpenChange(false)
-    } catch (error) {
-      notifications.show({ color: "red", message: error instanceof Error ? error.message : "Update failed" })
-    } finally {
-      setSubmitting(false)
-    }
+    await updateUserProfile(values)
   }
 
   return (

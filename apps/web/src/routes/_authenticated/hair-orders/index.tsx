@@ -1,9 +1,8 @@
 import { Button, Container, Group, Modal, NumberInput, Select, Stack, Table, Text } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
-import { notifications } from "@mantine/notifications"
 import { IconPlus } from "@tabler/icons-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -13,6 +12,8 @@ import { Section } from "@/components/section"
 import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
+import { useCreateHairOrderAction } from "./-hair-order-actions"
+
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 const HAIR_ORDERS_PAGE_SIZE = 25
 
@@ -21,7 +22,6 @@ export const Route = createFileRoute("/_authenticated/hair-orders/")({
 })
 
 function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const queryClient = useQueryClient()
   const [customerSearch, setCustomerSearch] = useState("")
   const [selectedCustomerOption, setSelectedCustomerOption] = useState<SelectOption | null>(null)
 
@@ -36,17 +36,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     customers.map((c) => ({ value: c.id, label: c.name })),
     selectedCustomerOption,
   )
-  const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
-
-  const mutation = useMutation({
-    ...trpc.hairOrders.create.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: hairOrdersListQueryKey })
-      onOpenChange(false)
-      notifications.show({ color: "green", message: "Hair order created" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
+  const mutation = useCreateHairOrderAction({ onCreated: () => onOpenChange(false) })
 
   const form = useForm({
     initialValues: { customerId: "", placedAt: "", weightReceived: 0, total: 0 },

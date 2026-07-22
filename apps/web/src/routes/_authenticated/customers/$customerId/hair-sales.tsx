@@ -62,7 +62,6 @@ function HairSalesRoute() {
   const {
     availableHairOrders,
     availableHairOrdersLoading,
-    availableHairOrdersQueryOptions,
     hairAssigned,
     totalCount,
     totalPages,
@@ -72,7 +71,6 @@ function HairSalesRoute() {
   const customerSummaryQueryKey = trpc.customers.summary.queryOptions({ id: customerId }).queryKey
   const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({
     invalidateKeys: [{ queryKey: trpc.customers.hairAssigned.list.queryKey() }, { queryKey: customerSummaryQueryKey }],
-    availableHairOrdersQueryKey: availableHairOrdersQueryOptions.queryKey,
     selectedEditItem: hairEditItem,
     selectedDeleteItem: hairDeleteItem,
     onCreated: () => {

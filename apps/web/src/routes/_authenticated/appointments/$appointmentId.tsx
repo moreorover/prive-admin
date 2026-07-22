@@ -15,9 +15,8 @@ import {
   TextInput,
   Title,
 } from "@mantine/core"
-import { notifications } from "@mantine/notifications"
 import { IconCash, IconClock, IconDots, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 
@@ -36,6 +35,7 @@ import { formatMinor } from "@/lib/currency"
 import { formatPageRange, type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
+import { useAppointmentPersonnelActions } from "../-appointment-actions"
 import { useHairAssignmentActions } from "../-hair-assignment-actions"
 import {
   APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
@@ -84,7 +84,6 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
     appointmentQueryOptions,
     availableHairOrders,
     availableHairOrdersLoading,
-    availableHairOrdersQueryOptions,
     hairAssigned,
     hairAssignedTotalCount,
     hairAssignedTotalPages,
@@ -104,7 +103,6 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
         ? [{ queryKey: trpc.customers.summary.queryOptions({ id: appointment.client.id }).queryKey }]
         : []),
     ],
-    availableHairOrdersQueryKey: availableHairOrdersQueryOptions.queryKey,
     selectedEditItem: editItem,
     selectedDeleteItem: deleteItem,
     onCreated: () => {
@@ -532,7 +530,6 @@ function ChangeMasterForm({
   currentMasterName: string
   onClose: () => void
 }) {
-  const queryClient = useQueryClient()
   const [draftMasterId, setDraftMasterId] = useState<string | null>(null)
   const [masterSearch, setMasterSearch] = useState("")
   const [selectedMasterOption, setSelectedMasterOption] = useState<SelectOption | null>(null)
@@ -551,14 +548,9 @@ function ChangeMasterForm({
     selectedMasterOption ?? { value: currentMasterId, label: currentMasterName },
   )
 
-  const mutation = useMutation({
-    ...trpc.appointments.update.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.appointments.get.queryOptions({ id: appointmentId }).queryKey })
-      notifications.show({ color: "green", message: "Master updated." })
-      onClose()
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  const { updateMaster } = useAppointmentPersonnelActions({
+    appointmentId,
+    onMasterUpdated: onClose,
   })
 
   return (
@@ -583,8 +575,8 @@ function ChangeMasterForm({
         </Button>
         <Button
           disabled={!masterId || masterId === currentMasterId}
-          loading={mutation.isPending}
-          onClick={() => mutation.mutate({ id: appointmentId, masterId })}
+          loading={updateMaster.isPending}
+          onClick={() => updateMaster.mutate({ id: appointmentId, masterId })}
         >
           Save
         </Button>
@@ -594,7 +586,6 @@ function ChangeMasterForm({
 }
 
 function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonnelIds }: PickPersonnelModalProps) {
-  const queryClient = useQueryClient()
   const [selected, setSelected] = useState<string[]>([])
   const [search, setSearch] = useState("")
 
@@ -615,14 +606,9 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
     })
   }, [customers, assignedPersonnelIds])
 
-  const mutation = useMutation({
-    ...trpc.appointments.linkPersonnel.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.appointments.get.queryOptions({ id: appointmentId }).queryKey })
-      handleClose()
-      notifications.show({ color: "green", message: "Personnel picked." })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  const { linkPersonnel } = useAppointmentPersonnelActions({
+    appointmentId,
+    onPersonnelLinked: () => handleClose(),
   })
 
   const toggle = (id: string) =>
@@ -691,8 +677,8 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
           </Button>
           <Button
             disabled={selected.length === 0}
-            loading={mutation.isPending}
-            onClick={() => mutation.mutate({ appointmentId, personnelIds: selected })}
+            loading={linkPersonnel.isPending}
+            onClick={() => linkPersonnel.mutate({ appointmentId, personnelIds: selected })}
           >
             Confirm
           </Button>

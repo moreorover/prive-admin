@@ -1,7 +1,6 @@
 import { Button, Container, Group, Stack, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
-import { notifications } from "@mantine/notifications"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useEffect } from "react"
@@ -11,6 +10,8 @@ import { Section } from "@/components/section"
 import { salonSchema } from "@/lib/schemas"
 import { trpc } from "@/utils/trpc"
 
+import { useSalonActions } from "./-salon-actions"
+
 export const Route = createFileRoute("/_authenticated/salons/$salonId")({
   component: SalonEdit,
 })
@@ -19,8 +20,6 @@ function SalonEdit() {
   const { salonId } = Route.useParams()
   const isNew = salonId === "new"
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const salonsQueryOptions = trpc.salons.list.queryOptions({ pageSize: 100 })
   const salonQueryOptions = trpc.salons.get.queryOptions({ id: salonId })
 
   const { data: salon } = useQuery({
@@ -44,24 +43,7 @@ function SalonEdit() {
     }
   }, [form.setValues, form.resetDirty, isNew, salon])
 
-  const onSaveSuccess = async () => {
-    notifications.show({ color: "green", message: "Saved" })
-    await queryClient.invalidateQueries({ queryKey: salonsQueryOptions.queryKey })
-    if (!isNew) await queryClient.invalidateQueries({ queryKey: salonQueryOptions.queryKey })
-    navigate({ to: "/salons" })
-  }
-
-  const create = useMutation({
-    ...trpc.salons.create.mutationOptions(),
-    onSuccess: onSaveSuccess,
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
-  })
-
-  const update = useMutation({
-    ...trpc.salons.update.mutationOptions(),
-    onSuccess: onSaveSuccess,
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
-  })
+  const { create, update } = useSalonActions({ salonId, onSaved: () => navigate({ to: "/salons" }) })
 
   const handleSubmit = (values: typeof form.values) => {
     if (isNew) {

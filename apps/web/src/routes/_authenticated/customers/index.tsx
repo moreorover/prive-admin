@@ -1,8 +1,7 @@
 import { Button, Container, Group, Modal, Pagination, Stack, Table, Text, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
-import { notifications } from "@mantine/notifications"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 import { z } from "zod"
@@ -11,6 +10,8 @@ import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
+
+import { useCreateCustomerAction } from "./-customer-actions"
 
 const PAGE_SIZE = 10
 const searchSchema = z.object({
@@ -39,17 +40,7 @@ export const Route = createFileRoute("/_authenticated/customers/")({
 })
 
 function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation({
-    ...trpc.customers.create.mutationOptions(),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: trpc.customers.list.queryKey() })
-      onOpenChange(false)
-      notifications.show({ color: "green", message: "Customer created" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
+  const mutation = useCreateCustomerAction({ onCreated: () => onOpenChange(false) })
 
   const form = useForm({
     initialValues: { name: "", phoneNumber: "" },

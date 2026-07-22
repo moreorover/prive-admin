@@ -8,7 +8,6 @@ type QueryInvalidation = { queryKey: QueryKey }
 
 type UseHairAssignmentActionsInput = {
   invalidateKeys: QueryInvalidation[]
-  availableHairOrdersQueryKey: QueryKey
   selectedEditItem: HairAssignedRow | null
   selectedDeleteItem: HairAssignedRow | null
   onCreated?: () => void
@@ -18,7 +17,6 @@ type UseHairAssignmentActionsInput = {
 
 export function useHairAssignmentActions({
   invalidateKeys,
-  availableHairOrdersQueryKey,
   selectedEditItem,
   selectedDeleteItem,
   onCreated,
@@ -30,7 +28,6 @@ export function useHairAssignmentActions({
   const invalidateRelatedQueries = (hairOrderId?: string | null) => {
     for (const key of invalidateKeys) queryClient.invalidateQueries(key)
     queryClient.invalidateQueries({ queryKey: trpc.hairAssigned.list.queryKey() })
-    queryClient.invalidateQueries({ queryKey: availableHairOrdersQueryKey })
     queryClient.invalidateQueries({ queryKey: trpc.hairOrders.list.queryKey() })
     if (hairOrderId) {
       queryClient.invalidateQueries({ queryKey: trpc.hairOrders.get.queryOptions({ id: hairOrderId }).queryKey })

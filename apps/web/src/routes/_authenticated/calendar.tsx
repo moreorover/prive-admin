@@ -1,7 +1,6 @@
 import { Alert, Container, Stack, Text } from "@mantine/core"
-import { notifications } from "@mantine/notifications"
 import { Schedule, type ScheduleEventData, type ScheduleViewLevel } from "@mantine/schedule"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
 import { useCallback, useMemo, useState } from "react"
@@ -11,6 +10,8 @@ import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
+
+import { useCreateAppointmentAction } from "./-appointment-actions"
 
 const CALENDAR_APPOINTMENTS_PAGE_SIZE = 100
 const APPOINTMENT_OPTION_PAGE_SIZE = 100
@@ -71,7 +72,6 @@ export const Route = createFileRoute("/_authenticated/calendar")({
 
 function CalendarPage() {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const [view, setView] = useState<ScheduleViewLevel>("month")
   const [date, setDate] = useState<string>(() => dayjs().format("YYYY-MM-DD"))
   const [createOpen, setCreateOpen] = useState(false)
@@ -79,7 +79,6 @@ function CalendarPage() {
   const [clientSearch, setClientSearch] = useState("")
   const [masterSearch, setMasterSearch] = useState("")
   const appointmentsQueryOptions = calendarAppointmentsQueryOptions(date, view)
-  const defaultAppointmentsListQueryOptions = trpc.appointments.list.queryOptions({ page: 1, pageSize: 100 })
   const { data: appointmentsData } = useQuery(appointmentsQueryOptions)
   const { data: clientCustomersData } = useQuery(appointmentCustomerOptionsQueryOptions(clientSearch))
   const { data: masterCustomersData } = useQuery(appointmentCustomerOptionsQueryOptions(masterSearch))
@@ -123,18 +122,14 @@ function CalendarPage() {
     },
     [navigate],
   )
-  const createAppointment = useMutation({
-    ...trpc.appointments.create.mutationOptions(),
-    onSuccess: (created) => {
-      queryClient.invalidateQueries({ queryKey: defaultAppointmentsListQueryOptions.queryKey })
-      queryClient.invalidateQueries({ queryKey: appointmentsQueryOptions.queryKey })
-      notifications.show({ color: "green", message: "Appointment created" })
+  const createAppointment = useCreateAppointmentAction({
+    invalidateKeys: [{ queryKey: appointmentsQueryOptions.queryKey }],
+    onCreated: (created) => {
       setCreateOpen(false)
       if (created?.id) {
         navigate({ to: "/appointments/$appointmentId", params: { appointmentId: created.id } })
       }
     },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
   return (

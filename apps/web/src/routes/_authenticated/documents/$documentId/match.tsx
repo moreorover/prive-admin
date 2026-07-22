@@ -15,9 +15,8 @@ import {
   TextInput,
 } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
-import { notifications } from "@mantine/notifications"
 import { IconArrowLeft } from "@tabler/icons-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute, redirect } from "@tanstack/react-router"
 import { useState } from "react"
 import { z } from "zod"
@@ -34,6 +33,8 @@ import {
   type DocumentMatchCandidateFilters,
 } from "@/lib/document-match-candidates"
 import { trpc } from "@/utils/trpc"
+
+import { useDocumentMatchActions } from "./-document-match-actions"
 
 const MATCH_CANDIDATES_PAGE_SIZE = 10
 const searchSchema = z.object({
@@ -78,7 +79,6 @@ function DocumentMatchPage() {
   const { documentId } = Route.useParams()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
-  const queryClient = useQueryClient()
   const page = search.page ?? 1
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
   const [filters, setFilters] = useState<DocumentMatchCandidateFilters>({
@@ -105,22 +105,9 @@ function DocumentMatchPage() {
     setFilters((currentFilters) => ({ ...currentFilters, ...nextFilters }))
   }
 
-  const invalidate = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.get.queryKey({ id: documentId }) }),
-      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.list.queryKey() }),
-      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.counts.queryKey() }),
-    ])
-  }
-
-  const assign = useMutation({
-    ...trpc.bankStatementAttachments.assign.mutationOptions(),
-    onSuccess: async () => {
-      notifications.show({ color: "green", message: "Assigned" })
-      await invalidate()
-      await navigate({ to: "/documents" })
-    },
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
+  const { assign } = useDocumentMatchActions({
+    documentId,
+    onAssigned: () => navigate({ to: "/documents" }),
   })
 
   const pageIsLoading = documentQuery.isPending

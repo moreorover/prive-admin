@@ -14,9 +14,7 @@ import {
 } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
-import { notifications } from "@mantine/notifications"
 import { IconCalculator, IconPencil, IconPlus, IconUser } from "@tabler/icons-react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -28,9 +26,9 @@ import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-ass
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { trpc } from "@/utils/trpc"
 
 import { useHairAssignmentActions } from "../-hair-assignment-actions"
+import { useHairOrderDetailActions } from "./-hair-order-actions"
 import {
   availableHairOrdersListQueryOptions,
   hairOrderDetailQueryOptions,
@@ -51,36 +49,25 @@ const formatCents = (cents: number) => `€${(cents / 100).toFixed(2)}`
 
 function HairOrderDetailPage() {
   const { hairOrderId } = Route.useParams()
-  const queryClient = useQueryClient()
   const [createOpen, setCreateOpen] = useState(false)
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
   const [editOrderOpen, setEditOrderOpen] = useState(false)
-  const hairAssignedListQueryKey = trpc.hairAssigned.list.queryKey()
-  const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
   const {
     hairOrder,
     hairOrderQueryOptions,
     availableHairOrders,
     availableHairOrdersLoading,
-    availableHairOrdersQueryOptions,
     assignedClientSummaryKeys,
   } = useHairOrderDetailData(hairOrderId)
 
-  const recalcMutation = useMutation({
-    ...trpc.hairOrders.recalculatePrices.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: hairOrderQueryOptions.queryKey })
-      queryClient.invalidateQueries({ queryKey: hairAssignedListQueryKey })
-      queryClient.invalidateQueries({ queryKey: hairOrdersListQueryKey })
-      for (const key of assignedClientSummaryKeys) queryClient.invalidateQueries(key)
-      notifications.show({ color: "green", message: "Prices recalculated" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  const { recalculatePrices, updateHairOrder } = useHairOrderDetailActions({
+    hairOrderId,
+    invalidateKeys: [{ queryKey: hairOrderQueryOptions.queryKey }, ...assignedClientSummaryKeys],
+    onUpdated: () => setEditOrderOpen(false),
   })
   const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({
     invalidateKeys: [{ queryKey: hairOrderQueryOptions.queryKey }, ...assignedClientSummaryKeys],
-    availableHairOrdersQueryKey: availableHairOrdersQueryOptions.queryKey,
     selectedEditItem: editItem,
     selectedDeleteItem: deleteItem,
     onCreated: () => setCreateOpen(false),
@@ -136,8 +123,8 @@ function HairOrderDetailPage() {
             <Button
               variant="default"
               leftSection={<IconCalculator size={14} />}
-              loading={recalcMutation.isPending}
-              onClick={() => recalcMutation.mutate({ hairOrderId })}
+              loading={recalculatePrices.isPending}
+              onClick={() => recalculatePrices.mutate({ hairOrderId })}
             >
               Recalculate
             </Button>
@@ -247,7 +234,13 @@ function HairOrderDetailPage() {
             onDelete={(id) => deleteHairAssigned.mutate({ id })}
           />
         )}
-        <EditHairOrderModal open={editOrderOpen} onOpenChange={setEditOrderOpen} hairOrder={hairOrder} />
+        <EditHairOrderModal
+          open={editOrderOpen}
+          onOpenChange={setEditOrderOpen}
+          hairOrder={hairOrder}
+          loading={updateHairOrder.isPending}
+          onSave={(values) => updateHairOrder.mutate(values)}
+        />
       </Stack>
     </Container>
   )
@@ -266,24 +259,20 @@ type EditHairOrderModalProps = {
     total: number
     customerId: string
   }
+  loading: boolean
+  onSave: (values: {
+    id: string
+    placedAt: string | null
+    arrivedAt: string | null
+    status: "PENDING" | "COMPLETED"
+    customerId: string
+    weightReceived: number
+    weightUsed: number
+    total: number
+  }) => void
 }
 
-function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModalProps) {
-  const queryClient = useQueryClient()
-  const hairOrderQueryOptions = trpc.hairOrders.get.queryOptions({ id: hairOrder.id })
-  const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
-
-  const mutation = useMutation({
-    ...trpc.hairOrders.update.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: hairOrderQueryOptions.queryKey })
-      queryClient.invalidateQueries({ queryKey: hairOrdersListQueryKey })
-      onOpenChange(false)
-      notifications.show({ color: "green", message: "Hair order updated" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-
+function EditHairOrderModal({ open, onOpenChange, hairOrder, loading, onSave }: EditHairOrderModalProps) {
   const form = useForm({
     initialValues: {
       placedAt: hairOrder.placedAt ?? "",
@@ -298,7 +287,7 @@ function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModa
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Hair Order">
       <form
         onSubmit={form.onSubmit((values) =>
-          mutation.mutate({
+          onSave({
             id: hairOrder.id,
             placedAt: values.placedAt || null,
             arrivedAt: values.arrivedAt || null,
@@ -325,7 +314,7 @@ function EditHairOrderModal({ open, onOpenChange, hairOrder }: EditHairOrderModa
             <NumberInput label="Weight Received (g)" min={0} {...form.getInputProps("weightReceived")} />
             <NumberInput label="Total" min={0} decimalScale={2} step={0.01} {...form.getInputProps("total")} />
           </Group>
-          <Button type="submit" loading={mutation.isPending}>
+          <Button type="submit" loading={loading}>
             Save Changes
           </Button>
         </Stack>

@@ -1,8 +1,7 @@
 import { Button, Card, Container, Group, Modal, SimpleGrid, Stack, Tabs, Text, TextInput, Title } from "@mantine/core"
 import { useForm } from "@mantine/form"
-import { notifications } from "@mantine/notifications"
 import { IconPencil, IconPhone } from "@tabler/icons-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { Outlet, createFileRoute, useLocation } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -11,6 +10,8 @@ import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
 import { CURRENCIES, formatMinor } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
+
+import { useUpdateCustomerAction } from "./-customer-detail-actions"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetailRoute,
@@ -149,21 +150,7 @@ function EditCustomerDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation({
-    ...trpc.customers.update.mutationOptions(),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: trpc.customers.list.queryKey() }),
-        queryClient.invalidateQueries({ queryKey: trpc.customers.get.queryOptions({ id: customer.id }).queryKey }),
-        queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id: customer.id }).queryKey }),
-      ])
-      onOpenChange(false)
-      notifications.show({ color: "green", message: "Customer updated" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
+  const mutation = useUpdateCustomerAction({ customerId: customer.id, onUpdated: () => onOpenChange(false) })
 
   const form = useForm({
     initialValues: {
