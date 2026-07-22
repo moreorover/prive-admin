@@ -17,7 +17,7 @@ type EditTransactionDialogProps = {
   onUpdate: (values: EditTransactionSubmit) => void | Promise<void>
 }
 
-export type EditTransactionSubmit = TransactionFormSubmit & {
+type EditTransactionSubmit = TransactionFormSubmit & {
   id: string
 }
 

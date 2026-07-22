@@ -30,7 +30,7 @@ type FormValues = {
   salonId: string
 }
 
-export type CreateAppointmentSubmit = {
+type CreateAppointmentSubmit = {
   name: string
   startsAt: string
   clientId: string

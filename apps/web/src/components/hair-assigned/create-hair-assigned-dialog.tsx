@@ -18,7 +18,7 @@ type CreateHairAssignedDialogProps = {
   availableOrdersLoading?: boolean
 }
 
-export type CreateHairAssignedSubmit = {
+type CreateHairAssignedSubmit = {
   hairOrderId: string
   clientId: string
   appointmentId: string | null
