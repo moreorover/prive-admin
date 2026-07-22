@@ -1,16 +1,14 @@
 import { Modal } from "@mantine/core"
-import { notifications } from "@mantine/notifications"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import dayjs from "dayjs"
 
 import {
   CashTransactionForm,
   type CashTransactionFormCustomer,
+  type CashTransactionFormSubmit,
 } from "@/components/cash-transactions/cash-transaction-form"
 import { type CashTransactionRow } from "@/components/cash-transactions/cash-transactions-table"
 import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
 import { type SelectOption } from "@/lib/resource-pagination"
-import { trpc } from "@/utils/trpc"
 
 type EditCashTransactionDialogProps = {
   open: boolean
@@ -19,6 +17,12 @@ type EditCashTransactionDialogProps = {
   customers: CashTransactionFormCustomer[]
   customerSearch: string
   onCustomerSearchChange: (value: string) => void
+  loading?: boolean
+  onUpdate: (values: EditCashTransactionSubmit) => void
+}
+
+export type EditCashTransactionSubmit = CashTransactionFormSubmit & {
+  id: string
 }
 
 export function EditCashTransactionDialog({
@@ -28,21 +32,12 @@ export function EditCashTransactionDialog({
   customers,
   customerSearch,
   onCustomerSearchChange,
+  loading,
+  onUpdate,
 }: EditCashTransactionDialogProps) {
-  const queryClient = useQueryClient()
   const initialCustomerOption: SelectOption | null = transaction.customer
     ? { value: transaction.customer.id, label: transaction.customer.name }
     : null
-
-  const mutation = useMutation({
-    ...trpc.cashTransactions.update.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.cashTransactions.list.queryKey() })
-      onOpenChange(false)
-      notifications.show({ color: "green", message: "Cash transaction updated" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
 
   const initialCurrency = coerceCashTransactionCurrency(transaction.currency)
 
@@ -63,9 +58,9 @@ export function EditCashTransactionDialog({
           currency: initialCurrency,
         }}
         submitLabel="Save Changes"
-        loading={mutation.isPending}
+        loading={loading}
         onSubmit={(values) => {
-          mutation.mutate({ ...values, id: transaction.id })
+          onUpdate({ ...values, id: transaction.id })
         }}
       />
     </Modal>

@@ -1,6 +1,7 @@
 import { Button, Group, Pagination, Stack, Table, Text, TextInput } from "@mantine/core"
+import { notifications } from "@mantine/notifications"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute, redirect } from "@tanstack/react-router"
 import { useState } from "react"
 import { z } from "zod"
@@ -67,6 +68,7 @@ function CustomerAppointmentsRoute() {
   const { customerId } = Route.useParams()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
+  const queryClient = useQueryClient()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [masterSearch, setMasterSearch] = useState("")
 
@@ -74,6 +76,7 @@ function CustomerAppointmentsRoute() {
   const searchValue = search.search ?? ""
   const normalizedSearch = searchValue.trim()
   const queryOptions = appointmentsQueryOptions(customerId, page, searchValue)
+  const defaultAppointmentsListQueryOptions = trpc.appointments.list.queryOptions({ page: 1, pageSize: 100 })
   const { data } = useQuery(queryOptions)
   const { data: masterCustomersData } = useQuery(appointmentMasterOptionsQueryOptions(masterSearch))
   const { data: salonsData } = useQuery(appointmentSalonOptionsQueryOptions())
@@ -87,6 +90,20 @@ function CustomerAppointmentsRoute() {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const clampedPage = Math.min(page, totalPages)
   const hasItemsOnCurrentPage = appointments.length > 0
+  const createAppointment = useMutation({
+    ...trpc.appointments.create.mutationOptions(),
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: defaultAppointmentsListQueryOptions.queryKey })
+      queryClient.invalidateQueries({ queryKey: trpc.customers.appointments.list.queryKey() })
+      queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey })
+      notifications.show({ color: "green", message: "Appointment created" })
+      setDialogOpen(false)
+      if (created?.id) {
+        navigate({ to: "/appointments/$appointmentId", params: { appointmentId: created.id } })
+      }
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
 
   return (
     <>
@@ -173,11 +190,8 @@ function CustomerAppointmentsRoute() {
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           defaultClientId={customerId}
-          invalidateKeys={[
-            { queryKey: trpc.customers.appointments.list.queryKey() },
-            { queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey },
-          ]}
-          navigateOnSuccess
+          loading={createAppointment.isPending}
+          onCreate={(values) => createAppointment.mutate(values)}
           clientOptions={[]}
           masterOptions={masterOptions}
           salonOptions={salonOptions}

@@ -1,22 +1,18 @@
 import { Button, Group, Modal, Select, Stack, TextInput } from "@mantine/core"
 import { DateTimePicker } from "@mantine/dates"
 import { useForm } from "@mantine/form"
-import { notifications } from "@mantine/notifications"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
 import { useState } from "react"
 
 import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
-import { trpc } from "@/utils/trpc"
 
 type CreateAppointmentDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   defaultClientId?: string
   defaultStartsAt?: string | null
-  invalidateKeys?: { queryKey: readonly unknown[] }[]
-  navigateOnSuccess?: boolean
+  loading?: boolean
+  onCreate: (values: CreateAppointmentSubmit) => void
   clientOptions: SelectOption[]
   masterOptions: SelectOption[]
   salonOptions: SelectOption[]
@@ -34,16 +30,23 @@ type FormValues = {
   salonId: string
 }
 
+export type CreateAppointmentSubmit = {
+  name: string
+  startsAt: string
+  clientId: string
+  masterId: string
+  salonId: string
+}
+
 const defaultStartsAtString = () => dayjs().startOf("hour").add(1, "hour").format("YYYY-MM-DD HH:mm:ss")
-const defaultAppointmentsListInput = { page: 1, pageSize: 100 }
 
 export function CreateAppointmentDialog({
   open,
   onOpenChange,
   defaultClientId,
   defaultStartsAt,
-  invalidateKeys,
-  navigateOnSuccess,
+  loading,
+  onCreate,
   clientOptions,
   masterOptions,
   salonOptions,
@@ -58,8 +61,8 @@ export function CreateAppointmentDialog({
         <CreateAppointmentForm
           defaultClientId={defaultClientId}
           defaultStartsAt={defaultStartsAt}
-          invalidateKeys={invalidateKeys}
-          navigateOnSuccess={navigateOnSuccess}
+          loading={loading}
+          onCreate={onCreate}
           clientOptions={clientOptions}
           masterOptions={masterOptions}
           salonOptions={salonOptions}
@@ -77,8 +80,8 @@ export function CreateAppointmentDialog({
 function CreateAppointmentForm({
   defaultClientId,
   defaultStartsAt,
-  invalidateKeys,
-  navigateOnSuccess,
+  loading,
+  onCreate,
   clientOptions: rawClientOptions,
   masterOptions: rawMasterOptions,
   salonOptions,
@@ -88,9 +91,6 @@ function CreateAppointmentForm({
   onMasterSearchChange,
   onClose,
 }: Omit<CreateAppointmentDialogProps, "open" | "onOpenChange"> & { onClose: () => void }) {
-  const queryClient = useQueryClient()
-  const navigate = useNavigate()
-  const appointmentListQueryOptions = trpc.appointments.list.queryOptions(defaultAppointmentsListInput)
   const [selectedCustomerOptions, setSelectedCustomerOptions] = useState<Record<string, SelectOption>>({})
 
   const form = useForm<FormValues>({
@@ -120,22 +120,8 @@ function CreateAppointmentForm({
     setSelectedCustomerOptions((current) => ({ ...current, [option.value]: option }))
   }
 
-  const mutation = useMutation({
-    ...trpc.appointments.create.mutationOptions(),
-    onSuccess: (created) => {
-      queryClient.invalidateQueries({ queryKey: appointmentListQueryOptions.queryKey })
-      for (const key of invalidateKeys ?? []) queryClient.invalidateQueries(key)
-      notifications.show({ color: "green", message: "Appointment created" })
-      onClose()
-      if (navigateOnSuccess && created?.id) {
-        navigate({ to: "/appointments/$appointmentId", params: { appointmentId: created.id } })
-      }
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-
   const handleSubmit = (values: FormValues) =>
-    mutation.mutate({
+    onCreate({
       name: values.name.trim(),
       startsAt: dayjs(values.startsAt!).toISOString(),
       clientId: values.clientId,
@@ -188,7 +174,7 @@ function CreateAppointmentForm({
           <Button variant="default" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" loading={mutation.isPending}>
+          <Button type="submit" loading={loading}>
             Create
           </Button>
         </Group>

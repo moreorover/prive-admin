@@ -1,7 +1,8 @@
 import { Box, Button, Container, Group, LoadingOverlay, NativeSelect, Select, Table, TextInput } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
+import { notifications } from "@mantine/notifications"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/_authenticated/cash")({
 })
 
 function CashPage() {
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [filters, setFilters] = useState<CashTransactionFilters>({
     search: "",
@@ -102,6 +104,36 @@ function CashPage() {
     setFilters((current) => ({ ...current, ...nextFilters }))
     resetPage()
   }
+  const invalidateCashTransactions = () => {
+    queryClient.invalidateQueries({ queryKey: trpc.cashTransactions.list.queryKey() })
+  }
+  const createCashTransaction = useMutation({
+    ...trpc.cashTransactions.create.mutationOptions(),
+    onSuccess: () => {
+      invalidateCashTransactions()
+      setCreateOpen(false)
+      notifications.show({ color: "green", message: "Cash transaction created" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+  const updateCashTransaction = useMutation({
+    ...trpc.cashTransactions.update.mutationOptions(),
+    onSuccess: () => {
+      invalidateCashTransactions()
+      setEditing(null)
+      notifications.show({ color: "green", message: "Cash transaction updated" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+  const deleteCashTransaction = useMutation({
+    ...trpc.cashTransactions.delete.mutationOptions(),
+    onSuccess: () => {
+      invalidateCashTransactions()
+      setDeleting(null)
+      notifications.show({ color: "green", message: "Cash transaction deleted" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
 
   return (
     <Container size="xl">
@@ -220,6 +252,8 @@ function CashPage() {
         customers={createCustomers}
         customerSearch={createCustomerSearch}
         onCustomerSearchChange={setCreateCustomerSearch}
+        loading={createCashTransaction.isPending}
+        onCreate={(values) => createCashTransaction.mutate(values)}
       />
       {editing ? (
         <EditCashTransactionDialog
@@ -231,6 +265,8 @@ function CashPage() {
           customers={editCustomers}
           customerSearch={editCustomerSearch}
           onCustomerSearchChange={setEditCustomerSearch}
+          loading={updateCashTransaction.isPending}
+          onUpdate={(values) => updateCashTransaction.mutate(values)}
         />
       ) : null}
       {deleting ? (
@@ -240,6 +276,8 @@ function CashPage() {
             if (!open) setDeleting(null)
           }}
           transaction={deleting}
+          loading={deleteCashTransaction.isPending}
+          onDelete={(id) => deleteCashTransaction.mutate({ id })}
         />
       ) : null}
     </Container>

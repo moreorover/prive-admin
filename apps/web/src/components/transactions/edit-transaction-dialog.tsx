@@ -1,10 +1,7 @@
 import { Modal } from "@mantine/core"
-import { notifications } from "@mantine/notifications"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { TransactionForm } from "@/components/transactions/transaction-form"
+import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
 import { CURRENCIES, type Currency } from "@/lib/currency"
-import { trpc } from "@/utils/trpc"
 
 type EditTransactionDialogProps = {
   open: boolean
@@ -16,22 +13,21 @@ type EditTransactionDialogProps = {
     amount: number
     currency: Currency | string
   }
-  invalidateKeys: { queryKey: readonly unknown[] }[]
+  loading?: boolean
+  onUpdate: (values: EditTransactionSubmit) => void | Promise<void>
 }
 
-export function EditTransactionDialog({ open, onOpenChange, transaction, invalidateKeys }: EditTransactionDialogProps) {
-  const queryClient = useQueryClient()
+export type EditTransactionSubmit = TransactionFormSubmit & {
+  id: string
+}
 
-  const mutation = useMutation({
-    ...trpc.transactions.update.mutationOptions(),
-    onSuccess: () => {
-      for (const key of invalidateKeys) queryClient.invalidateQueries(key)
-      onOpenChange(false)
-      notifications.show({ color: "green", message: "Transaction updated" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-
+export function EditTransactionDialog({
+  open,
+  onOpenChange,
+  transaction,
+  loading,
+  onUpdate,
+}: EditTransactionDialogProps) {
   const initialCurrency: Currency = (CURRENCIES as readonly string[]).includes(transaction.currency)
     ? (transaction.currency as Currency)
     : "EUR"
@@ -46,9 +42,9 @@ export function EditTransactionDialog({ open, onOpenChange, transaction, invalid
           currency: initialCurrency,
         }}
         submitLabel="Save Changes"
-        loading={mutation.isPending}
+        loading={loading}
         onSubmit={async (values) => {
-          await mutation.mutateAsync({ ...values, id: transaction.id })
+          await onUpdate({ ...values, id: transaction.id })
         }}
       />
     </Modal>

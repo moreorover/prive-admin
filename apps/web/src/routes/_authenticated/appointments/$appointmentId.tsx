@@ -80,6 +80,7 @@ function AppointmentDetailRoute() {
 }
 
 function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
+  const queryClient = useQueryClient()
   const [createOpen, setCreateOpen] = useState(false)
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
@@ -93,11 +94,12 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
   const [hairAssignedPage, setHairAssignedPage] = useState(1)
 
   const appointmentQueryOptions = trpc.appointments.get.queryOptions({ id: appointmentId })
+  const availableHairOrdersQueryOptions = trpc.hairOrders.list.queryOptions({
+    availability: "availableForAssignment",
+    pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
+  })
   const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
-    trpc.hairOrders.list.queryOptions({
-      availability: "availableForAssignment",
-      pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-    }),
+    availableHairOrdersQueryOptions,
   )
   const availableHairOrders = availableHairOrdersData?.items ?? []
   const hairAssignedQueryOptions = trpc.hairAssigned.list.queryOptions({
@@ -125,6 +127,97 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
   const showTransactionsPagination = transactionsTotalCount > APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE
 
   const { data: userSettings } = useQuery(trpc.userSettings.get.queryOptions())
+  const hairAssignedListQueryKey = trpc.hairAssigned.list.queryKey()
+  const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
+  const transactionsListQueryKey = trpc.transactions.list.queryKey()
+
+  const invalidateHairAssignmentQueries = (hairOrderId?: string | null) => {
+    queryClient.invalidateQueries({ queryKey: appointmentQueryOptions.queryKey })
+    queryClient.invalidateQueries({ queryKey: hairAssignedListQueryKey })
+    queryClient.invalidateQueries({ queryKey: availableHairOrdersQueryOptions.queryKey })
+    queryClient.invalidateQueries({ queryKey: hairOrdersListQueryKey })
+    if (appointment) {
+      queryClient.invalidateQueries({
+        queryKey: trpc.customers.summary.queryOptions({ id: appointment.client.id }).queryKey,
+      })
+    }
+    if (hairOrderId) {
+      queryClient.invalidateQueries({ queryKey: trpc.hairOrders.get.queryOptions({ id: hairOrderId }).queryKey })
+    }
+  }
+
+  const createHairAssigned = useMutation({
+    ...trpc.hairAssigned.create.mutationOptions(),
+    onSuccess: (_created, values) => {
+      invalidateHairAssignmentQueries(values.hairOrderId)
+      setHairAssignedPage(1)
+      setCreateOpen(false)
+      notifications.show({ color: "green", message: "Hair assigned created" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+  const updateHairAssigned = useMutation({
+    ...trpc.hairAssigned.update.mutationOptions(),
+    onSuccess: () => {
+      invalidateHairAssignmentQueries(editItem?.hairOrder?.id)
+      setEditItem(null)
+      notifications.show({ color: "green", message: "Hair assigned updated" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+  const deleteHairAssigned = useMutation({
+    ...trpc.hairAssigned.delete.mutationOptions(),
+    onSuccess: () => {
+      invalidateHairAssignmentQueries(deleteItem?.hairOrder?.id)
+      setHairAssignedPage(1)
+      setDeleteItem(null)
+      notifications.show({ color: "green", message: "Hair assigned deleted" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+  const invalidateTransactionQueries = () => {
+    queryClient.invalidateQueries({ queryKey: transactionsListQueryKey })
+    if (appointment) {
+      const customerIds = new Set([
+        appointment.client.id,
+        appointment.master.id,
+        ...(appointment.personnel?.map((person) => person.personnelId) ?? []),
+      ])
+      for (const id of customerIds) {
+        queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id }).queryKey })
+      }
+    }
+  }
+  const createTransaction = useMutation({
+    ...trpc.transactions.create.mutationOptions(),
+    onSuccess: () => {
+      invalidateTransactionQueries()
+      setTransactionsPage(1)
+      setCreateTxOpen(false)
+      setCreateTxCustomerId(null)
+      notifications.show({ color: "green", message: "Transaction created" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+  const updateTransaction = useMutation({
+    ...trpc.transactions.update.mutationOptions(),
+    onSuccess: () => {
+      invalidateTransactionQueries()
+      setEditTx(null)
+      notifications.show({ color: "green", message: "Transaction updated" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+  const deleteTransaction = useMutation({
+    ...trpc.transactions.delete.mutationOptions(),
+    onSuccess: () => {
+      invalidateTransactionQueries()
+      setTransactionsPage(1)
+      setDeleteTx(null)
+      notifications.show({ color: "green", message: "Transaction deleted" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
 
   const txList = transactionsData?.items ?? []
   const totalsByCurrency = { ...ZERO_TRANSACTION_TOTALS }
@@ -142,24 +235,6 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
       </Container>
     )
   }
-
-  const invalidateKeys = [
-    { queryKey: appointmentQueryOptions.queryKey },
-    { queryKey: trpc.hairAssigned.list.queryKey() },
-    { queryKey: trpc.customers.summary.queryOptions({ id: appointment.client.id }).queryKey },
-  ]
-
-  const transactionCustomerIds = Array.from(
-    new Set([
-      appointment.client.id,
-      appointment.master.id,
-      ...(appointment.personnel?.map((person) => person.personnelId) ?? []),
-    ]),
-  )
-  const txInvalidateKeys = [
-    { queryKey: trpc.transactions.list.queryKey() },
-    ...transactionCustomerIds.map((id) => ({ queryKey: trpc.customers.summary.queryOptions({ id }).queryKey })),
-  ]
 
   const txCustomerId = createTxCustomerId ?? appointment.master.id
   const txDefaultCurrency: Currency = (() => {
@@ -441,8 +516,8 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
           onOpenChange={setCreateOpen}
           clientId={appointment.client.id}
           appointmentId={appointmentId}
-          invalidateKeys={invalidateKeys}
-          onSuccess={() => setHairAssignedPage(1)}
+          loading={createHairAssigned.isPending}
+          onCreate={(values) => createHairAssigned.mutate(values)}
           availableOrders={availableHairOrders}
           availableOrdersLoading={availableHairOrdersLoading}
         />
@@ -451,7 +526,8 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
             open={!!editItem}
             onOpenChange={(open) => !open && setEditItem(null)}
             hairAssigned={editItem}
-            invalidateKeys={invalidateKeys}
+            loading={updateHairAssigned.isPending}
+            onUpdate={(values) => updateHairAssigned.mutate(values)}
           />
         )}
         {deleteItem && (
@@ -459,8 +535,8 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
             open={!!deleteItem}
             onOpenChange={(open) => !open && setDeleteItem(null)}
             hairAssigned={deleteItem}
-            invalidateKeys={invalidateKeys}
-            onSuccess={() => setHairAssignedPage(1)}
+            loading={deleteHairAssigned.isPending}
+            onDelete={(id) => deleteHairAssigned.mutate({ id })}
           />
         )}
         <PickPersonnelModal
@@ -488,15 +564,16 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
           appointmentId={appointmentId}
           customerId={txCustomerId}
           defaultCurrency={txDefaultCurrency}
-          invalidateKeys={txInvalidateKeys}
-          onSuccess={() => setTransactionsPage(1)}
+          loading={createTransaction.isPending}
+          onCreate={(values) => createTransaction.mutate(values)}
         />
         {editTx && (
           <EditTransactionDialog
             open={!!editTx}
             onOpenChange={(open) => !open && setEditTx(null)}
             transaction={editTx}
-            invalidateKeys={txInvalidateKeys}
+            loading={updateTransaction.isPending}
+            onUpdate={(values) => updateTransaction.mutate(values)}
           />
         )}
         {deleteTx && (
@@ -504,8 +581,8 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
             open={!!deleteTx}
             onOpenChange={(open) => !open && setDeleteTx(null)}
             transaction={deleteTx}
-            invalidateKeys={txInvalidateKeys}
-            onSuccess={() => setTransactionsPage(1)}
+            loading={deleteTransaction.isPending}
+            onDelete={(id) => deleteTransaction.mutate({ id })}
           />
         )}
       </Stack>
