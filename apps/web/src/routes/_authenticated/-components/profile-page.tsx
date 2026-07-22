@@ -1,0 +1,312 @@
+import {
+  Alert,
+  Avatar,
+  Button,
+  Checkbox,
+  Container,
+  Group,
+  Loader,
+  Modal,
+  NativeSelect,
+  PasswordInput,
+  Stack,
+  Text,
+  TextInput,
+} from "@mantine/core"
+import { useForm } from "@mantine/form"
+import { notifications } from "@mantine/notifications"
+import { IconAlertCircle, IconDeviceLaptop, IconDeviceMobile } from "@tabler/icons-react"
+import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
+
+import { BreadcrumbItem } from "@/components/breadcrumbs"
+import Loader2 from "@/components/loader"
+import { PageHeader } from "@/components/page-header"
+import { Section } from "@/components/section"
+import { authClient } from "@/lib/auth-client"
+import { CURRENCY_OPTIONS, type Currency } from "@/lib/currency"
+import { trpc } from "@/utils/trpc"
+
+import {
+  sessionsQueryKey,
+  useRevokeSessionAction,
+  useUpdateUserProfileAction,
+} from "../profile/-actions/profile-actions"
+
+type ParsedUA = { isMobile: boolean; os: string; browser: string }
+
+function parseUA(ua: string): ParsedUA {
+  const isMobile = /Mobile|Android|iPhone|iPad/.test(ua)
+  let os = "Unknown"
+  if (/Mac OS X/.test(ua)) os = "macOS"
+  else if (/Windows/.test(ua)) os = "Windows"
+  else if (/Android/.test(ua)) os = "Android"
+  else if (/iPhone|iPad|iOS/.test(ua)) os = "iOS"
+  else if (/Linux/.test(ua)) os = "Linux"
+  let browser = "Unknown"
+  if (/Edg\//.test(ua)) browser = "Edge"
+  else if (/Chrome\//.test(ua)) browser = "Chrome"
+  else if (/Firefox\//.test(ua)) browser = "Firefox"
+  else if (/Safari\//.test(ua)) browser = "Safari"
+  return { isMobile, os, browser }
+}
+
+export function ProfilePage() {
+  const { data: current, isPending } = authClient.useSession()
+  const [editOpen, setEditOpen] = useState(false)
+  const [pwOpen, setPwOpen] = useState(false)
+  const [verifyPending, setVerifyPending] = useState(false)
+  const [terminatingId, setTerminatingId] = useState<string | undefined>()
+
+  const { data: sessionsResult } = useQuery({
+    queryKey: sessionsQueryKey,
+    queryFn: () => authClient.listSessions(),
+  })
+  const sessions = sessionsResult?.data ?? []
+
+  const userSettingsQueryOptions = trpc.userSettings.get.queryOptions()
+  const { data: settings } = useQuery(userSettingsQueryOptions)
+
+  const revokeSession = useRevokeSessionAction({ onRevoked: () => setTerminatingId(undefined) })
+
+  if (isPending || !current) {
+    return <Loader2 />
+  }
+
+  const user = current.user
+  const currentSessionId = current.session.id
+
+  return (
+    <Container size="md">
+      <BreadcrumbItem label="Profile" order={10} />
+      <PageHeader title="Profile" description="Manage account details, password, and active sessions." />
+      <Stack>
+        <Section
+          title="Account"
+          description="Your display name, email and preferred currency."
+          actions={
+            <Group gap="xs">
+              <Button variant="default" size="sm" onClick={() => setEditOpen(true)}>
+                Edit
+              </Button>
+              <Button variant="default" size="sm" onClick={() => setPwOpen(true)}>
+                Change password
+              </Button>
+            </Group>
+          }
+        >
+          <Group gap="md">
+            <Avatar name={user.name} color="initials" size="lg" />
+            <Stack gap={2}>
+              <Text fz="sm" fw={500}>
+                {user.name}
+              </Text>
+              <Text fz="sm" c="dimmed">
+                {user.email}
+              </Text>
+              <Text fz="xs" c="dimmed">
+                Preferred currency: {settings?.preferredCurrency ?? "EUR"}
+              </Text>
+            </Stack>
+          </Group>
+        </Section>
+
+        {!user.emailVerified && (
+          <Alert variant="light" color="red" title="Verify your email address" icon={<IconAlertCircle size={16} />}>
+            <Stack>
+              <Text size="sm">
+                Please verify your email address. Check your inbox for the verification email. If you haven&rsquo;t
+                received it, click below to resend.
+              </Text>
+              <Button
+                variant="outline"
+                color="red"
+                loading={verifyPending}
+                onClick={async () => {
+                  setVerifyPending(true)
+                  try {
+                    await authClient.sendVerificationEmail(
+                      { email: user.email },
+                      {
+                        onError: (error) => {
+                          notifications.show({ color: "red", message: error.error.message })
+                        },
+                        onSuccess: () => {
+                          notifications.show({ color: "green", message: "Verification email sent" })
+                        },
+                      },
+                    )
+                  } finally {
+                    setVerifyPending(false)
+                  }
+                }}
+              >
+                Resend verification email
+              </Button>
+            </Stack>
+          </Alert>
+        )}
+
+        <Section title="Active sessions" description="Devices currently signed in to your account.">
+          {sessions.length === 0 ? (
+            <Text size="sm" c="dimmed">
+              No active sessions.
+            </Text>
+          ) : (
+            <Stack gap="xs">
+              {sessions.flatMap((s) => {
+                if (!s.userAgent) return []
+                const ua = parseUA(s.userAgent)
+                const isCurrent = s.id === currentSessionId
+                return [
+                  <Group key={s.id} gap="xs">
+                    {ua.isMobile ? <IconDeviceMobile size={16} /> : <IconDeviceLaptop size={16} />}
+                    <Text size="sm" style={{ flex: 1 }}>
+                      {s.ipAddress && `${s.ipAddress}, `}
+                      {ua.os}, {ua.browser}
+                    </Text>
+                    <Button
+                      size="xs"
+                      variant="subtle"
+                      color="red"
+                      disabled={revokeSession.isPending && terminatingId === s.id}
+                      onClick={async () => {
+                        setTerminatingId(s.id)
+                        await revokeSession.mutateAsync(s.token)
+                      }}
+                    >
+                      {revokeSession.isPending && terminatingId === s.id ? (
+                        <Loader size={14} />
+                      ) : isCurrent ? (
+                        "Sign out"
+                      ) : (
+                        "Terminate"
+                      )}
+                    </Button>
+                  </Group>,
+                ]
+              })}
+            </Stack>
+          )}
+        </Section>
+      </Stack>
+
+      <EditUserModal
+        key={settings?.preferredCurrency ?? "loading"}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initialName={user.name}
+        initialCurrency={settings?.preferredCurrency ?? "EUR"}
+      />
+      <ChangePasswordModal open={pwOpen} onOpenChange={setPwOpen} />
+    </Container>
+  )
+}
+
+type EditUserModalProps = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  initialName: string
+  initialCurrency: string
+}
+
+function EditUserModal({ open, onOpenChange, initialName, initialCurrency }: EditUserModalProps) {
+  const safeInitialCurrency: Currency = initialCurrency === "GBP" || initialCurrency === "EUR" ? initialCurrency : "EUR"
+  const form = useForm({ initialValues: { name: initialName, preferredCurrency: safeInitialCurrency } })
+  const { submitting, updateUserProfile } = useUpdateUserProfileAction({
+    initialName,
+    initialCurrency: safeInitialCurrency,
+    onUpdated: () => onOpenChange(false),
+  })
+
+  const handleSubmit = async (values: { name: string; preferredCurrency: Currency }) => {
+    await updateUserProfile(values)
+  }
+
+  return (
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit user">
+      <form onSubmit={form.onSubmit(handleSubmit)}>
+        <Stack>
+          <TextInput label="Full Name" required {...form.getInputProps("name")} />
+          <NativeSelect
+            label="Preferred Currency"
+            data={CURRENCY_OPTIONS}
+            {...form.getInputProps("preferredCurrency")}
+          />
+          <Button type="submit" loading={submitting}>
+            Update
+          </Button>
+        </Stack>
+      </form>
+    </Modal>
+  )
+}
+
+type ChangePasswordModalProps = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalProps) {
+  const [submitting, setSubmitting] = useState(false)
+  const form = useForm({
+    initialValues: { currentPassword: "", password: "", confirmPassword: "", signOut: true },
+    validate: {
+      password: (v) => (v.length < 8 ? "Password must be at least 8 characters" : null),
+      confirmPassword: (v, values) => (v !== values.password ? "Passwords do not match" : null),
+    },
+  })
+
+  const handleSubmit = async (values: typeof form.values) => {
+    setSubmitting(true)
+    try {
+      await authClient.changePassword({
+        newPassword: values.password,
+        currentPassword: values.currentPassword,
+        revokeOtherSessions: values.signOut,
+        fetchOptions: {
+          onSuccess: () => {
+            notifications.show({ color: "green", message: "Password changed" })
+            onOpenChange(false)
+          },
+          onError: (error) => {
+            notifications.show({ color: "red", message: error.error.message })
+          },
+        },
+      })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="Change password">
+      <form onSubmit={form.onSubmit(handleSubmit)}>
+        <Stack>
+          <PasswordInput
+            label="Current Password"
+            required
+            autoComplete="current-password"
+            {...form.getInputProps("currentPassword")}
+          />
+          <PasswordInput
+            label="New Password"
+            required
+            autoComplete="new-password"
+            {...form.getInputProps("password")}
+          />
+          <PasswordInput
+            label="Confirm Password"
+            required
+            autoComplete="new-password"
+            {...form.getInputProps("confirmPassword")}
+          />
+          <Checkbox label="Sign out other sessions" {...form.getInputProps("signOut", { type: "checkbox" })} />
+          <Button type="submit" loading={submitting}>
+            Update
+          </Button>
+        </Stack>
+      </form>
+    </Modal>
+  )
+}

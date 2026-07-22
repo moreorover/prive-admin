@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { customersListQueryOptions, searchSchema } from "./-index-data"
-import { CustomersPage } from "./-index-page"
+import { CustomersPage } from "./-components/index-page"
+import { customersListQueryOptions, searchSchema } from "./-data/index-data"
 
 export const Route = createFileRoute("/_authenticated/customers/")({
   component: CustomersPage,

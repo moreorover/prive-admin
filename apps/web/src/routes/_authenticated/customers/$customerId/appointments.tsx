@@ -1,13 +1,13 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
+import { CustomerAppointmentsRoute } from "./-components/appointments-page"
 import {
   PAGE_SIZE,
   appointmentMasterOptionsQueryOptions,
   appointmentSalonOptionsQueryOptions,
   appointmentsQueryOptions,
   searchSchema,
-} from "./-appointments-data"
-import { CustomerAppointmentsRoute } from "./-appointments-page"
+} from "./-data/appointments-data"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId/appointments")({
   validateSearch: searchSchema,

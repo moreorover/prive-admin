@@ -2,7 +2,7 @@ import { createRootRouteWithContext } from "@tanstack/react-router"
 
 import type { queryClient, trpc } from "@/utils/trpc"
 
-import { RootComponent } from "./-root-page"
+import { RootComponent } from "./-components/root-page"
 
 export interface RouterAppContext {
   queryClient: typeof queryClient

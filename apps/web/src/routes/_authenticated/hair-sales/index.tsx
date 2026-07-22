@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { hairSalesQueryOptions, PAGE_SIZE, searchSchema } from "./-index-data"
-import { HairSalesPage } from "./-index-page"
+import { HairSalesPage } from "./-components/index-page"
+import { hairSalesQueryOptions, PAGE_SIZE, searchSchema } from "./-data/index-data"
 
 export const Route = createFileRoute("/_authenticated/hair-sales/")({
   component: HairSalesPage,
