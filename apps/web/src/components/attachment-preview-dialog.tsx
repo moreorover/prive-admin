@@ -1,5 +1,4 @@
 import { Anchor, Button, Group, Modal, Stack, Text } from "@mantine/core"
-import { useQuery } from "@tanstack/react-query"
 
 export type AttachmentPreview = {
   id: string
@@ -66,7 +65,14 @@ function PreviewBody({ attachment, previewUrl }: { attachment: AttachmentPreview
   }
 
   if (contentType.startsWith("text/")) {
-    return <TextPreview previewUrl={previewUrl} />
+    return (
+      <iframe
+        title={attachment.originalName}
+        src={previewUrl}
+        sandbox=""
+        style={{ width: "100%", height: "75vh", border: 0 }}
+      />
+    )
   }
 
   return (
@@ -78,46 +84,5 @@ function PreviewBody({ attachment, previewUrl }: { attachment: AttachmentPreview
         Download
       </Button>
     </Stack>
-  )
-}
-
-function TextPreview({ previewUrl }: { previewUrl: string }) {
-  const { data, error, isError, isPending } = useQuery({
-    queryKey: ["attachment-preview-text", previewUrl],
-    queryFn: async () => {
-      const res = await fetch(previewUrl)
-      if (!res.ok) throw new Error(`Fetch failed (${res.status})`)
-      return res.text()
-    },
-  })
-
-  if (isPending) {
-    return (
-      <Text size="sm" c="dimmed">
-        Loading…
-      </Text>
-    )
-  }
-  if (isError) {
-    return (
-      <Text size="sm" c="red">
-        {(error as Error).message}
-      </Text>
-    )
-  }
-  return (
-    <pre
-      style={{
-        overflow: "auto",
-        maxHeight: "75vh",
-        fontSize: 12,
-        background: "var(--mantine-color-default)",
-        padding: 12,
-        borderRadius: 4,
-        whiteSpace: "pre",
-      }}
-    >
-      {data}
-    </pre>
   )
 }

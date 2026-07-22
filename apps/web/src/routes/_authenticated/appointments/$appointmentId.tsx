@@ -42,6 +42,7 @@ const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => 
 >
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 const APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE = 25
+const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailRoute,
@@ -63,6 +64,12 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
         }),
       ),
       context.queryClient.ensureQueryData(trpc.userSettings.get.queryOptions()),
+      context.queryClient.prefetchQuery(
+        trpc.hairOrders.list.queryOptions({
+          availability: "availableForAssignment",
+          pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
+        }),
+      ),
     ])
   },
 })
@@ -86,6 +93,13 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
   const [hairAssignedPage, setHairAssignedPage] = useState(1)
 
   const appointmentQueryOptions = trpc.appointments.get.queryOptions({ id: appointmentId })
+  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
+    trpc.hairOrders.list.queryOptions({
+      availability: "availableForAssignment",
+      pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
+    }),
+  )
+  const availableHairOrders = availableHairOrdersData?.items ?? []
   const hairAssignedQueryOptions = trpc.hairAssigned.list.queryOptions({
     page: hairAssignedPage,
     pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
@@ -429,6 +443,8 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
           appointmentId={appointmentId}
           invalidateKeys={invalidateKeys}
           onSuccess={() => setHairAssignedPage(1)}
+          availableOrders={availableHairOrders}
+          availableOrdersLoading={availableHairOrdersLoading}
         />
         {editItem && (
           <EditHairAssignedDialog

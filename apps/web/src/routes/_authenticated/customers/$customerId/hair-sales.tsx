@@ -14,6 +14,7 @@ import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
+const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
 const searchSchema = z.object({
   page: z.coerce.number().int().min(1).optional(),
   search: z.string().optional(),
@@ -36,9 +37,15 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId/hair
     search: search.search ?? "",
   }),
   loader: async ({ context, deps, params }) => {
-    const data = await context.queryClient.ensureQueryData(
-      hairSalesQueryOptions(params.customerId, deps.page, deps.search),
-    )
+    const [data] = await Promise.all([
+      context.queryClient.ensureQueryData(hairSalesQueryOptions(params.customerId, deps.page, deps.search)),
+      context.queryClient.prefetchQuery(
+        trpc.hairOrders.list.queryOptions({
+          availability: "availableForAssignment",
+          pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
+        }),
+      ),
+    ])
     const totalPages = Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE))
     if (deps.page > totalPages) {
       throw redirect({
@@ -63,6 +70,13 @@ function HairSalesRoute() {
   const normalizedSearch = searchValue.trim()
   const queryOptions = hairSalesQueryOptions(customerId, page, searchValue)
   const { data } = useQuery(queryOptions)
+  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
+    trpc.hairOrders.list.queryOptions({
+      availability: "availableForAssignment",
+      pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
+    }),
+  )
+  const availableHairOrders = availableHairOrdersData?.items ?? []
   const hairAssigned = (data?.items ?? []) as HairAssignedRow[]
   const totalCount = data?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
@@ -138,6 +152,8 @@ function HairSalesRoute() {
             { queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey },
           ]}
           onSuccess={() => navigate({ search: { page: 1, search: searchValue }, replace: true })}
+          availableOrders={availableHairOrders}
+          availableOrdersLoading={availableHairOrdersLoading}
         />
         {hairEditItem && (
           <EditHairAssignedDialog

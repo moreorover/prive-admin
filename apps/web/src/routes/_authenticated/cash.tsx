@@ -48,6 +48,8 @@ function CashPage() {
   const [editing, setEditing] = useState<CashTransactionRow | null>(null)
   const [deleting, setDeleting] = useState<CashTransactionRow | null>(null)
   const [customerSearch, setCustomerSearch] = useState("")
+  const [createCustomerSearch, setCreateCustomerSearch] = useState("")
+  const [editCustomerSearch, setEditCustomerSearch] = useState("")
   const [selectedCustomerOption, setSelectedCustomerOption] = useState<SelectOption | null>(null)
 
   const { data: customersData } = useQuery(
@@ -56,6 +58,20 @@ function CashPage() {
       search: customerSearch.trim() || undefined,
     }),
   )
+  const { data: createCustomersData } = useQuery({
+    ...trpc.customers.list.queryOptions({
+      ...defaultCustomersListInput,
+      search: createCustomerSearch.trim() || undefined,
+    }),
+    enabled: createOpen,
+  })
+  const { data: editCustomersData } = useQuery({
+    ...trpc.customers.list.queryOptions({
+      ...defaultCustomersListInput,
+      search: editCustomerSearch.trim() || undefined,
+    }),
+    enabled: !!editing,
+  })
 
   const queryFilter = {
     page,
@@ -73,6 +89,8 @@ function CashPage() {
   )
 
   const customers = customersData?.items ?? []
+  const createCustomers = createCustomersData?.items ?? []
+  const editCustomers = editCustomersData?.items ?? []
   const customerOptions = withPinnedOption(
     customers.map((customer) => ({ value: customer.id, label: customer.name })),
     selectedCustomerOption,
@@ -196,7 +214,13 @@ function CashPage() {
         </Box>
       </Section>
 
-      <CreateCashTransactionDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <CreateCashTransactionDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        customers={createCustomers}
+        customerSearch={createCustomerSearch}
+        onCustomerSearchChange={setCreateCustomerSearch}
+      />
       {editing ? (
         <EditCashTransactionDialog
           open={!!editing}
@@ -204,6 +228,9 @@ function CashPage() {
             if (!open) setEditing(null)
           }}
           transaction={editing}
+          customers={editCustomers}
+          customerSearch={editCustomerSearch}
+          onCustomerSearchChange={setEditCustomerSearch}
         />
       ) : null}
       {deleting ? (

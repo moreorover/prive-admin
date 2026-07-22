@@ -12,6 +12,7 @@ import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
 const CALENDAR_APPOINTMENTS_PAGE_SIZE = 100
+const APPOINTMENT_OPTION_PAGE_SIZE = 100
 
 function getVisibleDateRange(date: string, view: ScheduleViewLevel) {
   const current = dayjs(date)
@@ -44,10 +45,26 @@ function calendarAppointmentsQueryOptions(date: string, view: ScheduleViewLevel)
   })
 }
 
+function appointmentCustomerOptionsQueryOptions(search: string) {
+  return trpc.customers.list.queryOptions({
+    page: 1,
+    pageSize: APPOINTMENT_OPTION_PAGE_SIZE,
+    search: search.trim() || undefined,
+  })
+}
+
+function appointmentSalonOptionsQueryOptions() {
+  return trpc.salons.list.queryOptions({ page: 1, pageSize: APPOINTMENT_OPTION_PAGE_SIZE })
+}
+
 export const Route = createFileRoute("/_authenticated/calendar")({
   component: CalendarPage,
   loader: async ({ context }) => {
-    await context.queryClient.prefetchQuery(calendarAppointmentsQueryOptions(dayjs().format("YYYY-MM-DD"), "month"))
+    await Promise.all([
+      context.queryClient.prefetchQuery(calendarAppointmentsQueryOptions(dayjs().format("YYYY-MM-DD"), "month")),
+      context.queryClient.prefetchQuery(appointmentCustomerOptionsQueryOptions("")),
+      context.queryClient.prefetchQuery(appointmentSalonOptionsQueryOptions()),
+    ])
   },
 })
 
@@ -57,8 +74,22 @@ function CalendarPage() {
   const [date, setDate] = useState<string>(() => dayjs().format("YYYY-MM-DD"))
   const [createOpen, setCreateOpen] = useState(false)
   const [defaultStartsAt, setDefaultStartsAt] = useState<string | null>(null)
+  const [clientSearch, setClientSearch] = useState("")
+  const [masterSearch, setMasterSearch] = useState("")
   const appointmentsQueryOptions = calendarAppointmentsQueryOptions(date, view)
   const { data: appointmentsData } = useQuery(appointmentsQueryOptions)
+  const { data: clientCustomersData } = useQuery(appointmentCustomerOptionsQueryOptions(clientSearch))
+  const { data: masterCustomersData } = useQuery(appointmentCustomerOptionsQueryOptions(masterSearch))
+  const { data: salonsData } = useQuery(appointmentSalonOptionsQueryOptions())
+  const clientOptions = (clientCustomersData?.items ?? []).map((customer) => ({
+    value: customer.id,
+    label: customer.name,
+  }))
+  const masterOptions = (masterCustomersData?.items ?? []).map((customer) => ({
+    value: customer.id,
+    label: customer.name,
+  }))
+  const salonOptions = (salonsData?.items ?? []).map((salon) => ({ value: salon.id, label: salon.name }))
   const visibleAppointmentCount = appointmentsData?.items.length ?? 0
   const appointmentTotalCount = appointmentsData?.totalCount ?? 0
   const hasHiddenAppointments = appointmentTotalCount > visibleAppointmentCount
@@ -136,6 +167,13 @@ function CalendarPage() {
           defaultStartsAt={defaultStartsAt}
           invalidateKeys={[{ queryKey: appointmentsQueryOptions.queryKey }]}
           navigateOnSuccess
+          clientOptions={clientOptions}
+          masterOptions={masterOptions}
+          salonOptions={salonOptions}
+          clientSearch={clientSearch}
+          masterSearch={masterSearch}
+          onClientSearchChange={setClientSearch}
+          onMasterSearchChange={setMasterSearch}
         />
       </Stack>
     </Container>
