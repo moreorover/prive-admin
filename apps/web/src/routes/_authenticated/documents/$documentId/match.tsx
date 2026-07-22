@@ -1,5 +1,7 @@
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
+import { useDocumentMatchActions } from "./-actions/document-match-actions"
 import { DocumentMatchPage } from "./-components/match-page"
 import {
   MATCH_CANDIDATES_PAGE_SIZE,
@@ -9,7 +11,7 @@ import {
 } from "./-data/match-data"
 
 export const Route = createFileRoute("/_authenticated/documents/$documentId/match")({
-  component: DocumentMatchPage,
+  component: routeComponent,
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({
     page: search.page ?? 1,
@@ -29,3 +31,28 @@ export const Route = createFileRoute("/_authenticated/documents/$documentId/matc
     }
   },
 })
+
+function routeComponent() {
+  const { documentId } = Route.useParams()
+  const search = Route.useSearch()
+  const navigate = Route.useNavigate()
+  const page = search.page ?? 1
+  const documentQuery = useQuery(documentQueryOptions(documentId))
+  const matchCandidatesQuery = useQuery(matchCandidatesQueryOptions(page))
+  const { assign } = useDocumentMatchActions({
+    documentId,
+    onAssigned: () => navigate({ to: "/documents" }),
+  })
+
+  return (
+    <DocumentMatchPage
+      page={page}
+      documentQuery={documentQuery}
+      matchCandidatesData={matchCandidatesQuery.data}
+      matchCandidatesIsError={matchCandidatesQuery.isError}
+      assignPending={assign.isPending}
+      onAssign={(entryId) => assign.mutate({ id: documentId, entryId })}
+      onPageChange={(nextPage) => navigate({ search: { page: nextPage } })}
+    />
+  )
+}

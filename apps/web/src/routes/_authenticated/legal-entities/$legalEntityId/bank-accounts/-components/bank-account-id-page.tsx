@@ -19,57 +19,219 @@ import { MonthPickerInput } from "@mantine/dates"
 import { useDisclosure } from "@mantine/hooks"
 import { notifications } from "@mantine/notifications"
 import { IconDotsVertical, IconDownload } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
-import { Link, useNavigate } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { type Currency, formatMinor } from "@/lib/currency"
-import { trpc } from "@/utils/trpc"
 
-import { Route } from "../$bankAccountId"
-import {
-  useBankAccountActions,
-  useBankEntryAttachmentActions,
-  useBankStatementEntryActions,
-} from "../-actions/bank-account-actions"
+import { type BankAccountFormValues } from "../-actions/bank-account-actions"
 import { AttachmentsCell } from "./attachments-cell"
 import { Field } from "./bank-account-fields"
 import { BankAccountNewForm, EditBankAccountModal } from "./bank-account-form-modals"
 
-const STATEMENT_ENTRIES_PAGE_SIZE = 25
+export const STATEMENT_ENTRIES_PAGE_SIZE = 25
 
-export function BankAccountRoute() {
-  const { bankAccountId, legalEntityId } = Route.useParams()
-  const navigate = useNavigate()
-  const { data: legalEntitiesData } = useQuery(trpc.legalEntities.list.queryOptions({ pageSize: 100 }))
-  const legalEntities = legalEntitiesData?.items ?? []
-  const { create } = useBankAccountActions({
-    onCreated: (values) => {
-      navigate({
-        to: "/legal-entities/$legalEntityId/bank-accounts",
-        params: { legalEntityId: values.legalEntityId },
-      })
-    },
-  })
+type LegalEntityOption = { id: string; name: string }
+type AttachmentRow = { attachment: AttachmentPreview }
+type StatementEntry = {
+  id: string
+  date: string
+  amount: number
+  currency: string
+  direction: string
+  counterpartyName: string | null
+  purpose: string | null
+  status: string
+  bankAccount?: { displayName: string | null } | null
+}
+type BankAccount = {
+  id: string
+  legalEntityId: string
+  iban: string
+  currency: string
+  bankName: string | null
+  swift: string | null
+  displayName: string
+  legalEntity?: { id: string; name: string } | null
+}
+export type StatusFilter = "PENDING" | "IGNORED" | "ALL"
 
+export function BankAccountPage({
+  bankAccountId,
+  legalEntityId,
+  legalEntities,
+  bankAccount,
+  statementEntriesData,
+  attachmentCounts,
+  attachmentsData,
+  attachmentsLoading,
+  unassignedAttachmentsData,
+  statusFilter,
+  openAttachmentEntryId,
+  entriesPage,
+  onStatusFilterChange,
+  onOpenAttachmentEntryChange,
+  onEntriesPageChange,
+  createPending,
+  updatePending,
+  importPending,
+  ignorePending,
+  undoPending,
+  assignPending,
+  removePending,
+  unassignPending,
+  onCreate,
+  onUpdate,
+  onImportCsv,
+  onIgnore,
+  onUndo,
+  onAssign,
+  onRemove,
+  onUnassign,
+  onUploadAttachment,
+}: {
+  bankAccountId: string
+  legalEntityId: string
+  legalEntities: LegalEntityOption[]
+  bankAccount: BankAccount | undefined
+  statementEntriesData: { items: StatementEntry[]; totalCount: number } | undefined
+  attachmentCounts: Record<string, number> | undefined
+  attachmentsData: { items: AttachmentRow[] } | undefined
+  attachmentsLoading: boolean
+  unassignedAttachmentsData: { items: AttachmentRow[] } | undefined
+  statusFilter: StatusFilter
+  openAttachmentEntryId: string | null
+  entriesPage: number
+  onStatusFilterChange: (status: StatusFilter) => void
+  onOpenAttachmentEntryChange: (entryId: string | null) => void
+  onEntriesPageChange: (page: number) => void
+  createPending: boolean
+  updatePending: boolean
+  importPending: boolean
+  ignorePending: boolean
+  undoPending: boolean
+  assignPending: boolean
+  removePending: boolean
+  unassignPending: boolean
+  onCreate: (values: BankAccountFormValues) => void
+  onUpdate: (values: BankAccountFormValues & { id: string }) => void
+  onImportCsv: (csv: string) => Promise<{ accountIban: string; total: number; inserted: number; skipped: number }>
+  onIgnore: (id: string) => void
+  onUndo: (id: string) => void
+  onAssign: (id: string, entryId: string) => void
+  onRemove: (id: string) => void
+  onUnassign: (id: string) => void
+  onUploadAttachment: (file: File, entryId: string) => Promise<unknown>
+}) {
   return bankAccountId === "new" ? (
     <BankAccountNewForm
       pathLegalEntityId={legalEntityId}
       legalEntities={legalEntities}
-      loading={create.isPending}
-      onSubmit={(values) => create.mutate(values)}
+      loading={createPending}
+      onSubmit={onCreate}
     />
   ) : (
-    <BankAccountShow key={bankAccountId} id={bankAccountId} legalEntities={legalEntities} />
+    <BankAccountShow
+      key={bankAccountId}
+      id={bankAccountId}
+      legalEntityId={legalEntityId}
+      legalEntities={legalEntities}
+      bankAccount={bankAccount}
+      statementEntriesData={statementEntriesData}
+      attachmentCounts={attachmentCounts}
+      attachmentsData={attachmentsData}
+      attachmentsLoading={attachmentsLoading}
+      unassignedAttachmentsData={unassignedAttachmentsData}
+      statusFilter={statusFilter}
+      openAttachmentEntryId={openAttachmentEntryId}
+      entriesPage={entriesPage}
+      onStatusFilterChange={onStatusFilterChange}
+      onOpenAttachmentEntryChange={onOpenAttachmentEntryChange}
+      onEntriesPageChange={onEntriesPageChange}
+      updatePending={updatePending}
+      importPending={importPending}
+      ignorePending={ignorePending}
+      undoPending={undoPending}
+      assignPending={assignPending}
+      removePending={removePending}
+      unassignPending={unassignPending}
+      onUpdate={onUpdate}
+      onImportCsv={onImportCsv}
+      onIgnore={onIgnore}
+      onUndo={onUndo}
+      onAssign={onAssign}
+      onRemove={onRemove}
+      onUnassign={onUnassign}
+      onUploadAttachment={onUploadAttachment}
+    />
   )
 }
 
-type StatusFilter = "PENDING" | "IGNORED" | "ALL"
-
-function BankAccountShow({ id, legalEntities }: { id: string; legalEntities: Array<{ id: string; name: string }> }) {
-  const { legalEntityId } = Route.useParams()
+function BankAccountShow({
+  id,
+  legalEntityId,
+  legalEntities,
+  bankAccount,
+  statementEntriesData,
+  attachmentCounts,
+  attachmentsData,
+  attachmentsLoading,
+  unassignedAttachmentsData,
+  statusFilter,
+  openAttachmentEntryId,
+  entriesPage,
+  onStatusFilterChange,
+  onOpenAttachmentEntryChange,
+  onEntriesPageChange,
+  updatePending,
+  importPending,
+  ignorePending,
+  undoPending,
+  assignPending,
+  removePending,
+  unassignPending,
+  onUpdate,
+  onImportCsv,
+  onIgnore,
+  onUndo,
+  onAssign,
+  onRemove,
+  onUnassign,
+  onUploadAttachment,
+}: {
+  id: string
+  legalEntityId: string
+  legalEntities: LegalEntityOption[]
+  bankAccount: BankAccount | undefined
+  statementEntriesData: { items: StatementEntry[]; totalCount: number } | undefined
+  attachmentCounts: Record<string, number> | undefined
+  attachmentsData: { items: AttachmentRow[] } | undefined
+  attachmentsLoading: boolean
+  unassignedAttachmentsData: { items: AttachmentRow[] } | undefined
+  statusFilter: StatusFilter
+  openAttachmentEntryId: string | null
+  entriesPage: number
+  onStatusFilterChange: (status: StatusFilter) => void
+  onOpenAttachmentEntryChange: (entryId: string | null) => void
+  onEntriesPageChange: (page: number) => void
+  updatePending: boolean
+  importPending: boolean
+  ignorePending: boolean
+  undoPending: boolean
+  assignPending: boolean
+  removePending: boolean
+  unassignPending: boolean
+  onUpdate: (values: BankAccountFormValues & { id: string }) => void
+  onImportCsv: (csv: string) => Promise<{ accountIban: string; total: number; inserted: number; skipped: number }>
+  onIgnore: (id: string) => void
+  onUndo: (id: string) => void
+  onAssign: (id: string, entryId: string) => void
+  onRemove: (id: string) => void
+  onUnassign: (id: string) => void
+  onUploadAttachment: (file: File, entryId: string) => Promise<unknown>
+}) {
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
   const [file, setFile] = useState<File | null>(null)
   const [importResult, setImportResult] = useState<{
@@ -78,64 +240,33 @@ function BankAccountShow({ id, legalEntities }: { id: string; legalEntities: Arr
     inserted: number
     skipped: number
   } | null>(null)
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("PENDING")
   const [exportMonth, setExportMonth] = useState<Date | null>(() => {
     const d = new Date()
     return new Date(d.getFullYear(), d.getMonth(), 1)
   })
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
-  const [openAttachmentEntryId, setOpenAttachmentEntryId] = useState<string | null>(null)
   const [uploadingAttachmentEntryId, setUploadingAttachmentEntryId] = useState<string | null>(null)
-  const [entriesPage, setEntriesPage] = useState(1)
-
-  const bankAccountQueryOptions = trpc.bankAccounts.get.queryOptions({ id })
-  const statementEntriesQueryOptions = trpc.bankStatementEntries.list.queryOptions({
-    bankAccountId: id,
-    status: statusFilter === "ALL" ? undefined : statusFilter,
-    page: entriesPage,
-    pageSize: STATEMENT_ENTRIES_PAGE_SIZE,
-  })
-  const { data: bankAccount } = useQuery(bankAccountQueryOptions)
-
-  const { data: statementEntriesData } = useQuery(statementEntriesQueryOptions)
   const entries = statementEntriesData?.items ?? []
   const entriesTotalCount = statementEntriesData?.totalCount ?? 0
   const entriesTotalPages = Math.max(1, Math.ceil(entriesTotalCount / STATEMENT_ENTRIES_PAGE_SIZE))
   const showEntriesPagination = entriesTotalCount > STATEMENT_ENTRIES_PAGE_SIZE
 
-  const { data: attachmentCounts } = useQuery(trpc.bankStatementAttachments.counts.queryOptions())
-  const { data: attachmentsData, isLoading: attachmentsLoading } = useQuery({
-    ...trpc.bankStatementAttachments.list.queryOptions({ entryId: openAttachmentEntryId ?? "", pageSize: 100 }),
-    enabled: !!openAttachmentEntryId,
-  })
   const attachments = attachmentsData?.items.map((row) => row.attachment) ?? []
-  const { data: unassignedAttachmentsData } = useQuery({
-    ...trpc.bankStatementAttachments.list.queryOptions({ assignmentStatus: "unassigned", pageSize: 100 }),
-    enabled: !!openAttachmentEntryId,
-  })
   const unassignedAttachments = unassignedAttachmentsData?.items.map((row) => row.attachment) ?? []
-
-  const { importCsv, ignore, undo } = useBankStatementEntryActions({
-    onImported: (result) => {
-      setImportResult(result)
-      setFile(null)
-      setEntriesPage(1)
-    },
-    onStatusChanged: () => setEntriesPage(1),
-  })
-  const { update } = useBankAccountActions({ bankAccountId: id, onUpdated: closeEdit })
-  const { assign, remove, unassign, upload: uploadAttachment } = useBankEntryAttachmentActions()
 
   const handleUpload = async () => {
     if (!file) return
     const text = await file.text()
-    importCsv.mutate({ csv: text })
+    const result = await onImportCsv(text)
+    setImportResult(result)
+    setFile(null)
+    onEntriesPageChange(1)
   }
 
   const handleAttachmentUpload = async (file: File, entryId: string) => {
     setUploadingAttachmentEntryId(entryId)
     try {
-      await uploadAttachment(file, entryId)
+      await onUploadAttachment(file, entryId)
     } catch (err) {
       notifications.show({ color: "red", message: (err as Error).message })
     } finally {
@@ -196,7 +327,7 @@ function BankAccountShow({ id, legalEntities }: { id: string; legalEntities: Arr
                 accept=".csv,text/csv"
                 w={400}
               />
-              <Button onClick={handleUpload} loading={importCsv.isPending} disabled={!file}>
+              <Button onClick={handleUpload} loading={importPending} disabled={!file}>
                 Import
               </Button>
             </Group>
@@ -219,8 +350,7 @@ function BankAccountShow({ id, legalEntities }: { id: string; legalEntities: Arr
             ]}
             value={statusFilter}
             onChange={(v) => {
-              setStatusFilter((v as StatusFilter) ?? "PENDING")
-              setEntriesPage(1)
+              onStatusFilterChange((v as StatusFilter) ?? "PENDING")
             }}
             w={180}
           />
@@ -306,15 +436,15 @@ function BankAccountShow({ id, legalEntities }: { id: string; legalEntities: Arr
                         attachments={openAttachmentEntryId === e.id ? attachments : []}
                         attachmentsLoading={openAttachmentEntryId === e.id && attachmentsLoading}
                         unassignedAttachments={openAttachmentEntryId === e.id ? unassignedAttachments : []}
-                        assignLoading={assign.isPending}
-                        removeLoading={remove.isPending}
-                        unassignLoading={unassign.isPending}
+                        assignLoading={assignPending}
+                        removeLoading={removePending}
+                        unassignLoading={unassignPending}
                         uploadLoading={uploadingAttachmentEntryId === e.id}
-                        onOpenChange={(opened) => setOpenAttachmentEntryId(opened ? e.id : null)}
+                        onOpenChange={(opened) => onOpenAttachmentEntryChange(opened ? e.id : null)}
                         onPreview={setPreviewAttachment}
-                        onAssign={(attachmentId) => assign.mutate({ id: attachmentId, entryId: e.id })}
-                        onRemove={(attachmentId) => remove.mutate({ id: attachmentId })}
-                        onUnassign={(attachmentId) => unassign.mutate({ id: attachmentId })}
+                        onAssign={(attachmentId) => onAssign(attachmentId, e.id)}
+                        onRemove={onRemove}
+                        onUnassign={onUnassign}
                         onUpload={(file) => void handleAttachmentUpload(file, e.id)}
                       />
                     </Table.Td>
@@ -327,11 +457,13 @@ function BankAccountShow({ id, legalEntities }: { id: string; legalEntities: Arr
                         </Menu.Target>
                         <Menu.Dropdown>
                           {e.status === "PENDING" ? (
-                            <Menu.Item color="gray" onClick={() => ignore.mutate({ id: e.id })}>
+                            <Menu.Item color="gray" disabled={ignorePending} onClick={() => onIgnore(e.id)}>
                               Ignore
                             </Menu.Item>
                           ) : (
-                            <Menu.Item onClick={() => undo.mutate({ id: e.id })}>Undo ({e.status})</Menu.Item>
+                            <Menu.Item disabled={undoPending} onClick={() => onUndo(e.id)}>
+                              Undo ({e.status})
+                            </Menu.Item>
                           )}
                         </Menu.Dropdown>
                       </Menu>
@@ -357,7 +489,7 @@ function BankAccountShow({ id, legalEntities }: { id: string; legalEntities: Arr
               <Pagination
                 total={entriesTotalPages}
                 value={Math.min(entriesPage, entriesTotalPages)}
-                onChange={setEntriesPage}
+                onChange={onEntriesPageChange}
               />
             </Group>
           )}
@@ -371,7 +503,7 @@ function BankAccountShow({ id, legalEntities }: { id: string; legalEntities: Arr
           onClose={closeEdit}
           bankAccountId={id}
           legalEntities={legalEntities}
-          loading={update.isPending}
+          loading={updatePending}
           initial={{
             legalEntityId: bankAccount.legalEntityId,
             iban: bankAccount.iban,
@@ -380,7 +512,10 @@ function BankAccountShow({ id, legalEntities }: { id: string; legalEntities: Arr
             swift: bankAccount.swift ?? "",
             displayName: bankAccount.displayName,
           }}
-          onSubmit={(values) => update.mutate(values)}
+          onSubmit={(values) => {
+            onUpdate(values)
+            closeEdit()
+          }}
         />
       )}
       <AttachmentPreviewDialog attachment={previewAttachment} onClose={() => setPreviewAttachment(null)} />

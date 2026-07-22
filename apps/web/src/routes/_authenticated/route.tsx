@@ -1,11 +1,13 @@
+import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
 import { authClient } from "@/lib/auth-client"
+import { trpc } from "@/utils/trpc"
 
 import { AuthenticatedErrorComponent, AuthenticatedLayout } from "./-components/route-page"
 
 export const Route = createFileRoute("/_authenticated")({
-  component: AuthenticatedLayout,
+  component: routeComponent,
   errorComponent: AuthenticatedErrorComponent,
   beforeLoad: async ({ location }) => {
     const session = await authClient.getSession()
@@ -21,3 +23,11 @@ export const Route = createFileRoute("/_authenticated")({
     return { session: session.data }
   },
 })
+
+function routeComponent() {
+  const unassignedAttachments = useQuery(
+    trpc.bankStatementAttachments.list.queryOptions({ assignmentStatus: "unassigned" }),
+  ).data
+
+  return <AuthenticatedLayout badges={{ unassigned: unassignedAttachments?.totalCount ?? 0 }} />
+}

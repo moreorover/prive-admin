@@ -1,7 +1,6 @@
 import { ActionIcon, Badge, Button, Card, Container, Group, SimpleGrid, Stack, Text, Title } from "@mantine/core"
 import { MonthPickerInput } from "@mantine/dates"
 import { IconChevronLeft, IconChevronRight, IconEye } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
@@ -15,13 +14,9 @@ import {
   parseMonthKey,
   previousMonth,
   selectedMonthData,
-  selectedYearInputs,
   type HairMonthlyBreakdown,
   type MonthlyMetric,
 } from "@/lib/dashboard-monthly-stats"
-import { trpc } from "@/utils/trpc"
-
-import { Route } from "../dashboard"
 
 type TransactionStatsByCurrency = {
   currency: string
@@ -29,41 +24,37 @@ type TransactionStatsByCurrency = {
   total: number
 }
 
-export function DashboardPage() {
-  const search = Route.useSearch()
-  const navigate = Route.useNavigate()
-  const selectedMonthKey = search.month ?? monthKeyFromDate(new Date())
-  const selected = parseMonthKey(selectedMonthKey)
-  const { currentYear, previousYear } = selectedYearInputs(selected)
-  const monthDate = dateFromMonthKey(selectedMonthKey)
+type DashboardPageProps = {
+  selectedMonthKey: string
+  transactionData: TransactionStatsByCurrency[] | undefined
+  previousTransactionData: TransactionStatsByCurrency[] | undefined
+  appointmentsData: HairMonthlyBreakdown | undefined
+  previousAppointmentsData: HairMonthlyBreakdown | undefined
+  salesData: HairMonthlyBreakdown | undefined
+  previousSalesData: HairMonthlyBreakdown | undefined
+  onSearchChange: (month: string) => void
+}
 
-  const { data: transactionData } = useQuery(trpc.dashboard.transactionStats.queryOptions({ year: currentYear }))
-  const { data: previousTransactionData } = useQuery({
-    ...trpc.dashboard.transactionStats.queryOptions({ year: previousYear ?? currentYear }),
-    enabled: !!previousYear,
-  })
-  const { data: appointmentsData } = useQuery(trpc.dashboard.hairAssignedStats.queryOptions({ year: currentYear }))
-  const { data: previousAppointmentsData } = useQuery({
-    ...trpc.dashboard.hairAssignedStats.queryOptions({ year: previousYear ?? currentYear }),
-    enabled: !!previousYear,
-  })
-  const { data: salesData } = useQuery(trpc.dashboard.hairAssignedThroughSaleStats.queryOptions({ year: currentYear }))
-  const { data: previousSalesData } = useQuery({
-    ...trpc.dashboard.hairAssignedThroughSaleStats.queryOptions({ year: previousYear ?? currentYear }),
-    enabled: !!previousYear,
-  })
+export function DashboardPage({
+  selectedMonthKey,
+  transactionData,
+  previousTransactionData,
+  appointmentsData,
+  previousAppointmentsData,
+  salesData,
+  previousSalesData,
+  onSearchChange,
+}: DashboardPageProps) {
+  const selected = parseMonthKey(selectedMonthKey)
+  const monthDate = dateFromMonthKey(selectedMonthKey)
 
   const goToMonth = (date: Date | null) => {
     if (!date) return
-    navigate({ search: { month: monthKeyFromDate(date) } })
+    onSearchChange(monthKeyFromDate(date))
   }
 
   const changeMonth = (offset: number) => {
-    navigate({
-      search: {
-        month: monthKeyFromDate(new Date(selected.year, selected.month - 1 + offset, 1)),
-      },
-    })
+    onSearchChange(monthKeyFromDate(new Date(selected.year, selected.month - 1 + offset, 1)))
   }
 
   return (

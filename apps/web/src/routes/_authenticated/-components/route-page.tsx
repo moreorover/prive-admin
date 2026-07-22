@@ -3,22 +3,16 @@ import type { ErrorComponentProps } from "@tanstack/react-router"
 import { AppShell, Box, Button, Card, Group, Text } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
 import { IconAlertCircle, IconRefresh } from "@tabler/icons-react"
-import { useQuery, useQueryErrorResetBoundary } from "@tanstack/react-query"
+import { useQueryErrorResetBoundary } from "@tanstack/react-query"
 import { Outlet, useRouter } from "@tanstack/react-router"
 
 import { BreadcrumbProvider } from "@/components/breadcrumbs"
-import { trpc } from "@/utils/trpc"
 
 import classes from "../route.module.css"
 import { DesktopTabs, HeaderTop, MobileNavigationDrawer } from "./layout-navigation"
 
-export function AuthenticatedLayout() {
+export function AuthenticatedLayout({ badges }: { badges: { unassigned: number } }) {
   const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] = useDisclosure(false)
-
-  const { data: unassignedAttachments } = useQuery(
-    trpc.bankStatementAttachments.list.queryOptions({ assignmentStatus: "unassigned" }),
-  )
-  const badges = { unassigned: unassignedAttachments?.totalCount ?? 0 }
 
   return (
     <BreadcrumbProvider>

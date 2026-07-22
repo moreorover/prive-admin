@@ -1,16 +1,13 @@
 import { ActionIcon, Button, Card, Group, Modal, Pagination, Stack, Text, Textarea, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { IconPlus, IconSearch, IconTrash } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { ClientDate } from "@/components/client-date"
 import { Section } from "@/components/section"
 
-import { useCustomerNoteActions } from "../-actions/note-actions"
-import { notesQueryOptions, PAGE_SIZE } from "../-data/notes-data"
-import { Route } from "../notes"
+import { PAGE_SIZE } from "../-data/notes-data"
 
 type CustomerNote = {
   id: string
@@ -19,27 +16,35 @@ type CustomerNote = {
   createdBy?: { name: string | null } | null
 }
 
-export function NotesRoute() {
-  const { customerId } = Route.useParams()
-  const search = Route.useSearch()
-  const navigate = Route.useNavigate()
+export function NotesPage({
+  customerId,
+  page,
+  searchValue,
+  data,
+  createPending,
+  onCreateNote,
+  onDeleteNote,
+  onSearchChange,
+  onPageChange,
+}: {
+  customerId: string
+  page: number
+  searchValue: string
+  data: { items: CustomerNote[]; totalCount: number } | undefined
+  createPending: boolean
+  onCreateNote: (values: { note: string; customerId: string }) => Promise<unknown>
+  onDeleteNote: (id: string) => void
+  onSearchChange: (search: string) => void
+  onPageChange: (page: number) => void
+}) {
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  const page = search.page ?? 1
-  const searchValue = search.search ?? ""
   const normalizedSearch = searchValue.trim()
-  const queryOptions = notesQueryOptions(customerId, page, searchValue)
-  const { data } = useQuery(queryOptions)
-  const notes = (data?.items ?? []) as CustomerNote[]
+  const notes = data?.items ?? []
   const totalCount = data?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const clampedPage = Math.min(page, totalPages)
   const hasItemsOnCurrentPage = notes.length > 0
-
-  const { createNote, deleteNote } = useCustomerNoteActions({
-    customerId,
-    onCreated: () => navigate({ search: { page: 1, search: searchValue }, replace: true }),
-  })
 
   return (
     <>
@@ -55,7 +60,7 @@ export function NotesRoute() {
               leftSection={<IconSearch size={16} />}
               value={searchValue}
               onChange={(event) => {
-                navigate({ search: { page: 1, search: event.currentTarget.value }, replace: true })
+                onSearchChange(event.currentTarget.value)
               }}
               w={260}
             />
@@ -83,7 +88,7 @@ export function NotesRoute() {
                         {note.createdBy?.name ?? "Unknown"} · <ClientDate date={note.createdAt} />
                       </Text>
                     </Stack>
-                    <ActionIcon variant="subtle" color="red" onClick={() => deleteNote.mutate({ id: note.id })}>
+                    <ActionIcon variant="subtle" color="red" onClick={() => onDeleteNote(note.id)}>
                       <IconTrash size={14} />
                     </ActionIcon>
                   </Group>
@@ -100,11 +105,7 @@ export function NotesRoute() {
             <Text size="sm" c="dimmed">
               {totalCount} note{totalCount === 1 ? "" : "s"} · Page {clampedPage} of {totalPages}
             </Text>
-            <Pagination
-              value={clampedPage}
-              total={totalPages}
-              onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
-            />
+            <Pagination value={clampedPage} total={totalPages} onChange={onPageChange} />
           </Group>
         </Stack>
 
@@ -112,8 +113,8 @@ export function NotesRoute() {
           customerId={customerId}
           open={dialogOpen}
           onOpenChange={setDialogOpen}
-          loading={createNote.isPending}
-          onCreate={(values) => createNote.mutateAsync(values)}
+          loading={createPending}
+          onCreate={onCreateNote}
         />
       </Section>
     </>

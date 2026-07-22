@@ -1,3 +1,5 @@
+import type { ComponentProps } from "react"
+
 import { Button, Stack, Text, TextInput } from "@mantine/core"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useState } from "react"
@@ -8,22 +10,46 @@ import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair
 import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
 import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
 import { Section } from "@/components/section"
-import { trpc } from "@/utils/trpc"
 
 import { HAIR_SALES_PAGE_SIZE, useHairSalesData } from "../-data/hair-sales-data"
-import { useHairAssignmentActions } from "../../../-actions/hair-assignment-actions"
-import { Route } from "../hair-sales"
 
-export function HairSalesRoute() {
-  const { customerId } = Route.useParams()
-  const search = Route.useSearch()
-  const navigate = Route.useNavigate()
+type HairSalesData = ReturnType<typeof useHairSalesData>
+
+export function HairSalesPage({
+  customerId,
+  searchValue,
+  data,
+  hairEditItem,
+  hairDeleteItem,
+  createPending,
+  updatePending,
+  deletePending,
+  onHairEditItemChange,
+  onHairDeleteItemChange,
+  onSearchChange,
+  onPageChange,
+  onCreate,
+  onUpdate,
+  onDelete,
+}: {
+  customerId: string
+  searchValue: string
+  data: HairSalesData
+  hairEditItem: HairAssignedRow | null
+  hairDeleteItem: HairAssignedRow | null
+  createPending: boolean
+  updatePending: boolean
+  deletePending: boolean
+  onHairEditItemChange: (item: HairAssignedRow | null) => void
+  onHairDeleteItemChange: (item: HairAssignedRow | null) => void
+  onSearchChange: (search: string) => void
+  onPageChange: (page: number) => void
+  onCreate: ComponentProps<typeof CreateHairAssignedDialog>["onCreate"]
+  onUpdate: ComponentProps<typeof EditHairAssignedDialog>["onUpdate"]
+  onDelete: (id: string) => void
+}) {
   const [hairCreateOpen, setHairCreateOpen] = useState(false)
-  const [hairEditItem, setHairEditItem] = useState<HairAssignedRow | null>(null)
-  const [hairDeleteItem, setHairDeleteItem] = useState<HairAssignedRow | null>(null)
 
-  const page = search.page ?? 1
-  const searchValue = search.search ?? ""
   const normalizedSearch = searchValue.trim()
   const {
     availableHairOrders,
@@ -33,22 +59,7 @@ export function HairSalesRoute() {
     totalPages,
     clampedPage,
     hasItemsOnCurrentPage,
-  } = useHairSalesData({ customerId, page, search: searchValue })
-  const customerSummaryQueryKey = trpc.customers.summary.queryOptions({ id: customerId }).queryKey
-  const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({
-    invalidateKeys: [{ queryKey: trpc.customers.hairAssigned.list.queryKey() }, { queryKey: customerSummaryQueryKey }],
-    selectedEditItem: hairEditItem,
-    selectedDeleteItem: hairDeleteItem,
-    onCreated: () => {
-      setHairCreateOpen(false)
-      navigate({ search: { page: 1, search: searchValue }, replace: true })
-    },
-    onUpdated: () => setHairEditItem(null),
-    onDeleted: () => {
-      setHairDeleteItem(null)
-      navigate({ search: { page: 1, search: searchValue }, replace: true })
-    },
-  })
+  } = data
 
   return (
     <>
@@ -64,7 +75,7 @@ export function HairSalesRoute() {
               leftSection={<IconSearch size={16} />}
               value={searchValue}
               onChange={(event) => {
-                navigate({ search: { page: 1, search: event.currentTarget.value }, replace: true })
+                onSearchChange(event.currentTarget.value)
               }}
               w={260}
             />
@@ -90,13 +101,13 @@ export function HairSalesRoute() {
               <HairAssignedTable.SoldFor />
               <HairAssignedTable.Profit />
               <HairAssignedTable.PricePerGram />
-              <HairAssignedTable.Actions onEdit={setHairEditItem} onDelete={setHairDeleteItem} />
+              <HairAssignedTable.Actions onEdit={onHairEditItemChange} onDelete={onHairDeleteItemChange} />
               <HairAssignedTable.Pagination
                 page={clampedPage}
                 pageSize={HAIR_SALES_PAGE_SIZE}
                 itemCount={hairAssigned.length}
                 totalCount={totalCount}
-                onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
+                onChange={onPageChange}
                 label={`${totalCount} hair sale${totalCount === 1 ? "" : "s"} · Page ${clampedPage} of ${totalPages}`}
                 px="md"
                 pb="md"
@@ -114,27 +125,36 @@ export function HairSalesRoute() {
           onOpenChange={setHairCreateOpen}
           clientId={customerId}
           appointmentId={null}
-          loading={createHairAssigned.isPending}
-          onCreate={(values) => createHairAssigned.mutate(values)}
+          loading={createPending}
+          onCreate={(values) => {
+            onCreate(values)
+            setHairCreateOpen(false)
+          }}
           availableOrders={availableHairOrders}
           availableOrdersLoading={availableHairOrdersLoading}
         />
         {hairEditItem && (
           <EditHairAssignedDialog
             open={!!hairEditItem}
-            onOpenChange={(open) => !open && setHairEditItem(null)}
+            onOpenChange={(open) => !open && onHairEditItemChange(null)}
             hairAssigned={hairEditItem}
-            loading={updateHairAssigned.isPending}
-            onUpdate={(values) => updateHairAssigned.mutate(values)}
+            loading={updatePending}
+            onUpdate={(values) => {
+              onUpdate(values)
+              onHairEditItemChange(null)
+            }}
           />
         )}
         {hairDeleteItem && (
           <DeleteHairAssignedDialog
             open={!!hairDeleteItem}
-            onOpenChange={(open) => !open && setHairDeleteItem(null)}
+            onOpenChange={(open) => !open && onHairDeleteItemChange(null)}
             hairAssigned={hairDeleteItem}
-            loading={deleteHairAssigned.isPending}
-            onDelete={(id) => deleteHairAssigned.mutate({ id })}
+            loading={deletePending}
+            onDelete={(id) => {
+              onDelete(id)
+              onHairDeleteItemChange(null)
+            }}
           />
         )}
       </Section>

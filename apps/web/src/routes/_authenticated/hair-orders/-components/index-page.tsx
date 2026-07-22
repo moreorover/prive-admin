@@ -1,38 +1,55 @@
+import type { ComponentProps } from "react"
+
 import { Button, Container, Group, Modal, NumberInput, Select, Stack, Table, Text } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
 import { IconPlus } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
 import { HairOrdersTable } from "@/components/hair-orders-table"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
-import { trpc } from "@/utils/trpc"
 
-import { useCreateHairOrderAction } from "../-actions/hair-order-actions"
+type CustomerOptionsData = { items: { id: string; name: string }[] }
+type HairOrderListData = {
+  items: ComponentProps<typeof HairOrdersTable>["hairOrders"]
+  totalCount: number
+}
+type HairOrderCreateValues = {
+  customerId: string
+  placedAt: string | null
+  arrivedAt: string | null
+  status: "PENDING"
+  weightReceived: number
+  weightUsed: number
+  total: number
+}
 
-const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
-const HAIR_ORDERS_PAGE_SIZE = 25
-
-function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const [customerSearch, setCustomerSearch] = useState("")
+function CreateHairOrderDialog({
+  open,
+  onOpenChange,
+  customerSearch,
+  customersData,
+  loading,
+  onCustomerSearchChange,
+  onCreate,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  customerSearch: string
+  customersData: CustomerOptionsData | undefined
+  loading: boolean
+  onCustomerSearchChange: (search: string) => void
+  onCreate: (values: HairOrderCreateValues) => Promise<unknown>
+}) {
   const [selectedCustomerOption, setSelectedCustomerOption] = useState<SelectOption | null>(null)
 
-  const { data: customersData } = useQuery(
-    trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
-      search: customerSearch.trim() || undefined,
-    }),
-  )
   const customers = customersData?.items ?? []
   const customerOptions = withPinnedOption(
     customers.map((c) => ({ value: c.id, label: c.name })),
     selectedCustomerOption,
   )
-  const mutation = useCreateHairOrderAction({ onCreated: () => onOpenChange(false) })
-
   const form = useForm({
     initialValues: { customerId: "", placedAt: "", weightReceived: 0, total: 0 },
   })
@@ -43,7 +60,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
     weightReceived: number
     total: number
   }) => {
-    await mutation.mutateAsync({
+    await onCreate({
       customerId: values.customerId,
       placedAt: values.placedAt || null,
       arrivedAt: null,
@@ -52,6 +69,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
       weightUsed: 0,
       total: Math.round(values.total * 100),
     })
+    onOpenChange(false)
   }
 
   return (
@@ -63,7 +81,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
             placeholder="Select a customer..."
             searchable
             searchValue={customerSearch}
-            onSearchChange={setCustomerSearch}
+            onSearchChange={onCustomerSearchChange}
             data={customerOptions}
             value={form.values.customerId}
             onChange={(value) => {
@@ -78,7 +96,7 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
             <NumberInput label="Weight (g)" min={0} {...form.getInputProps("weightReceived")} />
             <NumberInput label="Total" min={0} decimalScale={2} step={0.01} {...form.getInputProps("total")} />
           </Group>
-          <Button type="submit" loading={mutation.isPending}>
+          <Button type="submit" loading={loading}>
             Create Hair Order
           </Button>
         </Stack>
@@ -87,16 +105,34 @@ function CreateHairOrderDialog({ open, onOpenChange }: { open: boolean; onOpenCh
   )
 }
 
-export function HairOrdersPage() {
+export function HairOrdersPage({
+  page,
+  pageSize,
+  hairOrdersData,
+  isLoading,
+  customerSearch,
+  customersData,
+  createPending,
+  onPageChange,
+  onCustomerSearchChange,
+  onCreateHairOrder,
+}: {
+  page: number
+  pageSize: number
+  hairOrdersData: HairOrderListData | undefined
+  isLoading: boolean
+  customerSearch: string
+  customersData: CustomerOptionsData | undefined
+  createPending: boolean
+  onPageChange: (page: number) => void
+  onCustomerSearchChange: (search: string) => void
+  onCreateHairOrder: (values: HairOrderCreateValues) => Promise<unknown>
+}) {
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [page, setPage] = useState(1)
-  const { data: hairOrdersData, isLoading } = useQuery(
-    trpc.hairOrders.list.queryOptions({ page, pageSize: HAIR_ORDERS_PAGE_SIZE }),
-  )
   const hairOrders = hairOrdersData?.items ?? []
   const totalCount = hairOrdersData?.totalCount ?? 0
-  const totalPages = Math.max(1, Math.ceil(totalCount / HAIR_ORDERS_PAGE_SIZE))
-  const showPagination = totalCount > HAIR_ORDERS_PAGE_SIZE
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+  const showPagination = totalCount > pageSize
 
   return (
     <Container size="xl">
@@ -119,14 +155,10 @@ export function HairOrdersPage() {
               {totalCount} hair order{totalCount === 1 ? "" : "s"} · Page {Math.min(page, totalPages)} of {totalPages}
             </Text>
             <Group gap="xs">
-              <Button
-                variant="default"
-                disabled={page <= 1}
-                onClick={() => setPage((current) => Math.max(1, current - 1))}
-              >
+              <Button variant="default" disabled={page <= 1} onClick={() => onPageChange(Math.max(1, page - 1))}>
                 Previous
               </Button>
-              <Button variant="default" disabled={page >= totalPages} onClick={() => setPage((current) => current + 1)}>
+              <Button variant="default" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}>
                 Next
               </Button>
             </Group>
@@ -134,7 +166,15 @@ export function HairOrdersPage() {
         )}
       </Section>
 
-      <CreateHairOrderDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <CreateHairOrderDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        customerSearch={customerSearch}
+        customersData={customersData}
+        loading={createPending}
+        onCustomerSearchChange={onCustomerSearchChange}
+        onCreate={onCreateHairOrder}
+      />
     </Container>
   )
 }

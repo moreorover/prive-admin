@@ -1,7 +1,7 @@
+import type { ComponentProps } from "react"
+
 import { Alert, Container, Stack, Text } from "@mantine/core"
 import { Schedule, type ScheduleEventData, type ScheduleViewLevel } from "@mantine/schedule"
-import { useQuery } from "@tanstack/react-query"
-import { useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
 import { useCallback, useMemo, useState } from "react"
 
@@ -10,26 +10,52 @@ import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 
-import { useCreateAppointmentAction } from "../-actions/appointment-actions"
-import {
-  appointmentCustomerOptionsQueryOptions,
-  appointmentSalonOptionsQueryOptions,
-  calendarAppointmentsQueryOptions,
-} from "../-data/calendar-data"
+type OptionData = { items: { id: string; name: string }[] }
+type AppointmentData = {
+  items: {
+    id: string
+    name: string
+    startsAt: string | Date
+    client?: { name: string } | null
+  }[]
+  totalCount: number
+}
 
-export function CalendarPage() {
-  const navigate = useNavigate()
-  const [view, setView] = useState<ScheduleViewLevel>("month")
-  const [date, setDate] = useState<string>(() => dayjs().format("YYYY-MM-DD"))
+export function CalendarPage({
+  view,
+  date,
+  clientSearch,
+  masterSearch,
+  appointmentsData,
+  clientCustomersData,
+  masterCustomersData,
+  salonsData,
+  createPending,
+  onViewChange,
+  onDateChange,
+  onClientSearchChange,
+  onMasterSearchChange,
+  onCreateAppointment,
+  onOpenAppointment,
+}: {
+  view: ScheduleViewLevel
+  date: string
+  clientSearch: string
+  masterSearch: string
+  appointmentsData: AppointmentData | undefined
+  clientCustomersData: OptionData | undefined
+  masterCustomersData: OptionData | undefined
+  salonsData: OptionData | undefined
+  createPending: boolean
+  onViewChange: (view: ScheduleViewLevel) => void
+  onDateChange: (date: string) => void
+  onClientSearchChange: (search: string) => void
+  onMasterSearchChange: (search: string) => void
+  onCreateAppointment: ComponentProps<typeof CreateAppointmentDialog>["onCreate"]
+  onOpenAppointment: (appointmentId: string) => void
+}) {
   const [createOpen, setCreateOpen] = useState(false)
   const [defaultStartsAt, setDefaultStartsAt] = useState<string | null>(null)
-  const [clientSearch, setClientSearch] = useState("")
-  const [masterSearch, setMasterSearch] = useState("")
-  const appointmentsQueryOptions = calendarAppointmentsQueryOptions(date, view)
-  const { data: appointmentsData } = useQuery(appointmentsQueryOptions)
-  const { data: clientCustomersData } = useQuery(appointmentCustomerOptionsQueryOptions(clientSearch))
-  const { data: masterCustomersData } = useQuery(appointmentCustomerOptionsQueryOptions(masterSearch))
-  const { data: salonsData } = useQuery(appointmentSalonOptionsQueryOptions())
   const clientOptions = (clientCustomersData?.items ?? []).map((customer) => ({
     value: customer.id,
     label: customer.name,
@@ -63,22 +89,6 @@ export function CalendarPage() {
     })
   }, [appointmentsData])
 
-  const goToAppointment = useCallback(
-    (id: string) => {
-      navigate({ to: "/appointments/$appointmentId", params: { appointmentId: id } })
-    },
-    [navigate],
-  )
-  const createAppointment = useCreateAppointmentAction({
-    invalidateKeys: [{ queryKey: appointmentsQueryOptions.queryKey }],
-    onCreated: (created) => {
-      setCreateOpen(false)
-      if (created?.id) {
-        navigate({ to: "/appointments/$appointmentId", params: { appointmentId: created.id } })
-      }
-    },
-  })
-
   return (
     <Container size="xl">
       <BreadcrumbItem label="Calendar" order={10} />
@@ -96,11 +106,11 @@ export function CalendarPage() {
           <Schedule
             events={events}
             view={view}
-            onViewChange={setView}
+            onViewChange={onViewChange}
             date={date}
-            onDateChange={setDate}
+            onDateChange={onDateChange}
             layout="responsive"
-            onEventClick={(event) => goToAppointment(String(event.id))}
+            onEventClick={(event) => onOpenAppointment(String(event.id))}
             onTimeSlotClick={({ slotStart }) => openCreate(slotStart)}
             onDayClick={(d) => openCreate(`${d} 09:00:00`)}
             dayViewProps={{
@@ -123,15 +133,18 @@ export function CalendarPage() {
           open={createOpen}
           onOpenChange={setCreateOpen}
           defaultStartsAt={defaultStartsAt}
-          loading={createAppointment.isPending}
-          onCreate={(values) => createAppointment.mutate(values)}
+          loading={createPending}
+          onCreate={(values) => {
+            onCreateAppointment(values)
+            setCreateOpen(false)
+          }}
           clientOptions={clientOptions}
           masterOptions={masterOptions}
           salonOptions={salonOptions}
           clientSearch={clientSearch}
           masterSearch={masterSearch}
-          onClientSearchChange={setClientSearch}
-          onMasterSearchChange={setMasterSearch}
+          onClientSearchChange={onClientSearchChange}
+          onMasterSearchChange={onMasterSearchChange}
         />
       </Stack>
     </Container>

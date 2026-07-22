@@ -1,7 +1,8 @@
+import type { ComponentProps } from "react"
+
 import { Box, Button, Container, Group, LoadingOverlay, NativeSelect, Select, Table, TextInput } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
@@ -13,16 +14,13 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { type Currency } from "@/lib/currency"
 import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
-import { trpc } from "@/utils/trpc"
 
-import { useCashTransactionActions } from "../-actions/cash-transaction-actions"
-
-const PAGE_SIZE = 25
-const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
+export const PAGE_SIZE = 25
+export const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 
 type CashTransactionDirection = "all" | "received" | "paid"
 type CashTransactionCurrencyFilter = Currency | ""
-type CashTransactionFilters = {
+export type CashTransactionFilters = {
   search: string
   customerId: string
   currency: CashTransactionCurrencyFilter
@@ -30,60 +28,58 @@ type CashTransactionFilters = {
   dateFrom: string
   dateTo: string
 }
+type CustomersData = { items: { id: string; name: string }[] }
+type CashTransactionsData = { items: CashTransactionRow[]; totalCount: number }
 
-export function CashPage() {
-  const [page, setPage] = useState(1)
-  const [filters, setFilters] = useState<CashTransactionFilters>({
-    search: "",
-    customerId: "",
-    currency: "",
-    direction: "all",
-    dateFrom: "",
-    dateTo: "",
-  })
+export function CashPage({
+  page,
+  filters,
+  customersData,
+  createCustomersData,
+  editCustomersData,
+  result,
+  isFetching,
+  customerSearch,
+  createCustomerSearch,
+  editCustomerSearch,
+  createPending,
+  updatePending,
+  deletePending,
+  onPageChange,
+  onFiltersChange,
+  onCustomerSearchChange,
+  onCreateCustomerSearchChange,
+  onEditCustomerSearchChange,
+  onCreate,
+  onUpdate,
+  onDelete,
+}: {
+  page: number
+  filters: CashTransactionFilters
+  customersData: CustomersData | undefined
+  createCustomersData: CustomersData | undefined
+  editCustomersData: CustomersData | undefined
+  result: CashTransactionsData | undefined
+  isFetching: boolean
+  customerSearch: string
+  createCustomerSearch: string
+  editCustomerSearch: string
+  createPending: boolean
+  updatePending: boolean
+  deletePending: boolean
+  onPageChange: (page: number) => void
+  onFiltersChange: (filters: Partial<CashTransactionFilters>) => void
+  onCustomerSearchChange: (search: string) => void
+  onCreateCustomerSearchChange: (search: string) => void
+  onEditCustomerSearchChange: (search: string) => void
+  onCreate: ComponentProps<typeof CreateCashTransactionDialog>["onCreate"]
+  onUpdate: ComponentProps<typeof EditCashTransactionDialog>["onUpdate"]
+  onDelete: (id: string) => void
+}) {
   const [createOpen, setCreateOpen] = useState(false)
   const [editing, setEditing] = useState<CashTransactionRow | null>(null)
   const [deleting, setDeleting] = useState<CashTransactionRow | null>(null)
-  const [customerSearch, setCustomerSearch] = useState("")
-  const [createCustomerSearch, setCreateCustomerSearch] = useState("")
-  const [editCustomerSearch, setEditCustomerSearch] = useState("")
   const [selectedCustomerOption, setSelectedCustomerOption] = useState<SelectOption | null>(null)
-
-  const { data: customersData } = useQuery(
-    trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
-      search: customerSearch.trim() || undefined,
-    }),
-  )
-  const { data: createCustomersData } = useQuery({
-    ...trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
-      search: createCustomerSearch.trim() || undefined,
-    }),
-    enabled: createOpen,
-  })
-  const { data: editCustomersData } = useQuery({
-    ...trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
-      search: editCustomerSearch.trim() || undefined,
-    }),
-    enabled: !!editing,
-  })
-
-  const queryFilter = {
-    page,
-    pageSize: PAGE_SIZE,
-    search: filters.search.trim() || undefined,
-    customerId: filters.customerId || undefined,
-    currency: filters.currency || undefined,
-    direction: filters.direction,
-    dateFrom: filters.dateFrom || undefined,
-    dateTo: filters.dateTo || undefined,
-  }
-
-  const { data: result, isFetching } = useQuery(
-    trpc.cashTransactions.list.queryOptions(queryFilter, { placeholderData: (previousData) => previousData }),
-  )
 
   const customers = customersData?.items ?? []
   const createCustomers = createCustomersData?.items ?? []
@@ -93,17 +89,6 @@ export function CashPage() {
     selectedCustomerOption,
   )
   const totalCount = result?.totalCount ?? 0
-
-  const resetPage = () => setPage(1)
-  const updateFilters = (nextFilters: Partial<CashTransactionFilters>) => {
-    setFilters((current) => ({ ...current, ...nextFilters }))
-    resetPage()
-  }
-  const { createCashTransaction, updateCashTransaction, deleteCashTransaction } = useCashTransactionActions({
-    onCreated: () => setCreateOpen(false),
-    onUpdated: () => setEditing(null),
-    onDeleted: () => setDeleting(null),
-  })
 
   return (
     <Container size="xl">
@@ -126,7 +111,7 @@ export function CashPage() {
             leftSection={<IconSearch size={16} />}
             value={filters.search}
             onChange={(event) => {
-              updateFilters({ search: event.currentTarget.value })
+              onFiltersChange({ search: event.currentTarget.value })
             }}
             flex="1 1 18rem"
           />
@@ -136,11 +121,11 @@ export function CashPage() {
             searchable
             clearable
             searchValue={customerSearch}
-            onSearchChange={setCustomerSearch}
+            onSearchChange={onCustomerSearchChange}
             data={customerOptions}
             value={filters.customerId}
             onChange={(value) => {
-              updateFilters({ customerId: value ?? "" })
+              onFiltersChange({ customerId: value ?? "" })
               const option = customerOptions.find((candidate) => candidate.value === value)
               setSelectedCustomerOption(option ?? null)
             }}
@@ -155,7 +140,7 @@ export function CashPage() {
             ]}
             value={filters.currency}
             onChange={(event) => {
-              updateFilters({ currency: event.currentTarget.value as CashTransactionCurrencyFilter })
+              onFiltersChange({ currency: event.currentTarget.value as CashTransactionCurrencyFilter })
             }}
             w={{ base: "100%", xs: 180 }}
           />
@@ -168,7 +153,7 @@ export function CashPage() {
             ]}
             value={filters.direction}
             onChange={(event) => {
-              updateFilters({ direction: event.currentTarget.value as CashTransactionDirection })
+              onFiltersChange({ direction: event.currentTarget.value as CashTransactionDirection })
             }}
             w={{ base: "100%", xs: 180 }}
           />
@@ -178,7 +163,7 @@ export function CashPage() {
             clearable
             value={filters.dateFrom}
             onChange={(value) => {
-              updateFilters({ dateFrom: value ?? "" })
+              onFiltersChange({ dateFrom: value ?? "" })
             }}
             w={{ base: "100%", xs: 180 }}
           />
@@ -188,7 +173,7 @@ export function CashPage() {
             clearable
             value={filters.dateTo}
             onChange={(value) => {
-              updateFilters({ dateTo: value ?? "" })
+              onFiltersChange({ dateTo: value ?? "" })
             }}
             w={{ base: "100%", xs: 180 }}
           />
@@ -209,7 +194,7 @@ export function CashPage() {
                 pageSize={PAGE_SIZE}
                 itemCount={result?.items.length ?? 0}
                 totalCount={totalCount}
-                onChange={setPage}
+                onChange={onPageChange}
               />
             </CashTransactionsTable>
           </Table.ScrollContainer>
@@ -221,9 +206,12 @@ export function CashPage() {
         onOpenChange={setCreateOpen}
         customers={createCustomers}
         customerSearch={createCustomerSearch}
-        onCustomerSearchChange={setCreateCustomerSearch}
-        loading={createCashTransaction.isPending}
-        onCreate={(values) => createCashTransaction.mutate(values)}
+        onCustomerSearchChange={onCreateCustomerSearchChange}
+        loading={createPending}
+        onCreate={(values) => {
+          onCreate(values)
+          setCreateOpen(false)
+        }}
       />
       {editing ? (
         <EditCashTransactionDialog
@@ -234,9 +222,12 @@ export function CashPage() {
           transaction={editing}
           customers={editCustomers}
           customerSearch={editCustomerSearch}
-          onCustomerSearchChange={setEditCustomerSearch}
-          loading={updateCashTransaction.isPending}
-          onUpdate={(values) => updateCashTransaction.mutate(values)}
+          onCustomerSearchChange={onEditCustomerSearchChange}
+          loading={updatePending}
+          onUpdate={(values) => {
+            onUpdate(values)
+            setEditing(null)
+          }}
         />
       ) : null}
       {deleting ? (
@@ -246,8 +237,11 @@ export function CashPage() {
             if (!open) setDeleting(null)
           }}
           transaction={deleting}
-          loading={deleteCashTransaction.isPending}
-          onDelete={(id) => deleteCashTransaction.mutate({ id })}
+          loading={deletePending}
+          onDelete={(id) => {
+            onDelete(id)
+            setDeleting(null)
+          }}
         />
       ) : null}
     </Container>

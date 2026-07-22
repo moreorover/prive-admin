@@ -1,3 +1,5 @@
+import type { ReactNode } from "react"
+
 import {
   Anchor,
   Badge,
@@ -16,7 +18,6 @@ import {
 } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { IconArrowLeft } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -32,15 +33,39 @@ import {
   type DocumentMatchCandidateFilters,
 } from "@/lib/document-match-candidates"
 
-import { useDocumentMatchActions } from "../-actions/document-match-actions"
-import { documentQueryOptions, MATCH_CANDIDATES_PAGE_SIZE, matchCandidatesQueryOptions } from "../-data/match-data"
-import { Route } from "../match"
+import { MATCH_CANDIDATES_PAGE_SIZE } from "../-data/match-data"
 
-export function DocumentMatchPage() {
-  const { documentId } = Route.useParams()
-  const search = Route.useSearch()
-  const navigate = Route.useNavigate()
-  const page = search.page ?? 1
+type DocumentQuery = {
+  data:
+    | {
+        id: string
+        originalName: string
+        contentType: string
+        uploadedAt: string | Date
+        bankStatementEntryId: string | null
+      }
+    | undefined
+  isPending: boolean
+  isError: boolean
+}
+
+export function DocumentMatchPage({
+  page,
+  documentQuery,
+  matchCandidatesData,
+  matchCandidatesIsError,
+  assignPending,
+  onAssign,
+  onPageChange,
+}: {
+  page: number
+  documentQuery: DocumentQuery
+  matchCandidatesData: { items: DocumentMatchCandidate[]; totalCount: number } | undefined
+  matchCandidatesIsError: boolean
+  assignPending: boolean
+  onAssign: (entryId: string) => void
+  onPageChange: (page: number) => void
+}) {
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
   const [filters, setFilters] = useState<DocumentMatchCandidateFilters>({
     legalEntityId: "",
@@ -50,10 +75,8 @@ export function DocumentMatchPage() {
     amount: "",
   })
 
-  const documentQuery = useQuery(documentQueryOptions(documentId))
   const document = documentQuery.data
 
-  const { data: matchCandidatesData, isError: matchCandidatesIsError } = useQuery(matchCandidatesQueryOptions(page))
   const candidates = matchCandidatesData?.items ?? []
   const candidatesTotalCount = matchCandidatesData?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(candidatesTotalCount / MATCH_CANDIDATES_PAGE_SIZE))
@@ -65,11 +88,6 @@ export function DocumentMatchPage() {
   const updateFilters = (nextFilters: Partial<DocumentMatchCandidateFilters>) => {
     setFilters((currentFilters) => ({ ...currentFilters, ...nextFilters }))
   }
-
-  const { assign } = useDocumentMatchActions({
-    documentId,
-    onAssigned: () => navigate({ to: "/documents" }),
-  })
 
   const pageIsLoading = documentQuery.isPending
 
@@ -206,9 +224,9 @@ export function DocumentMatchPage() {
                             <CandidateCard
                               key={candidate.id}
                               candidate={candidate}
-                              assignPending={assign.isPending}
+                              assignPending={assignPending}
                               disabled={!!document.bankStatementEntryId}
-                              onMatch={() => assign.mutate({ id: document.id, entryId: candidate.id })}
+                              onMatch={() => onAssign(candidate.id)}
                             />
                           ))}
                         </Stack>
@@ -226,9 +244,7 @@ export function DocumentMatchPage() {
                             size="sm"
                             total={totalPages}
                             value={Math.min(page, totalPages)}
-                            onChange={(nextPage) =>
-                              navigate({ search: (currentSearch) => ({ ...currentSearch, page: nextPage }) })
-                            }
+                            onChange={onPageChange}
                           />
                         </Group>
                       ) : null}
@@ -246,7 +262,7 @@ export function DocumentMatchPage() {
   )
 }
 
-function BoxWithLoader({ visible, children }: { visible: boolean; children: React.ReactNode }) {
+function BoxWithLoader({ visible, children }: { visible: boolean; children: ReactNode }) {
   return (
     <div style={{ position: "relative" }}>
       <LoadingOverlay visible={visible} />

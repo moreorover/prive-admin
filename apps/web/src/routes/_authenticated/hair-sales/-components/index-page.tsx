@@ -13,7 +13,6 @@ import {
 } from "@mantine/core"
 import { MonthPickerInput } from "@mantine/dates"
 import { IconEye, IconSearch } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 
 import { ClientDate } from "@/components/client-date"
@@ -21,8 +20,7 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { dateFromMonthKey, monthKeyFromDate } from "@/lib/dashboard-monthly-stats"
 
-import { hairSalesQueryOptions, type HairSalesSource, PAGE_SIZE } from "../-data/index-data"
-import { Route } from "../index"
+import { type HairSalesSource, PAGE_SIZE } from "../-data/index-data"
 
 type HairSale = {
   id: string
@@ -39,32 +37,28 @@ type HairSale = {
 
 const formatCents = (cents: number) => `€${(cents / 100).toFixed(2)}`
 
-export function HairSalesPage() {
-  const search = Route.useSearch()
-  const navigate = Route.useNavigate()
-  const page = search.page ?? 1
-  const searchValue = search.search ?? ""
-  const source = search.source ?? "all"
-  const month = search.month
+export function HairSalesPage({
+  page,
+  searchValue,
+  source,
+  month,
+  data,
+  isLoading,
+  onSearchChange,
+}: {
+  page: number
+  searchValue: string
+  source: HairSalesSource
+  month: string | undefined
+  data: { items: HairSale[]; totalCount: number } | undefined
+  isLoading: boolean
+  onSearchChange: (next: Partial<{ page: number; search: string; source: HairSalesSource; month?: string }>) => void
+}) {
   const monthDate = month ? dateFromMonthKey(month) : null
-  const queryOptions = hairSalesQueryOptions({ page, search: searchValue, source, month })
-  const { data, isLoading } = useQuery(queryOptions)
-  const hairSales = (data?.items ?? []) as HairSale[]
+  const hairSales = data?.items ?? []
   const totalCount = data?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const clampedPage = Math.min(page, totalPages)
-
-  const setSearch = (next: Partial<{ page: number; search: string; source: HairSalesSource; month?: string }>) =>
-    navigate({
-      search: {
-        page,
-        search: searchValue,
-        source,
-        month,
-        ...next,
-      },
-      replace: true,
-    })
 
   return (
     <Container size="xl">
@@ -77,7 +71,7 @@ export function HairSalesPage() {
           <Group p="md" gap="sm" wrap="wrap">
             <SegmentedControl
               value={source}
-              onChange={(value) => setSearch({ page: 1, source: value as HairSalesSource })}
+              onChange={(value) => onSearchChange({ page: 1, source: value as HairSalesSource })}
               data={[
                 { value: "all", label: "All" },
                 { value: "appointment", label: "Appointment" },
@@ -88,7 +82,9 @@ export function HairSalesPage() {
               aria-label="Filter hair sales by month"
               placeholder="All months"
               value={monthDate}
-              onChange={(value) => setSearch({ page: 1, month: value ? monthKeyFromDate(new Date(value)) : undefined })}
+              onChange={(value) =>
+                onSearchChange({ page: 1, month: value ? monthKeyFromDate(new Date(value)) : undefined })
+              }
               valueFormat="MMMM YYYY"
               clearable
               popoverProps={{ withinPortal: false }}
@@ -99,7 +95,7 @@ export function HairSalesPage() {
               placeholder="Search client or order"
               leftSection={<IconSearch size={16} />}
               value={searchValue}
-              onChange={(event) => setSearch({ page: 1, search: event.currentTarget.value })}
+              onChange={(event) => onSearchChange({ page: 1, search: event.currentTarget.value })}
               w={260}
             />
           </Group>
@@ -187,7 +183,11 @@ export function HairSalesPage() {
             <Text size="sm" c="dimmed">
               {totalCount} hair sale{totalCount === 1 ? "" : "s"} · Page {clampedPage} of {totalPages}
             </Text>
-            <Pagination value={clampedPage} total={totalPages} onChange={(nextPage) => setSearch({ page: nextPage })} />
+            <Pagination
+              value={clampedPage}
+              total={totalPages}
+              onChange={(nextPage) => onSearchChange({ page: nextPage })}
+            />
           </Group>
         </Stack>
       </Section>

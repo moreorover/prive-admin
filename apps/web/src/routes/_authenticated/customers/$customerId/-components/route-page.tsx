@@ -1,27 +1,45 @@
 import { Button, Card, Container, Group, Modal, SimpleGrid, Stack, Tabs, Text, TextInput, Title } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { IconPencil, IconPhone } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { Outlet, useLocation } from "@tanstack/react-router"
-import { useState } from "react"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
 import { CURRENCIES, formatMinor } from "@/lib/currency"
-import { trpc } from "@/utils/trpc"
 
-import { useUpdateCustomerAction } from "../-actions/customer-detail-actions"
-import { Route } from "../route"
+type CustomerDetail = { id: string; name: string; phoneNumber: string | null }
+type CustomerSummary = {
+  appointmentCount: number
+  transactionSumsMinor: Record<(typeof CURRENCIES)[number], number>
+  hairAssignedProfitSum: number
+  hairAssignedSoldForSum: number
+  hairAssignedWeightInGramsSum: number
+  noteCount: number
+  customerCreatedAt: string | Date
+}
+type CustomerUpdateValues = { id: string; name: string; phoneNumber: string | null }
 
-export function CustomerDetailRoute() {
-  const { customerId } = Route.useParams()
-  const navigate = Route.useNavigate()
+export function CustomerDetailPage({
+  customerId,
+  customer,
+  summary,
+  editOpen,
+  updatePending,
+  onEditOpenChange,
+  onUpdateCustomer,
+  onTabChange,
+}: {
+  customerId: string
+  customer: CustomerDetail | undefined
+  summary: CustomerSummary | undefined
+  editOpen: boolean
+  updatePending: boolean
+  onEditOpenChange: (open: boolean) => void
+  onUpdateCustomer: (values: CustomerUpdateValues) => Promise<unknown>
+  onTabChange: (activeTab: string, value: string | null) => void
+}) {
   const location = useLocation()
-
-  const { data: customer } = useQuery(trpc.customers.get.queryOptions({ id: customerId }))
-  const { data: summary } = useQuery(trpc.customers.summary.queryOptions({ id: customerId }))
-  const [editOpen, setEditOpen] = useState(false)
 
   const activeTab = location.pathname.endsWith("/notes")
     ? "notes"
@@ -38,18 +56,7 @@ export function CustomerDetailRoute() {
   }
 
   const handleTabChange = (value: string | null) => {
-    if (!value || value === activeTab) return
-    if (value === "appointments") {
-      navigate({ to: "/customers/$customerId/appointments", params: { customerId } })
-      return
-    }
-    if (value === "notes") {
-      navigate({ to: "/customers/$customerId/notes", params: { customerId } })
-      return
-    }
-    if (value === "hair-sales") {
-      navigate({ to: "/customers/$customerId/hair-sales", params: { customerId } })
-    }
+    onTabChange(activeTab, value)
   }
 
   return (
@@ -68,7 +75,7 @@ export function CustomerDetailRoute() {
           ) : undefined
         }
         actions={
-          <Button variant="default" leftSection={<IconPencil size={14} />} onClick={() => setEditOpen(true)}>
+          <Button variant="default" leftSection={<IconPencil size={14} />} onClick={() => onEditOpenChange(true)}>
             Edit
           </Button>
         }
@@ -115,7 +122,13 @@ export function CustomerDetailRoute() {
 
         <Outlet />
 
-        <EditCustomerDialog customer={customer} open={editOpen} onOpenChange={setEditOpen} />
+        <EditCustomerDialog
+          customer={customer}
+          open={editOpen}
+          onOpenChange={onEditOpenChange}
+          loading={updatePending}
+          onUpdate={onUpdateCustomer}
+        />
       </Stack>
     </Container>
   )
@@ -136,13 +149,15 @@ function EditCustomerDialog({
   customer,
   open,
   onOpenChange,
+  loading,
+  onUpdate,
 }: {
   customer: { id: string; name: string; phoneNumber: string | null }
   open: boolean
   onOpenChange: (open: boolean) => void
+  loading: boolean
+  onUpdate: (values: CustomerUpdateValues) => Promise<unknown>
 }) {
-  const mutation = useUpdateCustomerAction({ customerId: customer.id, onUpdated: () => onOpenChange(false) })
-
   const form = useForm({
     initialValues: {
       name: customer.name,
@@ -151,7 +166,7 @@ function EditCustomerDialog({
   })
 
   const handleSubmit = async (values: { name: string; phoneNumber: string }) => {
-    await mutation.mutateAsync({
+    await onUpdate({
       id: customer.id,
       name: values.name,
       phoneNumber: values.phoneNumber || null,
@@ -164,7 +179,7 @@ function EditCustomerDialog({
         <Stack>
           <TextInput label="Name" {...form.getInputProps("name")} />
           <TextInput label="Phone Number" placeholder="+1234567890" {...form.getInputProps("phoneNumber")} />
-          <Button type="submit" loading={mutation.isPending}>
+          <Button type="submit" loading={loading}>
             Save Changes
           </Button>
         </Stack>
