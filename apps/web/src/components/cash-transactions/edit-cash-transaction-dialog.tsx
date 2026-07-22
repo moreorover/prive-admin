@@ -21,7 +21,7 @@ type EditCashTransactionDialogProps = {
   onUpdate: (values: EditCashTransactionSubmit) => void
 }
 
-export type EditCashTransactionSubmit = CashTransactionFormSubmit & {
+type EditCashTransactionSubmit = CashTransactionFormSubmit & {
   id: string
 }
 
