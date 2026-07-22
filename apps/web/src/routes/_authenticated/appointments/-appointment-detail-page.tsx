@@ -36,6 +36,8 @@ import { CURRENCIES, type Currency, formatMinor } from "@/lib/currency"
 import { formatPageRange, type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
+import { Route } from "./$appointmentId"
+
 const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
   Currency,
   number
@@ -43,6 +45,11 @@ const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => 
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 export const APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE = 25
 export const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
+
+export function AppointmentDetailRoute() {
+  const { appointmentId } = Route.useParams()
+  return <AppointmentDetailPage key={appointmentId} appointmentId={appointmentId} />
+}
 
 export function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
   const queryClient = useQueryClient()

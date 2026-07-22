@@ -5,7 +5,7 @@ import { trpc } from "@/utils/trpc"
 import {
   APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
   AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-  AppointmentDetailPage,
+  AppointmentDetailRoute,
 } from "./-appointment-detail-page"
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
@@ -37,8 +37,3 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
     ])
   },
 })
-
-function AppointmentDetailRoute() {
-  const { appointmentId } = Route.useParams()
-  return <AppointmentDetailPage key={appointmentId} appointmentId={appointmentId} />
-}
