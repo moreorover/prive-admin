@@ -1,15 +1,15 @@
 import { Button, Container, Group, Modal, Pagination, Stack, Table, Text, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
+import { ClientDate } from "@prive-admin-tanstack/ui/components/client-date"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 import { z } from "zod"
 
-import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
-import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 10

@@ -1,10 +1,10 @@
 import { Group, NumberInput, Stack, Text, Title } from "@mantine/core"
+import { BankAccountReportBlock } from "@prive-admin-tanstack/ui/components/reports-cards"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
-import { BankAccountReportBlock } from "@/components/reports-cards"
 import { trpc } from "@/utils/trpc"
 
 const searchSchema = z.object({

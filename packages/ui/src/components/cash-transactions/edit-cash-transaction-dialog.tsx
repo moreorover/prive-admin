@@ -1,14 +1,13 @@
 import { Modal } from "@mantine/core"
-import dayjs from "dayjs"
-
 import {
   CashTransactionForm,
   type CashTransactionFormCustomer,
   type CashTransactionFormSubmit,
-} from "@/components/cash-transactions/cash-transaction-form"
-import { type CashTransactionRow } from "@/components/cash-transactions/cash-transactions-table"
-import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
-import { type SelectOption } from "@/lib/resource-pagination"
+} from "@prive-admin-tanstack/ui/components/cash-transactions/cash-transaction-form"
+import { type CashTransactionRow } from "@prive-admin-tanstack/ui/components/cash-transactions/cash-transactions-table"
+import { coerceCashTransactionCurrency } from "@prive-admin-tanstack/ui/components/cash-transactions/currency"
+import { type SelectOption } from "@prive-admin-tanstack/ui/lib/resource-pagination"
+import dayjs from "dayjs"
 
 type EditCashTransactionDialogProps = {
   open: boolean

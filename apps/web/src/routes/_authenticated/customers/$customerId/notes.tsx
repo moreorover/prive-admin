@@ -1,6 +1,8 @@
 import { ActionIcon, Button, Card, Group, Modal, Pagination, Stack, Text, Textarea, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
+import { ClientDate } from "@prive-admin-tanstack/ui/components/client-date"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
 import { IconPlus, IconSearch, IconTrash } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
@@ -8,8 +10,6 @@ import { useState } from "react"
 import { z } from "zod"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
-import { ClientDate } from "@/components/client-date"
-import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25

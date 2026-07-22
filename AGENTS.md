@@ -33,6 +33,8 @@ Reusable components should not initiate route data fetching. Start read queries 
 
 Reusable components should not mutate server data. Start mutations in route/page owners and pass explicit event handlers such as `onCreate`, `onUpdate`, `onDelete`, or `onSubmit` into child components. Pass loading and error-display state as props when the reusable component needs to render pending or failure UI. Mutation side effects such as cache invalidation, navigation, notifications, route refreshes, and dialog close/reset behavior belong in the route/page owner.
 
+Reusable shared UI that does not need app-owned data dependencies should live in `packages/ui`. Keep `packages/ui` free of database, tRPC, TanStack Query, TanStack Router, and app alias imports. If a UI component needs routing behavior, accept render props or event handlers from the route/page owner instead of importing router primitives directly.
+
 ## PR Titles
 
 Use a conventional-commits PR title when opening or editing PRs. Allowed types are `feat`, `fix`, `chore`, `ci`, `docs`, `refactor`, `perf`, `test`, `build`, `style`, and `revert`. Scope is optional, and the subject must start with a letter.

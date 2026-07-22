@@ -1,14 +1,13 @@
 import { Button, Container, PasswordInput, Stack, TextInput, Title } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
+import Loader from "@prive-admin-tanstack/ui/components/loader"
 import { useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useState } from "react"
 import z from "zod"
 
 import { authClient } from "@/lib/auth-client"
-
-import Loader from "./loader"
 
 const schema = z.object({
   email: z.email("Invalid email address"),

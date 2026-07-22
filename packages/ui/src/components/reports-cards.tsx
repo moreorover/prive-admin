@@ -1,6 +1,5 @@
 import { Box, Group, Paper, Stack, Table, Text } from "@mantine/core"
-
-import { type Currency, formatMinor } from "@/lib/currency"
+import { type Currency, formatMinor } from "@prive-admin-tanstack/ui/lib/currency"
 
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 

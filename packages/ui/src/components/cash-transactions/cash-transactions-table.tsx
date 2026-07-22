@@ -1,17 +1,15 @@
 import type { ReactElement, ReactNode } from "react"
 
 import { ActionIcon, Group, Menu, Pagination, Table, Text } from "@mantine/core"
-import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
-import { Link } from "@tanstack/react-router"
-import dayjs from "dayjs"
-import { createContext, useContext } from "react"
-
 import {
   type CompoundTableColumnComponent,
   getCompoundTableColumns,
   getCompoundTablePagination,
-} from "@/components/compound-table"
-import { formatMinor } from "@/lib/currency"
+} from "@prive-admin-tanstack/ui/components/compound-table"
+import { formatMinor } from "@prive-admin-tanstack/ui/lib/currency"
+import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
+import dayjs from "dayjs"
+import { createContext, useContext } from "react"
 
 import { coerceCashTransactionCurrency } from "./currency"
 
@@ -38,6 +36,10 @@ type CashTransactionActionsProps = {
   onDelete: (item: CashTransactionRow) => void
 }
 
+type CashTransactionCustomerProps = {
+  renderCustomer?: (customer: { id: string; name: string }) => ReactNode
+}
+
 type CashTransactionPaginationProps = {
   page: number
   pageSize: number
@@ -57,7 +59,7 @@ type CashTransactionPaginationComponent = ((props: CashTransactionPaginationProp
 
 type CashTransactionsTableComponent = ((props: CashTransactionsTableRootProps) => ReactElement) & {
   Date: CashTransactionColumnComponent
-  Customer: CashTransactionColumnComponent
+  Customer: CashTransactionColumnComponent<CashTransactionCustomerProps>
   Description: CashTransactionColumnComponent
   Amount: CashTransactionColumnComponent
   CreatedBy: CashTransactionColumnComponent
@@ -183,19 +185,13 @@ const Date = createColumn("date", "Date", () => {
   return <Table.Td>{dayjs(row.createdAt).format("YYYY-MM-DD")}</Table.Td>
 })
 
-const Customer = createColumn("customer", "Customer", () => {
+const Customer = (() => null) as unknown as CashTransactionColumnComponent<CashTransactionCustomerProps>
+Customer.columnKey = "customer"
+Customer.Header = () => <Table.Th>Customer</Table.Th>
+Customer.Cell = ({ renderCustomer }) => {
   const row = useCashTransactionRow()
-  return (
-    <Table.Td>
-      <Text
-        renderRoot={(props) => <Link to="/customers/$customerId" params={{ customerId: row.customer.id }} {...props} />}
-        c="blue"
-      >
-        {row.customer.name}
-      </Text>
-    </Table.Td>
-  )
-})
+  return <Table.Td>{renderCustomer ? renderCustomer(row.customer) : row.customer.name}</Table.Td>
+}
 
 const Description = createColumn("description", "Description", () => {
   const row = useCashTransactionRow()

@@ -1,13 +1,13 @@
 import { Button, Container, Group, Stack, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useEffect } from "react"
 
 import { PageHeader } from "@/components/page-header"
-import { Section } from "@/components/section"
 import { salonSchema } from "@/lib/schemas"
 import { trpc } from "@/utils/trpc"
 

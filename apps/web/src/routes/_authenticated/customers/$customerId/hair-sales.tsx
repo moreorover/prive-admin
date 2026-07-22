@@ -1,17 +1,20 @@
 import { Button, Stack, Text, TextInput } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
+import { CreateHairAssignedDialog } from "@prive-admin-tanstack/ui/components/hair-assigned/create-hair-assigned-dialog"
+import { DeleteHairAssignedDialog } from "@prive-admin-tanstack/ui/components/hair-assigned/delete-hair-assigned-dialog"
+import { EditHairAssignedDialog } from "@prive-admin-tanstack/ui/components/hair-assigned/edit-hair-assigned-dialog"
+import {
+  HairAssignedTable,
+  type HairAssignedRow,
+} from "@prive-admin-tanstack/ui/components/hair-assigned/hair-assigned-table"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { createFileRoute, redirect } from "@tanstack/react-router"
+import { Link, createFileRoute, redirect } from "@tanstack/react-router"
 import { useState } from "react"
 import { z } from "zod"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
-import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
-import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
-import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
-import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
-import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
@@ -161,9 +164,31 @@ function HairSalesRoute() {
         <Stack gap="md">
           {hasItemsOnCurrentPage ? (
             <HairAssignedTable items={hairAssigned}>
-              <HairAssignedTable.Client />
+              <HairAssignedTable.Client
+                renderClient={(client) => (
+                  <Text
+                    renderRoot={(props) => (
+                      <Link to="/customers/$customerId" params={{ customerId: client.id }} {...props} />
+                    )}
+                    c="blue"
+                  >
+                    {client.name}
+                  </Text>
+                )}
+              />
               <HairAssignedTable.Source />
-              <HairAssignedTable.HairOrder />
+              <HairAssignedTable.HairOrder
+                renderHairOrder={(hairOrder) => (
+                  <Text
+                    renderRoot={(props) => (
+                      <Link to="/hair-orders/$hairOrderId" params={{ hairOrderId: hairOrder.id }} {...props} />
+                    )}
+                    c="blue"
+                  >
+                    #{hairOrder.uid}
+                  </Text>
+                )}
+              />
               <HairAssignedTable.Weight />
               <HairAssignedTable.SoldFor />
               <HairAssignedTable.Profit />

@@ -1,8 +1,7 @@
 import { Button, Group, Modal, Stack, Text } from "@mantine/core"
-
-import { type CashTransactionRow } from "@/components/cash-transactions/cash-transactions-table"
-import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
-import { formatMinor } from "@/lib/currency"
+import { type CashTransactionRow } from "@prive-admin-tanstack/ui/components/cash-transactions/cash-transactions-table"
+import { coerceCashTransactionCurrency } from "@prive-admin-tanstack/ui/components/cash-transactions/currency"
+import { formatMinor } from "@prive-admin-tanstack/ui/lib/currency"
 
 type DeleteCashTransactionDialogProps = {
   open: boolean

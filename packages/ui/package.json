@@ -7,6 +7,8 @@
     "./provider": "./src/provider.tsx",
     "./theme": "./src/theme.ts",
     "./color-scheme": "./src/color-scheme.tsx",
+    "./components/*": "./src/components/*",
+    "./lib/*": "./src/lib/*",
     "./postcss.config": "./postcss.config.cjs"
   },
   "scripts": {
@@ -14,11 +16,16 @@
   },
   "dependencies": {
     "@mantine/core": "^9.4.1",
+    "@mantine/dates": "^9.4.1",
+    "@mantine/form": "^9.4.1",
     "@mantine/hooks": "^9.4.1",
     "@mantine/modals": "^9.4.1",
     "@mantine/notifications": "^9.4.1",
+    "@tabler/icons-react": "^3.44.0",
+    "dayjs": "^1.11.21",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@prive-admin-tanstack/config": "workspace:*",

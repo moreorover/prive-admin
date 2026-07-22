@@ -16,24 +16,30 @@ import {
   Title,
 } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
+import { ClientDate } from "@prive-admin-tanstack/ui/components/client-date"
+import { CreateHairAssignedDialog } from "@prive-admin-tanstack/ui/components/hair-assigned/create-hair-assigned-dialog"
+import { DeleteHairAssignedDialog } from "@prive-admin-tanstack/ui/components/hair-assigned/delete-hair-assigned-dialog"
+import { EditHairAssignedDialog } from "@prive-admin-tanstack/ui/components/hair-assigned/edit-hair-assigned-dialog"
+import {
+  HairAssignedTable,
+  type HairAssignedRow,
+} from "@prive-admin-tanstack/ui/components/hair-assigned/hair-assigned-table"
+import { CreateTransactionDialog } from "@prive-admin-tanstack/ui/components/transactions/create-transaction-dialog"
+import { DeleteTransactionDialog } from "@prive-admin-tanstack/ui/components/transactions/delete-transaction-dialog"
+import { EditTransactionDialog } from "@prive-admin-tanstack/ui/components/transactions/edit-transaction-dialog"
+import {
+  TransactionsTable,
+  type TransactionRow,
+} from "@prive-admin-tanstack/ui/components/transactions/transactions-table"
+import { CURRENCIES, type Currency, formatMinor } from "@prive-admin-tanstack/ui/lib/currency"
+import { formatPageRange, type SelectOption, withPinnedOption } from "@prive-admin-tanstack/ui/lib/resource-pagination"
 import { IconCash, IconClock, IconDots, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
-import { ClientDate } from "@/components/client-date"
-import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
-import { DeleteHairAssignedDialog } from "@/components/hair-assigned/delete-hair-assigned-dialog"
-import { EditHairAssignedDialog } from "@/components/hair-assigned/edit-hair-assigned-dialog"
-import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
 import { PageHeader } from "@/components/page-header"
-import { CreateTransactionDialog } from "@/components/transactions/create-transaction-dialog"
-import { DeleteTransactionDialog } from "@/components/transactions/delete-transaction-dialog"
-import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
-import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
-import { CURRENCIES, type Currency, formatMinor } from "@/lib/currency"
-import { formatPageRange, type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
 const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
@@ -432,7 +438,18 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
             }))
             return (
               <TransactionsTable items={txRows}>
-                <TransactionsTable.Customer />
+                <TransactionsTable.Customer
+                  renderCustomer={(customer) => (
+                    <Text
+                      renderRoot={(props) => (
+                        <Link to="/customers/$customerId" params={{ customerId: customer.id }} {...props} />
+                      )}
+                      c="blue"
+                    >
+                      {customer.name}
+                    </Text>
+                  )}
+                />
                 <TransactionsTable.Name />
                 <TransactionsTable.Amount />
                 <TransactionsTable.Actions onEdit={setEditTx} onDelete={setDeleteTx} />
@@ -469,8 +486,30 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
             </Button>
           </Group>
           <HairAssignedTable items={hairAssigned}>
-            <HairAssignedTable.Client />
-            <HairAssignedTable.HairOrder />
+            <HairAssignedTable.Client
+              renderClient={(client) => (
+                <Text
+                  renderRoot={(props) => (
+                    <Link to="/customers/$customerId" params={{ customerId: client.id }} {...props} />
+                  )}
+                  c="blue"
+                >
+                  {client.name}
+                </Text>
+              )}
+            />
+            <HairAssignedTable.HairOrder
+              renderHairOrder={(hairOrder) => (
+                <Text
+                  renderRoot={(props) => (
+                    <Link to="/hair-orders/$hairOrderId" params={{ hairOrderId: hairOrder.id }} {...props} />
+                  )}
+                  c="blue"
+                >
+                  #{hairOrder.uid}
+                </Text>
+              )}
+            />
             <HairAssignedTable.Weight />
             <HairAssignedTable.SoldFor />
             <HairAssignedTable.Profit />

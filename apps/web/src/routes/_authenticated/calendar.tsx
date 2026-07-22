@@ -1,15 +1,15 @@
 import { Alert, Container, Stack, Text } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { Schedule, type ScheduleEventData, type ScheduleViewLevel } from "@mantine/schedule"
+import { CreateAppointmentDialog } from "@prive-admin-tanstack/ui/components/appointments/create-appointment-dialog"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
 import { useCallback, useMemo, useState } from "react"
 
-import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
-import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
 const CALENDAR_APPOINTMENTS_PAGE_SIZE = 100

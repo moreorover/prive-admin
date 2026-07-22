@@ -1,9 +1,9 @@
 import { Anchor, Button, Table } from "@mantine/core"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
-import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/bank-accounts/")({

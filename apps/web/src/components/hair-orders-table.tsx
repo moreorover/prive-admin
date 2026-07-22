@@ -1,7 +1,6 @@
 import { Badge, Skeleton, Table, Text } from "@mantine/core"
+import { ClientDate } from "@prive-admin-tanstack/ui/components/client-date"
 import { Link } from "@tanstack/react-router"
-
-import { ClientDate } from "@/components/client-date"
 
 type HairOrderRow = {
   id: string

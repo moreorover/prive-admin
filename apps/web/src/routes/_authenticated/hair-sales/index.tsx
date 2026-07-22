@@ -12,14 +12,14 @@ import {
   TextInput,
 } from "@mantine/core"
 import { MonthPickerInput } from "@mantine/dates"
+import { ClientDate } from "@prive-admin-tanstack/ui/components/client-date"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
 import { IconEye, IconSearch } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute, redirect } from "@tanstack/react-router"
 import { z } from "zod"
 
-import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
-import { Section } from "@/components/section"
 import { dateFromMonthKey, monthKeyFromDate } from "@/lib/dashboard-monthly-stats"
 import { trpc } from "@/utils/trpc"
 

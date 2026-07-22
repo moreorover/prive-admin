@@ -1,7 +1,6 @@
 import { Button, Group, NativeSelect, NumberInput, Stack, Textarea, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
-
-import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
+import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@prive-admin-tanstack/ui/lib/currency"
 
 export type TransactionFormValues = {
   name: string

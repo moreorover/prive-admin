@@ -1,6 +1,5 @@
+import { currencySchema } from "@prive-admin-tanstack/ui/lib/currency"
 import { z } from "zod"
-
-import { currencySchema } from "./currency"
 
 export const legalEntityUpdateSchema = z.object({
   id: z.string().min(1),

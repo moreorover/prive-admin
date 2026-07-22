@@ -1,11 +1,10 @@
 import { Modal } from "@mantine/core"
-import dayjs from "dayjs"
-
 import {
   CashTransactionForm,
   type CashTransactionFormCustomer,
   type CashTransactionFormSubmit,
-} from "@/components/cash-transactions/cash-transaction-form"
+} from "@prive-admin-tanstack/ui/components/cash-transactions/cash-transaction-form"
+import dayjs from "dayjs"
 
 type CreateCashTransactionDialogProps = {
   open: boolean

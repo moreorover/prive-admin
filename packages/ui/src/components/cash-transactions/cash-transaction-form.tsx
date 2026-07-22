@@ -1,10 +1,9 @@
 import { Button, Group, NativeSelect, NumberInput, Select, Stack, Textarea, TextInput } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
+import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@prive-admin-tanstack/ui/lib/currency"
+import { type SelectOption, withPinnedOption } from "@prive-admin-tanstack/ui/lib/resource-pagination"
 import { useState } from "react"
-
-import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
-import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 
 const MIN_MINOR_AMOUNT = -2147483648
 const MAX_MINOR_AMOUNT = 2147483647

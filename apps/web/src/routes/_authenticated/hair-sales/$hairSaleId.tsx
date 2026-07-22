@@ -1,12 +1,12 @@
 import { Anchor, Badge, Card, Container, Group, SimpleGrid, Stack, Text, Title } from "@mantine/core"
+import { ClientDate } from "@prive-admin-tanstack/ui/components/client-date"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
 import { IconCalendar, IconScissors, IconUser } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
-import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
-import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/hair-sales/$hairSaleId")({

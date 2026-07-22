@@ -1,4 +1,4 @@
-import { useLocale } from "@/lib/locale-context"
+import { useLocale } from "@prive-admin-tanstack/ui/lib/locale-context"
 
 export function ClientDate({ date, showTime }: { date: string | Date; showTime?: boolean }) {
   const { locale, timeZone } = useLocale()

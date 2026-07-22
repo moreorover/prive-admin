@@ -1,15 +1,15 @@
 import { Button, Group, Pagination, Stack, Table, Text, TextInput } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
+import { CreateAppointmentDialog } from "@prive-admin-tanstack/ui/components/appointments/create-appointment-dialog"
+import { ClientDate } from "@prive-admin-tanstack/ui/components/client-date"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute, redirect } from "@tanstack/react-router"
 import { useState } from "react"
 import { z } from "zod"
 
-import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
-import { ClientDate } from "@/components/client-date"
-import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25

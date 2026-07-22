@@ -1,7 +1,9 @@
 import { Modal } from "@mantine/core"
-
-import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
-import { CURRENCIES, type Currency } from "@/lib/currency"
+import {
+  TransactionForm,
+  type TransactionFormSubmit,
+} from "@prive-admin-tanstack/ui/components/transactions/transaction-form"
+import { CURRENCIES, type Currency } from "@prive-admin-tanstack/ui/lib/currency"
 
 type EditTransactionDialogProps = {
   open: boolean

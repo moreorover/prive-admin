@@ -1,15 +1,13 @@
 import type { ReactElement, ReactNode } from "react"
 
 import { ActionIcon, Badge, Group, Pagination, Table, Text } from "@mantine/core"
-import { IconPencil, IconTrash } from "@tabler/icons-react"
-import { Link } from "@tanstack/react-router"
-import { createContext, useContext } from "react"
-
 import {
   type CompoundTableColumnComponent,
   getCompoundTableColumns,
   getCompoundTablePagination,
-} from "@/components/compound-table"
+} from "@prive-admin-tanstack/ui/components/compound-table"
+import { IconPencil, IconTrash } from "@tabler/icons-react"
+import { createContext, useContext } from "react"
 
 import { getHairAssignedSource } from "./hair-assigned-source"
 
@@ -34,6 +32,14 @@ type HairAssignedActionsProps = {
   onDelete: (item: HairAssignedRow) => void
 }
 
+type HairAssignedClientProps = {
+  renderClient?: (client: { id: string; name: string }) => ReactNode
+}
+
+type HairAssignedHairOrderProps = {
+  renderHairOrder?: (hairOrder: { id: string; uid: number }) => ReactNode
+}
+
 type HairAssignedPaginationProps = {
   page: number
   pageSize: number
@@ -52,9 +58,9 @@ type HairAssignedPaginationComponent = ((props: HairAssignedPaginationProps) => 
 }
 
 type HairAssignedTableComponent = ((props: HairAssignedTableRootProps) => ReactElement) & {
-  Client: HairAssignedColumnComponent
+  Client: HairAssignedColumnComponent<HairAssignedClientProps>
   Source: HairAssignedColumnComponent
-  HairOrder: HairAssignedColumnComponent
+  HairOrder: HairAssignedColumnComponent<HairAssignedHairOrderProps>
   Weight: HairAssignedColumnComponent
   SoldFor: HairAssignedColumnComponent
   Profit: HairAssignedColumnComponent
@@ -174,25 +180,14 @@ const TablePagination = Object.assign(
   { isTablePagination: true as const },
 )
 
-const Client = createColumn("client", "Client", () => {
+const Client = (() => null) as unknown as HairAssignedColumnComponent<HairAssignedClientProps>
+Client.columnKey = "client"
+Client.Header = () => <Table.Th>Client</Table.Th>
+Client.Cell = ({ renderClient }) => {
   const row = useHairAssignedRow()
-  return (
-    <Table.Td>
-      {row.client ? (
-        <Text
-          renderRoot={(props) => (
-            <Link to="/customers/$customerId" params={{ customerId: row.client!.id }} {...props} />
-          )}
-          c="blue"
-        >
-          {row.client.name}
-        </Text>
-      ) : (
-        "—"
-      )}
-    </Table.Td>
-  )
-})
+  if (!row.client) return <Table.Td>—</Table.Td>
+  return <Table.Td>{renderClient ? renderClient(row.client) : row.client.name}</Table.Td>
+}
 
 const Source = createColumn("source", "Source", () => {
   const row = useHairAssignedRow()
@@ -206,25 +201,14 @@ const Source = createColumn("source", "Source", () => {
   )
 })
 
-const HairOrder = createColumn("hair-order", "Hair Order", () => {
+const HairOrder = (() => null) as unknown as HairAssignedColumnComponent<HairAssignedHairOrderProps>
+HairOrder.columnKey = "hair-order"
+HairOrder.Header = () => <Table.Th>Hair Order</Table.Th>
+HairOrder.Cell = ({ renderHairOrder }) => {
   const row = useHairAssignedRow()
-  return (
-    <Table.Td>
-      {row.hairOrder ? (
-        <Text
-          renderRoot={(props) => (
-            <Link to="/hair-orders/$hairOrderId" params={{ hairOrderId: row.hairOrder!.id }} {...props} />
-          )}
-          c="blue"
-        >
-          #{row.hairOrder.uid}
-        </Text>
-      ) : (
-        "—"
-      )}
-    </Table.Td>
-  )
-})
+  if (!row.hairOrder) return <Table.Td>—</Table.Td>
+  return <Table.Td>{renderHairOrder ? renderHairOrder(row.hairOrder) : `#${row.hairOrder.uid}`}</Table.Td>
+}
 
 const Weight = createColumn("weight", "Weight", () => {
   const row = useHairAssignedRow()

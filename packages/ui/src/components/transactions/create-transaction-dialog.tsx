@@ -1,8 +1,10 @@
+import type { Currency } from "@prive-admin-tanstack/ui/lib/currency"
+
 import { Modal } from "@mantine/core"
-
-import type { Currency } from "@/lib/currency"
-
-import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
+import {
+  TransactionForm,
+  type TransactionFormSubmit,
+} from "@prive-admin-tanstack/ui/components/transactions/transaction-form"
 
 type CreateTransactionDialogProps = {
   open: boolean

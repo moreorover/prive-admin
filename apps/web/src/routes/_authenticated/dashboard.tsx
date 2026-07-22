@@ -1,5 +1,7 @@
 import { ActionIcon, Badge, Button, Card, Container, Group, SimpleGrid, Stack, Text, Title } from "@mantine/core"
 import { MonthPickerInput } from "@mantine/dates"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
+import { formatMinor, type Currency } from "@prive-admin-tanstack/ui/lib/currency"
 import { IconChevronLeft, IconChevronRight, IconEye } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
@@ -7,8 +9,6 @@ import { z } from "zod"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
-import { Section } from "@/components/section"
-import { formatMinor, type Currency } from "@/lib/currency"
 import {
   calculateMonthlyMetric,
   dateFromMonthKey,

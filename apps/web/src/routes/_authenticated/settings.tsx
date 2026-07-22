@@ -1,11 +1,11 @@
 import { Container, Group, Stack, Text } from "@mantine/core"
+import { ClientDate } from "@prive-admin-tanstack/ui/components/client-date"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
+import { useLocale } from "@prive-admin-tanstack/ui/lib/locale-context"
 import { createFileRoute } from "@tanstack/react-router"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
-import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
-import { Section } from "@/components/section"
-import { useLocale } from "@/lib/locale-context"
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,

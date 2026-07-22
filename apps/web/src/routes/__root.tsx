@@ -1,9 +1,8 @@
+import { LocaleProvider } from "@prive-admin-tanstack/ui/lib/locale-context"
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router"
 import { lazy, useEffect } from "react"
 
 import type { queryClient, trpc } from "@/utils/trpc"
-
-import { LocaleProvider } from "@/lib/locale-context"
 
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"

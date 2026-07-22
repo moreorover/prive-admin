@@ -1,10 +1,9 @@
 import { Button, Group, Modal, Select, Stack, TextInput } from "@mantine/core"
 import { DateTimePicker } from "@mantine/dates"
 import { useForm } from "@mantine/form"
+import { type SelectOption, withPinnedOption } from "@prive-admin-tanstack/ui/lib/resource-pagination"
 import dayjs from "dayjs"
 import { useState } from "react"
-
-import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 
 type CreateAppointmentDialogProps = {
   open: boolean

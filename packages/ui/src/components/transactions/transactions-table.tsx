@@ -1,16 +1,14 @@
 import type { ReactElement, ReactNode } from "react"
 
 import { ActionIcon, Group, Menu, Pagination, Table, Text } from "@mantine/core"
-import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
-import { Link } from "@tanstack/react-router"
-import { createContext, useContext } from "react"
-
 import {
   type CompoundTableColumnComponent,
   getCompoundTableColumns,
   getCompoundTablePagination,
-} from "@/components/compound-table"
-import { type Currency, formatMinor } from "@/lib/currency"
+} from "@prive-admin-tanstack/ui/components/compound-table"
+import { type Currency, formatMinor } from "@prive-admin-tanstack/ui/lib/currency"
+import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
+import { createContext, useContext } from "react"
 
 export type TransactionRow = {
   id: string
@@ -33,6 +31,10 @@ type TransactionActionsProps = {
   onDelete: (item: TransactionRow) => void
 }
 
+type TransactionCustomerProps = {
+  renderCustomer?: (customer: { id: string; name: string }) => ReactNode
+}
+
 type TransactionPaginationProps = {
   page: number
   pageSize: number
@@ -51,7 +53,7 @@ type TransactionPaginationComponent = ((props: TransactionPaginationProps) => Re
 }
 
 type TransactionsTableComponent = ((props: TransactionsTableRootProps) => ReactElement) & {
-  Customer: TransactionColumnComponent
+  Customer: TransactionColumnComponent<TransactionCustomerProps>
   Name: TransactionColumnComponent
   Amount: TransactionColumnComponent
   Actions: TransactionColumnComponent<TransactionActionsProps>
@@ -171,25 +173,14 @@ const TablePagination = Object.assign(
   { isTablePagination: true as const },
 )
 
-const Customer = createColumn("customer", "Customer", () => {
+const Customer = (() => null) as unknown as TransactionColumnComponent<TransactionCustomerProps>
+Customer.columnKey = "customer"
+Customer.Header = () => <Table.Th>Customer</Table.Th>
+Customer.Cell = ({ renderCustomer }) => {
   const row = useTransactionRow()
-  return (
-    <Table.Td>
-      {row.customer ? (
-        <Text
-          renderRoot={(props) => (
-            <Link to="/customers/$customerId" params={{ customerId: row.customer!.id }} {...props} />
-          )}
-          c="blue"
-        >
-          {row.customer.name}
-        </Text>
-      ) : (
-        "—"
-      )}
-    </Table.Td>
-  )
-})
+  if (!row.customer) return <Table.Td>—</Table.Td>
+  return <Table.Td>{renderCustomer ? renderCustomer(row.customer) : row.customer.name}</Table.Td>
+}
 
 const Name = createColumn("name", "Name", () => {
   const row = useTransactionRow()

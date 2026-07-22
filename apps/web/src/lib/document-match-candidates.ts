@@ -1,4 +1,4 @@
-import { type Currency, formatMinor } from "./currency"
+import { type Currency, formatMinor } from "@prive-admin-tanstack/ui/lib/currency"
 
 export type DocumentMatchCandidate = {
   id: string

@@ -15,17 +15,17 @@ import {
 } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
+import Loader2 from "@prive-admin-tanstack/ui/components/loader"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
+import { CURRENCY_OPTIONS, type Currency } from "@prive-admin-tanstack/ui/lib/currency"
 import { IconAlertCircle, IconDeviceLaptop, IconDeviceMobile } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
-import Loader2 from "@/components/loader"
 import { PageHeader } from "@/components/page-header"
-import { Section } from "@/components/section"
 import { authClient } from "@/lib/auth-client"
-import { CURRENCY_OPTIONS, type Currency } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
 export const Route = createFileRoute("/_authenticated/profile")({

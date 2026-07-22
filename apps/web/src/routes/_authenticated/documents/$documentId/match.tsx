@@ -16,16 +16,19 @@ import {
 } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { notifications } from "@mantine/notifications"
+import {
+  AttachmentPreviewDialog,
+  type AttachmentPreview,
+} from "@prive-admin-tanstack/ui/components/attachment-preview-dialog"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
 import { IconArrowLeft } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute, redirect } from "@tanstack/react-router"
 import { useState } from "react"
 import { z } from "zod"
 
-import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
-import { Section } from "@/components/section"
 import {
   filterDocumentMatchCandidates,
   formatCandidateAmount,

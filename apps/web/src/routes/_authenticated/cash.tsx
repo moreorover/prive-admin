@@ -1,20 +1,34 @@
-import { Box, Button, Container, Group, LoadingOverlay, NativeSelect, Select, Table, TextInput } from "@mantine/core"
+import {
+  Box,
+  Button,
+  Container,
+  Group,
+  LoadingOverlay,
+  NativeSelect,
+  Select,
+  Table,
+  Text,
+  TextInput,
+} from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { notifications } from "@mantine/notifications"
+import {
+  CashTransactionsTable,
+  type CashTransactionRow,
+} from "@prive-admin-tanstack/ui/components/cash-transactions/cash-transactions-table"
+import { CreateCashTransactionDialog } from "@prive-admin-tanstack/ui/components/cash-transactions/create-cash-transaction-dialog"
+import { DeleteCashTransactionDialog } from "@prive-admin-tanstack/ui/components/cash-transactions/delete-cash-transaction-dialog"
+import { EditCashTransactionDialog } from "@prive-admin-tanstack/ui/components/cash-transactions/edit-cash-transaction-dialog"
+import { Section } from "@prive-admin-tanstack/ui/components/section"
+import { type Currency } from "@prive-admin-tanstack/ui/lib/currency"
+import { type SelectOption, withPinnedOption } from "@prive-admin-tanstack/ui/lib/resource-pagination"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { createFileRoute } from "@tanstack/react-router"
+import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
-import { CashTransactionsTable, type CashTransactionRow } from "@/components/cash-transactions/cash-transactions-table"
-import { CreateCashTransactionDialog } from "@/components/cash-transactions/create-cash-transaction-dialog"
-import { DeleteCashTransactionDialog } from "@/components/cash-transactions/delete-cash-transaction-dialog"
-import { EditCashTransactionDialog } from "@/components/cash-transactions/edit-cash-transaction-dialog"
 import { PageHeader } from "@/components/page-header"
-import { Section } from "@/components/section"
-import { type Currency } from "@/lib/currency"
-import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
 const PAGE_SIZE = 25
@@ -229,7 +243,18 @@ function CashPage() {
           <Table.ScrollContainer minWidth={760}>
             <CashTransactionsTable items={result?.items ?? []}>
               <CashTransactionsTable.Date />
-              <CashTransactionsTable.Customer />
+              <CashTransactionsTable.Customer
+                renderCustomer={(customer) => (
+                  <Text
+                    renderRoot={(props) => (
+                      <Link to="/customers/$customerId" params={{ customerId: customer.id }} {...props} />
+                    )}
+                    c="blue"
+                  >
+                    {customer.name}
+                  </Text>
+                )}
+              />
               <CashTransactionsTable.Description />
               <CashTransactionsTable.Amount />
               <CashTransactionsTable.CreatedBy />

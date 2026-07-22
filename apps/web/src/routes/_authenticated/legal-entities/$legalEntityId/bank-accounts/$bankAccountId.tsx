@@ -24,15 +24,18 @@ import { MonthPickerInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
 import { useDisclosure } from "@mantine/hooks"
 import { notifications } from "@mantine/notifications"
+import {
+  AttachmentPreviewDialog,
+  type AttachmentPreview,
+} from "@prive-admin-tanstack/ui/components/attachment-preview-dialog"
+import { CURRENCY_OPTIONS, type Currency, formatMinor } from "@prive-admin-tanstack/ui/lib/currency"
 import { IconDotsVertical, IconDownload, IconLinkOff, IconPaperclip, IconTrash } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useState } from "react"
 
-import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
-import { CURRENCY_OPTIONS, type Currency, formatMinor } from "@/lib/currency"
 import { bankAccountSchema } from "@/lib/schemas"
 import { trpc } from "@/utils/trpc"
 
