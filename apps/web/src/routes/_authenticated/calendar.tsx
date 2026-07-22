@@ -1,6 +1,7 @@
 import { Alert, Container, Stack, Text } from "@mantine/core"
+import { notifications } from "@mantine/notifications"
 import { Schedule, type ScheduleEventData, type ScheduleViewLevel } from "@mantine/schedule"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
 import { useCallback, useMemo, useState } from "react"
@@ -70,6 +71,7 @@ export const Route = createFileRoute("/_authenticated/calendar")({
 
 function CalendarPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [view, setView] = useState<ScheduleViewLevel>("month")
   const [date, setDate] = useState<string>(() => dayjs().format("YYYY-MM-DD"))
   const [createOpen, setCreateOpen] = useState(false)
@@ -77,6 +79,7 @@ function CalendarPage() {
   const [clientSearch, setClientSearch] = useState("")
   const [masterSearch, setMasterSearch] = useState("")
   const appointmentsQueryOptions = calendarAppointmentsQueryOptions(date, view)
+  const defaultAppointmentsListQueryOptions = trpc.appointments.list.queryOptions({ page: 1, pageSize: 100 })
   const { data: appointmentsData } = useQuery(appointmentsQueryOptions)
   const { data: clientCustomersData } = useQuery(appointmentCustomerOptionsQueryOptions(clientSearch))
   const { data: masterCustomersData } = useQuery(appointmentCustomerOptionsQueryOptions(masterSearch))
@@ -120,6 +123,19 @@ function CalendarPage() {
     },
     [navigate],
   )
+  const createAppointment = useMutation({
+    ...trpc.appointments.create.mutationOptions(),
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: defaultAppointmentsListQueryOptions.queryKey })
+      queryClient.invalidateQueries({ queryKey: appointmentsQueryOptions.queryKey })
+      notifications.show({ color: "green", message: "Appointment created" })
+      setCreateOpen(false)
+      if (created?.id) {
+        navigate({ to: "/appointments/$appointmentId", params: { appointmentId: created.id } })
+      }
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
 
   return (
     <Container size="xl">
@@ -165,8 +181,8 @@ function CalendarPage() {
           open={createOpen}
           onOpenChange={setCreateOpen}
           defaultStartsAt={defaultStartsAt}
-          invalidateKeys={[{ queryKey: appointmentsQueryOptions.queryKey }]}
-          navigateOnSuccess
+          loading={createAppointment.isPending}
+          onCreate={(values) => createAppointment.mutate(values)}
           clientOptions={clientOptions}
           masterOptions={masterOptions}
           salonOptions={salonOptions}

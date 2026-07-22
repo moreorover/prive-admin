@@ -22,4 +22,13 @@ describe("component data ownership", () => {
     expect(source, componentPath).not.toContain("useQuery(")
     expect(source, componentPath).not.toContain("fetch(")
   })
+
+  it.each(componentSourceFiles(componentsDir))("does not mutate server data inside %s", (path) => {
+    const source = readFileSync(path, "utf8")
+    const componentPath = relative(componentsDir, path)
+
+    expect(source, componentPath).not.toContain("useMutation(")
+    expect(source, componentPath).not.toContain("mutationOptions(")
+    expect(source, componentPath).not.toContain(".mutate(")
+  })
 })

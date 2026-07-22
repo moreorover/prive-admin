@@ -31,6 +31,8 @@ Do not create REST/Hono adapters solely to satisfy this rule. Keep using tRPC fo
 
 Reusable components should not initiate route data fetching. Start read queries in route/page owners, preferably through TanStack Router loaders with `queryClient.ensureQueryData` or `prefetchQuery`, and pass the data or view-ready options into child components. Component-level read queries are an exception for user-initiated, highly localized, polling, or subscription-style behavior that would be worse at the route boundary.
 
+Reusable components should not mutate server data. Start mutations in route/page owners and pass explicit event handlers such as `onCreate`, `onUpdate`, `onDelete`, or `onSubmit` into child components. Pass loading and error-display state as props when the reusable component needs to render pending or failure UI. Mutation side effects such as cache invalidation, navigation, notifications, route refreshes, and dialog close/reset behavior belong in the route/page owner.
+
 ## PR Titles
 
 Use a conventional-commits PR title when opening or editing PRs. Allowed types are `feat`, `fix`, `chore`, `ci`, `docs`, `refactor`, `perf`, `test`, `build`, `style`, and `revert`. Scope is optional, and the subject must start with a letter.

@@ -1,13 +1,11 @@
 import { Modal } from "@mantine/core"
-import { notifications } from "@mantine/notifications"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import dayjs from "dayjs"
 
 import {
   CashTransactionForm,
   type CashTransactionFormCustomer,
+  type CashTransactionFormSubmit,
 } from "@/components/cash-transactions/cash-transaction-form"
-import { trpc } from "@/utils/trpc"
 
 type CreateCashTransactionDialogProps = {
   open: boolean
@@ -15,6 +13,8 @@ type CreateCashTransactionDialogProps = {
   customers: CashTransactionFormCustomer[]
   customerSearch: string
   onCustomerSearchChange: (value: string) => void
+  loading?: boolean
+  onCreate: (values: CashTransactionFormSubmit) => void
 }
 
 export function CreateCashTransactionDialog({
@@ -23,19 +23,9 @@ export function CreateCashTransactionDialog({
   customers,
   customerSearch,
   onCustomerSearchChange,
+  loading,
+  onCreate,
 }: CreateCashTransactionDialogProps) {
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation({
-    ...trpc.cashTransactions.create.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.cashTransactions.list.queryKey() })
-      onOpenChange(false)
-      notifications.show({ color: "green", message: "Cash transaction created" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="New Cash Transaction">
       <CashTransactionForm
@@ -51,10 +41,8 @@ export function CreateCashTransactionDialog({
           currency: "EUR",
         }}
         submitLabel="Create"
-        loading={mutation.isPending}
-        onSubmit={(values) => {
-          mutation.mutate(values)
-        }}
+        loading={loading}
+        onSubmit={onCreate}
       />
     </Modal>
   )

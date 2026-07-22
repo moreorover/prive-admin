@@ -1,9 +1,6 @@
 import { Button, Group, Modal, Stack, Text } from "@mantine/core"
-import { notifications } from "@mantine/notifications"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { type Currency, formatMinor } from "@/lib/currency"
-import { trpc } from "@/utils/trpc"
 
 type DeleteTransactionDialogProps = {
   open: boolean
@@ -15,30 +12,17 @@ type DeleteTransactionDialogProps = {
     currency: Currency
     customer?: { name: string } | null
   }
-  invalidateKeys: { queryKey: readonly unknown[] }[]
-  onSuccess?: () => void
+  loading?: boolean
+  onDelete: (id: string) => void
 }
 
 export function DeleteTransactionDialog({
   open,
   onOpenChange,
   transaction,
-  invalidateKeys,
-  onSuccess,
+  loading,
+  onDelete,
 }: DeleteTransactionDialogProps) {
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation({
-    ...trpc.transactions.delete.mutationOptions(),
-    onSuccess: () => {
-      for (const key of invalidateKeys) queryClient.invalidateQueries(key)
-      onSuccess?.()
-      onOpenChange(false)
-      notifications.show({ color: "green", message: "Transaction deleted" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Delete Transaction">
       <Stack>
@@ -51,7 +35,7 @@ export function DeleteTransactionDialog({
           <Button variant="default" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button color="red" loading={mutation.isPending} onClick={() => mutation.mutate({ id: transaction.id })}>
+          <Button color="red" loading={loading} onClick={() => onDelete(transaction.id)}>
             Delete
           </Button>
         </Group>
