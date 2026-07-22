@@ -5,8 +5,8 @@ import {
   appointmentCustomerOptionsQueryOptions,
   appointmentSalonOptionsQueryOptions,
   calendarAppointmentsQueryOptions,
-  CalendarPage,
-} from "./-calendar-page"
+} from "./-calendar-data"
+import { CalendarPage } from "./-calendar-page"
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   component: CalendarPage,

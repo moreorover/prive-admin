@@ -31,8 +31,8 @@ import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
 import { Route } from "./$hairOrderId"
+import { AVAILABLE_HAIR_ORDERS_PAGE_SIZE } from "./-$hairOrderId-data"
 
-export const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
 const formatCents = (cents: number) => `€${(cents / 100).toFixed(2)}`
 
 export function HairOrderDetailPage() {

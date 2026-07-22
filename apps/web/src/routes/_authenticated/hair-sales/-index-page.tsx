@@ -15,49 +15,14 @@ import { MonthPickerInput } from "@mantine/dates"
 import { IconEye, IconSearch } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
-import { z } from "zod"
 
 import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { dateFromMonthKey, monthKeyFromDate } from "@/lib/dashboard-monthly-stats"
-import { trpc } from "@/utils/trpc"
 
+import { hairSalesQueryOptions, type HairSalesSource, PAGE_SIZE } from "./-index-data"
 import { Route } from "./index"
-
-export const PAGE_SIZE = 25
-const sourceSchema = z.enum(["all", "appointment", "individual"])
-const monthSearchSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)
-export const searchSchema = z.object({
-  page: z.coerce.number().int().min(1).optional(),
-  search: z.string().optional(),
-  source: sourceSchema.optional(),
-  month: monthSearchSchema.optional(),
-})
-
-function monthRange(month: string | undefined) {
-  if (!month) return {}
-  const [year, monthNumber] = month.split("-").map(Number)
-  const from = new Date(Date.UTC(year, monthNumber - 1, 1))
-  const to = new Date(Date.UTC(year, monthNumber, 1))
-  return { from, to }
-}
-
-export function hairSalesQueryOptions(input: {
-  page: number
-  search: string
-  source: z.infer<typeof sourceSchema>
-  month?: string
-}) {
-  const range = monthRange(input.month)
-  return trpc.hairAssigned.list.queryOptions({
-    page: input.page,
-    pageSize: PAGE_SIZE,
-    search: input.search.trim() || undefined,
-    source: input.source === "all" ? undefined : input.source,
-    ...range,
-  })
-}
 
 type HairSale = {
   id: string
@@ -89,9 +54,7 @@ export function HairSalesPage() {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const clampedPage = Math.min(page, totalPages)
 
-  const setSearch = (
-    next: Partial<{ page: number; search: string; source: z.infer<typeof sourceSchema>; month?: string }>,
-  ) =>
+  const setSearch = (next: Partial<{ page: number; search: string; source: HairSalesSource; month?: string }>) =>
     navigate({
       search: {
         page,
@@ -114,7 +77,7 @@ export function HairSalesPage() {
           <Group p="md" gap="sm" wrap="wrap">
             <SegmentedControl
               value={source}
-              onChange={(value) => setSearch({ page: 1, source: value as z.infer<typeof sourceSchema> })}
+              onChange={(value) => setSearch({ page: 1, source: value as HairSalesSource })}
               data={[
                 { value: "all", label: "All" },
                 { value: "appointment", label: "Appointment" },

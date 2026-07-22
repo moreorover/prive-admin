@@ -4,10 +4,10 @@ import {
   appointmentMasterOptionsQueryOptions,
   appointmentSalonOptionsQueryOptions,
   appointmentsQueryOptions,
-  CustomerAppointmentsRoute,
   PAGE_SIZE,
   searchSchema,
-} from "./-appointments-page"
+} from "./-appointments-data"
+import { CustomerAppointmentsRoute } from "./-appointments-page"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId/appointments")({
   validateSearch: searchSchema,

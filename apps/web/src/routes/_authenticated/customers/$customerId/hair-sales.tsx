@@ -2,13 +2,8 @@ import { createFileRoute, redirect } from "@tanstack/react-router"
 
 import { trpc } from "@/utils/trpc"
 
-import {
-  AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-  hairSalesQueryOptions,
-  HairSalesRoute,
-  PAGE_SIZE,
-  searchSchema,
-} from "./-hair-sales-page"
+import { AVAILABLE_HAIR_ORDERS_PAGE_SIZE, hairSalesQueryOptions, PAGE_SIZE, searchSchema } from "./-hair-sales-data"
+import { HairSalesRoute } from "./-hair-sales-page"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId/hair-sales")({
   component: HairSalesRoute,

@@ -20,7 +20,6 @@ import { IconArrowLeft } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { useState } from "react"
-import { z } from "zod"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
@@ -35,24 +34,8 @@ import {
 } from "@/lib/document-match-candidates"
 import { trpc } from "@/utils/trpc"
 
+import { documentQueryOptions, MATCH_CANDIDATES_PAGE_SIZE, matchCandidatesQueryOptions } from "./-match-data"
 import { Route } from "./match"
-
-export const MATCH_CANDIDATES_PAGE_SIZE = 10
-export const searchSchema = z.object({
-  page: z.coerce.number().int().min(1).optional(),
-})
-
-export function documentQueryOptions(documentId: string) {
-  return trpc.bankStatementAttachments.get.queryOptions({ id: documentId })
-}
-
-export function matchCandidatesQueryOptions(page: number) {
-  return trpc.bankStatementEntries.list.queryOptions({
-    status: "PENDING",
-    page,
-    pageSize: MATCH_CANDIDATES_PAGE_SIZE,
-  })
-}
 
 export function DocumentMatchPage() {
   const { documentId } = Route.useParams()

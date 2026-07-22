@@ -3,7 +3,6 @@ import { notifications } from "@mantine/notifications"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
-import { z } from "zod"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
@@ -13,23 +12,8 @@ import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assig
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
+import { AVAILABLE_HAIR_ORDERS_PAGE_SIZE, hairSalesQueryOptions, PAGE_SIZE } from "./-hair-sales-data"
 import { Route } from "./hair-sales"
-
-export const PAGE_SIZE = 25
-export const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
-export const searchSchema = z.object({
-  page: z.coerce.number().int().min(1).optional(),
-  search: z.string().optional(),
-})
-
-export function hairSalesQueryOptions(customerId: string, page: number, search: string) {
-  return trpc.customers.hairAssigned.list.queryOptions({
-    customerId,
-    page,
-    pageSize: PAGE_SIZE,
-    search: search.trim() || undefined,
-  })
-}
 
 export function HairSalesRoute() {
   const { customerId } = Route.useParams()

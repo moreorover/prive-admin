@@ -4,7 +4,6 @@ import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { useState } from "react"
-import { z } from "zod"
 
 import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
@@ -12,35 +11,13 @@ import { ClientDate } from "@/components/client-date"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
+import {
+  appointmentMasterOptionsQueryOptions,
+  appointmentSalonOptionsQueryOptions,
+  appointmentsQueryOptions,
+  PAGE_SIZE,
+} from "./-appointments-data"
 import { Route } from "./appointments"
-
-export const PAGE_SIZE = 25
-const APPOINTMENT_OPTION_PAGE_SIZE = 100
-export const searchSchema = z.object({
-  page: z.coerce.number().int().min(1).optional(),
-  search: z.string().optional(),
-})
-
-export function appointmentsQueryOptions(customerId: string, page: number, search: string) {
-  return trpc.customers.appointments.list.queryOptions({
-    customerId,
-    page,
-    pageSize: PAGE_SIZE,
-    search: search.trim() || undefined,
-  })
-}
-
-export function appointmentMasterOptionsQueryOptions(search: string) {
-  return trpc.customers.list.queryOptions({
-    page: 1,
-    pageSize: APPOINTMENT_OPTION_PAGE_SIZE,
-    search: search.trim() || undefined,
-  })
-}
-
-export function appointmentSalonOptionsQueryOptions() {
-  return trpc.salons.list.queryOptions({ page: 1, pageSize: APPOINTMENT_OPTION_PAGE_SIZE })
-}
 
 export function CustomerAppointmentsRoute() {
   const { customerId } = Route.useParams()

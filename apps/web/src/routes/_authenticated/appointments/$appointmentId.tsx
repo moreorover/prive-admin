@@ -2,11 +2,8 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { trpc } from "@/utils/trpc"
 
-import {
-  APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-  AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-  AppointmentDetailRoute,
-} from "./-appointment-detail-page"
+import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, AVAILABLE_HAIR_ORDERS_PAGE_SIZE } from "./-appointment-detail-data"
+import { AppointmentDetailRoute } from "./-appointment-detail-page"
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailRoute,

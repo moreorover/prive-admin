@@ -37,14 +37,13 @@ import { formatPageRange, type SelectOption, withPinnedOption } from "@/lib/reso
 import { trpc } from "@/utils/trpc"
 
 import { Route } from "./$appointmentId"
+import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, AVAILABLE_HAIR_ORDERS_PAGE_SIZE } from "./-appointment-detail-data"
 
 const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
   Currency,
   number
 >
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
-export const APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE = 25
-export const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
 
 export function AppointmentDetailRoute() {
   const { appointmentId } = Route.useParams()

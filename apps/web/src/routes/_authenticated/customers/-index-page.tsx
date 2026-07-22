@@ -5,28 +5,16 @@ import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { useState } from "react"
-import { z } from "zod"
 
 import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
+import { customersListQueryOptions } from "./-index-data"
 import { Route } from "./index"
 
 const PAGE_SIZE = 10
-export const searchSchema = z.object({
-  page: z.number().int().min(1).optional(),
-  search: z.string().optional(),
-})
-
-export function customersListQueryOptions(page: number, search: string) {
-  return trpc.customers.list.queryOptions({
-    page,
-    pageSize: PAGE_SIZE,
-    search: search.trim() || undefined,
-  })
-}
 
 function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const queryClient = useQueryClient()

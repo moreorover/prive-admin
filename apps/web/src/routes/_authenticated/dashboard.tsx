@@ -1,9 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { z } from "zod"
 
 import { monthKeyFromDate, parseMonthKey, selectedYearInputs } from "@/lib/dashboard-monthly-stats"
 import { trpc } from "@/utils/trpc"
 
-import { DashboardPage, searchSchema } from "./-dashboard-page"
+import { DashboardPage } from "./-dashboard-page"
+
+const monthSearchSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)
+const searchSchema = z.object({
+  month: monthSearchSchema.optional(),
+})
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardPage,

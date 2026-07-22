@@ -3,7 +3,6 @@ import { MonthPickerInput } from "@mantine/dates"
 import { IconChevronLeft, IconChevronRight, IconEye } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
-import { z } from "zod"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
@@ -23,11 +22,6 @@ import {
 import { trpc } from "@/utils/trpc"
 
 import { Route } from "./dashboard"
-
-const monthSearchSchema = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)
-export const searchSchema = z.object({
-  month: monthSearchSchema.optional(),
-})
 
 type TransactionStatsByCurrency = {
   currency: string
