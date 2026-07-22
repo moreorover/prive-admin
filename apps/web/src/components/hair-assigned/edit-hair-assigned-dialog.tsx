@@ -19,7 +19,10 @@ export function EditHairAssignedDialog({
   invalidateKeys,
 }: EditHairAssignedDialogProps) {
   const queryClient = useQueryClient()
-  const availableOrdersQueryOptions = trpc.hairAssigned.availableOrders.queryOptions()
+  const availableOrdersQueryOptions = trpc.hairOrders.list.queryOptions({
+    availability: "availableForAssignment",
+    pageSize: 100,
+  })
   const hairAssignedListQueryKey = trpc.hairAssigned.list.queryKey()
   const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
 

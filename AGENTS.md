@@ -15,6 +15,18 @@ Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.de
 
 <!--VITE PLUS END-->
 
+## API Governance
+
+Backend capability must be modeled first as an application service in `packages/application/src/services`.
+
+tRPC routers are transport adapters, not UI-specific backend-for-frontend endpoints. New procedures should be named around domain resources and stable use cases, usually `list`, `get`, `create`, `update`, `delete`, or domain verbs such as `assign`, `unassign`, `importCsv`, and `recalculatePrices`.
+
+Collection reads should use a single `list` procedure with resource-oriented filters instead of separate procedures for each filtered subset. List procedures must return the standard paged response envelope and use the backend default `pageSize` of 10 when the caller does not provide one.
+
+Do not add procedures named after pages, components, drawers, tabs, or UI workflows unless the same use case is first modeled as an application service and the API naming is reviewed.
+
+Do not create REST/Hono adapters solely to satisfy this rule. Keep using tRPC for the internal web app unless a task explicitly asks for REST endpoints or HTTP-specific behavior such as uploads, downloads, redirects, streaming, caching semantics, or third-party integration.
+
 ## PR Titles
 
 Use a conventional-commits PR title when opening or editing PRs. Allowed types are `feat`, `fix`, `chore`, `ci`, `docs`, `refactor`, `perf`, `test`, `build`, `style`, and `revert`. Scope is optional, and the subject must start with a letter.

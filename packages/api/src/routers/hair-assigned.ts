@@ -1,5 +1,4 @@
 import {
-  availableHairOrders,
   createHairAssigned,
   deleteHairAssigned,
   getHairAssigned,
@@ -43,14 +42,6 @@ export const hairAssignedRouter = router({
   get: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {
     try {
       return await getHairAssigned(input.id)
-    } catch (error) {
-      throw toTrpcError(error)
-    }
-  }),
-
-  availableOrders: protectedProcedure.query(async () => {
-    try {
-      return await availableHairOrders()
     } catch (error) {
       throw toTrpcError(error)
     }

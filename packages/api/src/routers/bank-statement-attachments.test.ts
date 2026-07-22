@@ -7,9 +7,7 @@ const servicesMock = vi.hoisted(() => ({
   countBankStatementAttachments: vi.fn(),
   deleteBankStatementAttachmentFile: vi.fn(),
   getBankStatementAttachment: vi.fn(),
-  listAssignedBankStatementAttachments: vi.fn(),
   listBankStatementAttachments: vi.fn(),
-  listGlobalBankStatementAttachments: vi.fn(),
   unassignBankStatementAttachment: vi.fn(),
 }))
 
@@ -22,26 +20,27 @@ describe("bank statement attachments router", () => {
     vi.clearAllMocks()
   })
 
-  it("lists assigned documents in the standard page envelope", async () => {
+  it("lists documents filtered by legal entity in the standard page envelope", async () => {
     const caller = bankStatementAttachmentsRouter.createCaller(ctx)
     const rows = [{ attachment: { id: "attachment-1" }, entry: { id: "entry-1" }, bankAccount: { id: "account-1" } }]
-    servicesMock.listAssignedBankStatementAttachments.mockResolvedValue({ items: rows, totalCount: 42 })
+    servicesMock.listBankStatementAttachments.mockResolvedValue({ items: rows, totalCount: 42 })
 
-    const result = await caller.listAssigned({
+    const result = await caller.list({
       legalEntityId: "legal-entity-1",
       page: 3,
       pageSize: 10,
     })
 
     expect(result).toEqual({ items: rows, page: 3, pageSize: 10, totalCount: 42 })
-    expect(servicesMock.listAssignedBankStatementAttachments).toHaveBeenCalledWith({
+    expect(servicesMock.listBankStatementAttachments).toHaveBeenCalledWith({
+      assignmentStatus: "all",
       legalEntityId: "legal-entity-1",
       pageSize: 10,
       offset: 20,
     })
   })
 
-  it("lists global documents in the standard page envelope", async () => {
+  it("lists documents by assignment status in the standard page envelope", async () => {
     const caller = bankStatementAttachmentsRouter.createCaller(ctx)
     const rows = [
       {
@@ -52,19 +51,33 @@ describe("bank statement attachments router", () => {
         legalEntity: { id: "legal-entity-1", name: "Prive LT" },
       },
     ]
-    servicesMock.listGlobalBankStatementAttachments.mockResolvedValue({ items: rows, totalCount: 12 })
+    servicesMock.listBankStatementAttachments.mockResolvedValue({ items: rows, totalCount: 12 })
 
-    const result = await caller.listGlobal({
-      status: "assigned",
+    const result = await caller.list({
+      assignmentStatus: "assigned",
       page: 2,
       pageSize: 10,
     })
 
     expect(result).toEqual({ items: rows, page: 2, pageSize: 10, totalCount: 12 })
-    expect(servicesMock.listGlobalBankStatementAttachments).toHaveBeenCalledWith({
-      status: "assigned",
+    expect(servicesMock.listBankStatementAttachments).toHaveBeenCalledWith({
+      assignmentStatus: "assigned",
       pageSize: 10,
       offset: 10,
+    })
+  })
+
+  it("uses the backend default page size for list queries", async () => {
+    const caller = bankStatementAttachmentsRouter.createCaller(ctx)
+    servicesMock.listBankStatementAttachments.mockResolvedValue({ items: [], totalCount: 0 })
+
+    const result = await caller.list({})
+
+    expect(result).toEqual({ items: [], page: 1, pageSize: 10, totalCount: 0 })
+    expect(servicesMock.listBankStatementAttachments).toHaveBeenCalledWith({
+      assignmentStatus: "all",
+      pageSize: 10,
+      offset: 0,
     })
   })
 

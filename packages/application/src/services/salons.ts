@@ -7,8 +7,8 @@ import {
 
 import { notFound, unexpectedError } from "../errors"
 
-export async function listSalons() {
-  return fetchSalons()
+export async function listSalons(input: { pageSize: number; offset: number }) {
+  return fetchSalons(undefined, input)
 }
 
 export async function getSalon(id: string) {

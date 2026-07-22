@@ -13,12 +13,12 @@ export const Route = createFileRoute("/_authenticated/legal-entities/")({
 })
 
 function LegalEntitiesIndex() {
-  const legalEntitiesQuery = useQuery(trpc.legalEntities.list.queryOptions({}))
-  const legalEntities = legalEntitiesQuery.data ?? []
-  const { data: unassignedAttachments = [] } = useQuery(
-    trpc.bankStatementAttachments.list.queryOptions({ assigned: false }),
+  const legalEntitiesQuery = useQuery(trpc.legalEntities.list.queryOptions({ pageSize: 100 }))
+  const legalEntities = legalEntitiesQuery.data?.items ?? []
+  const { data: unassignedAttachments } = useQuery(
+    trpc.bankStatementAttachments.list.queryOptions({ assignmentStatus: "unassigned" }),
   )
-  const unassignedCount = unassignedAttachments.length
+  const unassignedCount = unassignedAttachments?.totalCount ?? 0
 
   return (
     <Container size="xl">

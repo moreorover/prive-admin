@@ -45,7 +45,8 @@ function documentQueryOptions(documentId: string) {
 }
 
 function matchCandidatesQueryOptions(page: number) {
-  return trpc.bankStatementEntries.listMatchCandidates.queryOptions({
+  return trpc.bankStatementEntries.list.queryOptions({
+    status: "PENDING",
     page,
     pageSize: MATCH_CANDIDATES_PAGE_SIZE,
   })
@@ -107,9 +108,7 @@ function DocumentMatchPage() {
   const invalidate = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.get.queryKey({ id: documentId }) }),
-      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.listGlobal.queryKey() }),
       queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.list.queryKey() }),
-      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.listAssigned.queryKey() }),
       queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.counts.queryKey() }),
     ])
   }

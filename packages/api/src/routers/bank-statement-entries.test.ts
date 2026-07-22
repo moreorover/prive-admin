@@ -8,7 +8,6 @@ const servicesMock = vi.hoisted(() => ({
   ignoreBankStatementEntry: vi.fn(),
   importBankStatementEntries: vi.fn(),
   listBankStatementEntries: vi.fn(),
-  listBankStatementEntryMatchCandidates: vi.fn(),
   parseBankCsv: vi.fn(),
   undoBankStatementEntry: vi.fn(),
 }))
@@ -22,7 +21,7 @@ describe("bank statement entries router", () => {
     vi.clearAllMocks()
   })
 
-  it("lists match candidates in the standard page envelope", async () => {
+  it("lists pending entries in the standard page envelope", async () => {
     const caller = bankStatementEntriesRouter.createCaller(ctx)
     const rows = [
       {
@@ -35,14 +34,15 @@ describe("bank statement entries router", () => {
         },
       },
     ]
-    servicesMock.listBankStatementEntryMatchCandidates.mockResolvedValue({ items: rows, totalCount: 12 })
+    servicesMock.listBankStatementEntries.mockResolvedValue({ items: rows, totalCount: 12 })
 
-    const result = await caller.listMatchCandidates({ page: 3, pageSize: 100 })
+    const result = await caller.list({ status: "PENDING", page: 3, pageSize: 100 })
 
     expect(result).toEqual({ items: rows, page: 3, pageSize: 100, totalCount: 12 })
-    expect(servicesMock.listBankStatementEntryMatchCandidates).toHaveBeenCalledWith({
+    expect(servicesMock.listBankStatementEntries).toHaveBeenCalledWith({
       pageSize: 100,
       offset: 200,
+      status: "PENDING",
     })
   })
 })

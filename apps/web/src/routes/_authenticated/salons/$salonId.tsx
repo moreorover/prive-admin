@@ -20,7 +20,7 @@ function SalonEdit() {
   const isNew = salonId === "new"
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const salonsQueryOptions = trpc.salons.list.queryOptions({})
+  const salonsQueryOptions = trpc.salons.list.queryOptions({ pageSize: 100 })
   const salonQueryOptions = trpc.salons.get.queryOptions({ id: salonId })
 
   const { data: salon } = useQuery({

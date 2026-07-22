@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm"
+import { asc, count, eq } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { salon } from "../schema/salon"
@@ -9,10 +9,15 @@ export type SalonUpsertInput = {
   address?: string | null
 }
 
-export async function listSalons(database: Db = db) {
-  return database.query.salon.findMany({
+export async function listSalons(database: Db = db, input: { pageSize: number; offset: number }) {
+  const items = await database.query.salon.findMany({
     orderBy: (s) => [asc(s.name)],
+    limit: input.pageSize,
+    offset: input.offset,
   })
+
+  const [countRow] = await database.select({ totalCount: count() }).from(salon)
+  return { items, totalCount: countRow?.totalCount ?? 0 }
 }
 
 export async function getSalon(database: Db = db, id: string) {

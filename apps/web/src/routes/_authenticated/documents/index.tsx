@@ -38,8 +38,8 @@ const searchSchema = z.object({
 type DocumentStatus = z.infer<typeof documentStatusSchema>
 
 function documentsQueryOptions(input: { status: DocumentStatus; page: number }) {
-  return trpc.bankStatementAttachments.listGlobal.queryOptions(
-    { status: input.status, page: input.page, pageSize: PAGE_SIZE },
+  return trpc.bankStatementAttachments.list.queryOptions(
+    { assignmentStatus: input.status, page: input.page, pageSize: PAGE_SIZE },
     { placeholderData: (previousData) => previousData },
   )
 }
@@ -80,9 +80,7 @@ function DocumentsPage() {
 
   const invalidate = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.listGlobal.queryKey() }),
       queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.list.queryKey() }),
-      queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.listAssigned.queryKey() }),
       queryClient.invalidateQueries({ queryKey: trpc.bankStatementAttachments.counts.queryKey() }),
     ])
   }

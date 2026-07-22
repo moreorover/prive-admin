@@ -69,7 +69,7 @@ function CreateAppointmentForm({
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const appointmentListQueryOptions = trpc.appointments.list.queryOptions(defaultAppointmentsListInput)
-  const salonsQueryOptions = trpc.salons.list.queryOptions({})
+  const salonsQueryOptions = trpc.salons.list.queryOptions({ pageSize: 100 })
   const [clientSearch, setClientSearch] = useState("")
   const [masterSearch, setMasterSearch] = useState("")
   const [selectedCustomerOptions, setSelectedCustomerOptions] = useState<Record<string, SelectOption>>({})
@@ -115,7 +115,8 @@ function CreateAppointmentForm({
     setSelectedCustomerOptions((current) => ({ ...current, [option.value]: option }))
   }
 
-  const { data: salons } = useQuery(salonsQueryOptions)
+  const { data: salonsData } = useQuery(salonsQueryOptions)
+  const salons = salonsData?.items ?? []
 
   const mutation = useMutation({
     ...trpc.appointments.create.mutationOptions(),
@@ -183,7 +184,7 @@ function CreateAppointmentForm({
         <Select
           label="Salon"
           required
-          data={(salons ?? []).map((s: SalonOption) => ({ value: s.id, label: s.name }))}
+          data={salons.map((s: SalonOption) => ({ value: s.id, label: s.name }))}
           {...form.getInputProps("salonId")}
         />
         <Group justify="flex-end" gap="xs">
