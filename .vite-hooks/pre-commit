@@ -1,1 +1,2 @@
 vp staged
+vp dlx react-doctor@latest --staged --blocking warning
