@@ -29,13 +29,6 @@ function hairSalesQueryOptions(customerId: string, page: number, search: string)
   })
 }
 
-function availableHairOrdersQueryOptions() {
-  return trpc.hairOrders.list.queryOptions({
-    availability: "availableForAssignment",
-    pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-  })
-}
-
 export const Route = createFileRoute("/_authenticated/customers/$customerId/hair-sales")({
   component: HairSalesRoute,
   validateSearch: searchSchema,
@@ -46,7 +39,12 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId/hair
   loader: async ({ context, deps, params }) => {
     const [data] = await Promise.all([
       context.queryClient.ensureQueryData(hairSalesQueryOptions(params.customerId, deps.page, deps.search)),
-      context.queryClient.prefetchQuery(availableHairOrdersQueryOptions()),
+      context.queryClient.prefetchQuery(
+        trpc.hairOrders.list.queryOptions({
+          availability: "availableForAssignment",
+          pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
+        }),
+      ),
     ])
     const totalPages = Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE))
     if (deps.page > totalPages) {
@@ -73,7 +71,10 @@ function HairSalesRoute() {
   const queryOptions = hairSalesQueryOptions(customerId, page, searchValue)
   const { data } = useQuery(queryOptions)
   const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
-    availableHairOrdersQueryOptions(),
+    trpc.hairOrders.list.queryOptions({
+      availability: "availableForAssignment",
+      pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
+    }),
   )
   const availableHairOrders = availableHairOrdersData?.items ?? []
   const hairAssigned = (data?.items ?? []) as HairAssignedRow[]
