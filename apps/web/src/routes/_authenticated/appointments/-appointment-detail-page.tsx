@@ -37,10 +37,16 @@ import { trpc } from "@/utils/trpc"
 
 import { useAppointmentPersonnelActions } from "../-appointment-actions"
 import { useHairAssignmentActions } from "../-hair-assignment-actions"
+import { Route } from "./$appointmentId"
 import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, useAppointmentDetailData } from "./-appointment-detail-data"
 import { useAppointmentTransactionActions } from "./-appointment-transaction-actions"
 
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
+
+export function AppointmentDetailRoute() {
+  const { appointmentId } = Route.useParams()
+  return <AppointmentDetailPage key={appointmentId} appointmentId={appointmentId} />
+}
 
 export function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
   const [createOpen, setCreateOpen] = useState(false)
