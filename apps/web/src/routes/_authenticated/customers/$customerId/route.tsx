@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { trpc } from "@/utils/trpc"
 
-import { CustomerDetailRoute } from "./-route-page"
+import { CustomerDetailRoute } from "./-components/route-page"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   component: CustomerDetailRoute,

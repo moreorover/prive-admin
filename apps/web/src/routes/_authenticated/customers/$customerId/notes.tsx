@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { PAGE_SIZE, notesQueryOptions, searchSchema } from "./-notes-data"
-import { NotesRoute } from "./-notes-page"
+import { NotesRoute } from "./-components/notes-page"
+import { PAGE_SIZE, notesQueryOptions, searchSchema } from "./-data/notes-data"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId/notes")({
   component: NotesRoute,

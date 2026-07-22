@@ -3,7 +3,7 @@ import { z } from "zod"
 
 import { authClient } from "@/lib/auth-client"
 
-import { RouteComponent } from "./-login-page"
+import { RouteComponent } from "./-components/login-page"
 
 export const Route = createFileRoute("/login")({
   component: RouteComponent,

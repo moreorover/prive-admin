@@ -8,7 +8,10 @@ const routesDir = fileURLToPath(new URL("./", import.meta.url))
 function publicRouteFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
     const path = join(dir, entry)
-    if (statSync(path).isDirectory()) return publicRouteFiles(path)
+    if (statSync(path).isDirectory()) {
+      if (entry.startsWith("-")) return []
+      return publicRouteFiles(path)
+    }
     if (!path.endsWith(".tsx")) return []
 
     const basename = path.split("/").at(-1) ?? ""

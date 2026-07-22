@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { trpc } from "@/utils/trpc"
 
-import { HairSaleDetailPage } from "./-$hairSaleId-page"
+import { HairSaleDetailPage } from "./-components/hair-sale-id-page"
 
 export const Route = createFileRoute("/_authenticated/hair-sales/$hairSaleId")({
   component: HairSaleDetailPage,
