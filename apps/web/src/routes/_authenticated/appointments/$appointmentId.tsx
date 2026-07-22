@@ -32,44 +32,32 @@ import { CreateTransactionDialog } from "@/components/transactions/create-transa
 import { DeleteTransactionDialog } from "@/components/transactions/delete-transaction-dialog"
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
-import { CURRENCIES, type Currency, formatMinor } from "@/lib/currency"
+import { formatMinor } from "@/lib/currency"
 import { formatPageRange, type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
-const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
-  Currency,
-  number
->
+import { useHairAssignmentActions } from "../-hair-assignment-actions"
+import {
+  APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
+  appointmentDetailQueryOptions,
+  appointmentHairAssignedQueryOptions,
+  appointmentTransactionsQueryOptions,
+  availableHairOrdersListQueryOptions,
+  useAppointmentDetailData,
+} from "./-appointment-detail-data"
+import { useAppointmentTransactionActions } from "./-appointment-transaction-actions"
+
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
-const APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE = 25
-const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailRoute,
   loader: async ({ context, params }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(trpc.appointments.get.queryOptions({ id: params.appointmentId })),
-      context.queryClient.ensureQueryData(
-        trpc.hairAssigned.list.queryOptions({
-          page: 1,
-          pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-          appointmentId: params.appointmentId,
-        }),
-      ),
-      context.queryClient.ensureQueryData(
-        trpc.transactions.list.queryOptions({
-          page: 1,
-          pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-          appointmentId: params.appointmentId,
-        }),
-      ),
+      context.queryClient.ensureQueryData(appointmentDetailQueryOptions(params.appointmentId)),
+      context.queryClient.ensureQueryData(appointmentHairAssignedQueryOptions(params.appointmentId, 1)),
+      context.queryClient.ensureQueryData(appointmentTransactionsQueryOptions(params.appointmentId, 1)),
       context.queryClient.ensureQueryData(trpc.userSettings.get.queryOptions()),
-      context.queryClient.prefetchQuery(
-        trpc.hairOrders.list.queryOptions({
-          availability: "availableForAssignment",
-          pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-        }),
-      ),
+      context.queryClient.prefetchQuery(availableHairOrdersListQueryOptions()),
     ])
   },
 })
@@ -80,7 +68,6 @@ function AppointmentDetailRoute() {
 }
 
 function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
-  const queryClient = useQueryClient()
   const [createOpen, setCreateOpen] = useState(false)
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
@@ -92,141 +79,57 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
   const [deleteTx, setDeleteTx] = useState<TransactionRow | null>(null)
   const [transactionsPage, setTransactionsPage] = useState(1)
   const [hairAssignedPage, setHairAssignedPage] = useState(1)
-
-  const appointmentQueryOptions = trpc.appointments.get.queryOptions({ id: appointmentId })
-  const availableHairOrdersQueryOptions = trpc.hairOrders.list.queryOptions({
-    availability: "availableForAssignment",
-    pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-  })
-  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
+  const {
+    appointment,
+    appointmentQueryOptions,
+    availableHairOrders,
+    availableHairOrdersLoading,
     availableHairOrdersQueryOptions,
-  )
-  const availableHairOrders = availableHairOrdersData?.items ?? []
-  const hairAssignedQueryOptions = trpc.hairAssigned.list.queryOptions({
-    page: hairAssignedPage,
-    pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-    appointmentId,
-  })
-  const transactionsQueryOptions = trpc.transactions.list.queryOptions({
-    page: transactionsPage,
-    pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-    appointmentId,
-  })
-
-  const { data: appointment } = useQuery(appointmentQueryOptions)
-
-  const { data: hairAssignedData } = useQuery(hairAssignedQueryOptions)
-  const hairAssigned = hairAssignedData?.items ?? []
-  const hairAssignedTotalCount = hairAssignedData?.totalCount ?? 0
-  const hairAssignedTotalPages = Math.max(1, Math.ceil(hairAssignedTotalCount / APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE))
-  const showHairAssignedPagination = hairAssignedTotalCount > APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE
-
-  const { data: transactionsData } = useQuery(transactionsQueryOptions)
-  const transactionsTotalCount = transactionsData?.totalCount ?? 0
-  const transactionsTotalPages = Math.max(1, Math.ceil(transactionsTotalCount / APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE))
-  const showTransactionsPagination = transactionsTotalCount > APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE
-
-  const { data: userSettings } = useQuery(trpc.userSettings.get.queryOptions())
-  const hairAssignedListQueryKey = trpc.hairAssigned.list.queryKey()
-  const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
-  const transactionsListQueryKey = trpc.transactions.list.queryKey()
-
-  const invalidateHairAssignmentQueries = (hairOrderId?: string | null) => {
-    queryClient.invalidateQueries({ queryKey: appointmentQueryOptions.queryKey })
-    queryClient.invalidateQueries({ queryKey: hairAssignedListQueryKey })
-    queryClient.invalidateQueries({ queryKey: availableHairOrdersQueryOptions.queryKey })
-    queryClient.invalidateQueries({ queryKey: hairOrdersListQueryKey })
-    if (appointment) {
-      queryClient.invalidateQueries({
-        queryKey: trpc.customers.summary.queryOptions({ id: appointment.client.id }).queryKey,
-      })
-    }
-    if (hairOrderId) {
-      queryClient.invalidateQueries({ queryKey: trpc.hairOrders.get.queryOptions({ id: hairOrderId }).queryKey })
-    }
-  }
-
-  const createHairAssigned = useMutation({
-    ...trpc.hairAssigned.create.mutationOptions(),
-    onSuccess: (_created, values) => {
-      invalidateHairAssignmentQueries(values.hairOrderId)
+    hairAssigned,
+    hairAssignedTotalCount,
+    hairAssignedTotalPages,
+    showHairAssignedPagination,
+    txRows,
+    transactionsTotalCount,
+    transactionsTotalPages,
+    showTransactionsPagination,
+    totalsByCurrency,
+    currenciesPresent,
+    txDefaultCurrency,
+  } = useAppointmentDetailData({ appointmentId, hairAssignedPage, transactionsPage })
+  const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({
+    invalidateKeys: [
+      { queryKey: appointmentQueryOptions.queryKey },
+      ...(appointment
+        ? [{ queryKey: trpc.customers.summary.queryOptions({ id: appointment.client.id }).queryKey }]
+        : []),
+    ],
+    availableHairOrdersQueryKey: availableHairOrdersQueryOptions.queryKey,
+    selectedEditItem: editItem,
+    selectedDeleteItem: deleteItem,
+    onCreated: () => {
       setHairAssignedPage(1)
       setCreateOpen(false)
-      notifications.show({ color: "green", message: "Hair assigned created" })
     },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-  const updateHairAssigned = useMutation({
-    ...trpc.hairAssigned.update.mutationOptions(),
-    onSuccess: () => {
-      invalidateHairAssignmentQueries(editItem?.hairOrder?.id)
-      setEditItem(null)
-      notifications.show({ color: "green", message: "Hair assigned updated" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-  const deleteHairAssigned = useMutation({
-    ...trpc.hairAssigned.delete.mutationOptions(),
-    onSuccess: () => {
-      invalidateHairAssignmentQueries(deleteItem?.hairOrder?.id)
+    onUpdated: () => setEditItem(null),
+    onDeleted: () => {
       setHairAssignedPage(1)
       setDeleteItem(null)
-      notifications.show({ color: "green", message: "Hair assigned deleted" })
     },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
-  const invalidateTransactionQueries = () => {
-    queryClient.invalidateQueries({ queryKey: transactionsListQueryKey })
-    if (appointment) {
-      const customerIds = new Set([
-        appointment.client.id,
-        appointment.master.id,
-        ...(appointment.personnel?.map((person) => person.personnelId) ?? []),
-      ])
-      for (const id of customerIds) {
-        queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id }).queryKey })
-      }
-    }
-  }
-  const createTransaction = useMutation({
-    ...trpc.transactions.create.mutationOptions(),
-    onSuccess: () => {
-      invalidateTransactionQueries()
+  const { createTransaction, updateTransaction, deleteTransaction } = useAppointmentTransactionActions({
+    appointment,
+    onCreated: () => {
       setTransactionsPage(1)
       setCreateTxOpen(false)
       setCreateTxCustomerId(null)
-      notifications.show({ color: "green", message: "Transaction created" })
     },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-  const updateTransaction = useMutation({
-    ...trpc.transactions.update.mutationOptions(),
-    onSuccess: () => {
-      invalidateTransactionQueries()
-      setEditTx(null)
-      notifications.show({ color: "green", message: "Transaction updated" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-  const deleteTransaction = useMutation({
-    ...trpc.transactions.delete.mutationOptions(),
-    onSuccess: () => {
-      invalidateTransactionQueries()
+    onUpdated: () => setEditTx(null),
+    onDeleted: () => {
       setTransactionsPage(1)
       setDeleteTx(null)
-      notifications.show({ color: "green", message: "Transaction deleted" })
     },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
-
-  const txList = transactionsData?.items ?? []
-  const totalsByCurrency = { ...ZERO_TRANSACTION_TOTALS }
-  for (const t of txList) {
-    const c = t.currency as Currency
-    if (!(c in totalsByCurrency)) continue
-    totalsByCurrency[c] += t.amount
-  }
-  const currenciesPresent = CURRENCIES.filter((c) => totalsByCurrency[c] !== 0)
 
   if (!appointment) {
     return (
@@ -237,10 +140,6 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
   }
 
   const txCustomerId = createTxCustomerId ?? appointment.master.id
-  const txDefaultCurrency: Currency = (() => {
-    const raw = userSettings?.preferredCurrency
-    return raw && (CURRENCIES as readonly string[]).includes(raw) ? (raw as Currency) : "EUR"
-  })()
 
   const openCreateTx = (customerId: string) => {
     setCreateTxCustomerId(customerId)
@@ -373,7 +272,7 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
               </Group>
             </Title>
           </Group>
-          {txList.length === 0 ? (
+          {txRows.length === 0 ? (
             <Text size="sm" c="dimmed">
               No transactions yet.
             </Text>
@@ -411,7 +310,7 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
                 {formatPageRange({
                   page: transactionsPage,
                   pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-                  itemCount: txList.length,
+                  itemCount: txRows.length,
                   totalCount: transactionsTotalCount,
                 })}
               </Text>
@@ -426,10 +325,6 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
             </Button>
           </Group>
           {(() => {
-            const txRows: TransactionRow[] = txList.map((t) => ({
-              ...t,
-              currency: (CURRENCIES as readonly string[]).includes(t.currency) ? (t.currency as Currency) : "EUR",
-            }))
             return (
               <TransactionsTable items={txRows}>
                 <TransactionsTable.Customer />

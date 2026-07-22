@@ -16,7 +16,7 @@ import { DateInput } from "@mantine/dates"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconCalculator, IconPencil, IconPlus, IconUser } from "@tabler/icons-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -30,22 +30,23 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { trpc } from "@/utils/trpc"
 
+import { useHairAssignmentActions } from "../-hair-assignment-actions"
+import {
+  availableHairOrdersListQueryOptions,
+  hairOrderDetailQueryOptions,
+  useHairOrderDetailData,
+} from "./-hair-order-detail-data"
+
 export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")({
   component: HairOrderDetailPage,
   loader: async ({ context, params }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(trpc.hairOrders.get.queryOptions({ id: params.hairOrderId })),
-      context.queryClient.prefetchQuery(
-        trpc.hairOrders.list.queryOptions({
-          availability: "availableForAssignment",
-          pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-        }),
-      ),
+      context.queryClient.ensureQueryData(hairOrderDetailQueryOptions(params.hairOrderId)),
+      context.queryClient.prefetchQuery(availableHairOrdersListQueryOptions()),
     ])
   },
 })
 
-const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
 const formatCents = (cents: number) => `€${(cents / 100).toFixed(2)}`
 
 function HairOrderDetailPage() {
@@ -55,29 +56,16 @@ function HairOrderDetailPage() {
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
   const [editOrderOpen, setEditOrderOpen] = useState(false)
-  const hairOrderQueryOptions = trpc.hairOrders.get.queryOptions({ id: hairOrderId })
   const hairAssignedListQueryKey = trpc.hairAssigned.list.queryKey()
   const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
-
-  const { data: hairOrder } = useQuery(hairOrderQueryOptions)
-  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
-    trpc.hairOrders.list.queryOptions({
-      availability: "availableForAssignment",
-      pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-    }),
-  )
-  const availableHairOrders = availableHairOrdersData?.items ?? []
-  const availableHairOrdersQueryOptions = trpc.hairOrders.list.queryOptions({
-    availability: "availableForAssignment",
-    pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-  })
-
-  const assignedClientSummaryKeys = Array.from(
-    new Set([
-      ...(hairOrder?.hairAssigned ?? []).map((ha) => ha.client.id),
-      ...(hairOrder?.customer.id ? [hairOrder.customer.id] : []),
-    ]),
-  ).map((id) => ({ queryKey: trpc.customers.summary.queryOptions({ id }).queryKey }))
+  const {
+    hairOrder,
+    hairOrderQueryOptions,
+    availableHairOrders,
+    availableHairOrdersLoading,
+    availableHairOrdersQueryOptions,
+    assignedClientSummaryKeys,
+  } = useHairOrderDetailData(hairOrderId)
 
   const recalcMutation = useMutation({
     ...trpc.hairOrders.recalculatePrices.mutationOptions(),
@@ -90,44 +78,14 @@ function HairOrderDetailPage() {
     },
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
-  const invalidateHairAssignmentQueries = (hairOrderIdToInvalidate?: string | null) => {
-    queryClient.invalidateQueries({ queryKey: hairOrderQueryOptions.queryKey })
-    queryClient.invalidateQueries({ queryKey: hairAssignedListQueryKey })
-    queryClient.invalidateQueries({ queryKey: availableHairOrdersQueryOptions.queryKey })
-    queryClient.invalidateQueries({ queryKey: hairOrdersListQueryKey })
-    for (const key of assignedClientSummaryKeys) queryClient.invalidateQueries(key)
-    if (hairOrderIdToInvalidate) {
-      queryClient.invalidateQueries({
-        queryKey: trpc.hairOrders.get.queryOptions({ id: hairOrderIdToInvalidate }).queryKey,
-      })
-    }
-  }
-  const createHairAssigned = useMutation({
-    ...trpc.hairAssigned.create.mutationOptions(),
-    onSuccess: (_created, values) => {
-      invalidateHairAssignmentQueries(values.hairOrderId)
-      setCreateOpen(false)
-      notifications.show({ color: "green", message: "Hair assigned created" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-  const updateHairAssigned = useMutation({
-    ...trpc.hairAssigned.update.mutationOptions(),
-    onSuccess: () => {
-      invalidateHairAssignmentQueries(editItem?.hairOrder?.id)
-      setEditItem(null)
-      notifications.show({ color: "green", message: "Hair assigned updated" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-  const deleteHairAssigned = useMutation({
-    ...trpc.hairAssigned.delete.mutationOptions(),
-    onSuccess: () => {
-      invalidateHairAssignmentQueries(deleteItem?.hairOrder?.id)
-      setDeleteItem(null)
-      notifications.show({ color: "green", message: "Hair assigned deleted" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({
+    invalidateKeys: [{ queryKey: hairOrderQueryOptions.queryKey }, ...assignedClientSummaryKeys],
+    availableHairOrdersQueryKey: availableHairOrdersQueryOptions.queryKey,
+    selectedEditItem: editItem,
+    selectedDeleteItem: deleteItem,
+    onCreated: () => setCreateOpen(false),
+    onUpdated: () => setEditItem(null),
+    onDeleted: () => setDeleteItem(null),
   })
 
   if (!hairOrder) {
