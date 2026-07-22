@@ -15,9 +15,8 @@ import {
   TextInput,
   Title,
 } from "@mantine/core"
-import { notifications } from "@mantine/notifications"
 import { IconCash, IconClock, IconDots, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 
@@ -32,17 +31,16 @@ import { CreateTransactionDialog } from "@/components/transactions/create-transa
 import { DeleteTransactionDialog } from "@/components/transactions/delete-transaction-dialog"
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
-import { CURRENCIES, type Currency, formatMinor } from "@/lib/currency"
+import { formatMinor } from "@/lib/currency"
 import { formatPageRange, type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
 
+import { useAppointmentPersonnelActions } from "../-appointment-actions"
+import { useHairAssignmentActions } from "../-hair-assignment-actions"
 import { Route } from "./$appointmentId"
-import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, AVAILABLE_HAIR_ORDERS_PAGE_SIZE } from "./-appointment-detail-data"
+import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, useAppointmentDetailData } from "./-appointment-detail-data"
+import { useAppointmentTransactionActions } from "./-appointment-transaction-actions"
 
-const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
-  Currency,
-  number
->
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 
 export function AppointmentDetailRoute() {
@@ -51,7 +49,6 @@ export function AppointmentDetailRoute() {
 }
 
 export function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
-  const queryClient = useQueryClient()
   const [createOpen, setCreateOpen] = useState(false)
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
@@ -63,141 +60,55 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
   const [deleteTx, setDeleteTx] = useState<TransactionRow | null>(null)
   const [transactionsPage, setTransactionsPage] = useState(1)
   const [hairAssignedPage, setHairAssignedPage] = useState(1)
-
-  const appointmentQueryOptions = trpc.appointments.get.queryOptions({ id: appointmentId })
-  const availableHairOrdersQueryOptions = trpc.hairOrders.list.queryOptions({
-    availability: "availableForAssignment",
-    pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-  })
-  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
-    availableHairOrdersQueryOptions,
-  )
-  const availableHairOrders = availableHairOrdersData?.items ?? []
-  const hairAssignedQueryOptions = trpc.hairAssigned.list.queryOptions({
-    page: hairAssignedPage,
-    pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-    appointmentId,
-  })
-  const transactionsQueryOptions = trpc.transactions.list.queryOptions({
-    page: transactionsPage,
-    pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-    appointmentId,
-  })
-
-  const { data: appointment } = useQuery(appointmentQueryOptions)
-
-  const { data: hairAssignedData } = useQuery(hairAssignedQueryOptions)
-  const hairAssigned = hairAssignedData?.items ?? []
-  const hairAssignedTotalCount = hairAssignedData?.totalCount ?? 0
-  const hairAssignedTotalPages = Math.max(1, Math.ceil(hairAssignedTotalCount / APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE))
-  const showHairAssignedPagination = hairAssignedTotalCount > APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE
-
-  const { data: transactionsData } = useQuery(transactionsQueryOptions)
-  const transactionsTotalCount = transactionsData?.totalCount ?? 0
-  const transactionsTotalPages = Math.max(1, Math.ceil(transactionsTotalCount / APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE))
-  const showTransactionsPagination = transactionsTotalCount > APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE
-
-  const { data: userSettings } = useQuery(trpc.userSettings.get.queryOptions())
-  const hairAssignedListQueryKey = trpc.hairAssigned.list.queryKey()
-  const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
-  const transactionsListQueryKey = trpc.transactions.list.queryKey()
-
-  const invalidateHairAssignmentQueries = (hairOrderId?: string | null) => {
-    queryClient.invalidateQueries({ queryKey: appointmentQueryOptions.queryKey })
-    queryClient.invalidateQueries({ queryKey: hairAssignedListQueryKey })
-    queryClient.invalidateQueries({ queryKey: availableHairOrdersQueryOptions.queryKey })
-    queryClient.invalidateQueries({ queryKey: hairOrdersListQueryKey })
-    if (appointment) {
-      queryClient.invalidateQueries({
-        queryKey: trpc.customers.summary.queryOptions({ id: appointment.client.id }).queryKey,
-      })
-    }
-    if (hairOrderId) {
-      queryClient.invalidateQueries({ queryKey: trpc.hairOrders.get.queryOptions({ id: hairOrderId }).queryKey })
-    }
-  }
-
-  const createHairAssigned = useMutation({
-    ...trpc.hairAssigned.create.mutationOptions(),
-    onSuccess: (_created, values) => {
-      invalidateHairAssignmentQueries(values.hairOrderId)
+  const {
+    appointment,
+    appointmentQueryOptions,
+    availableHairOrders,
+    availableHairOrdersLoading,
+    hairAssigned,
+    hairAssignedTotalCount,
+    hairAssignedTotalPages,
+    showHairAssignedPagination,
+    txRows,
+    transactionsTotalCount,
+    transactionsTotalPages,
+    showTransactionsPagination,
+    totalsByCurrency,
+    currenciesPresent,
+    txDefaultCurrency,
+  } = useAppointmentDetailData({ appointmentId, hairAssignedPage, transactionsPage })
+  const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({
+    invalidateKeys: [
+      { queryKey: appointmentQueryOptions.queryKey },
+      ...(appointment
+        ? [{ queryKey: trpc.customers.summary.queryOptions({ id: appointment.client.id }).queryKey }]
+        : []),
+    ],
+    selectedEditItem: editItem,
+    selectedDeleteItem: deleteItem,
+    onCreated: () => {
       setHairAssignedPage(1)
       setCreateOpen(false)
-      notifications.show({ color: "green", message: "Hair assigned created" })
     },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-  const updateHairAssigned = useMutation({
-    ...trpc.hairAssigned.update.mutationOptions(),
-    onSuccess: () => {
-      invalidateHairAssignmentQueries(editItem?.hairOrder?.id)
-      setEditItem(null)
-      notifications.show({ color: "green", message: "Hair assigned updated" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-  const deleteHairAssigned = useMutation({
-    ...trpc.hairAssigned.delete.mutationOptions(),
-    onSuccess: () => {
-      invalidateHairAssignmentQueries(deleteItem?.hairOrder?.id)
+    onUpdated: () => setEditItem(null),
+    onDeleted: () => {
       setHairAssignedPage(1)
       setDeleteItem(null)
-      notifications.show({ color: "green", message: "Hair assigned deleted" })
     },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
-  const invalidateTransactionQueries = () => {
-    queryClient.invalidateQueries({ queryKey: transactionsListQueryKey })
-    if (appointment) {
-      const customerIds = new Set([
-        appointment.client.id,
-        appointment.master.id,
-        ...(appointment.personnel?.map((person) => person.personnelId) ?? []),
-      ])
-      for (const id of customerIds) {
-        queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id }).queryKey })
-      }
-    }
-  }
-  const createTransaction = useMutation({
-    ...trpc.transactions.create.mutationOptions(),
-    onSuccess: () => {
-      invalidateTransactionQueries()
+  const { createTransaction, updateTransaction, deleteTransaction } = useAppointmentTransactionActions({
+    appointment,
+    onCreated: () => {
       setTransactionsPage(1)
       setCreateTxOpen(false)
       setCreateTxCustomerId(null)
-      notifications.show({ color: "green", message: "Transaction created" })
     },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-  const updateTransaction = useMutation({
-    ...trpc.transactions.update.mutationOptions(),
-    onSuccess: () => {
-      invalidateTransactionQueries()
-      setEditTx(null)
-      notifications.show({ color: "green", message: "Transaction updated" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-  const deleteTransaction = useMutation({
-    ...trpc.transactions.delete.mutationOptions(),
-    onSuccess: () => {
-      invalidateTransactionQueries()
+    onUpdated: () => setEditTx(null),
+    onDeleted: () => {
       setTransactionsPage(1)
       setDeleteTx(null)
-      notifications.show({ color: "green", message: "Transaction deleted" })
     },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
-
-  const txList = transactionsData?.items ?? []
-  const totalsByCurrency = { ...ZERO_TRANSACTION_TOTALS }
-  for (const t of txList) {
-    const c = t.currency as Currency
-    if (!(c in totalsByCurrency)) continue
-    totalsByCurrency[c] += t.amount
-  }
-  const currenciesPresent = CURRENCIES.filter((c) => totalsByCurrency[c] !== 0)
 
   if (!appointment) {
     return (
@@ -208,10 +119,6 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
   }
 
   const txCustomerId = createTxCustomerId ?? appointment.master.id
-  const txDefaultCurrency: Currency = (() => {
-    const raw = userSettings?.preferredCurrency
-    return raw && (CURRENCIES as readonly string[]).includes(raw) ? (raw as Currency) : "EUR"
-  })()
 
   const openCreateTx = (customerId: string) => {
     setCreateTxCustomerId(customerId)
@@ -344,7 +251,7 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
               </Group>
             </Title>
           </Group>
-          {txList.length === 0 ? (
+          {txRows.length === 0 ? (
             <Text size="sm" c="dimmed">
               No transactions yet.
             </Text>
@@ -382,7 +289,7 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
                 {formatPageRange({
                   page: transactionsPage,
                   pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-                  itemCount: txList.length,
+                  itemCount: txRows.length,
                   totalCount: transactionsTotalCount,
                 })}
               </Text>
@@ -397,10 +304,6 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
             </Button>
           </Group>
           {(() => {
-            const txRows: TransactionRow[] = txList.map((t) => ({
-              ...t,
-              currency: (CURRENCIES as readonly string[]).includes(t.currency) ? (t.currency as Currency) : "EUR",
-            }))
             return (
               <TransactionsTable items={txRows}>
                 <TransactionsTable.Customer />
@@ -608,7 +511,6 @@ function ChangeMasterForm({
   currentMasterName: string
   onClose: () => void
 }) {
-  const queryClient = useQueryClient()
   const [draftMasterId, setDraftMasterId] = useState<string | null>(null)
   const [masterSearch, setMasterSearch] = useState("")
   const [selectedMasterOption, setSelectedMasterOption] = useState<SelectOption | null>(null)
@@ -627,14 +529,9 @@ function ChangeMasterForm({
     selectedMasterOption ?? { value: currentMasterId, label: currentMasterName },
   )
 
-  const mutation = useMutation({
-    ...trpc.appointments.update.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.appointments.get.queryOptions({ id: appointmentId }).queryKey })
-      notifications.show({ color: "green", message: "Master updated." })
-      onClose()
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  const { updateMaster } = useAppointmentPersonnelActions({
+    appointmentId,
+    onMasterUpdated: onClose,
   })
 
   return (
@@ -659,8 +556,8 @@ function ChangeMasterForm({
         </Button>
         <Button
           disabled={!masterId || masterId === currentMasterId}
-          loading={mutation.isPending}
-          onClick={() => mutation.mutate({ id: appointmentId, masterId })}
+          loading={updateMaster.isPending}
+          onClick={() => updateMaster.mutate({ id: appointmentId, masterId })}
         >
           Save
         </Button>
@@ -670,7 +567,6 @@ function ChangeMasterForm({
 }
 
 function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonnelIds }: PickPersonnelModalProps) {
-  const queryClient = useQueryClient()
   const [selected, setSelected] = useState<string[]>([])
   const [search, setSearch] = useState("")
 
@@ -691,14 +587,9 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
     })
   }, [customers, assignedPersonnelIds])
 
-  const mutation = useMutation({
-    ...trpc.appointments.linkPersonnel.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.appointments.get.queryOptions({ id: appointmentId }).queryKey })
-      handleClose()
-      notifications.show({ color: "green", message: "Personnel picked." })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  const { linkPersonnel } = useAppointmentPersonnelActions({
+    appointmentId,
+    onPersonnelLinked: () => handleClose(),
   })
 
   const toggle = (id: string) =>
@@ -767,8 +658,8 @@ function PickPersonnelModal({ open, onOpenChange, appointmentId, assignedPersonn
           </Button>
           <Button
             disabled={selected.length === 0}
-            loading={mutation.isPending}
-            onClick={() => mutation.mutate({ appointmentId, personnelIds: selected })}
+            loading={linkPersonnel.isPending}
+            onClick={() => linkPersonnel.mutate({ appointmentId, personnelIds: selected })}
           >
             Confirm
           </Button>

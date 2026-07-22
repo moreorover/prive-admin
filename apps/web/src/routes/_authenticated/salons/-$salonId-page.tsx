@@ -1,8 +1,7 @@
 import { Button, Container, Group, Stack, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
-import { notifications } from "@mantine/notifications"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Link } from "@tanstack/react-router"
+import { useQuery } from "@tanstack/react-query"
+import { Link, useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useEffect } from "react"
 
@@ -12,13 +11,12 @@ import { salonSchema } from "@/lib/schemas"
 import { trpc } from "@/utils/trpc"
 
 import { Route } from "./$salonId"
+import { useSalonActions } from "./-salon-actions"
 
 export function SalonEdit() {
   const { salonId } = Route.useParams()
   const isNew = salonId === "new"
-  const navigate = Route.useNavigate()
-  const queryClient = useQueryClient()
-  const salonsQueryOptions = trpc.salons.list.queryOptions({ pageSize: 100 })
+  const navigate = useNavigate()
   const salonQueryOptions = trpc.salons.get.queryOptions({ id: salonId })
 
   const { data: salon } = useQuery({
@@ -42,24 +40,7 @@ export function SalonEdit() {
     }
   }, [form.setValues, form.resetDirty, isNew, salon])
 
-  const onSaveSuccess = async () => {
-    notifications.show({ color: "green", message: "Saved" })
-    await queryClient.invalidateQueries({ queryKey: salonsQueryOptions.queryKey })
-    if (!isNew) await queryClient.invalidateQueries({ queryKey: salonQueryOptions.queryKey })
-    navigate({ to: "/salons" })
-  }
-
-  const create = useMutation({
-    ...trpc.salons.create.mutationOptions(),
-    onSuccess: onSaveSuccess,
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
-  })
-
-  const update = useMutation({
-    ...trpc.salons.update.mutationOptions(),
-    onSuccess: onSaveSuccess,
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
-  })
+  const { create, update } = useSalonActions({ salonId, onSaved: () => navigate({ to: "/salons" }) })
 
   const handleSubmit = (values: typeof form.values) => {
     if (isNew) {

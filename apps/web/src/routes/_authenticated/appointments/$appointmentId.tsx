@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { trpc } from "@/utils/trpc"
 
-import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, AVAILABLE_HAIR_ORDERS_PAGE_SIZE } from "./-appointment-detail-data"
+import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, availableHairOrdersListQueryOptions } from "./-appointment-detail-data"
 import { AppointmentDetailRoute } from "./-appointment-detail-page"
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
@@ -25,12 +25,7 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
         }),
       ),
       context.queryClient.ensureQueryData(trpc.userSettings.get.queryOptions()),
-      context.queryClient.prefetchQuery(
-        trpc.hairOrders.list.queryOptions({
-          availability: "availableForAssignment",
-          pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-        }),
-      ),
+      context.queryClient.prefetchQuery(availableHairOrdersListQueryOptions()),
     ])
   },
 })

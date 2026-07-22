@@ -1,9 +1,8 @@
 import { Anchor, Box, Button, Container, Group, Modal, Select, Stack, Tabs, Text, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { useDisclosure } from "@mantine/hooks"
-import { notifications } from "@mantine/notifications"
 import { IconArrowLeft, IconPencil } from "@tabler/icons-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { Link, Outlet, useLocation } from "@tanstack/react-router"
 import { TRPCClientError } from "@trpc/client"
 import { zodResolver } from "mantine-form-zod-resolver"
@@ -20,6 +19,7 @@ import {
 import { legalEntityUpdateSchema } from "@/lib/schemas"
 import { trpc } from "@/utils/trpc"
 
+import { useUpdateLegalEntityAction } from "./-legal-entity-actions"
 import { Route } from "./route"
 
 export function LegalEntityLayout() {
@@ -194,25 +194,12 @@ function EditLegalEntityForm({
   initialValues: EditValues & { id: string }
   onClose: () => void
 }) {
-  const queryClient = useQueryClient()
-  const legalEntitiesQueryOptions = trpc.legalEntities.list.queryOptions({ pageSize: 100 })
-  const legalEntityQueryOptions = trpc.legalEntities.get.queryOptions({ id: initialValues.id })
-
   const form = useForm<EditValues & { id: string }>({
     initialValues,
     validate: zodResolver(legalEntityUpdateSchema),
   })
 
-  const save = useMutation({
-    ...trpc.legalEntities.update.mutationOptions(),
-    onSuccess: async () => {
-      notifications.show({ color: "green", message: "Saved" })
-      await queryClient.invalidateQueries({ queryKey: legalEntitiesQueryOptions.queryKey })
-      await queryClient.invalidateQueries({ queryKey: legalEntityQueryOptions.queryKey })
-      onClose()
-    },
-    onError: (err) => notifications.show({ color: "red", message: err.message }),
-  })
+  const save = useUpdateLegalEntityAction({ legalEntityId: initialValues.id, onUpdated: onClose })
 
   return (
     <form onSubmit={form.onSubmit((values) => save.mutate(values))}>

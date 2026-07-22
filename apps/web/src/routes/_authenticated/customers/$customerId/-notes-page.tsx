@@ -1,15 +1,14 @@
 import { ActionIcon, Button, Card, Group, Modal, Pagination, Stack, Text, Textarea, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
-import { notifications } from "@mantine/notifications"
 import { IconPlus, IconSearch, IconTrash } from "@tabler/icons-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { ClientDate } from "@/components/client-date"
 import { Section } from "@/components/section"
-import { trpc } from "@/utils/trpc"
 
+import { useCustomerNoteActions } from "./-note-actions"
 import { notesQueryOptions, PAGE_SIZE } from "./-notes-data"
 import { Route } from "./notes"
 
@@ -24,7 +23,6 @@ export function NotesRoute() {
   const { customerId } = Route.useParams()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
-  const queryClient = useQueryClient()
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const page = search.page ?? 1
@@ -38,16 +36,9 @@ export function NotesRoute() {
   const clampedPage = Math.min(page, totalPages)
   const hasItemsOnCurrentPage = notes.length > 0
 
-  const deleteNoteMutation = useMutation({
-    ...trpc.notes.delete.mutationOptions(),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: trpc.customers.notes.list.queryKey() }),
-        queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey }),
-      ])
-      notifications.show({ color: "green", message: "Note deleted" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  const { createNote, deleteNote } = useCustomerNoteActions({
+    customerId,
+    onCreated: () => navigate({ search: { page: 1, search: searchValue }, replace: true }),
   })
 
   return (
@@ -92,7 +83,7 @@ export function NotesRoute() {
                         {note.createdBy?.name ?? "Unknown"} · <ClientDate date={note.createdAt} />
                       </Text>
                     </Stack>
-                    <ActionIcon variant="subtle" color="red" onClick={() => deleteNoteMutation.mutate({ id: note.id })}>
+                    <ActionIcon variant="subtle" color="red" onClick={() => deleteNote.mutate({ id: note.id })}>
                       <IconTrash size={14} />
                     </ActionIcon>
                   </Group>
@@ -121,7 +112,8 @@ export function NotesRoute() {
           customerId={customerId}
           open={dialogOpen}
           onOpenChange={setDialogOpen}
-          onSuccess={() => navigate({ search: { page: 1, search: searchValue }, replace: true })}
+          loading={createNote.isPending}
+          onCreate={(values) => createNote.mutateAsync(values)}
         />
       </Section>
     </>
@@ -132,31 +124,17 @@ function AddNoteDialog({
   customerId,
   open,
   onOpenChange,
-  onSuccess,
+  loading,
+  onCreate,
 }: {
   customerId: string
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSuccess: () => void
+  loading: boolean
+  onCreate: (values: { note: string; customerId: string }) => Promise<unknown>
 }) {
-  const queryClient = useQueryClient()
   const form = useForm({
     initialValues: { note: "" },
-  })
-
-  const mutation = useMutation({
-    ...trpc.notes.create.mutationOptions(),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: trpc.customers.notes.list.queryKey() }),
-        queryClient.invalidateQueries({ queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey }),
-      ])
-      onSuccess()
-      onOpenChange(false)
-      form.reset()
-      notifications.show({ color: "green", message: "Note added" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
   return (
@@ -168,10 +146,16 @@ function AddNoteDialog({
       }}
       title="Add Note"
     >
-      <form onSubmit={form.onSubmit(async (values) => mutation.mutateAsync({ note: values.note, customerId }))}>
+      <form
+        onSubmit={form.onSubmit(async (values) => {
+          await onCreate({ note: values.note, customerId })
+          onOpenChange(false)
+          form.reset()
+        })}
+      >
         <Stack>
           <Textarea label="Note" placeholder="Write a note…" minRows={3} {...form.getInputProps("note")} />
-          <Button type="submit" loading={mutation.isPending}>
+          <Button type="submit" loading={loading}>
             Add Note
           </Button>
         </Stack>

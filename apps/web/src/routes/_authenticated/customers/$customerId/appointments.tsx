@@ -1,10 +1,10 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
 import {
+  PAGE_SIZE,
   appointmentMasterOptionsQueryOptions,
   appointmentSalonOptionsQueryOptions,
   appointmentsQueryOptions,
-  PAGE_SIZE,
   searchSchema,
 } from "./-appointments-data"
 import { CustomerAppointmentsRoute } from "./-appointments-page"

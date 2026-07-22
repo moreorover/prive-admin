@@ -1,8 +1,11 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { trpc } from "@/utils/trpc"
-
-import { AVAILABLE_HAIR_ORDERS_PAGE_SIZE, hairSalesQueryOptions, PAGE_SIZE, searchSchema } from "./-hair-sales-data"
+import {
+  HAIR_SALES_PAGE_SIZE,
+  availableHairOrdersListQueryOptions,
+  hairSalesQueryOptions,
+  searchSchema,
+} from "./-hair-sales-data"
 import { HairSalesRoute } from "./-hair-sales-page"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId/hair-sales")({
@@ -15,14 +18,9 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId/hair
   loader: async ({ context, deps, params }) => {
     const [data] = await Promise.all([
       context.queryClient.ensureQueryData(hairSalesQueryOptions(params.customerId, deps.page, deps.search)),
-      context.queryClient.prefetchQuery(
-        trpc.hairOrders.list.queryOptions({
-          availability: "availableForAssignment",
-          pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-        }),
-      ),
+      context.queryClient.prefetchQuery(availableHairOrdersListQueryOptions()),
     ])
-    const totalPages = Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE))
+    const totalPages = Math.max(1, Math.ceil(data.totalCount / HAIR_SALES_PAGE_SIZE))
     if (deps.page > totalPages) {
       throw redirect({
         to: "/customers/$customerId/hair-sales",

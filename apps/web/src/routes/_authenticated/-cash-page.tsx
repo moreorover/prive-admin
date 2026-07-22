@@ -1,8 +1,7 @@
 import { Box, Button, Container, Group, LoadingOverlay, NativeSelect, Select, Table, TextInput } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
-import { notifications } from "@mantine/notifications"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
@@ -15,6 +14,8 @@ import { Section } from "@/components/section"
 import { type Currency } from "@/lib/currency"
 import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 import { trpc } from "@/utils/trpc"
+
+import { useCashTransactionActions } from "./-cash-transaction-actions"
 
 const PAGE_SIZE = 25
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
@@ -31,7 +32,6 @@ type CashTransactionFilters = {
 }
 
 export function CashPage() {
-  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [filters, setFilters] = useState<CashTransactionFilters>({
     search: "",
@@ -99,35 +99,10 @@ export function CashPage() {
     setFilters((current) => ({ ...current, ...nextFilters }))
     resetPage()
   }
-  const invalidateCashTransactions = () => {
-    queryClient.invalidateQueries({ queryKey: trpc.cashTransactions.list.queryKey() })
-  }
-  const createCashTransaction = useMutation({
-    ...trpc.cashTransactions.create.mutationOptions(),
-    onSuccess: () => {
-      invalidateCashTransactions()
-      setCreateOpen(false)
-      notifications.show({ color: "green", message: "Cash transaction created" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-  const updateCashTransaction = useMutation({
-    ...trpc.cashTransactions.update.mutationOptions(),
-    onSuccess: () => {
-      invalidateCashTransactions()
-      setEditing(null)
-      notifications.show({ color: "green", message: "Cash transaction updated" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-  const deleteCashTransaction = useMutation({
-    ...trpc.cashTransactions.delete.mutationOptions(),
-    onSuccess: () => {
-      invalidateCashTransactions()
-      setDeleting(null)
-      notifications.show({ color: "green", message: "Cash transaction deleted" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  const { createCashTransaction, updateCashTransaction, deleteCashTransaction } = useCashTransactionActions({
+    onCreated: () => setCreateOpen(false),
+    onUpdated: () => setEditing(null),
+    onDeleted: () => setDeleting(null),
   })
 
   return (

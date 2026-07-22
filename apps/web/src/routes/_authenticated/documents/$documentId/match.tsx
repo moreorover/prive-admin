@@ -1,8 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
 import {
-  documentQueryOptions,
   MATCH_CANDIDATES_PAGE_SIZE,
+  documentQueryOptions,
   matchCandidatesQueryOptions,
   searchSchema,
 } from "./-match-data"
