@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from "react"
 
-import { ActionIcon, Group, Menu, Pagination, Table, Text } from "@mantine/core"
+import { ActionIcon, Menu, Table, Text } from "@mantine/core"
 import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { createContext, useContext } from "react"
@@ -10,6 +10,7 @@ import {
   getCompoundTableColumns,
   getCompoundTablePagination,
 } from "@/components/compound-table"
+import { ResourcePagination } from "@/components/resource-pagination"
 import { type Currency, formatMinor } from "@/lib/currency"
 
 export type TransactionRow = {
@@ -154,20 +155,18 @@ function TransactionsTableRoot({ items, children }: TransactionsTableRootProps) 
 }
 
 const TablePagination = Object.assign(
-  ({ page, pageSize, totalCount, onChange, label, mt = "md", px, pb }: TransactionPaginationProps) => {
-    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
-    const clampedPage = Math.min(page, totalPages)
-    return (
-      <Group justify={label ? "space-between" : "flex-end"} mt={mt} px={px} pb={pb}>
-        {label ? (
-          <Text size="sm" c="dimmed">
-            {label}
-          </Text>
-        ) : null}
-        <Pagination total={totalPages} value={clampedPage} onChange={onChange} />
-      </Group>
-    )
-  },
+  ({ page, pageSize, totalCount, onChange, label, mt = "md", px, pb }: TransactionPaginationProps) => (
+    <ResourcePagination
+      page={page}
+      pageSize={pageSize}
+      totalCount={totalCount}
+      onChange={onChange}
+      label={label}
+      mt={mt}
+      px={px}
+      pb={pb}
+    />
+  ),
   { isTablePagination: true as const },
 )
 
