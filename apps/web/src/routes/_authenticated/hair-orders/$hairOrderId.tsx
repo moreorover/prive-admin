@@ -35,20 +35,18 @@ export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")
   loader: async ({ context, params }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(trpc.hairOrders.get.queryOptions({ id: params.hairOrderId })),
-      context.queryClient.prefetchQuery(availableHairOrdersQueryOptions()),
+      context.queryClient.prefetchQuery(
+        trpc.hairOrders.list.queryOptions({
+          availability: "availableForAssignment",
+          pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
+        }),
+      ),
     ])
   },
 })
 
 const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
 const formatCents = (cents: number) => `€${(cents / 100).toFixed(2)}`
-
-function availableHairOrdersQueryOptions() {
-  return trpc.hairOrders.list.queryOptions({
-    availability: "availableForAssignment",
-    pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-  })
-}
 
 function HairOrderDetailPage() {
   const { hairOrderId } = Route.useParams()
@@ -63,7 +61,10 @@ function HairOrderDetailPage() {
 
   const { data: hairOrder } = useQuery(hairOrderQueryOptions)
   const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
-    availableHairOrdersQueryOptions(),
+    trpc.hairOrders.list.queryOptions({
+      availability: "availableForAssignment",
+      pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
+    }),
   )
   const availableHairOrders = availableHairOrdersData?.items ?? []
 

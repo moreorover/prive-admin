@@ -44,13 +44,6 @@ const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as
 const APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE = 25
 const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
 
-function availableHairOrdersQueryOptions() {
-  return trpc.hairOrders.list.queryOptions({
-    availability: "availableForAssignment",
-    pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
-  })
-}
-
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: AppointmentDetailRoute,
   loader: async ({ context, params }) => {
@@ -71,7 +64,12 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
         }),
       ),
       context.queryClient.ensureQueryData(trpc.userSettings.get.queryOptions()),
-      context.queryClient.prefetchQuery(availableHairOrdersQueryOptions()),
+      context.queryClient.prefetchQuery(
+        trpc.hairOrders.list.queryOptions({
+          availability: "availableForAssignment",
+          pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
+        }),
+      ),
     ])
   },
 })
@@ -96,7 +94,10 @@ function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
 
   const appointmentQueryOptions = trpc.appointments.get.queryOptions({ id: appointmentId })
   const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
-    availableHairOrdersQueryOptions(),
+    trpc.hairOrders.list.queryOptions({
+      availability: "availableForAssignment",
+      pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
+    }),
   )
   const availableHairOrders = availableHairOrdersData?.items ?? []
   const hairAssignedQueryOptions = trpc.hairAssigned.list.queryOptions({
