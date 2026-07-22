@@ -1,16 +1,11 @@
 import { Group, NumberInput, Stack, Text, Title } from "@mantine/core"
 import { useQuery } from "@tanstack/react-query"
-import { z } from "zod"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { BankAccountReportBlock } from "@/components/reports-cards"
 import { trpc } from "@/utils/trpc"
 
 import { Route } from "./overview"
-
-export const searchSchema = z.object({
-  year: z.number().int().min(2000).max(3000).optional(),
-})
 
 export function OverviewTab() {
   const { legalEntityId } = Route.useParams()

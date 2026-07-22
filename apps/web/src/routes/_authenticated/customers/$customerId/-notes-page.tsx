@@ -3,30 +3,14 @@ import { useForm } from "@mantine/form"
 import { IconPlus, IconSearch, IconTrash } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
-import { z } from "zod"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { ClientDate } from "@/components/client-date"
 import { Section } from "@/components/section"
-import { trpc } from "@/utils/trpc"
 
 import { useCustomerNoteActions } from "./-note-actions"
+import { notesQueryOptions, PAGE_SIZE } from "./-notes-data"
 import { Route } from "./notes"
-
-export const PAGE_SIZE = 25
-export const searchSchema = z.object({
-  page: z.coerce.number().int().min(1).optional(),
-  search: z.string().optional(),
-})
-
-export function notesQueryOptions(customerId: string, page: number, search: string) {
-  return trpc.customers.notes.list.queryOptions({
-    customerId,
-    page,
-    pageSize: PAGE_SIZE,
-    search: search.trim() || undefined,
-  })
-}
 
 type CustomerNote = {
   id: string

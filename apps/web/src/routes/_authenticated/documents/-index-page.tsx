@@ -19,33 +19,16 @@ import { IconLinkOff, IconTrash } from "@tabler/icons-react"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { useState } from "react"
-import { z } from "zod"
 
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { type Currency, formatMinor } from "@/lib/currency"
-import { trpc } from "@/utils/trpc"
 
 import { useDocumentActions } from "./-document-actions"
+import { type DocumentStatus, documentsQueryOptions, PAGE_SIZE } from "./-index-data"
 import { Route } from "./index"
-
-export const PAGE_SIZE = 25
-const documentStatusSchema = z.enum(["unassigned", "assigned", "all"])
-export const searchSchema = z.object({
-  page: z.coerce.number().int().min(1).optional(),
-  status: documentStatusSchema.optional(),
-})
-
-type DocumentStatus = z.infer<typeof documentStatusSchema>
-
-export function documentsQueryOptions(input: { status: DocumentStatus; page: number }) {
-  return trpc.bankStatementAttachments.list.queryOptions(
-    { assignmentStatus: input.status, page: input.page, pageSize: PAGE_SIZE },
-    { placeholderData: (previousData) => previousData },
-  )
-}
 
 export function DocumentsPage() {
   const search = Route.useSearch()

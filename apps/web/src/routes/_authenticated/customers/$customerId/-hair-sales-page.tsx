@@ -1,7 +1,6 @@
 import { Button, Stack, Text, TextInput } from "@mantine/core"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useState } from "react"
-import { z } from "zod"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
@@ -14,11 +13,6 @@ import { trpc } from "@/utils/trpc"
 import { useHairAssignmentActions } from "../../-hair-assignment-actions"
 import { HAIR_SALES_PAGE_SIZE, useHairSalesData } from "./-hair-sales-data"
 import { Route } from "./hair-sales"
-
-export const searchSchema = z.object({
-  page: z.coerce.number().int().min(1).optional(),
-  search: z.string().optional(),
-})
 
 export function HairSalesRoute() {
   const { customerId } = Route.useParams()

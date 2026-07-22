@@ -1,12 +1,12 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
 import {
-  DocumentMatchPage,
   MATCH_CANDIDATES_PAGE_SIZE,
   documentQueryOptions,
   matchCandidatesQueryOptions,
   searchSchema,
-} from "./-match-page"
+} from "./-match-data"
+import { DocumentMatchPage } from "./-match-page"
 
 export const Route = createFileRoute("/_authenticated/documents/$documentId/match")({
   component: DocumentMatchPage,

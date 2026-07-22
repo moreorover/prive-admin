@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { DocumentsPage, PAGE_SIZE, documentsQueryOptions, searchSchema } from "./-index-page"
+import { documentsQueryOptions, PAGE_SIZE, searchSchema } from "./-index-data"
+import { DocumentsPage } from "./-index-page"
 
 export const Route = createFileRoute("/_authenticated/documents/")({
   component: DocumentsPage,

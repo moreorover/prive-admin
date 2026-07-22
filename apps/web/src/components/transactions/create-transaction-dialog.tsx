@@ -14,7 +14,7 @@ type CreateTransactionDialogProps = {
   onCreate: (values: CreateTransactionSubmit) => void | Promise<void>
 }
 
-export type CreateTransactionSubmit = TransactionFormSubmit & {
+type CreateTransactionSubmit = TransactionFormSubmit & {
   appointmentId: string
   customerId: string
 }

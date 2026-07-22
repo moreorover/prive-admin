@@ -9,7 +9,7 @@ type EditHairAssignedDialogProps = {
   onUpdate: (values: EditHairAssignedSubmit) => void | Promise<void>
 }
 
-export type EditHairAssignedSubmit = {
+type EditHairAssignedSubmit = {
   id: string
   weightInGrams: number
   soldFor: number

@@ -2,11 +2,11 @@ import { createFileRoute } from "@tanstack/react-router"
 import dayjs from "dayjs"
 
 import {
-  CalendarPage,
   appointmentCustomerOptionsQueryOptions,
   appointmentSalonOptionsQueryOptions,
   calendarAppointmentsQueryOptions,
-} from "./-calendar-page"
+} from "./-calendar-data"
+import { CalendarPage } from "./-calendar-page"
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   component: CalendarPage,
