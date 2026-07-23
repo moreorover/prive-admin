@@ -2,7 +2,6 @@ import { Anchor, Box, Button, Container, Group, Modal, Select, Stack, Tabs, Text
 import { useForm } from "@mantine/form"
 import { useDisclosure } from "@mantine/hooks"
 import { IconArrowLeft, IconPencil } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { Link, Outlet, useLocation } from "@tanstack/react-router"
 import { TRPCClientError } from "@trpc/client"
 import { zodResolver } from "mantine-form-zod-resolver"
@@ -17,25 +16,42 @@ import {
   getLegalEntitySectionPath,
 } from "@/lib/legal-entity-navigation"
 import { legalEntityUpdateSchema } from "@/lib/schemas"
-import { trpc } from "@/utils/trpc"
 
-import { useUpdateLegalEntityAction } from "../-actions/legal-entity-actions"
 import { Route } from "../route"
 
-export function LegalEntityLayout() {
+type LegalEntity = {
+  id: string
+  name: string
+  type: string
+  country: string
+  defaultCurrency: string
+  registrationNumber: string | null
+  vatNumber: string | null
+}
+type LegalEntityQuery = {
+  data: LegalEntity | undefined
+  isError: boolean
+  error: unknown
+}
+
+export function LegalEntityLayout({
+  legalEntityQuery,
+  legalEntities,
+  savePending,
+  onSaveLegalEntity,
+}: {
+  legalEntityQuery: LegalEntityQuery
+  legalEntities: Pick<LegalEntity, "id" | "name">[]
+  savePending: boolean
+  onSaveLegalEntity: (values: EditValues & { id: string }) => Promise<unknown>
+}) {
   const { legalEntityId } = Route.useParams()
   const navigate = Route.useNavigate()
   const location = useLocation()
   const activeSection = getLegalEntitySectionFromPath(location.pathname)
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
 
-  const legalEntityQuery = useQuery({
-    ...trpc.legalEntities.get.queryOptions({ id: legalEntityId }),
-    retry: (failureCount, error) => !isNotFoundError(error) && failureCount < 3,
-  })
   const legalEntity = legalEntityQuery.data
-  const { data: legalEntitiesData } = useQuery(trpc.legalEntities.list.queryOptions({ pageSize: 100 }))
-  const legalEntities = legalEntitiesData?.items ?? []
   const country = legalEntity?.country as Country | undefined
   const description = legalEntity
     ? `${legalEntity.type}${country ? ` · ${COUNTRY_FLAGS[country]} ${COUNTRY_LABELS[country]}` : ""} · ${legalEntity.defaultCurrency}`
@@ -152,6 +168,8 @@ export function LegalEntityLayout() {
               }
             : null
         }
+        savePending={savePending}
+        onSave={onSaveLegalEntity}
       />
     </Container>
   )
@@ -172,17 +190,28 @@ function EditLegalEntityModal({
   onClose,
   legalEntityId,
   initial,
+  savePending,
+  onSave,
 }: {
   opened: boolean
   onClose: () => void
   legalEntityId: string
   initial: EditValues | null
+  savePending: boolean
+  onSave: (values: EditValues & { id: string }) => Promise<unknown>
 }) {
   const initialValues = initial && { id: legalEntityId, ...initial }
 
   return (
     <Modal opened={opened} onClose={onClose} title="Edit legal entity">
-      {opened && initialValues && <EditLegalEntityForm initialValues={initialValues} onClose={onClose} />}
+      {opened && initialValues && (
+        <EditLegalEntityForm
+          initialValues={initialValues}
+          onClose={onClose}
+          savePending={savePending}
+          onSave={onSave}
+        />
+      )}
     </Modal>
   )
 }
@@ -190,19 +219,26 @@ function EditLegalEntityModal({
 function EditLegalEntityForm({
   initialValues,
   onClose,
+  savePending,
+  onSave,
 }: {
   initialValues: EditValues & { id: string }
   onClose: () => void
+  savePending: boolean
+  onSave: (values: EditValues & { id: string }) => Promise<unknown>
 }) {
   const form = useForm<EditValues & { id: string }>({
     initialValues,
     validate: zodResolver(legalEntityUpdateSchema),
   })
 
-  const save = useUpdateLegalEntityAction({ legalEntityId: initialValues.id, onUpdated: onClose })
-
   return (
-    <form onSubmit={form.onSubmit((values) => save.mutate(values))}>
+    <form
+      onSubmit={form.onSubmit(async (values) => {
+        await onSave(values)
+        onClose()
+      })}
+    >
       <Stack>
         <TextInput label="Name" required {...form.getInputProps("name")} />
         <TextInput
@@ -215,7 +251,7 @@ function EditLegalEntityForm({
           <Button variant="subtle" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" loading={save.isPending}>
+          <Button type="submit" loading={savePending}>
             Save
           </Button>
         </Group>

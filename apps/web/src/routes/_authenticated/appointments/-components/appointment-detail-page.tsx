@@ -1,6 +1,7 @@
+import type { ComponentProps } from "react"
+
 import { ActionIcon, Button, Card, Container, Group, Menu, Modal, Select, Stack, Text, Title } from "@mantine/core"
 import { IconCash, IconClock, IconDots, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 
@@ -17,41 +18,85 @@ import { EditTransactionDialog } from "@/components/transactions/edit-transactio
 import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
 import { formatMinor } from "@/lib/currency"
 import { formatPageRange, type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
-import { trpc } from "@/utils/trpc"
 
-import { Route } from "../$appointmentId"
-import { useAppointmentTransactionActions } from "../-actions/appointment-transaction-actions"
 import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, useAppointmentDetailData } from "../-data/appointment-detail-data"
-import { useAppointmentPersonnelActions } from "../../-actions/appointment-actions"
-import { useHairAssignmentActions } from "../../-actions/hair-assignment-actions"
 import { PickPersonnelModal } from "./pick-personnel-modal"
 
-const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
+type AppointmentDetailData = ReturnType<typeof useAppointmentDetailData>
+type CustomersData = { items: { id: string; name: string }[] }
 
-export function AppointmentDetailRoute() {
-  const { appointmentId } = Route.useParams()
-  return <AppointmentDetailPage key={appointmentId} appointmentId={appointmentId} />
-}
-
-export function AppointmentDetailPage({ appointmentId }: { appointmentId: string }) {
+export function AppointmentDetailPage({
+  appointmentId,
+  detailData,
+  transactionsPage,
+  hairAssignedPage,
+  masterSearch,
+  pickPersonnelSearch,
+  pickPersonnelCustomersData,
+  masterCustomersData,
+  onTransactionsPageChange,
+  onHairAssignedPageChange,
+  onMasterSearchChange,
+  onPickPersonnelSearchChange,
+  createHairAssignedPending,
+  updateHairAssignedPending,
+  deleteHairAssignedPending,
+  createTransactionPending,
+  updateTransactionPending,
+  deleteTransactionPending,
+  updateMasterPending,
+  linkPersonnelPending,
+  onCreateHairAssigned,
+  onUpdateHairAssigned,
+  onDeleteHairAssigned,
+  onCreateTransaction,
+  onUpdateTransaction,
+  onDeleteTransaction,
+  onUpdateMaster,
+  onLinkPersonnel,
+}: {
+  appointmentId: string
+  detailData: AppointmentDetailData
+  transactionsPage: number
+  hairAssignedPage: number
+  masterSearch: string
+  pickPersonnelSearch: string
+  pickPersonnelCustomersData: CustomersData | undefined
+  masterCustomersData: CustomersData | undefined
+  onTransactionsPageChange: (page: number) => void
+  onHairAssignedPageChange: (page: number) => void
+  onMasterSearchChange: (search: string) => void
+  onPickPersonnelSearchChange: (search: string) => void
+  createHairAssignedPending: boolean
+  updateHairAssignedPending: boolean
+  deleteHairAssignedPending: boolean
+  createTransactionPending: boolean
+  updateTransactionPending: boolean
+  deleteTransactionPending: boolean
+  updateMasterPending: boolean
+  linkPersonnelPending: boolean
+  onCreateHairAssigned: ComponentProps<typeof CreateHairAssignedDialog>["onCreate"]
+  onUpdateHairAssigned: ComponentProps<typeof EditHairAssignedDialog>["onUpdate"]
+  onDeleteHairAssigned: (id: string) => void
+  onCreateTransaction: ComponentProps<typeof CreateTransactionDialog>["onCreate"]
+  onUpdateTransaction: ComponentProps<typeof EditTransactionDialog>["onUpdate"]
+  onDeleteTransaction: (id: string) => void
+  onUpdateMaster: (values: { id: string; masterId: string }) => void
+  onLinkPersonnel: (values: { appointmentId: string; personnelIds: string[] }) => void
+}) {
   const [createOpen, setCreateOpen] = useState(false)
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
   const [pickPersonnelOpen, setPickPersonnelOpen] = useState(false)
   const [changeMasterOpen, setChangeMasterOpen] = useState(false)
-  const [masterSearch, setMasterSearch] = useState("")
   const [draftMasterId, setDraftMasterId] = useState<string | null>(null)
   const [selectedMasterOption, setSelectedMasterOption] = useState<SelectOption | null>(null)
-  const [pickPersonnelSearch, setPickPersonnelSearch] = useState("")
   const [createTxOpen, setCreateTxOpen] = useState(false)
   const [createTxCustomerId, setCreateTxCustomerId] = useState<string | null>(null)
   const [editTx, setEditTx] = useState<TransactionRow | null>(null)
   const [deleteTx, setDeleteTx] = useState<TransactionRow | null>(null)
-  const [transactionsPage, setTransactionsPage] = useState(1)
-  const [hairAssignedPage, setHairAssignedPage] = useState(1)
   const {
     appointment,
-    appointmentQueryOptions,
     availableHairOrders,
     availableHairOrdersLoading,
     hairAssigned,
@@ -65,59 +110,7 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
     totalsByCurrency,
     currenciesPresent,
     txDefaultCurrency,
-  } = useAppointmentDetailData({ appointmentId, hairAssignedPage, transactionsPage })
-  const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({
-    invalidateKeys: [
-      { queryKey: appointmentQueryOptions.queryKey },
-      ...(appointment
-        ? [{ queryKey: trpc.customers.summary.queryOptions({ id: appointment.client.id }).queryKey }]
-        : []),
-    ],
-    selectedEditItem: editItem,
-    selectedDeleteItem: deleteItem,
-    onCreated: () => {
-      setHairAssignedPage(1)
-      setCreateOpen(false)
-    },
-    onUpdated: () => setEditItem(null),
-    onDeleted: () => {
-      setHairAssignedPage(1)
-      setDeleteItem(null)
-    },
-  })
-  const { createTransaction, updateTransaction, deleteTransaction } = useAppointmentTransactionActions({
-    appointment,
-    onCreated: () => {
-      setTransactionsPage(1)
-      setCreateTxOpen(false)
-      setCreateTxCustomerId(null)
-    },
-    onUpdated: () => setEditTx(null),
-    onDeleted: () => {
-      setTransactionsPage(1)
-      setDeleteTx(null)
-    },
-  })
-  const { updateMaster, linkPersonnel } = useAppointmentPersonnelActions({
-    appointmentId,
-    onMasterUpdated: () => {
-      setDraftMasterId(null)
-      setSelectedMasterOption(null)
-      setMasterSearch("")
-      setChangeMasterOpen(false)
-    },
-    onPersonnelLinked: () => {
-      setPickPersonnelSearch("")
-      setPickPersonnelOpen(false)
-    },
-  })
-  const { data: pickPersonnelCustomersData } = useQuery({
-    ...trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
-      search: pickPersonnelSearch.trim() || undefined,
-    }),
-    enabled: pickPersonnelOpen,
-  })
+  } = detailData
   const pickPersonnelCustomers = useMemo(
     () => pickPersonnelCustomersData?.items ?? [],
     [pickPersonnelCustomersData?.items],
@@ -131,13 +124,6 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
     [assignedPersonnelIds, pickPersonnelCustomers],
   )
 
-  const { data: masterCustomersData } = useQuery({
-    ...trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
-      search: masterSearch.trim() || undefined,
-    }),
-    enabled: changeMasterOpen,
-  })
   const masterCustomers = useMemo(() => masterCustomersData?.items ?? [], [masterCustomersData?.items])
 
   if (!appointment) {
@@ -352,7 +338,7 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
                     pageSize={APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE}
                     itemCount={txRows.length}
                     totalCount={transactionsTotalCount}
-                    onChange={setTransactionsPage}
+                    onChange={onTransactionsPageChange}
                     label={`Page ${Math.min(transactionsPage, transactionsTotalPages)} of ${transactionsTotalPages}`}
                   />
                 ) : null}
@@ -392,7 +378,7 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
                 pageSize={APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE}
                 itemCount={hairAssigned.length}
                 totalCount={hairAssignedTotalCount}
-                onChange={setHairAssignedPage}
+                onChange={onHairAssignedPageChange}
                 label={`Page ${Math.min(hairAssignedPage, hairAssignedTotalPages)} of ${hairAssignedTotalPages}`}
               />
             ) : null}
@@ -426,8 +412,11 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
           onOpenChange={setCreateOpen}
           clientId={appointment.client.id}
           appointmentId={appointmentId}
-          loading={createHairAssigned.isPending}
-          onCreate={(values) => createHairAssigned.mutate(values)}
+          loading={createHairAssignedPending}
+          onCreate={(values) => {
+            onCreateHairAssigned(values)
+            setCreateOpen(false)
+          }}
           availableOrders={availableHairOrders}
           availableOrdersLoading={availableHairOrdersLoading}
         />
@@ -436,8 +425,11 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
             open={!!editItem}
             onOpenChange={(open) => !open && setEditItem(null)}
             hairAssigned={editItem}
-            loading={updateHairAssigned.isPending}
-            onUpdate={(values) => updateHairAssigned.mutate(values)}
+            loading={updateHairAssignedPending}
+            onUpdate={(values) => {
+              onUpdateHairAssigned(values)
+              setEditItem(null)
+            }}
           />
         )}
         {deleteItem && (
@@ -445,8 +437,11 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
             open={!!deleteItem}
             onOpenChange={(open) => !open && setDeleteItem(null)}
             hairAssigned={deleteItem}
-            loading={deleteHairAssigned.isPending}
-            onDelete={(id) => deleteHairAssigned.mutate({ id })}
+            loading={deleteHairAssignedPending}
+            onDelete={(id) => {
+              onDeleteHairAssigned(id)
+              setDeleteItem(null)
+            }}
           />
         )}
         <PickPersonnelModal
@@ -454,9 +449,13 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
           onOpenChange={setPickPersonnelOpen}
           search={pickPersonnelSearch}
           personnel={availablePersonnel}
-          loading={linkPersonnel.isPending}
-          onSearchChange={setPickPersonnelSearch}
-          onConfirm={(personnelIds) => linkPersonnel.mutate({ appointmentId, personnelIds })}
+          loading={linkPersonnelPending}
+          onSearchChange={onPickPersonnelSearchChange}
+          onConfirm={(personnelIds) => {
+            onLinkPersonnel({ appointmentId, personnelIds })
+            onPickPersonnelSearchChange("")
+            setPickPersonnelOpen(false)
+          }}
         />
         {changeMasterOpen && (
           <ChangeMasterModal
@@ -467,14 +466,20 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
             masterId={masterId}
             masterSearch={masterSearch}
             masterOptions={masterOptions}
-            loading={updateMaster.isPending}
-            onMasterSearchChange={setMasterSearch}
+            loading={updateMasterPending}
+            onMasterSearchChange={onMasterSearchChange}
             onMasterChange={(value) => {
               setDraftMasterId(value)
               const option = masterOptions.find((candidate) => candidate.value === value)
               if (option) setSelectedMasterOption(option)
             }}
-            onSubmit={() => updateMaster.mutate({ id: appointmentId, masterId })}
+            onSubmit={() => {
+              onUpdateMaster({ id: appointmentId, masterId })
+              setDraftMasterId(null)
+              setSelectedMasterOption(null)
+              onMasterSearchChange("")
+              setChangeMasterOpen(false)
+            }}
           />
         )}
         <CreateTransactionDialog
@@ -486,16 +491,23 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
           appointmentId={appointmentId}
           customerId={txCustomerId}
           defaultCurrency={txDefaultCurrency}
-          loading={createTransaction.isPending}
-          onCreate={(values) => createTransaction.mutate(values)}
+          loading={createTransactionPending}
+          onCreate={(values) => {
+            onCreateTransaction(values)
+            setCreateTxOpen(false)
+            setCreateTxCustomerId(null)
+          }}
         />
         {editTx && (
           <EditTransactionDialog
             open={!!editTx}
             onOpenChange={(open) => !open && setEditTx(null)}
             transaction={editTx}
-            loading={updateTransaction.isPending}
-            onUpdate={(values) => updateTransaction.mutate(values)}
+            loading={updateTransactionPending}
+            onUpdate={(values) => {
+              onUpdateTransaction(values)
+              setEditTx(null)
+            }}
           />
         )}
         {deleteTx && (
@@ -503,8 +515,11 @@ export function AppointmentDetailPage({ appointmentId }: { appointmentId: string
             open={!!deleteTx}
             onOpenChange={(open) => !open && setDeleteTx(null)}
             transaction={deleteTx}
-            loading={deleteTransaction.isPending}
-            onDelete={(id) => deleteTransaction.mutate({ id })}
+            loading={deleteTransactionPending}
+            onDelete={(id) => {
+              onDeleteTransaction(id)
+              setDeleteTx(null)
+            }}
           />
         )}
       </Stack>

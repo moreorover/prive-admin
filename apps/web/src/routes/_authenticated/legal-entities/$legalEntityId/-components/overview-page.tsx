@@ -1,25 +1,23 @@
+import type { ComponentProps } from "react"
+
 import { Group, NumberInput, Stack, Text, Title } from "@mantine/core"
-import { useQuery } from "@tanstack/react-query"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { BankAccountReportBlock } from "@/components/reports-cards"
-import { trpc } from "@/utils/trpc"
 
-import { Route } from "../overview"
+type BankAccountReport = ComponentProps<typeof BankAccountReportBlock>["a"]
 
-export function OverviewTab() {
-  const { legalEntityId } = Route.useParams()
-  const search = Route.useSearch()
-  const navigate = Route.useNavigate()
-  const currentYear = new Date().getFullYear()
-  const year = search.year ?? currentYear
-
-  const setYear = (next: number) => navigate({ search: { year: next } })
-
-  const { data: bankAccounts = [] } = useQuery(
-    trpc.reports.bankAccountMonthlyBreakdown.queryOptions({ year, legalEntityId }),
-  )
-
+export function OverviewTab({
+  year,
+  currentYear,
+  bankAccounts,
+  onYearChange,
+}: {
+  year: number
+  currentYear: number
+  bankAccounts: BankAccountReport[]
+  onYearChange: (year: number) => void
+}) {
   return (
     <Stack gap="lg">
       <BreadcrumbItem label="Overview" order={30} />
@@ -34,7 +32,7 @@ export function OverviewTab() {
         </Stack>
         <NumberInput
           value={year}
-          onChange={(v) => setYear(typeof v === "number" ? v : Number(v) || currentYear)}
+          onChange={(v) => onYearChange(typeof v === "number" ? v : Number(v) || currentYear)}
           min={2000}
           max={3000}
           allowDecimal={false}

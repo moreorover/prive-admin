@@ -1,22 +1,29 @@
 import { Anchor, Badge, Card, Container, Group, SimpleGrid, Stack, Text, Title } from "@mantine/core"
 import { IconCalendar, IconScissors, IconUser } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { trpc } from "@/utils/trpc"
-
-import { Route } from "../$hairSaleId"
 
 const formatCents = (cents: number) => `€${(cents / 100).toFixed(2)}`
 
-export function HairSaleDetailPage() {
-  const { hairSaleId } = Route.useParams()
-  const { data: sale } = useQuery(trpc.hairAssigned.get.queryOptions({ id: hairSaleId }))
+type HairSaleDetail = {
+  id: string
+  appointmentId: string | null
+  createdAt: string | Date
+  weightInGrams: number
+  soldFor: number
+  profit: number
+  pricePerGram: number
+  client: { id: string; name: string }
+  createdBy?: { name: string | null } | null
+  hairOrder: { id: string; uid: number }
+  appointment?: { startsAt: string | Date } | null
+}
 
+export function HairSaleDetailPage({ sale }: { sale: HairSaleDetail | undefined }) {
   if (!sale) {
     return (
       <Container size="xl">

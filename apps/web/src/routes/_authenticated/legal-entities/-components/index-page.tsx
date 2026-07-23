@@ -1,20 +1,35 @@
 import { Badge, Button, Card, Container, Group, SimpleGrid, Stack, Text, Title } from "@mantine/core"
-import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { COUNTRY_FLAGS, COUNTRY_LABELS, type Country } from "@/lib/legal-entity"
 import { LEGAL_ENTITY_SECTIONS, getLegalEntitySectionPath } from "@/lib/legal-entity-navigation"
-import { trpc } from "@/utils/trpc"
 
-export function LegalEntitiesIndex() {
-  const legalEntitiesQuery = useQuery(trpc.legalEntities.list.queryOptions({ pageSize: 100 }))
+type LegalEntityListQuery = {
+  data:
+    | {
+        items: {
+          id: string
+          name: string
+          country: string
+          type: string
+          defaultCurrency: string
+        }[]
+      }
+    | undefined
+  isPending: boolean
+  isError: boolean
+}
+
+export function LegalEntitiesIndex({
+  legalEntitiesQuery,
+  unassignedCount,
+}: {
+  legalEntitiesQuery: LegalEntityListQuery
+  unassignedCount: number
+}) {
   const legalEntities = legalEntitiesQuery.data?.items ?? []
-  const { data: unassignedAttachments } = useQuery(
-    trpc.bankStatementAttachments.list.queryOptions({ assignmentStatus: "unassigned" }),
-  )
-  const unassignedCount = unassignedAttachments?.totalCount ?? 0
 
   return (
     <Container size="xl">

@@ -1,6 +1,7 @@
+import type { ComponentProps } from "react"
+
 import { Button, Group, Pagination, Stack, Table, Text, TextInput } from "@mantine/core"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -8,31 +9,42 @@ import { CreateAppointmentDialog } from "@/components/appointments/create-appoin
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { ClientDate } from "@/components/client-date"
 import { Section } from "@/components/section"
-import { trpc } from "@/utils/trpc"
 
-import {
-  appointmentMasterOptionsQueryOptions,
-  appointmentSalonOptionsQueryOptions,
-  appointmentsQueryOptions,
-  PAGE_SIZE,
-} from "../-data/appointments-data"
-import { useCreateAppointmentAction } from "../../../-actions/appointment-actions"
-import { Route } from "../appointments"
+import { PAGE_SIZE } from "../-data/appointments-data"
 
-export function CustomerAppointmentsRoute() {
-  const { customerId } = Route.useParams()
-  const search = Route.useSearch()
-  const navigate = Route.useNavigate()
+type AppointmentRow = { id: string; name: string; startsAt: string | Date }
+type OptionData = { items: { id: string; name: string }[] }
+
+export function CustomerAppointmentsPage({
+  customerId,
+  page,
+  searchValue,
+  data,
+  masterSearch,
+  masterCustomersData,
+  salonsData,
+  createPending,
+  onCreateAppointment,
+  onMasterSearchChange,
+  onSearchChange,
+  onPageChange,
+}: {
+  customerId: string
+  page: number
+  searchValue: string
+  data: { items: AppointmentRow[]; totalCount: number } | undefined
+  masterSearch: string
+  masterCustomersData: OptionData | undefined
+  salonsData: OptionData | undefined
+  createPending: boolean
+  onCreateAppointment: ComponentProps<typeof CreateAppointmentDialog>["onCreate"]
+  onMasterSearchChange: (search: string) => void
+  onSearchChange: (search: string) => void
+  onPageChange: (page: number) => void
+}) {
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [masterSearch, setMasterSearch] = useState("")
 
-  const page = search.page ?? 1
-  const searchValue = search.search ?? ""
   const normalizedSearch = searchValue.trim()
-  const queryOptions = appointmentsQueryOptions(customerId, page, searchValue)
-  const { data } = useQuery(queryOptions)
-  const { data: masterCustomersData } = useQuery(appointmentMasterOptionsQueryOptions(masterSearch))
-  const { data: salonsData } = useQuery(appointmentSalonOptionsQueryOptions())
   const masterOptions = (masterCustomersData?.items ?? []).map((customer) => ({
     value: customer.id,
     label: customer.name,
@@ -43,18 +55,6 @@ export function CustomerAppointmentsRoute() {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   const clampedPage = Math.min(page, totalPages)
   const hasItemsOnCurrentPage = appointments.length > 0
-  const createAppointment = useCreateAppointmentAction({
-    invalidateKeys: [
-      { queryKey: trpc.customers.appointments.list.queryKey() },
-      { queryKey: trpc.customers.summary.queryOptions({ id: customerId }).queryKey },
-    ],
-    onCreated: (created) => {
-      setDialogOpen(false)
-      if (created?.id) {
-        navigate({ to: "/appointments/$appointmentId", params: { appointmentId: created.id } })
-      }
-    },
-  })
 
   return (
     <>
@@ -70,7 +70,7 @@ export function CustomerAppointmentsRoute() {
               leftSection={<IconSearch size={16} />}
               value={searchValue}
               onChange={(event) => {
-                navigate({ search: { page: 1, search: event.currentTarget.value }, replace: true })
+                onSearchChange(event.currentTarget.value)
               }}
               w={260}
             />
@@ -129,11 +129,7 @@ export function CustomerAppointmentsRoute() {
             <Text size="sm" c="dimmed">
               {totalCount} appointment{totalCount === 1 ? "" : "s"} · Page {clampedPage} of {totalPages}
             </Text>
-            <Pagination
-              value={clampedPage}
-              total={totalPages}
-              onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
-            />
+            <Pagination value={clampedPage} total={totalPages} onChange={onPageChange} />
           </Group>
         </Stack>
 
@@ -141,15 +137,18 @@ export function CustomerAppointmentsRoute() {
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           defaultClientId={customerId}
-          loading={createAppointment.isPending}
-          onCreate={(values) => createAppointment.mutate(values)}
+          loading={createPending}
+          onCreate={(values) => {
+            onCreateAppointment(values)
+            setDialogOpen(false)
+          }}
           clientOptions={[]}
           masterOptions={masterOptions}
           salonOptions={salonOptions}
           clientSearch=""
           masterSearch={masterSearch}
           onClientSearchChange={() => {}}
-          onMasterSearchChange={setMasterSearch}
+          onMasterSearchChange={onMasterSearchChange}
         />
       </Section>
     </>

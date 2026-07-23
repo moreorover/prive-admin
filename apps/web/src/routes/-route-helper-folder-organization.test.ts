@@ -54,15 +54,13 @@ describe("route helper folder organization", () => {
     expect(declarations.length, relative(routesDir, path)).toBeLessThanOrEqual(4)
   })
 
-  it.each(componentFiles(routesDir))("keeps non-page route-local components server-state free %s", (path) => {
-    const basename = path.split("/").at(-1) ?? ""
-    if (basename.endsWith("page.tsx") || basename === "route-page.tsx") return
-
+  it.each(componentFiles(routesDir))("keeps route-local components server-state free %s", (path) => {
     const source = readFileSync(path, "utf8")
     const routePath = relative(routesDir, path)
 
     expect(source, routePath).not.toContain("useQuery(")
     expect(source, routePath).not.toContain("useSuspenseQuery(")
     expect(source, routePath).not.toContain("useMutation(")
+    expect(source, routePath).not.toMatch(/use[A-Z][A-Za-z0-9]*(Action|Actions)\(/)
   })
 })

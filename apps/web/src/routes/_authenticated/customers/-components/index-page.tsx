@@ -1,7 +1,6 @@
 import { Button, Container, Group, Modal, Pagination, Stack, Table, Text, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -9,24 +8,39 @@ import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 
-import { useCreateCustomerAction } from "../-actions/customer-actions"
-import { customersListQueryOptions } from "../-data/index-data"
-import { Route } from "../index"
-
 const PAGE_SIZE = 10
+type CustomerListData = {
+  items: {
+    id: string
+    name: string
+    phoneNumber: string | null
+    createdAt: Date | string
+  }[]
+  totalCount: number
+}
+type CustomerCreateValues = { name: string; phoneNumber: string | null }
 
-function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const mutation = useCreateCustomerAction({ onCreated: () => onOpenChange(false) })
-
+function CustomerFormDialog({
+  open,
+  onOpenChange,
+  loading,
+  onCreate,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  loading: boolean
+  onCreate: (values: CustomerCreateValues) => Promise<unknown>
+}) {
   const form = useForm({
     initialValues: { name: "", phoneNumber: "" },
   })
 
   const handleSubmit = async (values: { name: string; phoneNumber: string }) => {
-    await mutation.mutateAsync({
+    await onCreate({
       name: values.name,
       phoneNumber: values.phoneNumber || null,
     })
+    onOpenChange(false)
   }
 
   return (
@@ -35,7 +49,7 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
         <Stack>
           <TextInput label="Name" {...form.getInputProps("name")} />
           <TextInput label="Phone Number" placeholder="+1234567890" {...form.getInputProps("phoneNumber")} />
-          <Button type="submit" loading={mutation.isPending}>
+          <Button type="submit" loading={loading}>
             Create Customer
           </Button>
         </Stack>
@@ -44,12 +58,25 @@ function CustomerFormDialog({ open, onOpenChange }: { open: boolean; onOpenChang
   )
 }
 
-export function CustomersPage() {
-  const search = Route.useSearch()
-  const navigate = Route.useNavigate()
-  const page = search.page ?? 1
-  const searchValue = search.search ?? ""
-  const { data } = useQuery(customersListQueryOptions(page, searchValue))
+type CustomersPageProps = {
+  page: number
+  searchValue: string
+  data: CustomerListData | undefined
+  createCustomerPending: boolean
+  onCreateCustomer: (values: CustomerCreateValues) => Promise<unknown>
+  onSearchChange: (search: string) => void
+  onPageChange: (page: number) => void
+}
+
+export function CustomersPage({
+  page,
+  searchValue,
+  data,
+  createCustomerPending,
+  onCreateCustomer,
+  onSearchChange,
+  onPageChange,
+}: CustomersPageProps) {
   const customers = data?.items ?? []
   const totalCount = data?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
@@ -74,7 +101,7 @@ export function CustomersPage() {
             leftSection={<IconSearch size={16} />}
             value={searchValue}
             onChange={(event) => {
-              navigate({ search: { page: 1, search: event.currentTarget.value }, replace: true })
+              onSearchChange(event.currentTarget.value)
             }}
             miw={260}
             flex={1}
@@ -128,15 +155,16 @@ export function CustomersPage() {
           <Text size="sm" c="dimmed">
             Page {Math.min(page, totalPages)} of {totalPages}
           </Text>
-          <Pagination
-            total={totalPages}
-            value={Math.min(page, totalPages)}
-            onChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
-          />
+          <Pagination total={totalPages} value={Math.min(page, totalPages)} onChange={onPageChange} />
         </Group>
       </Section>
 
-      <CustomerFormDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+      <CustomerFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        loading={createCustomerPending}
+        onCreate={onCreateCustomer}
+      />
     </Container>
   )
 }

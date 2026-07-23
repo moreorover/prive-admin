@@ -16,7 +16,6 @@ import {
 } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { IconLinkOff, IconTrash } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -26,25 +25,47 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { type Currency, formatMinor } from "@/lib/currency"
 
-import { useDocumentActions } from "../-actions/document-actions"
-import { type DocumentStatus, documentsQueryOptions, PAGE_SIZE } from "../-data/index-data"
-import { Route } from "../index"
+import { type DocumentStatus, PAGE_SIZE } from "../-data/index-data"
 
-export function DocumentsPage() {
-  const search = Route.useSearch()
-  const navigate = Route.useNavigate()
-  const status = search.status ?? "unassigned"
-  const page = search.page ?? 1
+type DocumentsQueryResult = {
+  data: DocumentsData | undefined
+  isFetching: boolean
+  isError: boolean
+}
+type DocumentsData = {
+  items: Parameters<typeof DocumentsTable>[0]["documents"]
+  totalCount: number
+}
+
+export function DocumentsPage({
+  status,
+  page,
+  documentsQuery,
+  uploadDocument,
+  unassignPending,
+  removePending,
+  onUnassign,
+  onRemove,
+  onStatusChange,
+  onPageChange,
+}: {
+  status: DocumentStatus
+  page: number
+  documentsQuery: DocumentsQueryResult
+  uploadDocument: (file: File) => Promise<unknown>
+  unassignPending: boolean
+  removePending: boolean
+  onUnassign: (id: string) => void
+  onRemove: (id: string) => void
+  onStatusChange: (status: DocumentStatus) => void
+  onPageChange: (page: number) => void
+}) {
   const [busy, setBusy] = useState(false)
   const [fileInputKey, setFileInputKey] = useState(0)
   const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
-
-  const documentsQuery = useQuery(documentsQueryOptions({ status, page }))
   const documents = documentsQuery.data?.items ?? []
   const totalCount = documentsQuery.data?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
-
-  const { upload: uploadDocument, unassign, remove } = useDocumentActions()
 
   const upload = async (file: File) => {
     setBusy(true)
@@ -84,12 +105,7 @@ export function DocumentsPage() {
           <Group px={documents.length > 0 ? "md" : 0} pt={documents.length > 0 ? "md" : 0} justify="space-between">
             <SegmentedControl
               value={status}
-              onChange={(value) =>
-                navigate({
-                  search: { page: 1, status: value as DocumentStatus },
-                  replace: true,
-                })
-              }
+              onChange={(value) => onStatusChange(value as DocumentStatus)}
               data={[
                 { label: "Unassigned", value: "unassigned" },
                 { label: "Assigned", value: "assigned" },
@@ -109,10 +125,10 @@ export function DocumentsPage() {
               <Table.ScrollContainer minWidth={980}>
                 <DocumentsTable
                   documents={documents}
-                  unassignPending={unassign.isPending}
-                  removePending={remove.isPending}
-                  onUnassign={(id) => unassign.mutate({ id })}
-                  onRemove={(id) => remove.mutate({ id })}
+                  unassignPending={unassignPending}
+                  removePending={removePending}
+                  onUnassign={onUnassign}
+                  onRemove={onRemove}
                   onPreview={setPreviewAttachment}
                 />
               </Table.ScrollContainer>
@@ -128,12 +144,7 @@ export function DocumentsPage() {
               <Text size="sm" c="dimmed">
                 {totalCount} document{totalCount === 1 ? "" : "s"} · Page {Math.min(page, totalPages)} of {totalPages}
               </Text>
-              <Pagination
-                size="sm"
-                total={totalPages}
-                value={Math.min(page, totalPages)}
-                onChange={(nextPage) => navigate({ search: { page: nextPage, status }, replace: true })}
-              />
+              <Pagination size="sm" total={totalPages} value={Math.min(page, totalPages)} onChange={onPageChange} />
             </Group>
           ) : null}
         </Stack>

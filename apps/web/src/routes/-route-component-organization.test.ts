@@ -25,7 +25,7 @@ describe("route component organization", () => {
     const source = readFileSync(path, "utf8")
     const routePath = relative(routesDir, path)
 
-    expect(source, routePath).not.toMatch(/function\s+(?!Route\b)[A-Z][A-Za-z0-9_]*/)
-    expect(source, routePath).not.toMatch(/(?:const|let|var)\s+(?!Route\b)[A-Z][A-Za-z0-9_]*\s*=/)
+    expect(source, routePath).not.toMatch(/function\s+(?!Route\b|RouteComponent\b)[A-Z][A-Za-z0-9_]*/)
+    expect(source, routePath).not.toMatch(/(?:const|let|var)\s+(?!Route\b|RouteComponent\b)[A-Z][A-Za-z0-9_]*\s*=/)
   })
 })

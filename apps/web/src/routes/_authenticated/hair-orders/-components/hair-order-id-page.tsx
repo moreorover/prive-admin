@@ -1,3 +1,5 @@
+import type { ComponentProps } from "react"
+
 import {
   Badge,
   Button,
@@ -27,40 +29,47 @@ import { HairAssignedTable, type HairAssignedRow } from "@/components/hair-assig
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 
-import { Route } from "../$hairOrderId"
-import { useHairOrderDetailActions } from "../-actions/hair-order-actions"
 import { useHairOrderDetailData } from "../-data/hair-order-detail-data"
-import { useHairAssignmentActions } from "../../-actions/hair-assignment-actions"
 
 const formatCents = (cents: number) => `€${(cents / 100).toFixed(2)}`
+type HairOrderDetailData = ReturnType<typeof useHairOrderDetailData>
 
-export function HairOrderDetailPage() {
-  const { hairOrderId } = Route.useParams()
+export function HairOrderDetailPage({
+  detailData,
+  editItem,
+  deleteItem,
+  recalculatePending,
+  updateOrderPending,
+  createPending,
+  updatePending,
+  deletePending,
+  onEditItemChange,
+  onDeleteItemChange,
+  onRecalculate,
+  onUpdateOrder,
+  onCreate,
+  onUpdate,
+  onDelete,
+}: {
+  detailData: HairOrderDetailData
+  editItem: HairAssignedRow | null
+  deleteItem: HairAssignedRow | null
+  recalculatePending: boolean
+  updateOrderPending: boolean
+  createPending: boolean
+  updatePending: boolean
+  deletePending: boolean
+  onEditItemChange: (item: HairAssignedRow | null) => void
+  onDeleteItemChange: (item: HairAssignedRow | null) => void
+  onRecalculate: () => void
+  onUpdateOrder: ComponentProps<typeof EditHairOrderModal>["onSave"]
+  onCreate: ComponentProps<typeof CreateHairAssignedDialog>["onCreate"]
+  onUpdate: ComponentProps<typeof EditHairAssignedDialog>["onUpdate"]
+  onDelete: (id: string) => void
+}) {
   const [createOpen, setCreateOpen] = useState(false)
-  const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
-  const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
   const [editOrderOpen, setEditOrderOpen] = useState(false)
-  const {
-    hairOrder,
-    hairOrderQueryOptions,
-    availableHairOrders,
-    availableHairOrdersLoading,
-    assignedClientSummaryKeys,
-  } = useHairOrderDetailData(hairOrderId)
-
-  const { recalculatePrices, updateHairOrder } = useHairOrderDetailActions({
-    hairOrderId,
-    invalidateKeys: [{ queryKey: hairOrderQueryOptions.queryKey }, ...assignedClientSummaryKeys],
-    onUpdated: () => setEditOrderOpen(false),
-  })
-  const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({
-    invalidateKeys: [{ queryKey: hairOrderQueryOptions.queryKey }, ...assignedClientSummaryKeys],
-    selectedEditItem: editItem,
-    selectedDeleteItem: deleteItem,
-    onCreated: () => setCreateOpen(false),
-    onUpdated: () => setEditItem(null),
-    onDeleted: () => setDeleteItem(null),
-  })
+  const { hairOrder, availableHairOrders, availableHairOrdersLoading } = detailData
 
   if (!hairOrder) {
     return (
@@ -110,8 +119,8 @@ export function HairOrderDetailPage() {
             <Button
               variant="default"
               leftSection={<IconCalculator size={14} />}
-              loading={recalculatePrices.isPending}
-              onClick={() => recalculatePrices.mutate({ hairOrderId })}
+              loading={recalculatePending}
+              onClick={onRecalculate}
             >
               Recalculate
             </Button>
@@ -170,7 +179,7 @@ export function HairOrderDetailPage() {
               <HairAssignedTable.SoldFor />
               <HairAssignedTable.Profit />
               <HairAssignedTable.PricePerGram />
-              <HairAssignedTable.Actions onEdit={setEditItem} onDelete={setDeleteItem} />
+              <HairAssignedTable.Actions onEdit={onEditItemChange} onDelete={onDeleteItemChange} />
             </HairAssignedTable>
           </Section>
 
@@ -198,35 +207,47 @@ export function HairOrderDetailPage() {
           open={createOpen}
           onOpenChange={setCreateOpen}
           clientId={hairOrder.customer.id}
-          loading={createHairAssigned.isPending}
-          onCreate={(values) => createHairAssigned.mutate(values)}
+          loading={createPending}
+          onCreate={(values) => {
+            onCreate(values)
+            setCreateOpen(false)
+          }}
           availableOrders={availableHairOrders}
           availableOrdersLoading={availableHairOrdersLoading}
         />
         {editItem && (
           <EditHairAssignedDialog
             open={!!editItem}
-            onOpenChange={(open) => !open && setEditItem(null)}
+            onOpenChange={(open) => !open && onEditItemChange(null)}
             hairAssigned={editItem}
-            loading={updateHairAssigned.isPending}
-            onUpdate={(values) => updateHairAssigned.mutate(values)}
+            loading={updatePending}
+            onUpdate={(values) => {
+              onUpdate(values)
+              onEditItemChange(null)
+            }}
           />
         )}
         {deleteItem && (
           <DeleteHairAssignedDialog
             open={!!deleteItem}
-            onOpenChange={(open) => !open && setDeleteItem(null)}
+            onOpenChange={(open) => !open && onDeleteItemChange(null)}
             hairAssigned={deleteItem}
-            loading={deleteHairAssigned.isPending}
-            onDelete={(id) => deleteHairAssigned.mutate({ id })}
+            loading={deletePending}
+            onDelete={(id) => {
+              onDelete(id)
+              onDeleteItemChange(null)
+            }}
           />
         )}
         <EditHairOrderModal
           open={editOrderOpen}
           onOpenChange={setEditOrderOpen}
           hairOrder={hairOrder}
-          loading={updateHairOrder.isPending}
-          onSave={(values) => updateHairOrder.mutate(values)}
+          loading={updateOrderPending}
+          onSave={(values) => {
+            onUpdateOrder(values)
+            setEditOrderOpen(false)
+          }}
         />
       </Stack>
     </Container>

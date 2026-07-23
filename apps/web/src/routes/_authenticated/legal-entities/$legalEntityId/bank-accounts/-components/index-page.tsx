@@ -1,16 +1,24 @@
 import { Anchor, Button, Table } from "@mantine/core"
-import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { Section } from "@/components/section"
-import { trpc } from "@/utils/trpc"
 
-import { Route } from "../index"
+type BankAccount = {
+  id: string
+  displayName: string
+  iban: string
+  currency: string
+  bankName: string | null
+}
 
-export function BankAccountsTab() {
-  const { legalEntityId } = Route.useParams()
-  const { data: legalEntity } = useQuery(trpc.legalEntities.get.queryOptions({ id: legalEntityId }))
+export function BankAccountsTab({
+  legalEntityId,
+  legalEntity,
+}: {
+  legalEntityId: string
+  legalEntity: { bankAccounts: BankAccount[] } | undefined
+}) {
   const bankAccounts = legalEntity?.bankAccounts ?? []
 
   return (

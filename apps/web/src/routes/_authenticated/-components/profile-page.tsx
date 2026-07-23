@@ -16,7 +16,6 @@ import {
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconAlertCircle, IconDeviceLaptop, IconDeviceMobile } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
@@ -25,13 +24,6 @@ import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { authClient } from "@/lib/auth-client"
 import { CURRENCY_OPTIONS, type Currency } from "@/lib/currency"
-import { trpc } from "@/utils/trpc"
-
-import {
-  sessionsQueryKey,
-  useRevokeSessionAction,
-  useUpdateUserProfileAction,
-} from "../profile/-actions/profile-actions"
 
 type ParsedUA = { isMobile: boolean; os: string; browser: string }
 
@@ -51,23 +43,43 @@ function parseUA(ua: string): ParsedUA {
   return { isMobile, os, browser }
 }
 
-export function ProfilePage() {
-  const { data: current, isPending } = authClient.useSession()
+type ProfileSession = {
+  id: string
+  token: string
+  userAgent?: string | null
+  ipAddress?: string | null
+}
+type CurrentSession = {
+  user: { name: string; email: string; emailVerified: boolean }
+  session: { id: string }
+}
+
+export function ProfilePage({
+  current,
+  isPending,
+  sessions,
+  preferredCurrency,
+  terminatingId,
+  revokePending,
+  updateProfilePending,
+  onTerminatingIdChange,
+  onRevokeSession,
+  onUpdateProfile,
+}: {
+  current: CurrentSession | null | undefined
+  isPending: boolean
+  sessions: ProfileSession[]
+  preferredCurrency: string
+  terminatingId: string | undefined
+  revokePending: boolean
+  updateProfilePending: boolean
+  onTerminatingIdChange: (id: string | undefined) => void
+  onRevokeSession: (token: string) => Promise<unknown>
+  onUpdateProfile: (values: { name: string; preferredCurrency: Currency }) => Promise<void>
+}) {
   const [editOpen, setEditOpen] = useState(false)
   const [pwOpen, setPwOpen] = useState(false)
   const [verifyPending, setVerifyPending] = useState(false)
-  const [terminatingId, setTerminatingId] = useState<string | undefined>()
-
-  const { data: sessionsResult } = useQuery({
-    queryKey: sessionsQueryKey,
-    queryFn: () => authClient.listSessions(),
-  })
-  const sessions = sessionsResult?.data ?? []
-
-  const userSettingsQueryOptions = trpc.userSettings.get.queryOptions()
-  const { data: settings } = useQuery(userSettingsQueryOptions)
-
-  const revokeSession = useRevokeSessionAction({ onRevoked: () => setTerminatingId(undefined) })
 
   if (isPending || !current) {
     return <Loader2 />
@@ -105,7 +117,7 @@ export function ProfilePage() {
                 {user.email}
               </Text>
               <Text fz="xs" c="dimmed">
-                Preferred currency: {settings?.preferredCurrency ?? "EUR"}
+                Preferred currency: {preferredCurrency}
               </Text>
             </Stack>
           </Group>
@@ -169,13 +181,13 @@ export function ProfilePage() {
                       size="xs"
                       variant="subtle"
                       color="red"
-                      disabled={revokeSession.isPending && terminatingId === s.id}
+                      disabled={revokePending && terminatingId === s.id}
                       onClick={async () => {
-                        setTerminatingId(s.id)
-                        await revokeSession.mutateAsync(s.token)
+                        onTerminatingIdChange(s.id)
+                        await onRevokeSession(s.token)
                       }}
                     >
-                      {revokeSession.isPending && terminatingId === s.id ? (
+                      {revokePending && terminatingId === s.id ? (
                         <Loader size={14} />
                       ) : isCurrent ? (
                         "Sign out"
@@ -192,11 +204,16 @@ export function ProfilePage() {
       </Stack>
 
       <EditUserModal
-        key={settings?.preferredCurrency ?? "loading"}
+        key={preferredCurrency}
         open={editOpen}
         onOpenChange={setEditOpen}
         initialName={user.name}
-        initialCurrency={settings?.preferredCurrency ?? "EUR"}
+        initialCurrency={preferredCurrency}
+        submitting={updateProfilePending}
+        onUpdate={async (values) => {
+          await onUpdateProfile(values)
+          setEditOpen(false)
+        }}
       />
       <ChangePasswordModal open={pwOpen} onOpenChange={setPwOpen} />
     </Container>
@@ -208,19 +225,16 @@ type EditUserModalProps = {
   onOpenChange: (open: boolean) => void
   initialName: string
   initialCurrency: string
+  submitting: boolean
+  onUpdate: (values: { name: string; preferredCurrency: Currency }) => Promise<void>
 }
 
-function EditUserModal({ open, onOpenChange, initialName, initialCurrency }: EditUserModalProps) {
+function EditUserModal({ open, onOpenChange, initialName, initialCurrency, submitting, onUpdate }: EditUserModalProps) {
   const safeInitialCurrency: Currency = initialCurrency === "GBP" || initialCurrency === "EUR" ? initialCurrency : "EUR"
   const form = useForm({ initialValues: { name: initialName, preferredCurrency: safeInitialCurrency } })
-  const { submitting, updateUserProfile } = useUpdateUserProfileAction({
-    initialName,
-    initialCurrency: safeInitialCurrency,
-    onUpdated: () => onOpenChange(false),
-  })
 
   const handleSubmit = async (values: { name: string; preferredCurrency: Currency }) => {
-    await updateUserProfile(values)
+    await onUpdate(values)
   }
 
   return (

@@ -1,28 +1,32 @@
 import { Button, Container, Group, Stack, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
-import { useQuery } from "@tanstack/react-query"
-import { Link, useNavigate } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
 import { useEffect } from "react"
 
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import { salonSchema } from "@/lib/schemas"
-import { trpc } from "@/utils/trpc"
 
-import { Route } from "../$salonId"
-import { useSalonActions } from "../-actions/salon-actions"
+type SalonValues = { id?: string; name: string; address: string }
+type SalonRecord = { id: string; name: string; address: string | null }
 
-export function SalonEdit() {
-  const { salonId } = Route.useParams()
+export function SalonEdit({
+  salonId,
+  salon,
+  createPending,
+  updatePending,
+  onCreate,
+  onUpdate,
+}: {
+  salonId: string
+  salon: SalonRecord | undefined
+  createPending: boolean
+  updatePending: boolean
+  onCreate: (values: SalonValues) => void
+  onUpdate: (values: SalonValues) => void
+}) {
   const isNew = salonId === "new"
-  const navigate = useNavigate()
-  const salonQueryOptions = trpc.salons.get.queryOptions({ id: salonId })
-
-  const { data: salon } = useQuery({
-    ...salonQueryOptions,
-    enabled: !isNew,
-  })
 
   const form = useForm({
     initialValues: { id: undefined as string | undefined, name: "", address: "" },
@@ -40,17 +44,15 @@ export function SalonEdit() {
     }
   }, [form.setValues, form.resetDirty, isNew, salon])
 
-  const { create, update } = useSalonActions({ salonId, onSaved: () => navigate({ to: "/salons" }) })
-
   const handleSubmit = (values: typeof form.values) => {
     if (isNew) {
-      create.mutate(values)
+      onCreate(values)
       return
     }
-    update.mutate({ ...values, id: salonId })
+    onUpdate({ ...values, id: salonId })
   }
 
-  const isSaving = create.isPending || update.isPending
+  const isSaving = createPending || updatePending
 
   return (
     <Container size="md">
