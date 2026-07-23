@@ -7,7 +7,7 @@ import { trpc } from "@/utils/trpc"
 import { AuthenticatedErrorComponent, AuthenticatedLayout } from "./-components/route-page"
 
 export const Route = createFileRoute("/_authenticated")({
-  component: routeComponent,
+  component: RouteComponent,
   errorComponent: AuthenticatedErrorComponent,
   beforeLoad: async ({ location }) => {
     const session = await authClient.getSession()
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated")({
   },
 })
 
-function routeComponent() {
+function RouteComponent() {
   const unassignedAttachments = useQuery(
     trpc.bankStatementAttachments.list.queryOptions({ assignmentStatus: "unassigned" }),
   ).data

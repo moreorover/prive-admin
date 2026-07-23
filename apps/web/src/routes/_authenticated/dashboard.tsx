@@ -13,7 +13,7 @@ const searchSchema = z.object({
 })
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  component: routeComponent,
+  component: RouteComponent,
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => {
     const selected = parseMonthKey(search.month ?? monthKeyFromDate(new Date()))
@@ -42,7 +42,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   },
 })
 
-function routeComponent() {
+function RouteComponent() {
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
   const selectedMonthKey = search.month ?? monthKeyFromDate(new Date())

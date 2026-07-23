@@ -7,10 +7,10 @@ import { useSalonActions } from "./-actions/salon-actions"
 import { SalonEdit } from "./-components/salon-id-page"
 
 export const Route = createFileRoute("/_authenticated/salons/$salonId")({
-  component: routeComponent,
+  component: RouteComponent,
 })
 
-function routeComponent() {
+function RouteComponent() {
   const { salonId } = Route.useParams()
   const isNew = salonId === "new"
   const navigate = Route.useNavigate()

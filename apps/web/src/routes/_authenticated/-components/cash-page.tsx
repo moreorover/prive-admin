@@ -12,22 +12,15 @@ import { DeleteCashTransactionDialog } from "@/components/cash-transactions/dele
 import { EditCashTransactionDialog } from "@/components/cash-transactions/edit-cash-transaction-dialog"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
-import { type Currency } from "@/lib/currency"
 import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 
-export const PAGE_SIZE = 25
-export const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
+import {
+  CASH_TRANSACTIONS_PAGE_SIZE,
+  type CashTransactionDirection,
+  type CashTransactionCurrencyFilter,
+  type CashTransactionFilters,
+} from "../-data/cash-data"
 
-type CashTransactionDirection = "all" | "received" | "paid"
-type CashTransactionCurrencyFilter = Currency | ""
-export type CashTransactionFilters = {
-  search: string
-  customerId: string
-  currency: CashTransactionCurrencyFilter
-  direction: CashTransactionDirection
-  dateFrom: string
-  dateTo: string
-}
 type CustomersData = { items: { id: string; name: string }[] }
 type CashTransactionsData = { items: CashTransactionRow[]; totalCount: number }
 
@@ -191,7 +184,7 @@ export function CashPage({
               <CashTransactionsTable.Actions onEdit={setEditing} onDelete={setDeleting} />
               <CashTransactionsTable.Pagination
                 page={page}
-                pageSize={PAGE_SIZE}
+                pageSize={CASH_TRANSACTIONS_PAGE_SIZE}
                 itemCount={result?.items.length ?? 0}
                 totalCount={totalCount}
                 onChange={onPageChange}

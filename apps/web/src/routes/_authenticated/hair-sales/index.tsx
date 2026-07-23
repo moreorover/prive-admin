@@ -5,7 +5,7 @@ import { HairSalesPage } from "./-components/index-page"
 import { type HairSalesSource, hairSalesQueryOptions, PAGE_SIZE, searchSchema } from "./-data/index-data"
 
 export const Route = createFileRoute("/_authenticated/hair-sales/")({
-  component: routeComponent,
+  component: RouteComponent,
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({
     page: search.page ?? 1,
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/hair-sales/")({
   },
 })
 
-function routeComponent() {
+function RouteComponent() {
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
   const page = search.page ?? 1

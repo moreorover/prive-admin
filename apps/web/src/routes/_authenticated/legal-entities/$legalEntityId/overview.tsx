@@ -11,11 +11,11 @@ const searchSchema = z.object({
 })
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/overview")({
-  component: routeComponent,
+  component: RouteComponent,
   validateSearch: searchSchema,
 })
 
-function routeComponent() {
+function RouteComponent() {
   const { legalEntityId } = Route.useParams()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()

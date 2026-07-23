@@ -6,7 +6,7 @@ import { NotesPage } from "./-components/notes-page"
 import { PAGE_SIZE, notesQueryOptions, searchSchema } from "./-data/notes-data"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId/notes")({
-  component: routeComponent,
+  component: RouteComponent,
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({
     page: search.page ?? 1,
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId/note
   },
 })
 
-function routeComponent() {
+function RouteComponent() {
   const { customerId } = Route.useParams()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()

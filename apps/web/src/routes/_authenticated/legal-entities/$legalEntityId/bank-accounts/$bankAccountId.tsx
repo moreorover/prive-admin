@@ -12,10 +12,10 @@ import {
 import { BankAccountPage, STATEMENT_ENTRIES_PAGE_SIZE, type StatusFilter } from "./-components/bank-account-id-page"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/bank-accounts/$bankAccountId")({
-  component: routeComponent,
+  component: RouteComponent,
 })
 
-function routeComponent() {
+function RouteComponent() {
   const { bankAccountId, legalEntityId } = Route.useParams()
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("PENDING")
   const [openAttachmentEntryId, setOpenAttachmentEntryId] = useState<string | null>(null)

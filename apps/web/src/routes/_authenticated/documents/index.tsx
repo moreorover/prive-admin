@@ -6,7 +6,7 @@ import { DocumentsPage } from "./-components/index-page"
 import { documentsQueryOptions, PAGE_SIZE, searchSchema } from "./-data/index-data"
 
 export const Route = createFileRoute("/_authenticated/documents/")({
-  component: routeComponent,
+  component: RouteComponent,
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({
     page: search.page ?? 1,
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/documents/")({
   },
 })
 
-function routeComponent() {
+function RouteComponent() {
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
   const status = search.status ?? "unassigned"

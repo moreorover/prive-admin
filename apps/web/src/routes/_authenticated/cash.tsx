@@ -5,13 +5,18 @@ import { useState } from "react"
 import { trpc } from "@/utils/trpc"
 
 import { useCashTransactionActions } from "./-actions/cash-transaction-actions"
-import { CashPage, type CashTransactionFilters, PAGE_SIZE, defaultCustomersListInput } from "./-components/cash-page"
+import { CashPage } from "./-components/cash-page"
+import {
+  CASH_TRANSACTIONS_PAGE_SIZE,
+  type CashTransactionFilters,
+  defaultCashCustomersListInput,
+} from "./-data/cash-data"
 
 export const Route = createFileRoute("/_authenticated/cash")({
-  component: routeComponent,
+  component: RouteComponent,
 })
 
-function routeComponent() {
+function RouteComponent() {
   const [page, setPage] = useState(1)
   const [filters, setFilters] = useState<CashTransactionFilters>({
     search: "",
@@ -26,25 +31,25 @@ function routeComponent() {
   const [editCustomerSearch, setEditCustomerSearch] = useState("")
   const customersData = useQuery(
     trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
+      ...defaultCashCustomersListInput,
       search: customerSearch.trim() || undefined,
     }),
   ).data
   const createCustomersData = useQuery(
     trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
+      ...defaultCashCustomersListInput,
       search: createCustomerSearch.trim() || undefined,
     }),
   ).data
   const editCustomersData = useQuery(
     trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
+      ...defaultCashCustomersListInput,
       search: editCustomerSearch.trim() || undefined,
     }),
   ).data
   const queryFilter = {
     page,
-    pageSize: PAGE_SIZE,
+    pageSize: CASH_TRANSACTIONS_PAGE_SIZE,
     search: filters.search.trim() || undefined,
     customerId: filters.customerId || undefined,
     currency: filters.currency || undefined,

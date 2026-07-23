@@ -35,10 +35,10 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId/appo
       })
     }
   },
-  component: routeComponent,
+  component: RouteComponent,
 })
 
-function routeComponent() {
+function RouteComponent() {
   const { customerId } = Route.useParams()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()

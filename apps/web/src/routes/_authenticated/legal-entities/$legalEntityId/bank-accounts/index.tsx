@@ -6,10 +6,10 @@ import { trpc } from "@/utils/trpc"
 import { BankAccountsTab } from "./-components/index-page"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/bank-accounts/")({
-  component: routeComponent,
+  component: RouteComponent,
 })
 
-function routeComponent() {
+function RouteComponent() {
   const { legalEntityId } = Route.useParams()
   const legalEntity = useQuery(trpc.legalEntities.get.queryOptions({ id: legalEntityId })).data
 

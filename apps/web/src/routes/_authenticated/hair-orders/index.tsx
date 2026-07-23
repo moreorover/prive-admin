@@ -11,10 +11,10 @@ const hairOrdersPageSize = 25
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 
 export const Route = createFileRoute("/_authenticated/hair-orders/")({
-  component: routeComponent,
+  component: RouteComponent,
 })
 
-function routeComponent() {
+function RouteComponent() {
   const [page, setPage] = useState(1)
   const [customerSearch, setCustomerSearch] = useState("")
   const hairOrdersQuery = useQuery(trpc.hairOrders.list.queryOptions({ page, pageSize: hairOrdersPageSize }))

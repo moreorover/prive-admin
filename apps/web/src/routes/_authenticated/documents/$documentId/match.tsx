@@ -11,7 +11,7 @@ import {
 } from "./-data/match-data"
 
 export const Route = createFileRoute("/_authenticated/documents/$documentId/match")({
-  component: routeComponent,
+  component: RouteComponent,
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({
     page: search.page ?? 1,
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/_authenticated/documents/$documentId/matc
   },
 })
 
-function routeComponent() {
+function RouteComponent() {
   const { documentId } = Route.useParams()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()

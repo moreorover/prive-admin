@@ -15,7 +15,7 @@ import {
 } from "./-data/hair-sales-data"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId/hair-sales")({
-  component: routeComponent,
+  component: RouteComponent,
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({
     page: search.page ?? 1,
@@ -37,7 +37,7 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId/hair
   },
 })
 
-function routeComponent() {
+function RouteComponent() {
   const { customerId } = Route.useParams()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()

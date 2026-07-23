@@ -13,7 +13,7 @@ import {
 } from "./-data/hair-order-detail-data"
 
 export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")({
-  component: routeComponent,
+  component: RouteComponent,
   loader: async ({ context, params }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(hairOrderDetailQueryOptions(params.hairOrderId)),
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")
   },
 })
 
-function routeComponent() {
+function RouteComponent() {
   const { hairOrderId } = Route.useParams()
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)

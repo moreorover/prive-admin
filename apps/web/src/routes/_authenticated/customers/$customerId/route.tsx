@@ -8,7 +8,7 @@ import { useUpdateCustomerAction } from "./-actions/customer-detail-actions"
 import { CustomerDetailPage } from "./-components/route-page"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
-  component: routeComponent,
+  component: RouteComponent,
   loader: async ({ context, params }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(trpc.customers.get.queryOptions({ id: params.customerId })),
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
   },
 })
 
-function routeComponent() {
+function RouteComponent() {
   const { customerId } = Route.useParams()
   const navigate = Route.useNavigate()
   const customer = useQuery(trpc.customers.get.queryOptions({ id: customerId })).data

@@ -6,7 +6,7 @@ import { CustomersPage } from "./-components/index-page"
 import { customersListQueryOptions, searchSchema } from "./-data/index-data"
 
 export const Route = createFileRoute("/_authenticated/customers/")({
-  component: routeComponent,
+  component: RouteComponent,
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({
     page: search.page ?? 1,
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/customers/")({
   },
 })
 
-function routeComponent() {
+function RouteComponent() {
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
   const page = search.page ?? 1

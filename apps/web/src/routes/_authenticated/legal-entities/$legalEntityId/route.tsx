@@ -8,10 +8,10 @@ import { useUpdateLegalEntityAction } from "./-actions/legal-entity-actions"
 import { LegalEntityLayout } from "./-components/route-page"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId")({
-  component: routeComponent,
+  component: RouteComponent,
 })
 
-function routeComponent() {
+function RouteComponent() {
   const { legalEntityId } = Route.useParams()
   const legalEntityQuery = useQuery({
     ...trpc.legalEntities.get.queryOptions({ id: legalEntityId }),

@@ -14,10 +14,10 @@ import {
 } from "./profile/-actions/profile-actions"
 
 export const Route = createFileRoute("/_authenticated/profile")({
-  component: routeComponent,
+  component: RouteComponent,
 })
 
-function routeComponent() {
+function RouteComponent() {
   const { data: current, isPending } = authClient.useSession()
   const [terminatingId, setTerminatingId] = useState<string | undefined>()
   const sessionsResult = useQuery({

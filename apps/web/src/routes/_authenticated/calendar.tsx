@@ -14,7 +14,7 @@ import {
 } from "./-data/calendar-data"
 
 export const Route = createFileRoute("/_authenticated/calendar")({
-  component: routeComponent,
+  component: RouteComponent,
   loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.prefetchQuery(calendarAppointmentsQueryOptions(dayjs().format("YYYY-MM-DD"), "month")),
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/calendar")({
   },
 })
 
-function routeComponent() {
+function RouteComponent() {
   const navigate = Route.useNavigate()
   const [view, setView] = useState<ScheduleViewLevel>("month")
   const [date, setDate] = useState<string>(() => dayjs().format("YYYY-MM-DD"))

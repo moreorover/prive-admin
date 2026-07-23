@@ -17,7 +17,7 @@ import {
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
-  component: routeComponent,
+  component: RouteComponent,
   loader: async ({ context, params }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(trpc.appointments.get.queryOptions({ id: params.appointmentId })),
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
   },
 })
 
-function routeComponent() {
+function RouteComponent() {
   const { appointmentId } = Route.useParams()
   const [transactionsPage, setTransactionsPage] = useState(1)
   const [hairAssignedPage, setHairAssignedPage] = useState(1)
