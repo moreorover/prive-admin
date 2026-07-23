@@ -8,6 +8,7 @@ const allowedHelperDirectories = new Set(["-actions", "-components", "-data"])
 const allowedFlatHelperFiles = new Set([
   "-route-component-organization.test.ts",
   "-route-helper-folder-organization.test.ts",
+  "-react-doctor-hook.test.ts",
   "_authenticated/-route-data-organization.test.ts",
 ])
 
