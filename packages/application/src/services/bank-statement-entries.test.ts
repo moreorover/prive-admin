@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
-import { listBankStatementEntryMatchCandidates } from "./bank-statement-entries"
+import { listBankStatementEntries } from "./bank-statement-entries"
 
 const dbMock = vi.hoisted(() => ({
   listBankStatementEntries: vi.fn(),
@@ -13,10 +13,10 @@ describe("bank statement entry service", () => {
     vi.clearAllMocks()
   })
 
-  it("lists pending match candidates with paging", async () => {
+  it("lists pending entries with paging", async () => {
     dbMock.listBankStatementEntries.mockResolvedValue({ items: [], totalCount: 0 })
 
-    await listBankStatementEntryMatchCandidates({ pageSize: 100, offset: 200 })
+    await listBankStatementEntries({ pageSize: 100, offset: 200, status: "PENDING" })
 
     expect(dbMock.listBankStatementEntries).toHaveBeenCalledWith(undefined, {
       pageSize: 100,

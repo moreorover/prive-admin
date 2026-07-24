@@ -2,7 +2,13 @@ import { createNote as insertNote, deleteNote as removeNote, listNotes as fetchN
 
 import { unexpectedError } from "../errors"
 
-export async function listNotes(filter: { customerId?: string; appointmentId?: string; hairOrderId?: string }) {
+export async function listNotes(filter: {
+  pageSize: number
+  offset: number
+  customerId?: string
+  appointmentId?: string
+  hairOrderId?: string
+}) {
   return fetchNotes(undefined, filter)
 }
 

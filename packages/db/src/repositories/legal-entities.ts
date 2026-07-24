@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm"
+import { asc, count, eq } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { legalEntity } from "../schema/legal-entity"
@@ -10,10 +10,15 @@ export type LegalEntityUpsertInput = {
   vatNumber?: string | null
 }
 
-export async function listLegalEntities(database: Db = db) {
-  return database.query.legalEntity.findMany({
+export async function listLegalEntities(database: Db = db, input: { pageSize: number; offset: number }) {
+  const items = await database.query.legalEntity.findMany({
     orderBy: (le) => [asc(le.country), asc(le.name)],
+    limit: input.pageSize,
+    offset: input.offset,
   })
+
+  const [countRow] = await database.select({ totalCount: count() }).from(legalEntity)
+  return { items, totalCount: countRow?.totalCount ?? 0 }
 }
 
 export async function getLegalEntity(database: Db = db, id: string) {

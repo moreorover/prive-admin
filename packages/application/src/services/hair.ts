@@ -6,7 +6,6 @@ import {
   getHairOrder as findHairOrder,
   listHairAssigned as fetchHairAssigned,
   listHairOrders as fetchHairOrders,
-  availableHairOrders as fetchAvailableHairOrders,
   recalculateHairOrderPrices as recalculateHairOrderPricesRepo,
   updateHairAssigned as patchHairAssigned,
   updateHairOrder as patchHairOrder,
@@ -48,15 +47,12 @@ export async function getHairAssigned(id: string) {
   return result
 }
 
-export async function availableHairOrders() {
-  return fetchAvailableHairOrders(undefined)
-}
-
 export async function listHairOrders(input: {
   pageSize: number
   offset: number
   customerId?: string
   status?: "PENDING" | "COMPLETED"
+  availability?: "availableForAssignment"
 }) {
   return fetchHairOrders(undefined, input)
 }

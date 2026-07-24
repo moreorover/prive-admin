@@ -1,22 +1,25 @@
 import { Button, Group, Modal, Select, Stack, TextInput } from "@mantine/core"
 import { DateTimePicker } from "@mantine/dates"
 import { useForm } from "@mantine/form"
-import { notifications } from "@mantine/notifications"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { useNavigate } from "@tanstack/react-router"
 import dayjs from "dayjs"
 import { useState } from "react"
 
 import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
-import { trpc } from "@/utils/trpc"
 
 type CreateAppointmentDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   defaultClientId?: string
   defaultStartsAt?: string | null
-  invalidateKeys?: { queryKey: readonly unknown[] }[]
-  navigateOnSuccess?: boolean
+  loading?: boolean
+  onCreate: (values: CreateAppointmentSubmit) => void
+  clientOptions: SelectOption[]
+  masterOptions: SelectOption[]
+  salonOptions: SelectOption[]
+  clientSearch: string
+  masterSearch: string
+  onClientSearchChange: (value: string) => void
+  onMasterSearchChange: (value: string) => void
 }
 
 type FormValues = {
@@ -27,22 +30,30 @@ type FormValues = {
   salonId: string
 }
 
-type SalonOption = {
-  id: string
+type CreateAppointmentSubmit = {
   name: string
+  startsAt: string
+  clientId: string
+  masterId: string
+  salonId: string
 }
 
 const defaultStartsAtString = () => dayjs().startOf("hour").add(1, "hour").format("YYYY-MM-DD HH:mm:ss")
-const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
-const defaultAppointmentsListInput = { page: 1, pageSize: 100 }
 
 export function CreateAppointmentDialog({
   open,
   onOpenChange,
   defaultClientId,
   defaultStartsAt,
-  invalidateKeys,
-  navigateOnSuccess,
+  loading,
+  onCreate,
+  clientOptions,
+  masterOptions,
+  salonOptions,
+  clientSearch,
+  masterSearch,
+  onClientSearchChange,
+  onMasterSearchChange,
 }: CreateAppointmentDialogProps) {
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="New Appointment">
@@ -50,8 +61,15 @@ export function CreateAppointmentDialog({
         <CreateAppointmentForm
           defaultClientId={defaultClientId}
           defaultStartsAt={defaultStartsAt}
-          invalidateKeys={invalidateKeys}
-          navigateOnSuccess={navigateOnSuccess}
+          loading={loading}
+          onCreate={onCreate}
+          clientOptions={clientOptions}
+          masterOptions={masterOptions}
+          salonOptions={salonOptions}
+          clientSearch={clientSearch}
+          masterSearch={masterSearch}
+          onClientSearchChange={onClientSearchChange}
+          onMasterSearchChange={onMasterSearchChange}
           onClose={() => onOpenChange(false)}
         />
       )}
@@ -62,16 +80,17 @@ export function CreateAppointmentDialog({
 function CreateAppointmentForm({
   defaultClientId,
   defaultStartsAt,
-  invalidateKeys,
-  navigateOnSuccess,
+  loading,
+  onCreate,
+  clientOptions: rawClientOptions,
+  masterOptions: rawMasterOptions,
+  salonOptions,
+  clientSearch,
+  masterSearch,
+  onClientSearchChange,
+  onMasterSearchChange,
   onClose,
 }: Omit<CreateAppointmentDialogProps, "open" | "onOpenChange"> & { onClose: () => void }) {
-  const queryClient = useQueryClient()
-  const navigate = useNavigate()
-  const appointmentListQueryOptions = trpc.appointments.list.queryOptions(defaultAppointmentsListInput)
-  const salonsQueryOptions = trpc.salons.list.queryOptions({})
-  const [clientSearch, setClientSearch] = useState("")
-  const [masterSearch, setMasterSearch] = useState("")
   const [selectedCustomerOptions, setSelectedCustomerOptions] = useState<Record<string, SelectOption>>({})
 
   const form = useForm<FormValues>({
@@ -91,22 +110,8 @@ function CreateAppointmentForm({
     },
   })
 
-  const { data: clientCustomersData } = useQuery(
-    trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
-      search: clientSearch.trim() || undefined,
-    }),
-  )
-  const { data: masterCustomersData } = useQuery(
-    trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
-      search: masterSearch.trim() || undefined,
-    }),
-  )
-  const clientCustomerOptions = (clientCustomersData?.items ?? []).map((c) => ({ value: c.id, label: c.name }))
-  const masterCustomerOptions = (masterCustomersData?.items ?? []).map((c) => ({ value: c.id, label: c.name }))
-  const clientOptions = withPinnedOption(clientCustomerOptions, selectedCustomerOptions[form.values.clientId])
-  const masterOptions = withPinnedOption(masterCustomerOptions, selectedCustomerOptions[form.values.masterId])
+  const clientOptions = withPinnedOption(rawClientOptions, selectedCustomerOptions[form.values.clientId])
+  const masterOptions = withPinnedOption(rawMasterOptions, selectedCustomerOptions[form.values.masterId])
 
   const rememberCustomerOption = (value: string | null, options: SelectOption[]) => {
     if (!value) return
@@ -115,24 +120,8 @@ function CreateAppointmentForm({
     setSelectedCustomerOptions((current) => ({ ...current, [option.value]: option }))
   }
 
-  const { data: salons } = useQuery(salonsQueryOptions)
-
-  const mutation = useMutation({
-    ...trpc.appointments.create.mutationOptions(),
-    onSuccess: (created) => {
-      queryClient.invalidateQueries({ queryKey: appointmentListQueryOptions.queryKey })
-      for (const key of invalidateKeys ?? []) queryClient.invalidateQueries(key)
-      notifications.show({ color: "green", message: "Appointment created" })
-      onClose()
-      if (navigateOnSuccess && created?.id) {
-        navigate({ to: "/appointments/$appointmentId", params: { appointmentId: created.id } })
-      }
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-
   const handleSubmit = (values: FormValues) =>
-    mutation.mutate({
+    onCreate({
       name: values.name.trim(),
       startsAt: dayjs(values.startsAt!).toISOString(),
       clientId: values.clientId,
@@ -156,7 +145,7 @@ function CreateAppointmentForm({
             required
             searchable
             searchValue={clientSearch}
-            onSearchChange={setClientSearch}
+            onSearchChange={onClientSearchChange}
             data={clientOptions}
             value={form.values.clientId}
             onChange={(value) => {
@@ -171,7 +160,7 @@ function CreateAppointmentForm({
           required
           searchable
           searchValue={masterSearch}
-          onSearchChange={setMasterSearch}
+          onSearchChange={onMasterSearchChange}
           data={masterOptions}
           value={form.values.masterId}
           onChange={(value) => {
@@ -180,17 +169,12 @@ function CreateAppointmentForm({
           }}
           error={form.errors.masterId}
         />
-        <Select
-          label="Salon"
-          required
-          data={(salons ?? []).map((s: SalonOption) => ({ value: s.id, label: s.name }))}
-          {...form.getInputProps("salonId")}
-        />
+        <Select label="Salon" required data={salonOptions} {...form.getInputProps("salonId")} />
         <Group justify="flex-end" gap="xs">
           <Button variant="default" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" loading={mutation.isPending}>
+          <Button type="submit" loading={loading}>
             Create
           </Button>
         </Group>

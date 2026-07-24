@@ -1,1 +1,15 @@
 vp staged
+react_doctor_output="$(vp dlx react-doctor@latest apps/web --scope changed --blocking warning 2>&1)"
+react_doctor_status=$?
+printf "%s\n" "$react_doctor_output"
+
+if [ "$react_doctor_status" -ne 0 ]; then
+  exit "$react_doctor_status"
+fi
+
+case "$react_doctor_output" in
+  *"React rules were gated off"* | *"No React project detected"*)
+    printf "%s\n" "React Doctor did not detect the web React project; refusing to pass pre-commit without React rules."
+    exit 1
+    ;;
+esac

@@ -114,21 +114,22 @@ export async function getHairAssigned(database: Db = db, id: string) {
   })
 }
 
-export async function availableHairOrders(database: Db = db) {
-  return database.query.hairOrder.findMany({
-    where: gt(sql`${hairOrder.weightReceived} - ${hairOrder.weightUsed}`, 0),
-    with: { customer: true },
-    orderBy: (ho, { asc }) => [asc(ho.uid)],
-  })
-}
-
 export async function listHairOrders(
   database: Db = db,
-  filter: { pageSize: number; offset: number; customerId?: string; status?: "PENDING" | "COMPLETED" },
+  filter: {
+    pageSize: number
+    offset: number
+    customerId?: string
+    status?: "PENDING" | "COMPLETED"
+    availability?: "availableForAssignment"
+  },
 ) {
   const conditions = []
   if (filter.customerId) conditions.push(eq(hairOrder.customerId, filter.customerId))
   if (filter.status) conditions.push(eq(hairOrder.status, filter.status))
+  if (filter.availability === "availableForAssignment") {
+    conditions.push(gt(sql`${hairOrder.weightReceived} - ${hairOrder.weightUsed}`, 0))
+  }
   const where = conditions.length > 0 ? and(...conditions) : undefined
 
   const items = await database.query.hairOrder.findMany({

@@ -1,11 +1,8 @@
 import { Modal } from "@mantine/core"
-import { notifications } from "@mantine/notifications"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import type { Currency } from "@/lib/currency"
 
-import { TransactionForm } from "@/components/transactions/transaction-form"
-import { trpc } from "@/utils/trpc"
+import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
 
 type CreateTransactionDialogProps = {
   open: boolean
@@ -13,8 +10,13 @@ type CreateTransactionDialogProps = {
   appointmentId: string
   customerId: string
   defaultCurrency: Currency
-  invalidateKeys: { queryKey: readonly unknown[] }[]
-  onSuccess?: () => void
+  loading?: boolean
+  onCreate: (values: CreateTransactionSubmit) => void | Promise<void>
+}
+
+type CreateTransactionSubmit = TransactionFormSubmit & {
+  appointmentId: string
+  customerId: string
 }
 
 export function CreateTransactionDialog({
@@ -23,22 +25,9 @@ export function CreateTransactionDialog({
   appointmentId,
   customerId,
   defaultCurrency,
-  invalidateKeys,
-  onSuccess,
+  loading,
+  onCreate,
 }: CreateTransactionDialogProps) {
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation({
-    ...trpc.transactions.create.mutationOptions(),
-    onSuccess: () => {
-      for (const key of invalidateKeys) queryClient.invalidateQueries(key)
-      onSuccess?.()
-      onOpenChange(false)
-      notifications.show({ color: "green", message: "Transaction created" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="New Transaction">
       <TransactionForm
@@ -49,9 +38,9 @@ export function CreateTransactionDialog({
           currency: defaultCurrency,
         }}
         submitLabel="Create"
-        loading={mutation.isPending}
+        loading={loading}
         onSubmit={async (values) => {
-          await mutation.mutateAsync({ ...values, appointmentId, customerId })
+          await onCreate({ ...values, appointmentId, customerId })
         }}
       />
     </Modal>

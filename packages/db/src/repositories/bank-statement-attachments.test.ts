@@ -5,7 +5,7 @@ import { bankAccount } from "../schema/bank-account"
 import { bankStatementAttachment } from "../schema/bank-statement-attachment"
 import { bankStatementEntry } from "../schema/bank-statement-entry"
 import { legalEntity } from "../schema/legal-entity"
-import { listAssignedBankStatementAttachments, listGlobalBankStatementAttachments } from "./bank-statement-attachments"
+import { listBankStatementAttachments } from "./bank-statement-attachments"
 
 vi.mock("../index", () => ({ db: {} }))
 
@@ -55,14 +55,14 @@ describe("bank statement attachment repository", () => {
     const countRows = [{ totalCount: 7 }]
     const calls: {
       from: unknown[]
-      innerJoin: Array<{ table: unknown; condition: unknown }>
+      leftJoin: Array<{ table: unknown; condition: unknown }>
       limit: number[]
       offset: number[]
       orderBy: unknown[][]
       where: unknown[]
     } = {
       from: [],
-      innerJoin: [],
+      leftJoin: [],
       limit: [],
       offset: [],
       orderBy: [],
@@ -74,8 +74,8 @@ describe("bank statement attachment repository", () => {
         calls.from.push(table)
         return itemsBuilder
       }),
-      innerJoin: vi.fn((table: unknown, condition: unknown) => {
-        calls.innerJoin.push({ table, condition })
+      leftJoin: vi.fn((table: unknown, condition: unknown) => {
+        calls.leftJoin.push({ table, condition })
         return itemsBuilder
       }),
       limit: vi.fn((value: number) => {
@@ -100,8 +100,8 @@ describe("bank statement attachment repository", () => {
         calls.from.push(table)
         return countBuilder
       }),
-      innerJoin: vi.fn((table: unknown, condition: unknown) => {
-        calls.innerJoin.push({ table, condition })
+      leftJoin: vi.fn((table: unknown, condition: unknown) => {
+        calls.leftJoin.push({ table, condition })
         return countBuilder
       }),
       where: vi.fn(async (condition: unknown) => {
@@ -113,7 +113,8 @@ describe("bank statement attachment repository", () => {
       select: vi.fn().mockReturnValueOnce(itemsBuilder).mockReturnValueOnce(countBuilder),
     }
 
-    const result = await listAssignedBankStatementAttachments(database as never, {
+    const result = await listBankStatementAttachments(database as never, {
+      assignmentStatus: "assigned",
       legalEntityId: "legal-entity-1",
       pageSize: 25,
       offset: 50,
@@ -122,25 +123,25 @@ describe("bank statement attachment repository", () => {
     expect(result).toEqual({ items: assignedRows, totalCount: 7 })
     expect(database.select).toHaveBeenCalledTimes(2)
     expect(calls.from).toEqual([bankStatementAttachment, bankStatementAttachment])
-    expect(calls.innerJoin.map((call) => call.table)).toEqual([
+    expect(calls.leftJoin.map((call) => call.table)).toEqual([
       bankStatementEntry,
       bankAccount,
+      legalEntity,
       bankStatementEntry,
       bankAccount,
+      legalEntity,
     ])
     const expectedWhere = and(
-      isNotNull(bankStatementAttachment.bankStatementEntryId),
       eq(bankAccount.legalEntityId, "legal-entity-1"),
+      isNotNull(bankStatementAttachment.bankStatementEntryId),
     )
     expect(calls.where).toEqual([expectedWhere, expectedWhere])
-    expect(calls.orderBy).toEqual([
-      [desc(bankStatementEntry.date), desc(bankStatementAttachment.uploadedAt), desc(bankStatementAttachment.id)],
-    ])
+    expect(calls.orderBy).toEqual([[desc(bankStatementAttachment.uploadedAt), desc(bankStatementAttachment.id)]])
     expect(calls.limit).toEqual([25])
     expect(calls.offset).toEqual([50])
   })
 
-  it("lists global assigned documents with legal entity context", async () => {
+  it("lists assigned documents with legal entity context", async () => {
     const rows = [
       {
         attachment: { id: "attachment-1", bankStatementEntryId: "entry-1" },
@@ -152,8 +153,8 @@ describe("bank statement attachment repository", () => {
     ]
     const { calls, database } = createSelectBuilders(rows, [{ totalCount: 3 }])
 
-    const result = await listGlobalBankStatementAttachments(database as never, {
-      status: "assigned",
+    const result = await listBankStatementAttachments(database as never, {
+      assignmentStatus: "assigned",
       pageSize: 25,
       offset: 50,
     })
@@ -176,7 +177,7 @@ describe("bank statement attachment repository", () => {
     expect(calls.offset).toEqual([50])
   })
 
-  it("lists global unassigned documents with null assignment context", async () => {
+  it("lists unassigned documents with null assignment context", async () => {
     const rows = [
       {
         attachment: { id: "attachment-1", bankStatementEntryId: null },
@@ -188,8 +189,8 @@ describe("bank statement attachment repository", () => {
     ]
     const { calls, database } = createSelectBuilders(rows, [{ totalCount: 1 }])
 
-    await listGlobalBankStatementAttachments(database as never, {
-      status: "unassigned",
+    await listBankStatementAttachments(database as never, {
+      assignmentStatus: "unassigned",
       pageSize: 10,
       offset: 0,
     })
@@ -200,11 +201,11 @@ describe("bank statement attachment repository", () => {
     expect(calls.offset).toEqual([0])
   })
 
-  it("lists all global documents without assignment filter", async () => {
+  it("lists all documents without assignment filter", async () => {
     const { calls, database } = createSelectBuilders([], [{ totalCount: 0 }])
 
-    await listGlobalBankStatementAttachments(database as never, {
-      status: "all",
+    await listBankStatementAttachments(database as never, {
+      assignmentStatus: "all",
       pageSize: 25,
       offset: 0,
     })

@@ -1,17 +1,27 @@
 import { Button, Group, Modal, Radio, Stack, Table, Text } from "@mantine/core"
-import { notifications } from "@mantine/notifications"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
-
-import { trpc } from "@/utils/trpc"
 
 type CreateHairAssignedDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   clientId: string
   appointmentId?: string | null
-  invalidateKeys: { queryKey: readonly unknown[] }[]
-  onSuccess?: () => void
+  loading?: boolean
+  onCreate: (values: CreateHairAssignedSubmit) => void
+  availableOrders: Array<{
+    id: string
+    uid: number
+    weightReceived: number
+    weightUsed: number
+    customer: { name: string }
+  }>
+  availableOrdersLoading?: boolean
+}
+
+type CreateHairAssignedSubmit = {
+  hairOrderId: string
+  clientId: string
+  appointmentId: string | null
 }
 
 export function CreateHairAssignedDialog({
@@ -19,37 +29,12 @@ export function CreateHairAssignedDialog({
   onOpenChange,
   clientId,
   appointmentId,
-  invalidateKeys,
-  onSuccess,
+  loading,
+  onCreate,
+  availableOrders,
+  availableOrdersLoading = false,
 }: CreateHairAssignedDialogProps) {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
-  const queryClient = useQueryClient()
-  const availableOrdersQueryOptions = trpc.hairAssigned.availableOrders.queryOptions()
-  const hairAssignedListQueryKey = trpc.hairAssigned.list.queryKey()
-  const hairOrdersListQueryKey = trpc.hairOrders.list.queryKey()
-
-  const { data: availableOrders, isLoading } = useQuery({
-    ...availableOrdersQueryOptions,
-    enabled: open,
-  })
-
-  const mutation = useMutation({
-    ...trpc.hairAssigned.create.mutationOptions(),
-    onSuccess: () => {
-      for (const key of invalidateKeys) queryClient.invalidateQueries(key)
-      queryClient.invalidateQueries({ queryKey: hairAssignedListQueryKey })
-      queryClient.invalidateQueries({ queryKey: availableOrdersQueryOptions.queryKey })
-      queryClient.invalidateQueries({ queryKey: hairOrdersListQueryKey })
-      if (selectedOrderId) {
-        queryClient.invalidateQueries({ queryKey: trpc.hairOrders.get.queryOptions({ id: selectedOrderId }).queryKey })
-      }
-      onSuccess?.()
-      onOpenChange(false)
-      setSelectedOrderId(null)
-      notifications.show({ color: "green", message: "Hair assigned created" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
 
   const handleClose = () => {
     setSelectedOrderId(null)
@@ -62,11 +47,11 @@ export function CreateHairAssignedDialog({
         <Text size="sm" c="dimmed">
           Select a hair order with available stock.
         </Text>
-        {isLoading ? (
+        {availableOrdersLoading ? (
           <Text size="sm" c="dimmed">
             Loading…
           </Text>
-        ) : availableOrders && availableOrders.length > 0 ? (
+        ) : availableOrders.length > 0 ? (
           <Radio.Group value={selectedOrderId} onChange={setSelectedOrderId}>
             <Table>
               <Table.Thead>
@@ -104,10 +89,10 @@ export function CreateHairAssignedDialog({
           </Button>
           <Button
             disabled={!selectedOrderId}
-            loading={mutation.isPending}
+            loading={loading}
             onClick={() =>
               selectedOrderId &&
-              mutation.mutate({ hairOrderId: selectedOrderId, clientId, appointmentId: appointmentId ?? null })
+              onCreate({ hairOrderId: selectedOrderId, clientId, appointmentId: appointmentId ?? null })
             }
           >
             Assign

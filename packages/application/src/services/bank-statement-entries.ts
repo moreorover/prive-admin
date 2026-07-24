@@ -47,14 +47,6 @@ export async function listBankStatementEntries(input: {
   return fetchBankStatementEntries(undefined, input)
 }
 
-export async function listBankStatementEntryMatchCandidates(input: { pageSize: number; offset: number }) {
-  return fetchBankStatementEntries(undefined, {
-    pageSize: input.pageSize,
-    offset: input.offset,
-    status: "PENDING",
-  })
-}
-
 export async function getBankStatementEntry(id: string) {
   const row = await findBankStatementEntry(undefined, id)
   if (!row) throw notFound("Statement entry not found")
