@@ -8,11 +8,7 @@ import { useAppointmentPersonnelActions } from "../-actions/appointment-actions"
 import { useHairAssignmentActions } from "../-actions/hair-assignment-actions"
 import { useAppointmentTransactionActions } from "./-actions/appointment-transaction-actions"
 import { AppointmentDetailPage } from "./-components/appointment-detail-page"
-import {
-  APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-  availableHairOrdersListQueryOptions,
-  useAppointmentDetailData,
-} from "./-data/appointment-detail-data"
+import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, useAppointmentDetailData } from "./-data/appointment-detail-data"
 
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 
@@ -36,7 +32,6 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
         }),
       ),
       context.queryClient.ensureQueryData(trpc.userSettings.get.queryOptions()),
-      context.queryClient.prefetchQuery(availableHairOrdersListQueryOptions()),
     ])
   },
 })
@@ -45,21 +40,31 @@ function RouteComponent() {
   const { appointmentId } = Route.useParams()
   const [transactionsPage, setTransactionsPage] = useState(1)
   const [hairAssignedPage, setHairAssignedPage] = useState(1)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [pickPersonnelOpen, setPickPersonnelOpen] = useState(false)
+  const [changeMasterOpen, setChangeMasterOpen] = useState(false)
   const [masterSearch, setMasterSearch] = useState("")
   const [pickPersonnelSearch, setPickPersonnelSearch] = useState("")
-  const detailData = useAppointmentDetailData({ appointmentId, hairAssignedPage, transactionsPage })
-  const pickPersonnelCustomersData = useQuery(
-    trpc.customers.list.queryOptions({
+  const detailData = useAppointmentDetailData({
+    appointmentId,
+    hairAssignedPage,
+    transactionsPage,
+    availableHairOrdersEnabled: createOpen,
+  })
+  const pickPersonnelCustomersData = useQuery({
+    ...trpc.customers.list.queryOptions({
       ...defaultCustomersListInput,
       search: pickPersonnelSearch.trim() || undefined,
     }),
-  ).data
-  const masterCustomersData = useQuery(
-    trpc.customers.list.queryOptions({
+    enabled: pickPersonnelOpen,
+  }).data
+  const masterCustomersData = useQuery({
+    ...trpc.customers.list.queryOptions({
       ...defaultCustomersListInput,
       search: masterSearch.trim() || undefined,
     }),
-  ).data
+    enabled: changeMasterOpen,
+  }).data
   const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({
     invalidateKeys: [
       { queryKey: detailData.appointmentQueryOptions.queryKey },
@@ -81,12 +86,18 @@ function RouteComponent() {
       detailData={detailData}
       transactionsPage={transactionsPage}
       hairAssignedPage={hairAssignedPage}
+      createOpen={createOpen}
+      pickPersonnelOpen={pickPersonnelOpen}
+      changeMasterOpen={changeMasterOpen}
       masterSearch={masterSearch}
       pickPersonnelSearch={pickPersonnelSearch}
       pickPersonnelCustomersData={pickPersonnelCustomersData}
       masterCustomersData={masterCustomersData}
       onTransactionsPageChange={setTransactionsPage}
       onHairAssignedPageChange={setHairAssignedPage}
+      onCreateOpenChange={setCreateOpen}
+      onPickPersonnelOpenChange={setPickPersonnelOpen}
+      onChangeMasterOpenChange={setChangeMasterOpen}
       onMasterSearchChange={setMasterSearch}
       onPickPersonnelSearchChange={setPickPersonnelSearch}
       createHairAssignedPending={createHairAssigned.isPending}
