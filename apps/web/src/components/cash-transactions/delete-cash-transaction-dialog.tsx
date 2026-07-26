@@ -1,31 +1,24 @@
 import { Button, Group, Modal, Stack, Text } from "@mantine/core"
-import { notifications } from "@mantine/notifications"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { type CashTransactionRow } from "@/components/cash-transactions/cash-transactions-table"
 import { coerceCashTransactionCurrency } from "@/components/cash-transactions/currency"
 import { formatMinor } from "@/lib/currency"
-import { trpc } from "@/utils/trpc"
 
 type DeleteCashTransactionDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   transaction: CashTransactionRow
+  loading?: boolean
+  onDelete: (id: string) => void
 }
 
-export function DeleteCashTransactionDialog({ open, onOpenChange, transaction }: DeleteCashTransactionDialogProps) {
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation({
-    ...trpc.cashTransactions.delete.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.cashTransactions.list.queryKey() })
-      onOpenChange(false)
-      notifications.show({ color: "green", message: "Cash transaction deleted" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-
+export function DeleteCashTransactionDialog({
+  open,
+  onOpenChange,
+  transaction,
+  loading,
+  onDelete,
+}: DeleteCashTransactionDialogProps) {
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Delete Cash Transaction">
       <Stack>
@@ -39,7 +32,7 @@ export function DeleteCashTransactionDialog({ open, onOpenChange, transaction }:
           <Button variant="default" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button color="red" loading={mutation.isPending} onClick={() => mutation.mutate({ id: transaction.id })}>
+          <Button color="red" loading={loading} onClick={() => onDelete(transaction.id)}>
             Delete
           </Button>
         </Group>

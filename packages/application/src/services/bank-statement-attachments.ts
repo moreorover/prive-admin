@@ -38,8 +38,17 @@ const ZipArchive = (
   }
 ).ZipArchive
 
-export async function listBankStatementAttachments(input: { entryId?: string; assigned?: boolean } = {}) {
-  return fetchBankStatementAttachments(undefined, input)
+export async function listBankStatementAttachments(input: {
+  assignmentStatus?: "assigned" | "unassigned" | "all"
+  pageSize: number
+  offset: number
+  entryId?: string
+  legalEntityId?: string
+}) {
+  return fetchBankStatementAttachments(undefined, {
+    ...input,
+    assignmentStatus: input.assignmentStatus ?? "all",
+  })
 }
 
 export async function countBankStatementAttachments() {

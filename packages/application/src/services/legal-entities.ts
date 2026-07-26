@@ -6,8 +6,8 @@ import {
 
 import { notFound } from "../errors"
 
-export async function listLegalEntities() {
-  return fetchLegalEntities()
+export async function listLegalEntities(input: { pageSize: number; offset: number }) {
+  return fetchLegalEntities(undefined, input)
 }
 
 export async function getLegalEntity(id: string) {

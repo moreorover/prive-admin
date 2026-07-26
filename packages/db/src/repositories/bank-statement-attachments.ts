@@ -1,8 +1,10 @@
-import { and, desc, eq, gte, isNotNull, isNull, lte } from "drizzle-orm"
+import { and, count, desc, eq, gte, isNotNull, isNull, lte, sql } from "drizzle-orm"
 
 import { db, type Db } from "../index"
+import { bankAccount } from "../schema/bank-account"
 import { bankStatementAttachment } from "../schema/bank-statement-attachment"
 import { bankStatementEntry } from "../schema/bank-statement-entry"
+import { legalEntity } from "../schema/legal-entity"
 
 export async function createBankStatementAttachment(
   database: Db = db,
@@ -26,19 +28,75 @@ export async function getBankStatementAttachment(database: Db = db, id: string) 
   })
 }
 
+export type BankStatementAttachmentAssignmentStatus = "assigned" | "unassigned" | "all"
+
+export type BankStatementAttachmentRow = {
+  attachment: typeof bankStatementAttachment.$inferSelect
+  assignmentState: "assigned" | "unassigned"
+  entry: typeof bankStatementEntry.$inferSelect | null
+  bankAccount: Pick<typeof bankAccount.$inferSelect, "id" | "displayName" | "bankName" | "currency"> | null
+  legalEntity: Pick<typeof legalEntity.$inferSelect, "id" | "name"> | null
+}
+
 export async function listBankStatementAttachments(
   database: Db = db,
-  filter: { entryId?: string; assigned?: boolean } = {},
+  filter: {
+    assignmentStatus: BankStatementAttachmentAssignmentStatus
+    pageSize: number
+    offset: number
+    entryId?: string
+    legalEntityId?: string
+  },
 ) {
   const conditions = []
   if (filter.entryId) conditions.push(eq(bankStatementAttachment.bankStatementEntryId, filter.entryId))
-  if (filter.assigned === false) conditions.push(isNull(bankStatementAttachment.bankStatementEntryId))
-  if (filter.assigned === true) conditions.push(isNotNull(bankStatementAttachment.bankStatementEntryId))
+  if (filter.legalEntityId) conditions.push(eq(bankAccount.legalEntityId, filter.legalEntityId))
+  if (filter.assignmentStatus === "assigned") conditions.push(isNotNull(bankStatementAttachment.bankStatementEntryId))
+  if (filter.assignmentStatus === "unassigned") conditions.push(isNull(bankStatementAttachment.bankStatementEntryId))
+  const where = conditions.length === 1 ? conditions[0] : conditions.length > 1 ? and(...conditions) : undefined
 
-  return database.query.bankStatementAttachment.findMany({
-    where: conditions.length > 0 ? and(...conditions) : undefined,
-    orderBy: [desc(bankStatementAttachment.uploadedAt)],
-  })
+  const itemsQuery = database
+    .select({
+      attachment: bankStatementAttachment,
+      assignmentState: sql<"assigned" | "unassigned">`
+        case
+          when ${bankStatementAttachment.bankStatementEntryId} is null then 'unassigned'
+          else 'assigned'
+        end
+      `,
+      entry: bankStatementEntry,
+      bankAccount: {
+        id: bankAccount.id,
+        displayName: bankAccount.displayName,
+        bankName: bankAccount.bankName,
+        currency: bankAccount.currency,
+      },
+      legalEntity: {
+        id: legalEntity.id,
+        name: legalEntity.name,
+      },
+    })
+    .from(bankStatementAttachment)
+    .leftJoin(bankStatementEntry, eq(bankStatementAttachment.bankStatementEntryId, bankStatementEntry.id))
+    .leftJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
+    .leftJoin(legalEntity, eq(bankAccount.legalEntityId, legalEntity.id))
+
+  const items = await itemsQuery
+    .where(where)
+    .orderBy(desc(bankStatementAttachment.uploadedAt), desc(bankStatementAttachment.id))
+    .limit(filter.pageSize)
+    .offset(filter.offset)
+
+  const countQuery = database
+    .select({ totalCount: count() })
+    .from(bankStatementAttachment)
+    .leftJoin(bankStatementEntry, eq(bankStatementAttachment.bankStatementEntryId, bankStatementEntry.id))
+    .leftJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
+    .leftJoin(legalEntity, eq(bankAccount.legalEntityId, legalEntity.id))
+
+  const [countRow] = await countQuery.where(where)
+
+  return { items, totalCount: countRow?.totalCount ?? 0 }
 }
 
 export async function countBankStatementAttachments(database: Db = db) {

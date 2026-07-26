@@ -2,10 +2,10 @@ import {
   createHairAssigned as insertHairAssigned,
   createHairOrder as insertHairOrder,
   deleteHairAssigned as removeHairAssigned,
+  getHairAssigned as findHairAssigned,
   getHairOrder as findHairOrder,
   listHairAssigned as fetchHairAssigned,
   listHairOrders as fetchHairOrders,
-  availableHairOrders as fetchAvailableHairOrders,
   recalculateHairOrderPrices as recalculateHairOrderPricesRepo,
   updateHairAssigned as patchHairAssigned,
   updateHairOrder as patchHairOrder,
@@ -33,12 +33,18 @@ export async function listHairAssigned(input: {
   offset: number
   appointmentId?: string
   customerId?: string
+  source?: "appointment" | "individual"
+  search?: string
+  from?: Date
+  to?: Date
 }) {
   return fetchHairAssigned(undefined, input)
 }
 
-export async function availableHairOrders() {
-  return fetchAvailableHairOrders(undefined)
+export async function getHairAssigned(id: string) {
+  const result = await findHairAssigned(undefined, id)
+  if (!result) throw notFound("Hair sale not found")
+  return result
 }
 
 export async function listHairOrders(input: {
@@ -46,6 +52,7 @@ export async function listHairOrders(input: {
   offset: number
   customerId?: string
   status?: "PENDING" | "COMPLETED"
+  availability?: "availableForAssignment"
 }) {
   return fetchHairOrders(undefined, input)
 }

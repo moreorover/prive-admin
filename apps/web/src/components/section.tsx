@@ -18,11 +18,11 @@ export function Section({
   const hasHeader = title || description || actions
 
   return (
-    <Card padding={0}>
+    <Card padding={0} className="prive-section">
       {hasHeader ? (
         <>
-          <Group justify="space-between" align="flex-start" wrap="nowrap" p="lg" pb="md">
-            <Stack gap={2} miw={0}>
+          <Group justify="space-between" align="flex-start" wrap="wrap" p="lg" pb="md" gap="md">
+            <Stack gap={2} miw={0} flex="1 1 18rem">
               {title ? (
                 <Title order={4} fw={600} lh={1.3}>
                   {title}
@@ -35,7 +35,7 @@ export function Section({
               ) : null}
             </Stack>
             {actions ? (
-              <Group gap="xs" wrap="nowrap">
+              <Group gap="xs" wrap="wrap" className="prive-section-actions">
                 {actions}
               </Group>
             ) : null}
@@ -43,7 +43,9 @@ export function Section({
           <Divider />
         </>
       ) : null}
-      <Box p={padding}>{children}</Box>
+      <Box p={padding} className="prive-section-body">
+        {children}
+      </Box>
     </Card>
   )
 }

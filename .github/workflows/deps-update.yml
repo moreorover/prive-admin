@@ -39,16 +39,15 @@ jobs:
           max_attempts: 3
           shell: bash
           command: |
-            set -o pipefail
+            set -eo pipefail
             log=$(mktemp)
-            pnpm dlx taze major -r -w --maturity-period 7 --concurrency 3 2>&1 | tee "$log"
+            vp dlx taze major -r -w --maturity-period 7 --concurrency 3 2>&1 | tee "$log"
             if grep -q 'Timeout requesting' "$log"; then
-              echo "::warning::taze hit registry timeouts; failing step to trigger retry"
-              exit 1
+              echo "::warning::taze hit registry timeouts for one or more packages; continuing with resolved updates"
             fi
 
       - name: Update Lockfile
-        run: vp install
+        run: vp install --no-frozen-lockfile
 
       - name: Create or Update Pull Request
         uses: peter-evans/create-pull-request@v8
@@ -59,7 +58,7 @@ jobs:
           commit-message: "fix(deps): bump dependencies via taze major"
           title: "fix(deps): nightly dependency updates"
           body: |
-            Automated nightly run of `pnpm dlx taze major -r -w` followed by `vp install`.
+            Automated nightly run of `vp dlx taze major -r -w` followed by `vp install`.
 
             This PR is updated each night with any newly outdated packages until merged or closed.
           labels: dependencies

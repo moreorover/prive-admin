@@ -3,6 +3,7 @@ import { z } from "zod"
 
 import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
+import { getOffset, pagedResult, pageSchema } from "../pagination"
 
 const salonSchema = z.object({
   id: z.string().optional(),
@@ -11,8 +12,9 @@ const salonSchema = z.object({
 })
 
 export const salonsRouter = router({
-  list: protectedProcedure.input(z.object({}).optional().default({})).query(() => {
-    return listSalons()
+  list: protectedProcedure.input(pageSchema).query(async ({ input }) => {
+    const result = await listSalons({ pageSize: input.pageSize, offset: getOffset(input) })
+    return pagedResult(result.items, input, result.totalCount)
   }),
 
   get: protectedProcedure.input(z.object({ id: z.string().min(1) })).query(async ({ input }) => {

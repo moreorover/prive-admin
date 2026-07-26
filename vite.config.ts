@@ -1,6 +1,11 @@
 import { defineConfig } from "vite-plus"
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@": new URL("./apps/web/src", import.meta.url).pathname,
+    },
+  },
   staged: {
     "*": "vp check --fix",
   },
@@ -43,5 +48,9 @@ export default defineConfig({
         specifier: "vite-plus/oxlint-plugin",
       },
     ],
+  },
+  test: {
+    include: ["{apps,packages}/**/src/**/*.test.{ts,tsx}"],
+    exclude: ["**/dist/**", "**/node_modules/**", ".worktrees/**"],
   },
 })

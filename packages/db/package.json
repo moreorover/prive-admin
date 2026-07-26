@@ -28,7 +28,7 @@
     "dotenv": "catalog:",
     "dotenv-expand": "^13.0.0",
     "drizzle-orm": "^0.45.2",
-    "pg": "^8.21.0"
+    "pg": "^8.22.0"
   },
   "devDependencies": {
     "@prive-admin-tanstack/config": "workspace:*",

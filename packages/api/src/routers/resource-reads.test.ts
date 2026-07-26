@@ -3,6 +3,11 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { appointmentsRouter } from "./appointments"
 import { bankAccountsRouter } from "./bank-accounts"
 import { customersRouter } from "./customers"
+import { hairAssignedRouter } from "./hair-assigned"
+import { hairOrdersRouter } from "./hair-orders"
+import { legalEntitiesRouter } from "./legal-entities"
+import { notesRouter } from "./notes"
+import { salonsRouter } from "./salons"
 import { transactionsRouter } from "./transactions"
 
 const servicesMock = vi.hoisted(() => ({
@@ -13,11 +18,17 @@ const servicesMock = vi.hoisted(() => ({
   updateAppointment: vi.fn(),
   createBankAccount: vi.fn(),
   getBankAccount: vi.fn(),
+  getHairAssigned: vi.fn(),
   updateBankAccount: vi.fn(),
+  listHairAssigned: vi.fn(),
+  listHairOrders: vi.fn(),
   listCustomers: vi.fn(),
   listCustomerAppointments: vi.fn(),
   listCustomerHairAssigned: vi.fn(),
   listCustomerNotes: vi.fn(),
+  listLegalEntities: vi.fn(),
+  listNotes: vi.fn(),
+  listSalons: vi.fn(),
   createTransaction: vi.fn(),
   deleteTransaction: vi.fn(),
   listTransactions: vi.fn(),
@@ -91,6 +102,44 @@ describe("resource read routers", () => {
         appointmentId: "appointment-1",
       }),
     )
+  })
+
+  it("lists hair sales with source, search, and date filters", async () => {
+    const caller = hairAssignedRouter.createCaller(ctx)
+    const hairRows = [{ id: "hair-sale-1", clientId: "customer-1" }]
+    servicesMock.listHairAssigned.mockResolvedValue({ items: hairRows, totalCount: 4 })
+    const from = new Date("2026-07-01T00:00:00.000Z")
+    const to = new Date("2026-08-01T00:00:00.000Z")
+
+    const result = await caller.list({
+      page: 2,
+      pageSize: 3,
+      source: "individual",
+      search: "42",
+      from,
+      to,
+    })
+
+    expect(result).toEqual({ items: hairRows, page: 2, pageSize: 3, totalCount: 4 })
+    expect(servicesMock.listHairAssigned).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pageSize: 3,
+        offset: 3,
+        source: "individual",
+        search: "42",
+        from,
+        to,
+      }),
+    )
+  })
+
+  it("gets a hair sale by id", async () => {
+    const caller = hairAssignedRouter.createCaller(ctx)
+    const hairSale = { id: "hair-sale-1", clientId: "customer-1" }
+    servicesMock.getHairAssigned.mockResolvedValue(hairSale)
+
+    await expect(caller.get({ id: "hair-sale-1" })).resolves.toBe(hairSale)
+    expect(servicesMock.getHairAssigned).toHaveBeenCalledWith("hair-sale-1")
   })
 
   it("lists customers with page offset applied", async () => {
@@ -175,5 +224,57 @@ describe("resource read routers", () => {
         search: "42",
       }),
     )
+  })
+
+  it("lists notes in the standard page envelope", async () => {
+    const caller = notesRouter.createCaller(ctx)
+    const noteRows = [{ id: "note-1", customerId: "customer-1" }]
+    servicesMock.listNotes.mockResolvedValue({ items: noteRows, totalCount: 5 })
+
+    const result = await caller.list({ page: 2, pageSize: 10, customerId: "customer-1" })
+
+    expect(result).toEqual({ items: noteRows, page: 2, pageSize: 10, totalCount: 5 })
+    expect(servicesMock.listNotes).toHaveBeenCalledWith({
+      customerId: "customer-1",
+      pageSize: 10,
+      offset: 10,
+    })
+  })
+
+  it("lists legal entities in the standard page envelope", async () => {
+    const caller = legalEntitiesRouter.createCaller(ctx)
+    const legalEntityRows = [{ id: "legal-entity-1", name: "Prive LT" }]
+    servicesMock.listLegalEntities.mockResolvedValue({ items: legalEntityRows, totalCount: 2 })
+
+    const result = await caller.list({})
+
+    expect(result).toEqual({ items: legalEntityRows, page: 1, pageSize: 10, totalCount: 2 })
+    expect(servicesMock.listLegalEntities).toHaveBeenCalledWith({ pageSize: 10, offset: 0 })
+  })
+
+  it("lists salons in the standard page envelope", async () => {
+    const caller = salonsRouter.createCaller(ctx)
+    const salonRows = [{ id: "salon-1", name: "Prive Salon" }]
+    servicesMock.listSalons.mockResolvedValue({ items: salonRows, totalCount: 3 })
+
+    const result = await caller.list({ page: 2, pageSize: 10 })
+
+    expect(result).toEqual({ items: salonRows, page: 2, pageSize: 10, totalCount: 3 })
+    expect(servicesMock.listSalons).toHaveBeenCalledWith({ pageSize: 10, offset: 10 })
+  })
+
+  it("lists hair orders available for assignment through the resource list", async () => {
+    const caller = hairOrdersRouter.createCaller(ctx)
+    const hairOrderRows = [{ id: "hair-order-1", uid: 42 }]
+    servicesMock.listHairOrders.mockResolvedValue({ items: hairOrderRows, totalCount: 1 })
+
+    const result = await caller.list({ availability: "availableForAssignment" })
+
+    expect(result).toEqual({ items: hairOrderRows, page: 1, pageSize: 10, totalCount: 1 })
+    expect(servicesMock.listHairOrders).toHaveBeenCalledWith({
+      pageSize: 10,
+      offset: 0,
+      availability: "availableForAssignment",
+    })
   })
 })

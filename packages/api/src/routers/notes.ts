@@ -2,6 +2,7 @@ import { createNote, deleteNote, listNotes } from "@prive-admin-tanstack/applica
 import { z } from "zod"
 
 import { protectedProcedure, router } from "../index"
+import { getOffset, pagedResult, pageSchema } from "../pagination"
 
 const noteSchema = z.object({
   id: z.string().optional(),
@@ -14,18 +15,21 @@ const noteSchema = z.object({
 export const notesRouter = router({
   list: protectedProcedure
     .input(
-      z.object({
+      pageSchema.extend({
         customerId: z.string().optional(),
         appointmentId: z.string().optional(),
         hairOrderId: z.string().optional(),
       }),
     )
     .query(async ({ input }) => {
-      return listNotes({
+      const result = await listNotes({
+        pageSize: input.pageSize,
+        offset: getOffset(input),
         customerId: input.customerId,
         appointmentId: input.appointmentId,
         hairOrderId: input.hairOrderId,
       })
+      return pagedResult(result.items, input, result.totalCount)
     }),
 
   create: protectedProcedure.input(noteSchema).mutation(async ({ input, ctx }) => {

@@ -1,0 +1,1 @@
+export const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
