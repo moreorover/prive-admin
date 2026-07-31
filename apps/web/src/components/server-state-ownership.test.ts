@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from "node:fs"
-import { join, relative } from "node:path"
+import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vite-plus/test"
 
@@ -18,10 +18,8 @@ function componentFiles(dir: string): string[] {
 describe("shared component server-state ownership", () => {
   it.each(componentFiles(componentsDir))("keeps server reads and writes out of %s", (path) => {
     const source = readFileSync(path, "utf8")
-    const componentPath = relative(componentsDir, path)
-
-    expect(source, componentPath).not.toContain("useQuery(")
-    expect(source, componentPath).not.toContain("useSuspenseQuery(")
-    expect(source, componentPath).not.toContain("useMutation(")
+    expect(source).not.toContain("useQuery(")
+    expect(source).not.toContain("useSuspenseQuery(")
+    expect(source).not.toContain("useMutation(")
   })
 })

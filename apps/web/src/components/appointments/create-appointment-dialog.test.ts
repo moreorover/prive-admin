@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from "node:fs"
-import { join, relative } from "node:path"
+import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vite-plus/test"
 
@@ -17,18 +17,14 @@ function componentSourceFiles(dir: string): string[] {
 describe("component data ownership", () => {
   it.each(componentSourceFiles(componentsDir))("does not fetch route data inside %s", (path) => {
     const source = readFileSync(path, "utf8")
-    const componentPath = relative(componentsDir, path)
-
-    expect(source, componentPath).not.toContain("useQuery(")
-    expect(source, componentPath).not.toContain("fetch(")
+    expect(source).not.toContain("useQuery(")
+    expect(source).not.toContain("fetch(")
   })
 
   it.each(componentSourceFiles(componentsDir))("does not mutate server data inside %s", (path) => {
     const source = readFileSync(path, "utf8")
-    const componentPath = relative(componentsDir, path)
-
-    expect(source, componentPath).not.toContain("useMutation(")
-    expect(source, componentPath).not.toContain("mutationOptions(")
-    expect(source, componentPath).not.toContain(".mutate(")
+    expect(source).not.toContain("useMutation(")
+    expect(source).not.toContain("mutationOptions(")
+    expect(source).not.toContain(".mutate(")
   })
 })
