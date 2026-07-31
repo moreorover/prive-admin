@@ -9,6 +9,8 @@ jobs:
   taze:
     name: Run taze major
     runs-on: ubuntu-latest
+    env:
+      VITE_GIT_HOOKS: "0"
 
     permissions:
       contents: write
