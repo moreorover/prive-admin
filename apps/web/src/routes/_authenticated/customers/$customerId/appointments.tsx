@@ -1,6 +1,7 @@
+import { useDebouncedCallback, useDebouncedValue } from "@mantine/hooks"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { trpc } from "@/utils/trpc"
 
@@ -13,6 +14,9 @@ import {
   appointmentsQueryOptions,
   searchSchema,
 } from "./-data/appointments-data"
+
+const searchNavigationDebounceMs = 300
+const searchDebounceMs = 300
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId/appointments")({
   validateSearch: searchSchema,
@@ -44,9 +48,11 @@ function RouteComponent() {
   const navigate = Route.useNavigate()
   const page = search.page ?? 1
   const searchValue = search.search ?? ""
+  const [draftSearch, setDraftSearch] = useState(searchValue)
   const [masterSearch, setMasterSearch] = useState("")
+  const [debouncedMasterSearch] = useDebouncedValue(masterSearch, searchDebounceMs)
   const data = useQuery(appointmentsQueryOptions(customerId, page, searchValue)).data
-  const masterCustomersData = useQuery(appointmentMasterOptionsQueryOptions(masterSearch)).data
+  const masterCustomersData = useQuery(appointmentMasterOptionsQueryOptions(debouncedMasterSearch)).data
   const salonsData = useQuery(appointmentSalonOptionsQueryOptions()).data
   const createAppointment = useCreateAppointmentAction({
     invalidateKeys: [
@@ -59,12 +65,19 @@ function RouteComponent() {
       }
     },
   })
+  const navigateToSearch = useDebouncedCallback((nextSearch: string) => {
+    navigate({ search: { page: 1, search: nextSearch }, replace: true })
+  }, searchNavigationDebounceMs)
+
+  useEffect(() => {
+    setDraftSearch(searchValue)
+  }, [searchValue])
 
   return (
     <CustomerAppointmentsPage
       customerId={customerId}
       page={page}
-      searchValue={searchValue}
+      searchValue={draftSearch}
       data={data}
       masterSearch={masterSearch}
       masterCustomersData={masterCustomersData}
@@ -72,8 +85,14 @@ function RouteComponent() {
       createPending={createAppointment.isPending}
       onCreateAppointment={(values) => createAppointment.mutate(values)}
       onMasterSearchChange={setMasterSearch}
-      onSearchChange={(nextSearch) => navigate({ search: { page: 1, search: nextSearch }, replace: true })}
-      onPageChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
+      onSearchChange={(nextSearch) => {
+        setDraftSearch(nextSearch)
+        navigateToSearch(nextSearch)
+      }}
+      onPageChange={(nextPage) => {
+        navigateToSearch.cancel()
+        navigate({ search: { page: nextPage, search: searchValue } })
+      }}
     />
   )
 }

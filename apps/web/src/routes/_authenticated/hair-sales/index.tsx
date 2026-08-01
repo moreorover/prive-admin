@@ -1,8 +1,12 @@
+import { useDebouncedCallback } from "@mantine/hooks"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
+import { useEffect, useState } from "react"
 
 import { HairSalesPage } from "./-components/index-page"
 import { type HairSalesSource, hairSalesQueryOptions, PAGE_SIZE, searchSchema } from "./-data/index-data"
+
+const searchNavigationDebounceMs = 300
 
 export const Route = createFileRoute("/_authenticated/hair-sales/")({
   component: RouteComponent,
@@ -30,6 +34,7 @@ function RouteComponent() {
   const navigate = Route.useNavigate()
   const page = search.page ?? 1
   const searchValue = search.search ?? ""
+  const [draftSearch, setDraftSearch] = useState(searchValue)
   const source = search.source ?? "all"
   const month = search.month
   const query = useQuery(hairSalesQueryOptions({ page, search: searchValue, source, month }))
@@ -45,16 +50,32 @@ function RouteComponent() {
       },
       replace: true,
     })
+  const navigateToSearch = useDebouncedCallback((nextSearch: string) => {
+    setSearch({ page: 1, search: nextSearch })
+  }, searchNavigationDebounceMs)
+
+  useEffect(() => {
+    setDraftSearch(searchValue)
+  }, [searchValue])
 
   return (
     <HairSalesPage
       page={page}
-      searchValue={searchValue}
+      searchValue={draftSearch}
       source={source}
       month={month}
       data={query.data}
       isLoading={query.isLoading}
-      onSearchChange={setSearch}
+      onSearchChange={(next) => {
+        if (typeof next.search === "string") {
+          setDraftSearch(next.search)
+          navigateToSearch(next.search)
+          return
+        }
+
+        navigateToSearch.cancel()
+        setSearch(next)
+      }}
     />
   )
 }
