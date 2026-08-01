@@ -1,3 +1,4 @@
+import { useDebouncedValue } from "@mantine/hooks"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
@@ -15,6 +16,7 @@ import {
 } from "./-data/appointment-detail-data"
 
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
+const searchDebounceMs = 300
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: RouteComponent,
@@ -47,17 +49,19 @@ function RouteComponent() {
   const [hairAssignedPage, setHairAssignedPage] = useState(1)
   const [masterSearch, setMasterSearch] = useState("")
   const [pickPersonnelSearch, setPickPersonnelSearch] = useState("")
+  const [debouncedMasterSearch] = useDebouncedValue(masterSearch, searchDebounceMs)
+  const [debouncedPickPersonnelSearch] = useDebouncedValue(pickPersonnelSearch, searchDebounceMs)
   const detailData = useAppointmentDetailData({ appointmentId, hairAssignedPage, transactionsPage })
   const pickPersonnelCustomersData = useQuery(
     trpc.customers.list.queryOptions({
       ...defaultCustomersListInput,
-      search: pickPersonnelSearch.trim() || undefined,
+      search: debouncedPickPersonnelSearch.trim() || undefined,
     }),
   ).data
   const masterCustomersData = useQuery(
     trpc.customers.list.queryOptions({
       ...defaultCustomersListInput,
-      search: masterSearch.trim() || undefined,
+      search: debouncedMasterSearch.trim() || undefined,
     }),
   ).data
   const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({

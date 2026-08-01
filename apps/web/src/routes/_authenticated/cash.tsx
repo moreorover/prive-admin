@@ -1,3 +1,4 @@
+import { useDebouncedValue } from "@mantine/hooks"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
@@ -11,6 +12,8 @@ import {
   type CashTransactionFilters,
   defaultCashCustomersListInput,
 } from "./-data/cash-data"
+
+const searchDebounceMs = 300
 
 export const Route = createFileRoute("/_authenticated/cash")({
   component: RouteComponent,
@@ -29,28 +32,32 @@ function RouteComponent() {
   const [customerSearch, setCustomerSearch] = useState("")
   const [createCustomerSearch, setCreateCustomerSearch] = useState("")
   const [editCustomerSearch, setEditCustomerSearch] = useState("")
+  const [debouncedFilterSearch] = useDebouncedValue(filters.search, searchDebounceMs)
+  const [debouncedCustomerSearch] = useDebouncedValue(customerSearch, searchDebounceMs)
+  const [debouncedCreateCustomerSearch] = useDebouncedValue(createCustomerSearch, searchDebounceMs)
+  const [debouncedEditCustomerSearch] = useDebouncedValue(editCustomerSearch, searchDebounceMs)
   const customersData = useQuery(
     trpc.customers.list.queryOptions({
       ...defaultCashCustomersListInput,
-      search: customerSearch.trim() || undefined,
+      search: debouncedCustomerSearch.trim() || undefined,
     }),
   ).data
   const createCustomersData = useQuery(
     trpc.customers.list.queryOptions({
       ...defaultCashCustomersListInput,
-      search: createCustomerSearch.trim() || undefined,
+      search: debouncedCreateCustomerSearch.trim() || undefined,
     }),
   ).data
   const editCustomersData = useQuery(
     trpc.customers.list.queryOptions({
       ...defaultCashCustomersListInput,
-      search: editCustomerSearch.trim() || undefined,
+      search: debouncedEditCustomerSearch.trim() || undefined,
     }),
   ).data
   const queryFilter = {
     page,
     pageSize: CASH_TRANSACTIONS_PAGE_SIZE,
-    search: filters.search.trim() || undefined,
+    search: debouncedFilterSearch.trim() || undefined,
     customerId: filters.customerId || undefined,
     currency: filters.currency || undefined,
     direction: filters.direction,

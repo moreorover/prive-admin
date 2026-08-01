@@ -1,3 +1,4 @@
+import { useDebouncedValue } from "@mantine/hooks"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
@@ -9,6 +10,7 @@ import { HairOrdersPage } from "./-components/index-page"
 
 const hairOrdersPageSize = 25
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
+const searchDebounceMs = 300
 
 export const Route = createFileRoute("/_authenticated/hair-orders/")({
   component: RouteComponent,
@@ -17,11 +19,12 @@ export const Route = createFileRoute("/_authenticated/hair-orders/")({
 function RouteComponent() {
   const [page, setPage] = useState(1)
   const [customerSearch, setCustomerSearch] = useState("")
+  const [debouncedCustomerSearch] = useDebouncedValue(customerSearch, searchDebounceMs)
   const hairOrdersQuery = useQuery(trpc.hairOrders.list.queryOptions({ page, pageSize: hairOrdersPageSize }))
   const customersData = useQuery(
     trpc.customers.list.queryOptions({
       ...defaultCustomersListInput,
-      search: customerSearch.trim() || undefined,
+      search: debouncedCustomerSearch.trim() || undefined,
     }),
   ).data
   const createHairOrder = useCreateHairOrderAction({})

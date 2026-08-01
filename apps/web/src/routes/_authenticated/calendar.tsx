@@ -1,5 +1,6 @@
 import type { ScheduleViewLevel } from "@mantine/schedule"
 
+import { useDebouncedValue } from "@mantine/hooks"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import dayjs from "dayjs"
@@ -12,6 +13,8 @@ import {
   appointmentSalonOptionsQueryOptions,
   calendarAppointmentsQueryOptions,
 } from "./-data/calendar-data"
+
+const searchDebounceMs = 300
 
 export const Route = createFileRoute("/_authenticated/calendar")({
   component: RouteComponent,
@@ -30,10 +33,12 @@ function RouteComponent() {
   const [date, setDate] = useState<string>(() => dayjs().format("YYYY-MM-DD"))
   const [clientSearch, setClientSearch] = useState("")
   const [masterSearch, setMasterSearch] = useState("")
+  const [debouncedClientSearch] = useDebouncedValue(clientSearch, searchDebounceMs)
+  const [debouncedMasterSearch] = useDebouncedValue(masterSearch, searchDebounceMs)
   const appointmentsQueryOptions = calendarAppointmentsQueryOptions(date, view)
   const appointmentsData = useQuery(appointmentsQueryOptions).data
-  const clientCustomersData = useQuery(appointmentCustomerOptionsQueryOptions(clientSearch)).data
-  const masterCustomersData = useQuery(appointmentCustomerOptionsQueryOptions(masterSearch)).data
+  const clientCustomersData = useQuery(appointmentCustomerOptionsQueryOptions(debouncedClientSearch)).data
+  const masterCustomersData = useQuery(appointmentCustomerOptionsQueryOptions(debouncedMasterSearch)).data
   const salonsData = useQuery(appointmentSalonOptionsQueryOptions()).data
   const createAppointment = useCreateAppointmentAction({
     invalidateKeys: [{ queryKey: appointmentsQueryOptions.queryKey }],
