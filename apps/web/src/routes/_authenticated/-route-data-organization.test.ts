@@ -26,4 +26,13 @@ describe("route data organization", () => {
     expect(source).not.toContain("useMutation({")
     expect(source).not.toMatch(/const\s+\w*invalidate\w*\s*=/)
   })
+
+  it.each(routePageFiles(routesDir))("keeps dialog option prefetches out of route loaders %s", (path) => {
+    const source = readFileSync(path, "utf8")
+    const routePath = relative(routesDir, path)
+
+    expect(source, routePath).not.toMatch(
+      /queryClient\.prefetchQuery\((appointment(Customer|Master|Salon)OptionsQueryOptions|availableHairOrdersListQueryOptions)/,
+    )
+  })
 })

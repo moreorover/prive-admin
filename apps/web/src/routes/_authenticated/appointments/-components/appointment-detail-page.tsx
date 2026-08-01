@@ -30,12 +30,18 @@ export function AppointmentDetailPage({
   detailData,
   transactionsPage,
   hairAssignedPage,
+  createOpen,
+  pickPersonnelOpen,
+  changeMasterOpen,
   masterSearch,
   pickPersonnelSearch,
   pickPersonnelCustomersData,
   masterCustomersData,
   onTransactionsPageChange,
   onHairAssignedPageChange,
+  onCreateOpenChange,
+  onPickPersonnelOpenChange,
+  onChangeMasterOpenChange,
   onMasterSearchChange,
   onPickPersonnelSearchChange,
   createHairAssignedPending,
@@ -59,12 +65,18 @@ export function AppointmentDetailPage({
   detailData: AppointmentDetailData
   transactionsPage: number
   hairAssignedPage: number
+  createOpen: boolean
+  pickPersonnelOpen: boolean
+  changeMasterOpen: boolean
   masterSearch: string
   pickPersonnelSearch: string
   pickPersonnelCustomersData: CustomersData | undefined
   masterCustomersData: CustomersData | undefined
   onTransactionsPageChange: (page: number) => void
   onHairAssignedPageChange: (page: number) => void
+  onCreateOpenChange: (open: boolean) => void
+  onPickPersonnelOpenChange: (open: boolean) => void
+  onChangeMasterOpenChange: (open: boolean) => void
   onMasterSearchChange: (search: string) => void
   onPickPersonnelSearchChange: (search: string) => void
   createHairAssignedPending: boolean
@@ -84,11 +96,8 @@ export function AppointmentDetailPage({
   onUpdateMaster: (values: { id: string; masterId: string }) => void
   onLinkPersonnel: (values: { appointmentId: string; personnelIds: string[] }) => void
 }) {
-  const [createOpen, setCreateOpen] = useState(false)
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
-  const [pickPersonnelOpen, setPickPersonnelOpen] = useState(false)
-  const [changeMasterOpen, setChangeMasterOpen] = useState(false)
   const [draftMasterId, setDraftMasterId] = useState<string | null>(null)
   const [selectedMasterOption, setSelectedMasterOption] = useState<SelectOption | null>(null)
   const [createTxOpen, setCreateTxOpen] = useState(false)
@@ -184,7 +193,7 @@ export function AppointmentDetailPage({
                 variant="subtle"
                 size="xs"
                 leftSection={<IconUser size={12} />}
-                onClick={() => setChangeMasterOpen(true)}
+                onClick={() => onChangeMasterOpenChange(true)}
               >
                 Change
               </Button>
@@ -226,7 +235,7 @@ export function AppointmentDetailPage({
                 variant="subtle"
                 size="xs"
                 leftSection={<IconUsers size={12} />}
-                onClick={() => setPickPersonnelOpen(true)}
+                onClick={() => onPickPersonnelOpenChange(true)}
               >
                 Pick
               </Button>
@@ -360,7 +369,12 @@ export function AppointmentDetailPage({
                 })}
               </Text>
             </Stack>
-            <Button variant="subtle" size="xs" leftSection={<IconPlus size={12} />} onClick={() => setCreateOpen(true)}>
+            <Button
+              variant="subtle"
+              size="xs"
+              leftSection={<IconPlus size={12} />}
+              onClick={() => onCreateOpenChange(true)}
+            >
               Add
             </Button>
           </Group>
@@ -409,13 +423,13 @@ export function AppointmentDetailPage({
 
         <CreateHairAssignedDialog
           open={createOpen}
-          onOpenChange={setCreateOpen}
+          onOpenChange={onCreateOpenChange}
           clientId={appointment.client.id}
           appointmentId={appointmentId}
           loading={createHairAssignedPending}
           onCreate={(values) => {
             onCreateHairAssigned(values)
-            setCreateOpen(false)
+            onCreateOpenChange(false)
           }}
           availableOrders={availableHairOrders}
           availableOrdersLoading={availableHairOrdersLoading}
@@ -446,7 +460,7 @@ export function AppointmentDetailPage({
         )}
         <PickPersonnelModal
           open={pickPersonnelOpen}
-          onOpenChange={setPickPersonnelOpen}
+          onOpenChange={onPickPersonnelOpenChange}
           search={pickPersonnelSearch}
           personnel={availablePersonnel}
           loading={linkPersonnelPending}
@@ -454,14 +468,14 @@ export function AppointmentDetailPage({
           onConfirm={(personnelIds) => {
             onLinkPersonnel({ appointmentId, personnelIds })
             onPickPersonnelSearchChange("")
-            setPickPersonnelOpen(false)
+            onPickPersonnelOpenChange(false)
           }}
         />
         {changeMasterOpen && (
           <ChangeMasterModal
             key={`${appointmentId}-${appointment.master.id}`}
             open={changeMasterOpen}
-            onOpenChange={setChangeMasterOpen}
+            onOpenChange={onChangeMasterOpenChange}
             currentMasterId={appointment.master.id}
             masterId={masterId}
             masterSearch={masterSearch}
@@ -478,7 +492,7 @@ export function AppointmentDetailPage({
               setDraftMasterId(null)
               setSelectedMasterOption(null)
               onMasterSearchChange("")
-              setChangeMasterOpen(false)
+              onChangeMasterOpenChange(false)
             }}
           />
         )}

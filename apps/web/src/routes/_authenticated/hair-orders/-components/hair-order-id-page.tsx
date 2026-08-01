@@ -36,6 +36,7 @@ type HairOrderDetailData = ReturnType<typeof useHairOrderDetailData>
 
 export function HairOrderDetailPage({
   detailData,
+  createOpen,
   editItem,
   deleteItem,
   recalculatePending,
@@ -43,6 +44,7 @@ export function HairOrderDetailPage({
   createPending,
   updatePending,
   deletePending,
+  onCreateOpenChange,
   onEditItemChange,
   onDeleteItemChange,
   onRecalculate,
@@ -52,6 +54,7 @@ export function HairOrderDetailPage({
   onDelete,
 }: {
   detailData: HairOrderDetailData
+  createOpen: boolean
   editItem: HairAssignedRow | null
   deleteItem: HairAssignedRow | null
   recalculatePending: boolean
@@ -59,6 +62,7 @@ export function HairOrderDetailPage({
   createPending: boolean
   updatePending: boolean
   deletePending: boolean
+  onCreateOpenChange: (open: boolean) => void
   onEditItemChange: (item: HairAssignedRow | null) => void
   onDeleteItemChange: (item: HairAssignedRow | null) => void
   onRecalculate: () => void
@@ -67,7 +71,6 @@ export function HairOrderDetailPage({
   onUpdate: ComponentProps<typeof EditHairAssignedDialog>["onUpdate"]
   onDelete: (id: string) => void
 }) {
-  const [createOpen, setCreateOpen] = useState(false)
   const [editOrderOpen, setEditOrderOpen] = useState(false)
   const { hairOrder, availableHairOrders, availableHairOrdersLoading } = detailData
 
@@ -166,7 +169,7 @@ export function HairOrderDetailPage({
                 variant="default"
                 size="sm"
                 leftSection={<IconPlus size={12} />}
-                onClick={() => setCreateOpen(true)}
+                onClick={() => onCreateOpenChange(true)}
               >
                 Add
               </Button>
@@ -205,12 +208,12 @@ export function HairOrderDetailPage({
 
         <CreateHairAssignedDialog
           open={createOpen}
-          onOpenChange={setCreateOpen}
+          onOpenChange={onCreateOpenChange}
           clientId={hairOrder.customer.id}
           loading={createPending}
           onCreate={(values) => {
             onCreate(values)
-            setCreateOpen(false)
+            onCreateOpenChange(false)
           }}
           availableOrders={availableHairOrders}
           availableOrdersLoading={availableHairOrdersLoading}

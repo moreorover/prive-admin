@@ -21,11 +21,9 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId/appo
     search: search.search ?? "",
   }),
   loader: async ({ context, deps, params }) => {
-    const [data] = await Promise.all([
-      context.queryClient.ensureQueryData(appointmentsQueryOptions(params.customerId, deps.page, deps.search)),
-      context.queryClient.prefetchQuery(appointmentMasterOptionsQueryOptions("")),
-      context.queryClient.prefetchQuery(appointmentSalonOptionsQueryOptions()),
-    ])
+    const data = await context.queryClient.ensureQueryData(
+      appointmentsQueryOptions(params.customerId, deps.page, deps.search),
+    )
     const totalPages = Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE))
     if (deps.page > totalPages) {
       throw redirect({
@@ -44,10 +42,17 @@ function RouteComponent() {
   const navigate = Route.useNavigate()
   const page = search.page ?? 1
   const searchValue = search.search ?? ""
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [masterSearch, setMasterSearch] = useState("")
   const data = useQuery(appointmentsQueryOptions(customerId, page, searchValue)).data
-  const masterCustomersData = useQuery(appointmentMasterOptionsQueryOptions(masterSearch)).data
-  const salonsData = useQuery(appointmentSalonOptionsQueryOptions()).data
+  const masterCustomersData = useQuery({
+    ...appointmentMasterOptionsQueryOptions(masterSearch),
+    enabled: createDialogOpen,
+  }).data
+  const salonsData = useQuery({
+    ...appointmentSalonOptionsQueryOptions(),
+    enabled: createDialogOpen,
+  }).data
   const createAppointment = useCreateAppointmentAction({
     invalidateKeys: [
       { queryKey: trpc.customers.appointments.list.queryKey() },
@@ -66,11 +71,13 @@ function RouteComponent() {
       page={page}
       searchValue={searchValue}
       data={data}
+      createDialogOpen={createDialogOpen}
       masterSearch={masterSearch}
       masterCustomersData={masterCustomersData}
       salonsData={salonsData}
       createPending={createAppointment.isPending}
       onCreateAppointment={(values) => createAppointment.mutate(values)}
+      onCreateDialogOpenChange={setCreateDialogOpen}
       onMasterSearchChange={setMasterSearch}
       onSearchChange={(nextSearch) => navigate({ search: { page: 1, search: nextSearch }, replace: true })}
       onPageChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}

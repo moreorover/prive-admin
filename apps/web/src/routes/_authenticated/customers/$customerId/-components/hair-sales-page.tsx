@@ -2,7 +2,6 @@ import type { ComponentProps } from "react"
 
 import { Button, Stack, Text, TextInput } from "@mantine/core"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
-import { useState } from "react"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { CreateHairAssignedDialog } from "@/components/hair-assigned/create-hair-assigned-dialog"
@@ -19,11 +18,13 @@ export function HairSalesPage({
   customerId,
   searchValue,
   data,
+  hairCreateOpen,
   hairEditItem,
   hairDeleteItem,
   createPending,
   updatePending,
   deletePending,
+  onHairCreateOpenChange,
   onHairEditItemChange,
   onHairDeleteItemChange,
   onSearchChange,
@@ -35,11 +36,13 @@ export function HairSalesPage({
   customerId: string
   searchValue: string
   data: HairSalesData
+  hairCreateOpen: boolean
   hairEditItem: HairAssignedRow | null
   hairDeleteItem: HairAssignedRow | null
   createPending: boolean
   updatePending: boolean
   deletePending: boolean
+  onHairCreateOpenChange: (open: boolean) => void
   onHairEditItemChange: (item: HairAssignedRow | null) => void
   onHairDeleteItemChange: (item: HairAssignedRow | null) => void
   onSearchChange: (search: string) => void
@@ -48,8 +51,6 @@ export function HairSalesPage({
   onUpdate: ComponentProps<typeof EditHairAssignedDialog>["onUpdate"]
   onDelete: (id: string) => void
 }) {
-  const [hairCreateOpen, setHairCreateOpen] = useState(false)
-
   const normalizedSearch = searchValue.trim()
   const {
     availableHairOrders,
@@ -83,7 +84,7 @@ export function HairSalesPage({
               variant="default"
               size="sm"
               leftSection={<IconPlus size={12} />}
-              onClick={() => setHairCreateOpen(true)}
+              onClick={() => onHairCreateOpenChange(true)}
             >
               New
             </Button>
@@ -122,13 +123,13 @@ export function HairSalesPage({
 
         <CreateHairAssignedDialog
           open={hairCreateOpen}
-          onOpenChange={setHairCreateOpen}
+          onOpenChange={onHairCreateOpenChange}
           clientId={customerId}
           appointmentId={null}
           loading={createPending}
           onCreate={(values) => {
             onCreate(values)
-            setHairCreateOpen(false)
+            onHairCreateOpenChange(false)
           }}
           availableOrders={availableHairOrders}
           availableOrdersLoading={availableHairOrdersLoading}
