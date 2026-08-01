@@ -11,7 +11,7 @@ export async function transactionMonthlyRows(database: Db = db, input: { year: n
   return database
     .select({
       currency: transaction.currency,
-      month: sql<number>`extract(month from ${hairAssigned.soldAt})::int`,
+      month: sql<number>`extract(month from ${appointment.startsAt})::int`,
       sum: sql<number>`coalesce(sum(${transaction.amount}), 0)::int`,
     })
     .from(transaction)
