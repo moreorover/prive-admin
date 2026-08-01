@@ -11,7 +11,7 @@
     "dev:web": "vp run --filter web dev",
     "server:deploy": "vp run --filter server deploy",
     "server:dev:worker": "vp run --filter server dev:worker",
-    "web:deploy": "vp run --filter web build && vp run --filter web deploy",
+    "web:deploy": "VITE_SERVER_URL=https://prive-admin-server-dev.mselvenis.workers.dev vp run --filter web build && vp run --filter web deploy",
     "db:push": "vp run --filter @prive-admin-tanstack/db db:push",
     "db:studio": "vp run --filter @prive-admin-tanstack/db db:studio",
     "db:generate": "vp run --filter @prive-admin-tanstack/db db:generate",

@@ -2,13 +2,13 @@
 
 ## Resources
 
-- Server Worker: `prive-admin-server`
-- Web Worker/assets: `prive-admin-web`
-- D1 database: `prive-admin-d1`
+- Dev server Worker: `prive-admin-server-dev`
+- Dev web Worker/assets: `prive-admin-web-dev`
+- Dev D1 database: `prive-admin-dev`
 - Upload bucket binding: `UPLOADS_BUCKET`
 - Existing R2 bucket: `prive-admin`
-- Generated server URL: `https://prive-admin-server.mselvenis.workers.dev`
-- Generated web URL: `https://prive-admin-web.mselvenis.workers.dev`
+- Generated dev server URL: `https://prive-admin-server-dev.mselvenis.workers.dev`
+- Generated dev web URL: `https://prive-admin-web-dev.mselvenis.workers.dev`
 
 ## One-Time Provisioning
 
@@ -17,14 +17,14 @@ Wrangler needs `CLOUDFLARE_API_TOKEN` in this non-interactive environment.
 1. Create the remote D1 database:
 
    ```bash
-   pnpm --dir apps/server exec wrangler d1 create prive-admin-d1
+   pnpm --dir apps/server exec wrangler d1 create prive-admin-dev
    ```
 
 2. Copy the returned `database_id` into `apps/server/wrangler.jsonc`.
 3. Store the auth secret:
 
    ```bash
-   pnpm --dir apps/server exec wrangler secret put BETTER_AUTH_SECRET
+   pnpm --dir apps/server exec wrangler secret put BETTER_AUTH_SECRET --env dev
    ```
 
 ## First Deploy
@@ -51,7 +51,7 @@ Wrangler needs `CLOUDFLARE_API_TOKEN` in this non-interactive environment.
 4. Apply remote migrations:
 
    ```bash
-   pnpm --dir apps/server exec wrangler d1 migrations apply prive-admin-d1 --remote
+   pnpm --dir apps/server exec wrangler d1 migrations apply prive-admin-dev --remote
    ```
 
 5. Import data remotely:
@@ -72,8 +72,8 @@ Wrangler needs `CLOUDFLARE_API_TOKEN` in this non-interactive environment.
 
    ```jsonc
    {
-     "CORS_ORIGIN": "https://prive-admin-web.mselvenis.workers.dev",
-     "BETTER_AUTH_URL": "https://prive-admin-server.mselvenis.workers.dev",
+     "CORS_ORIGIN": "https://prive-admin-web-dev.mselvenis.workers.dev",
+     "BETTER_AUTH_URL": "https://prive-admin-server-dev.mselvenis.workers.dev",
      "NODE_ENV": "production"
    }
    ```

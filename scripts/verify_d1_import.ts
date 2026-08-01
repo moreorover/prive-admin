@@ -4,7 +4,7 @@ import { Pool } from "pg"
 import { nodeEnv } from "../packages/env/src/server-node"
 import { migratedTables } from "./d1-tables"
 
-const databaseName = process.env.D1_DATABASE_NAME ?? "prive-admin-d1"
+const databaseName = process.env.D1_DATABASE_NAME ?? "prive-admin-dev"
 const remote = process.argv.includes("--remote") || process.env.D1_REMOTE === "1"
 
 function pgIdent(name: string) {

@@ -3,7 +3,7 @@ import { existsSync } from "node:fs"
 import { resolve } from "node:path"
 
 const mode = process.argv.includes("--remote") ? "remote" : "local"
-const databaseName = process.env.D1_DATABASE_NAME ?? "prive-admin-d1"
+const databaseName = process.env.D1_DATABASE_NAME ?? "prive-admin-dev"
 const importFile = ".tmp/d1-import/import.sql"
 const importFilePath = resolve(importFile)
 

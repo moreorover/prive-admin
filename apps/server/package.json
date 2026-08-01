@@ -6,10 +6,10 @@
   "scripts": {
     "build": "tsdown",
     "check-types": "tsc --noEmit",
-    "deploy": "wrangler deploy",
+    "deploy": "wrangler deploy --env dev",
     "env:inject": "op inject -i .env.example -o .env --force",
     "dev": "tsx watch src/node.ts",
-    "dev:worker": "wrangler dev",
+    "dev:worker": "wrangler dev --env dev",
     "start": "node dist/index.mjs"
   },
   "dependencies": {

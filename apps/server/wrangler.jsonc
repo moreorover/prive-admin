@@ -4,23 +4,28 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat"],
-  "vars": {
-    "CORS_ORIGIN": "https://prive-admin-web.mselvenis.workers.dev",
-    "BETTER_AUTH_URL": "https://prive-admin-server.mselvenis.workers.dev",
-    "NODE_ENV": "production",
+  "env": {
+    "dev": {
+      "workers_dev": true,
+      "vars": {
+        "CORS_ORIGIN": "https://prive-admin-web-dev.mselvenis.workers.dev",
+        "BETTER_AUTH_URL": "https://prive-admin-server-dev.mselvenis.workers.dev",
+        "NODE_ENV": "production",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "prive-admin-dev",
+          "database_id": "596a4e0b-f8a7-4024-a8a2-263503c9309b",
+          "migrations_dir": "../../packages/db/src/migrations",
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "UPLOADS_BUCKET",
+          "bucket_name": "prive-admin",
+        },
+      ],
+    },
   },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "prive-admin-d1",
-      "database_id": "a817fdbc-5220-4e33-99a8-fbb291b6212d",
-      "migrations_dir": "../../packages/db/src/migrations",
-    },
-  ],
-  "r2_buckets": [
-    {
-      "binding": "UPLOADS_BUCKET",
-      "bucket_name": "prive-admin",
-    },
-  ],
 }
