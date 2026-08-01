@@ -4,6 +4,7 @@ packages:
 
 onlyBuiltDependencies:
   - esbuild
+  - workerd
 
 catalogMode: prefer
 
@@ -39,3 +40,4 @@ peerDependencyRules:
 
 allowBuilds:
   esbuild: true
+  workerd: true

@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "prive-admin-server",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "CORS_ORIGIN": "http://localhost:5173",
+    "BETTER_AUTH_URL": "http://localhost:3000",
+    "NODE_ENV": "development",
+  },
+}
