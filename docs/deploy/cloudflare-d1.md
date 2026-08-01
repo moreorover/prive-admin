@@ -7,6 +7,8 @@
 - D1 database: `prive-admin-d1`
 - Upload bucket binding: `UPLOADS_BUCKET`
 - Existing R2 bucket: `prive-admin`
+- Generated server URL: `https://prive-admin-server.mselvenis.workers.dev`
+- Generated web URL: `https://prive-admin-web.mselvenis.workers.dev`
 
 ## One-Time Provisioning
 
@@ -18,7 +20,7 @@ Wrangler needs `CLOUDFLARE_API_TOKEN` in this non-interactive environment.
    pnpm --dir apps/server exec wrangler d1 create prive-admin-d1
    ```
 
-2. Copy the returned `database_id` into `apps/server/wrangler.jsonc`, replacing `replace-with-cloudflare-d1-database-id`.
+2. Copy the returned `database_id` into `apps/server/wrangler.jsonc`.
 3. Store the auth secret:
 
    ```bash
@@ -56,7 +58,7 @@ Wrangler needs `CLOUDFLARE_API_TOKEN` in this non-interactive environment.
 
    ```bash
    vp run d1:import:remote
-   vp run d1:verify-import -- --remote
+   D1_REMOTE=1 vp run d1:verify-import
    ```
 
 6. Deploy server and web:
@@ -66,12 +68,12 @@ Wrangler needs `CLOUDFLARE_API_TOKEN` in this non-interactive environment.
    vp run web:deploy
    ```
 
-7. Update `apps/server/wrangler.jsonc` vars with generated URLs:
+7. Confirm `apps/server/wrangler.jsonc` vars use the generated URLs:
 
    ```jsonc
    {
-     "CORS_ORIGIN": "https://<web>.workers.dev",
-     "BETTER_AUTH_URL": "https://<server>.workers.dev",
+     "CORS_ORIGIN": "https://prive-admin-web.mselvenis.workers.dev",
+     "BETTER_AUTH_URL": "https://prive-admin-server.mselvenis.workers.dev",
      "NODE_ENV": "production"
    }
    ```

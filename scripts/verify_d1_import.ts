@@ -5,7 +5,7 @@ import { nodeEnv } from "../packages/env/src/server-node"
 import { migratedTables } from "./d1-tables"
 
 const databaseName = process.env.D1_DATABASE_NAME ?? "prive-admin-d1"
-const remote = process.argv.includes("--remote")
+const remote = process.argv.includes("--remote") || process.env.D1_REMOTE === "1"
 
 function pgIdent(name: string) {
   return `"${name.replaceAll('"', '""')}"`
@@ -24,14 +24,17 @@ function runWranglerCount(table: string) {
     `select count(*) as count from \`${table.replaceAll("`", "``")}\``,
     "--json",
   ]
-  if (!remote) args.push("--local")
+  args.push(remote ? "--remote" : "--local")
 
   const result = spawnSync("pnpm", args, { encoding: "utf8" })
   if (result.status !== 0) {
-    throw new Error(result.stderr || result.stdout || `wrangler failed for ${table}`)
+    throw new Error([`wrangler failed for ${table}`, result.stderr, result.stdout].filter(Boolean).join("\n"))
   }
 
-  const payload = JSON.parse(result.stdout) as Array<{ results?: Array<{ count?: number }> }>
+  const jsonPayload = result.stdout.match(/(\[\s*\{[\s\S]*\])\s*$/)?.[1]
+  if (!jsonPayload) throw new Error(`wrangler returned non-json output for ${table}\n${result.stdout}`)
+
+  const payload = JSON.parse(jsonPayload) as Array<{ results?: Array<{ count?: number }> }>
   return Number(payload[0]?.results?.[0]?.count ?? 0)
 }
 

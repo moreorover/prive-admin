@@ -5,15 +5,15 @@
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
-    "CORS_ORIGIN": "http://localhost:5173",
-    "BETTER_AUTH_URL": "http://localhost:3000",
-    "NODE_ENV": "development",
+    "CORS_ORIGIN": "https://prive-admin-web.mselvenis.workers.dev",
+    "BETTER_AUTH_URL": "https://prive-admin-server.mselvenis.workers.dev",
+    "NODE_ENV": "production",
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "prive-admin-d1",
-      "database_id": "replace-with-cloudflare-d1-database-id",
+      "database_id": "a817fdbc-5220-4e33-99a8-fbb291b6212d",
       "migrations_dir": "../../packages/db/src/migrations",
     },
   ],
