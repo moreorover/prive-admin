@@ -31,7 +31,7 @@ export async function hairAssignedMonthlyRows(database: Db = db, input: { year: 
   const yearEnd = new Date(Date.UTC(input.year + 1, 0, 1))
   return database
     .select({
-      month: sql<number>`extract(month from ${appointment.startsAt})::int`,
+      month: sql<number>`extract(month from ${hairAssigned.soldAt})::int`,
       weight: sql<number>`coalesce(sum(${hairAssigned.weightInGrams}), 0)::int`,
       soldFor: sql<number>`coalesce(sum(${hairAssigned.soldFor}), 0)::int`,
       profit: sql<number>`coalesce(sum(${hairAssigned.profit}), 0)::int`,
