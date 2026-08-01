@@ -1,9 +1,13 @@
 import { readFileSync } from "node:fs"
+import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vite-plus/test"
 
 import { cashTransaction } from "./schema/cash-transaction"
 
-const migrationSql = readFileSync(new URL("./migrations/0007_parched_shiva.sql", import.meta.url), "utf8")
+const migrationSql = readFileSync(
+  fileURLToPath(new URL("./migrations/0007_parched_shiva.sql", import.meta.url).href),
+  "utf8",
+)
 
 describe("cashTransaction schema", () => {
   it("uses a required restricted customer relation and required creator relation", () => {

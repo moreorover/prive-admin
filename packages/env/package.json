@@ -3,7 +3,12 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./server": "./src/server.ts"
+    "./server": "./src/server.ts",
+    "./server-node": "./src/server-node.ts"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "test": "cd ../.. && vp test run packages/env/src/server.test.ts"
   },
   "dependencies": {
     "@t3-oss/env-core": "^0.13.11",
@@ -12,6 +17,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260801.1",
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:"

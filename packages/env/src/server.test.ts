@@ -11,7 +11,7 @@ afterEach(() => {
 test("expands values from the server env file", async () => {
   process.chdir(resolve(originalCwd, "apps/server"))
 
-  const { env } = await import("./server")
+  const { nodeEnv } = await import("./server-node")
 
-  expect(env.DATABASE_URL).toBe("postgresql://postgres:password@localhost:5432/prive_admin")
+  expect(nodeEnv.DATABASE_URL).toBe("postgresql://postgres:password@localhost:5432/prive_admin")
 })
