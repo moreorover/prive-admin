@@ -17,8 +17,8 @@ fi
 
 mkdir -p "${BACKUP_DIR}"
 
-# Prune backups older than 14 days
-find "${BACKUP_DIR}" -name "postgres_backup_*.sql" -type f -mtime +14 -delete
+# Prune backups older than 30 days
+find "${BACKUP_DIR}" -name "postgres_backup_*.sql" -type f -mtime +30 -delete
 
 if [[ -n "${BACKUP_LABEL}" ]]; then
   # Timestamp first so directory/object listings sort chronologically
