@@ -11,6 +11,7 @@ import {
   updateHairOrder as patchHairOrder,
 } from "@prive-admin-tanstack/db"
 import { db } from "@prive-admin-tanstack/db"
+import { appointment } from "@prive-admin-tanstack/db/schema/appointment"
 import { hairAssigned, hairOrder } from "@prive-admin-tanstack/db/schema/hair"
 import { eq, sql } from "drizzle-orm"
 
@@ -133,18 +134,29 @@ export async function createHairAssigned(input: {
   hairOrderId: string
   clientId: string
   appointmentId?: string | null
+  soldAt?: Date
   createdById: string
 }) {
-  const result = await insertHairAssigned(undefined, input)
+  const soldAt = input.appointmentId ? await appointmentStartsAt(input.appointmentId) : input.soldAt
+  const result = await insertHairAssigned(undefined, { ...input, soldAt })
   if (!result) throw unexpectedError("Failed to create hair assignment")
   return result
 }
 
-export async function updateHairAssigned(input: { id: string; weightInGrams: number; soldFor: number }) {
+async function appointmentStartsAt(appointmentId: string) {
+  const result = await db.query.appointment.findFirst({
+    where: eq(appointment.id, appointmentId),
+    columns: { startsAt: true },
+  })
+  if (!result) throw notFound("Appointment not found")
+  return result.startsAt
+}
+
+export async function updateHairAssigned(input: { id: string; weightInGrams: number; soldFor: number; soldAt?: Date }) {
   return await db.transaction(async (tx) => {
     const existing = await tx.query.hairAssigned.findFirst({
       where: eq(hairAssigned.id, input.id),
-      columns: { hairOrderId: true, weightInGrams: true },
+      columns: { appointmentId: true, hairOrderId: true, weightInGrams: true },
     })
     if (!existing) throw notFound("Hair assigned not found")
 
@@ -158,6 +170,7 @@ export async function updateHairAssigned(input: { id: string; weightInGrams: num
 
     const pricePerGram = input.weightInGrams > 0 ? Math.round(input.soldFor / input.weightInGrams) : 0
     const profit = input.soldFor - input.weightInGrams * parentOrder.pricePerGram
+    const soldAt = existing.appointmentId ? await appointmentStartsAt(existing.appointmentId) : input.soldAt
 
     const updated = await patchHairAssigned(tx as any, {
       id: input.id,
@@ -165,6 +178,7 @@ export async function updateHairAssigned(input: { id: string; weightInGrams: num
       soldFor: input.soldFor,
       pricePerGram,
       profit,
+      soldAt,
     })
     if (!updated) throw unexpectedError("Failed to update hair assignment")
 

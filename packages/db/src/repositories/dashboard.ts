@@ -11,7 +11,7 @@ export async function transactionMonthlyRows(database: Db = db, input: { year: n
   return database
     .select({
       currency: transaction.currency,
-      month: sql<number>`extract(month from ${appointment.startsAt})::int`,
+      month: sql<number>`extract(month from ${hairAssigned.soldAt})::int`,
       sum: sql<number>`coalesce(sum(${transaction.amount}), 0)::int`,
     })
     .from(transaction)
@@ -38,9 +38,10 @@ export async function hairAssignedMonthlyRows(database: Db = db, input: { year: 
       pricePerGram: sql<number>`coalesce(avg(${hairAssigned.pricePerGram}), 0)::int`,
     })
     .from(hairAssigned)
-    .innerJoin(appointment, eq(hairAssigned.appointmentId, appointment.id))
-    .where(and(gte(appointment.startsAt, yearStart), lt(appointment.startsAt, yearEnd)))
-    .groupBy(sql`extract(month from ${appointment.startsAt})`)
+    .where(
+      and(isNotNull(hairAssigned.appointmentId), gte(hairAssigned.soldAt, yearStart), lt(hairAssigned.soldAt, yearEnd)),
+    )
+    .groupBy(sql`extract(month from ${hairAssigned.soldAt})`)
 }
 
 export async function hairAssignedThroughSaleMonthlyRows(database: Db = db, input: { year: number }) {
@@ -48,7 +49,7 @@ export async function hairAssignedThroughSaleMonthlyRows(database: Db = db, inpu
   const yearEnd = new Date(Date.UTC(input.year + 1, 0, 1))
   return database
     .select({
-      month: sql<number>`extract(month from ${hairAssigned.createdAt})::int`,
+      month: sql<number>`extract(month from ${hairAssigned.soldAt})::int`,
       weight: sql<number>`coalesce(sum(${hairAssigned.weightInGrams}), 0)::int`,
       soldFor: sql<number>`coalesce(sum(${hairAssigned.soldFor}), 0)::int`,
       profit: sql<number>`coalesce(sum(${hairAssigned.profit}), 0)::int`,
@@ -56,11 +57,7 @@ export async function hairAssignedThroughSaleMonthlyRows(database: Db = db, inpu
     })
     .from(hairAssigned)
     .where(
-      and(
-        isNull(hairAssigned.appointmentId),
-        gte(hairAssigned.createdAt, yearStart),
-        lt(hairAssigned.createdAt, yearEnd),
-      ),
+      and(isNull(hairAssigned.appointmentId), gte(hairAssigned.soldAt, yearStart), lt(hairAssigned.soldAt, yearEnd)),
     )
-    .groupBy(sql`extract(month from ${hairAssigned.createdAt})`)
+    .groupBy(sql`extract(month from ${hairAssigned.soldAt})`)
 }

@@ -1,4 +1,6 @@
 import { Button, Group, Modal, Radio, Stack, Table, Text } from "@mantine/core"
+import { DateInput } from "@mantine/dates"
+import dayjs from "dayjs"
 import { useState } from "react"
 
 type CreateHairAssignedDialogProps = {
@@ -22,6 +24,7 @@ type CreateHairAssignedSubmit = {
   hairOrderId: string
   clientId: string
   appointmentId: string | null
+  soldAt?: Date
 }
 
 export function CreateHairAssignedDialog({
@@ -35,9 +38,12 @@ export function CreateHairAssignedDialog({
   availableOrdersLoading = false,
 }: CreateHairAssignedDialogProps) {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  const [soldAt, setSoldAt] = useState(() => dayjs().format("YYYY-MM-DD"))
+  const isIndividualSale = !appointmentId
 
   const handleClose = () => {
     setSelectedOrderId(null)
+    setSoldAt(dayjs().format("YYYY-MM-DD"))
     onOpenChange(false)
   }
 
@@ -47,6 +53,15 @@ export function CreateHairAssignedDialog({
         <Text size="sm" c="dimmed">
           Select a hair order with available stock.
         </Text>
+        {isIndividualSale && (
+          <DateInput
+            label="Date"
+            valueFormat="DD MMM YYYY"
+            value={soldAt}
+            onChange={(value) => setSoldAt(value ?? "")}
+            required
+          />
+        )}
         {availableOrdersLoading ? (
           <Text size="sm" c="dimmed">
             Loading…
@@ -88,11 +103,16 @@ export function CreateHairAssignedDialog({
             Cancel
           </Button>
           <Button
-            disabled={!selectedOrderId}
+            disabled={!selectedOrderId || (isIndividualSale && !soldAt)}
             loading={loading}
             onClick={() =>
               selectedOrderId &&
-              onCreate({ hairOrderId: selectedOrderId, clientId, appointmentId: appointmentId ?? null })
+              onCreate({
+                hairOrderId: selectedOrderId,
+                clientId,
+                appointmentId: appointmentId ?? null,
+                ...(isIndividualSale ? { soldAt: dayjs(soldAt).toDate() } : {}),
+              })
             }
           >
             Assign

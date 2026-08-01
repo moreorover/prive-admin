@@ -21,6 +21,7 @@ export type HairAssignedRow = {
   soldFor: number
   profit: number
   pricePerGram: number
+  soldAt?: string | Date
   client?: { id: string; name: string } | null
   hairOrder?: { id: string; uid: number } | null
 }
