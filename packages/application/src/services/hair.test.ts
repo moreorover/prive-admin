@@ -27,22 +27,26 @@ describe("hair service", () => {
     vi.clearAllMocks()
   })
 
-  it("creates an individual hair sale with the selected sale date", async () => {
+  it("creates an individual hair sale without overriding the sale date", async () => {
     repositoryMock.createHairAssigned.mockResolvedValue({ id: "hair-assigned-1" })
 
     await createHairAssigned({
       hairOrderId: "hair-order-1",
       clientId: "customer-1",
       appointmentId: null,
-      soldAt: new Date("2026-07-14T00:00:00.000Z"),
       createdById: "user-1",
     })
 
     expect(repositoryMock.createHairAssigned).toHaveBeenCalledWith(
       undefined,
+      expect.not.objectContaining({
+        soldAt: expect.any(Date),
+      }),
+    )
+    expect(repositoryMock.createHairAssigned).toHaveBeenCalledWith(
+      undefined,
       expect.objectContaining({
         appointmentId: null,
-        soldAt: new Date("2026-07-14T00:00:00.000Z"),
       }),
     )
   })
@@ -55,7 +59,6 @@ describe("hair service", () => {
       hairOrderId: "hair-order-1",
       clientId: "customer-1",
       appointmentId: "appointment-1",
-      soldAt: new Date("2026-07-14T00:00:00.000Z"),
       createdById: "user-1",
     })
 

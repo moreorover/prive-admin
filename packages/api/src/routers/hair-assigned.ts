@@ -53,7 +53,6 @@ export const hairAssignedRouter = router({
         hairOrderId: z.string().min(1),
         clientId: z.string().min(1),
         appointmentId: z.string().nullish(),
-        soldAt: z.coerce.date().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -62,7 +61,6 @@ export const hairAssignedRouter = router({
           hairOrderId: input.hairOrderId,
           clientId: input.clientId,
           appointmentId: input.appointmentId ?? null,
-          soldAt: input.soldAt,
           createdById: ctx.session.user.id,
         })
       } catch (error) {

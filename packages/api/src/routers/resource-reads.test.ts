@@ -144,7 +144,7 @@ describe("resource read routers", () => {
     expect(servicesMock.getHairAssigned).toHaveBeenCalledWith("hair-sale-1")
   })
 
-  it("creates a hair sale with the selected event date", async () => {
+  it("creates a hair sale without accepting a selected event date", async () => {
     const caller = hairAssignedRouter.createCaller(ctx)
     const hairSale = { id: "hair-sale-1", clientId: "customer-1" }
     const soldAt = new Date("2026-07-14T00:00:00.000Z")
@@ -156,13 +156,12 @@ describe("resource read routers", () => {
         clientId: "customer-1",
         appointmentId: null,
         soldAt,
-      }),
+      } as never),
     ).resolves.toBe(hairSale)
     expect(servicesMock.createHairAssigned).toHaveBeenCalledWith({
       hairOrderId: "hair-order-1",
       clientId: "customer-1",
       appointmentId: null,
-      soldAt,
       createdById: "user-1",
     })
   })

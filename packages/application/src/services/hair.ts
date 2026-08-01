@@ -134,10 +134,9 @@ export async function createHairAssigned(input: {
   hairOrderId: string
   clientId: string
   appointmentId?: string | null
-  soldAt?: Date
   createdById: string
 }) {
-  const soldAt = input.appointmentId ? await appointmentStartsAt(input.appointmentId) : input.soldAt
+  const soldAt = input.appointmentId ? await appointmentStartsAt(input.appointmentId) : undefined
   const result = await insertHairAssigned(undefined, { ...input, soldAt })
   if (!result) throw unexpectedError("Failed to create hair assignment")
   return result
