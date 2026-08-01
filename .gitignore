@@ -41,6 +41,8 @@ lerna-debug.log*
 
 # Better-T-Stack
 .alchemy
+.wrangler/
+**/.wrangler/
 
 # Testing
 coverage
