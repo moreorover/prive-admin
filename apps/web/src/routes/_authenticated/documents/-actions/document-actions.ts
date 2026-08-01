@@ -37,8 +37,8 @@ export function useDocumentActions() {
     fd.append("file", file)
     const res = await fetch("/api/statement-attachments/upload", { method: "POST", body: fd })
     if (!res.ok) {
-      const body = await res.json().catch(() => ({}))
-      throw new Error(body.error ?? `Upload failed (${res.status})`)
+      const body = (await res.json().catch(() => ({}))) as { error?: string }
+      throw new Error(body.error || `Upload failed (${res.status})`)
     }
     notifications.show({ color: "green", message: "Uploaded" })
     await invalidateDocuments()

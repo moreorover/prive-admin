@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gt, gte, ilike, lt, or } from "drizzle-orm"
+import { and, count, desc, eq, gt, gte, like, lt, or } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { user } from "../schema/auth"
@@ -20,15 +20,19 @@ function escapeLikePattern(value: string) {
   return value.replace(/[\\%_]/g, "\\$&")
 }
 
+function parseDateInput(value: string) {
+  return new Date(value)
+}
+
 export async function listCashTransactions(database: Db = db, filter: CashTransactionListFilter) {
   const clauses = []
   if (filter.search) {
     const pattern = `%${escapeLikePattern(filter.search)}%`
     clauses.push(
       or(
-        ilike(cashTransaction.description, pattern),
-        ilike(cashTransaction.notes, pattern),
-        ilike(customer.name, pattern),
+        like(cashTransaction.description, pattern),
+        like(cashTransaction.notes, pattern),
+        like(customer.name, pattern),
       ),
     )
   }
@@ -36,8 +40,8 @@ export async function listCashTransactions(database: Db = db, filter: CashTransa
   if (filter.currency) clauses.push(eq(cashTransaction.currency, filter.currency))
   if (filter.direction === "received") clauses.push(gt(cashTransaction.amount, 0))
   if (filter.direction === "paid") clauses.push(lt(cashTransaction.amount, 0))
-  if (filter.dateFrom) clauses.push(gte(cashTransaction.createdAt, filter.dateFrom))
-  if (filter.dateTo) clauses.push(lt(cashTransaction.createdAt, filter.dateTo))
+  if (filter.dateFrom) clauses.push(gte(cashTransaction.createdAt, parseDateInput(filter.dateFrom)))
+  if (filter.dateTo) clauses.push(lt(cashTransaction.createdAt, parseDateInput(filter.dateTo)))
   const where = clauses.length > 0 ? and(...clauses) : undefined
 
   const items = await database
@@ -82,7 +86,10 @@ export async function createCashTransaction(
     currency: "EUR" | "GBP"
   },
 ) {
-  const [result] = await database.insert(cashTransaction).values(input).returning()
+  const [result] = await database
+    .insert(cashTransaction)
+    .values({ ...input, createdAt: parseDateInput(input.createdAt) })
+    .returning()
   return result
 }
 
@@ -102,7 +109,7 @@ export async function updateCashTransaction(
     .update(cashTransaction)
     .set({
       customerId: input.customerId,
-      createdAt: input.createdAt,
+      createdAt: parseDateInput(input.createdAt),
       description: input.description ?? null,
       notes: input.notes ?? null,
       amount: input.amount,

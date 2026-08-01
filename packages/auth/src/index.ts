@@ -1,4 +1,4 @@
-import { createDb } from "@prive-admin-tanstack/db"
+import { createDb } from "@prive-admin-tanstack/db/client"
 import * as schema from "@prive-admin-tanstack/db/schema/auth"
 import { env } from "@prive-admin-tanstack/env/server"
 import { betterAuth } from "better-auth"

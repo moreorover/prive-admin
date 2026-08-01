@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm"
+import { and, asc, count, desc, eq, like, or, sql } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { customer } from "../schema"
@@ -25,8 +25,8 @@ function escapeLikePattern(value: string) {
 export async function listCustomers(database: Db = db, filter: CustomerListFilter) {
   const where = filter.search
     ? or(
-        ilike(customer.name, `%${escapeLikePattern(filter.search)}%`),
-        ilike(customer.phoneNumber, `%${escapeLikePattern(filter.search)}%`),
+        like(customer.name, `%${escapeLikePattern(filter.search)}%`),
+        like(customer.phoneNumber, `%${escapeLikePattern(filter.search)}%`),
       )
     : undefined
 
@@ -64,7 +64,7 @@ export async function listCustomerAppointments(
   input: { customerId: string; pageSize: number; offset: number; search?: string },
 ) {
   const where = input.search
-    ? and(eq(appointment.clientId, input.customerId), ilike(appointment.name, `%${escapeLikePattern(input.search)}%`))
+    ? and(eq(appointment.clientId, input.customerId), like(appointment.name, `%${escapeLikePattern(input.search)}%`))
     : eq(appointment.clientId, input.customerId)
 
   const items = await database.query.appointment.findMany({
@@ -84,7 +84,7 @@ export async function listCustomerNotes(
   input: { customerId: string; pageSize: number; offset: number; search?: string },
 ) {
   const where = input.search
-    ? and(eq(note.customerId, input.customerId), ilike(note.note, `%${escapeLikePattern(input.search)}%`))
+    ? and(eq(note.customerId, input.customerId), like(note.note, `%${escapeLikePattern(input.search)}%`))
     : eq(note.customerId, input.customerId)
 
   const items = await database.query.note.findMany({
@@ -111,7 +111,7 @@ export async function listCustomerHairAssigned(
           select 1
           from hair_order
           where hair_order.id = ${hairAssigned.hairOrderId}
-            and hair_order.uid::text ilike ${`%${escapeLikePattern(input.search)}%`}
+            and cast(hair_order.uid as text) like ${`%${escapeLikePattern(input.search)}%`}
         )`,
       )
     : eq(hairAssigned.clientId, input.customerId)

@@ -1,7 +1,5 @@
-import type { PgColumn } from "drizzle-orm/pg-core"
+import { eq, type AnyColumn } from "drizzle-orm"
 
-import { eq } from "drizzle-orm"
-
-export function whereActiveLegalEntity(column: PgColumn, activeLegalEntityId: string | null) {
+export function whereActiveLegalEntity(column: AnyColumn, activeLegalEntityId: string | null) {
   return activeLegalEntityId ? eq(column, activeLegalEntityId) : undefined
 }

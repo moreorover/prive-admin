@@ -5,7 +5,7 @@ import { describe, expect, it } from "vite-plus/test"
 import { cashTransaction } from "./schema/cash-transaction"
 
 const migrationSql = readFileSync(
-  fileURLToPath(new URL("./migrations/0007_parched_shiva.sql", import.meta.url).href),
+  fileURLToPath(new URL("./migrations/0000_melodic_major_mapleleaf.sql", import.meta.url).href),
   "utf8",
 )
 
@@ -14,45 +14,45 @@ describe("cashTransaction schema", () => {
     expect(cashTransaction.customerId.notNull).toBe(true)
     expect(cashTransaction.createdById.notNull).toBe(true)
     expect(migrationSql).toMatch(
-      /FOREIGN KEY \("customer_id"\) REFERENCES "public"\."customer"\("id"\) ON DELETE restrict/,
+      /FOREIGN KEY \(`customer_id`\) REFERENCES `customer`\(`id`\) ON UPDATE no action ON DELETE restrict/,
     )
     expect(migrationSql).toMatch(
-      /FOREIGN KEY \("created_by_id"\) REFERENCES "public"\."users"\("id"\) ON DELETE restrict/,
+      /FOREIGN KEY \(`created_by_id`\) REFERENCES `users`\(`id`\) ON UPDATE no action ON DELETE restrict/,
     )
   })
 
   it("stores signed integer amounts", () => {
     expect(cashTransaction.amount.notNull).toBe(true)
     expect(cashTransaction.amount.dataType).toBe("number")
-    expect(cashTransaction.amount.columnType).toBe("PgInteger")
+    expect(cashTransaction.amount.columnType).toBe("SQLiteInteger")
     expect(cashTransaction.amount.getSQLType()).toBe("integer")
   })
 
-  it("stores createdAt as timestamps while the UI collects only dates", () => {
+  it("stores createdAt as an integer timestamp while the UI collects only dates", () => {
     expect(cashTransaction.createdAt.notNull).toBe(true)
-    expect(cashTransaction.createdAt.dataType).toBe("string")
-    expect(cashTransaction.createdAt.columnType).toBe("PgTimestampString")
-    expect(cashTransaction.createdAt.getSQLType()).toBe("timestamp with time zone")
-    expect(migrationSql).toContain('"created_at" timestamp with time zone NOT NULL')
+    expect(cashTransaction.createdAt.dataType).toBe("date")
+    expect(cashTransaction.createdAt.columnType).toBe("SQLiteTimestamp")
+    expect(cashTransaction.createdAt.getSQLType()).toBe("integer")
+    expect(migrationSql).toContain("`created_at` integer NOT NULL")
   })
 
   it("defaults to EUR currency and requires updatedAt timestamps", () => {
     expect(cashTransaction.currency.notNull).toBe(true)
     expect(cashTransaction.currency.default).toBe("EUR")
     expect(cashTransaction.updatedAt.notNull).toBe(true)
-    expect(cashTransaction.updatedAt.columnType).toBe("PgTimestamp")
-    expect(cashTransaction.updatedAt.getSQLType()).toBe("timestamp with time zone")
+    expect(cashTransaction.updatedAt.columnType).toBe("SQLiteTimestamp")
+    expect(cashTransaction.updatedAt.getSQLType()).toBe("integer")
   })
 
   it("indexes list access patterns", () => {
     expect(migrationSql).toContain(
-      'CREATE INDEX "cash_transaction_created_at_id_idx" ON "cash_transaction" USING btree ("created_at","id");',
+      "CREATE INDEX `cash_transaction_created_at_id_idx` ON `cash_transaction` (`created_at`,`id`);",
     )
     expect(migrationSql).toContain(
-      'CREATE INDEX "cash_transaction_customer_id_idx" ON "cash_transaction" USING btree ("customer_id");',
+      "CREATE INDEX `cash_transaction_customer_id_idx` ON `cash_transaction` (`customer_id`);",
     )
     expect(migrationSql).toContain(
-      'CREATE INDEX "cash_transaction_currency_created_at_idx" ON "cash_transaction" USING btree ("currency","created_at");',
+      "CREATE INDEX `cash_transaction_currency_created_at_idx` ON `cash_transaction` (`currency`,`created_at`);",
     )
   })
 })

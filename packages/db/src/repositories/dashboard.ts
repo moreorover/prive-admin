@@ -5,14 +5,18 @@ import { appointment } from "../schema/appointment"
 import { hairAssigned } from "../schema/hair"
 import { transaction } from "../schema/transaction"
 
+function monthFromTimestampMs(column: typeof appointment.startsAt | typeof hairAssigned.soldAt) {
+  return sql<number>`cast(strftime('%m', ${column} / 1000, 'unixepoch') as integer)`
+}
+
 export async function transactionMonthlyRows(database: Db = db, input: { year: number; legalEntityId?: string }) {
   const yearStart = new Date(Date.UTC(input.year, 0, 1))
   const yearEnd = new Date(Date.UTC(input.year + 1, 0, 1))
   return database
     .select({
       currency: transaction.currency,
-      month: sql<number>`extract(month from ${appointment.startsAt})::int`,
-      sum: sql<number>`coalesce(sum(${transaction.amount}), 0)::int`,
+      month: monthFromTimestampMs(appointment.startsAt),
+      sum: sql<number>`coalesce(sum(${transaction.amount}), 0)`,
     })
     .from(transaction)
     .innerJoin(appointment, eq(transaction.appointmentId, appointment.id))
@@ -23,7 +27,7 @@ export async function transactionMonthlyRows(database: Db = db, input: { year: n
         isNotNull(transaction.appointmentId),
       ),
     )
-    .groupBy(transaction.currency, sql`extract(month from ${appointment.startsAt})`)
+    .groupBy(transaction.currency, monthFromTimestampMs(appointment.startsAt))
 }
 
 export async function hairAssignedMonthlyRows(database: Db = db, input: { year: number }) {
@@ -31,17 +35,17 @@ export async function hairAssignedMonthlyRows(database: Db = db, input: { year: 
   const yearEnd = new Date(Date.UTC(input.year + 1, 0, 1))
   return database
     .select({
-      month: sql<number>`extract(month from ${hairAssigned.soldAt})::int`,
-      weight: sql<number>`coalesce(sum(${hairAssigned.weightInGrams}), 0)::int`,
-      soldFor: sql<number>`coalesce(sum(${hairAssigned.soldFor}), 0)::int`,
-      profit: sql<number>`coalesce(sum(${hairAssigned.profit}), 0)::int`,
-      pricePerGram: sql<number>`coalesce(avg(${hairAssigned.pricePerGram}), 0)::int`,
+      month: monthFromTimestampMs(hairAssigned.soldAt),
+      weight: sql<number>`coalesce(sum(${hairAssigned.weightInGrams}), 0)`,
+      soldFor: sql<number>`coalesce(sum(${hairAssigned.soldFor}), 0)`,
+      profit: sql<number>`coalesce(sum(${hairAssigned.profit}), 0)`,
+      pricePerGram: sql<number>`coalesce(avg(${hairAssigned.pricePerGram}), 0)`,
     })
     .from(hairAssigned)
     .where(
       and(isNotNull(hairAssigned.appointmentId), gte(hairAssigned.soldAt, yearStart), lt(hairAssigned.soldAt, yearEnd)),
     )
-    .groupBy(sql`extract(month from ${hairAssigned.soldAt})`)
+    .groupBy(monthFromTimestampMs(hairAssigned.soldAt))
 }
 
 export async function hairAssignedThroughSaleMonthlyRows(database: Db = db, input: { year: number }) {
@@ -49,15 +53,15 @@ export async function hairAssignedThroughSaleMonthlyRows(database: Db = db, inpu
   const yearEnd = new Date(Date.UTC(input.year + 1, 0, 1))
   return database
     .select({
-      month: sql<number>`extract(month from ${hairAssigned.soldAt})::int`,
-      weight: sql<number>`coalesce(sum(${hairAssigned.weightInGrams}), 0)::int`,
-      soldFor: sql<number>`coalesce(sum(${hairAssigned.soldFor}), 0)::int`,
-      profit: sql<number>`coalesce(sum(${hairAssigned.profit}), 0)::int`,
-      pricePerGram: sql<number>`coalesce(avg(${hairAssigned.pricePerGram}), 0)::int`,
+      month: monthFromTimestampMs(hairAssigned.soldAt),
+      weight: sql<number>`coalesce(sum(${hairAssigned.weightInGrams}), 0)`,
+      soldFor: sql<number>`coalesce(sum(${hairAssigned.soldFor}), 0)`,
+      profit: sql<number>`coalesce(sum(${hairAssigned.profit}), 0)`,
+      pricePerGram: sql<number>`coalesce(avg(${hairAssigned.pricePerGram}), 0)`,
     })
     .from(hairAssigned)
     .where(
       and(isNull(hairAssigned.appointmentId), gte(hairAssigned.soldAt, yearStart), lt(hairAssigned.soldAt, yearEnd)),
     )
-    .groupBy(sql`extract(month from ${hairAssigned.soldAt})`)
+    .groupBy(monthFromTimestampMs(hairAssigned.soldAt))
 }

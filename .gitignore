@@ -54,6 +54,7 @@ backups/*.csv
 # Misc
 *.tgz
 .cache
+.tmp/
 tmp
 temp
 

@@ -16,6 +16,10 @@
     "db:studio": "vp run --filter @prive-admin-tanstack/db db:studio",
     "db:generate": "vp run --filter @prive-admin-tanstack/db db:generate",
     "db:migrate": "vp run --filter @prive-admin-tanstack/db db:migrate",
+    "d1:export-from-postgres": "tsx scripts/export_postgres_for_d1.ts",
+    "d1:import:local": "tsx scripts/import_d1.ts --local",
+    "d1:import:remote": "tsx scripts/import_d1.ts --remote",
+    "d1:verify-import": "tsx scripts/verify_d1_import.ts",
     "compose:up": "docker compose -f docker-compose.dev.yml up -d",
     "compose:watch": "docker compose -f docker-compose.dev.yml up",
     "compose:stop": "docker compose -f docker-compose.dev.yml stop",
@@ -26,7 +30,10 @@
   "devDependencies": {
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
+    "@types/pg": "^8.20.0",
     "knip": "^6.29.0",
+    "pg": "^8.22.0",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"

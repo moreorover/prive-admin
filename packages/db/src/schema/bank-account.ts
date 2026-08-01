@@ -1,9 +1,10 @@
 import { createId } from "@paralleldrive/cuid2"
-import { pgTable, text, timestamp, unique } from "drizzle-orm/pg-core"
+import { index, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core"
 
+import { createdAt, updatedAt } from "./columns"
 import { legalEntity } from "./legal-entity"
 
-export const bankAccount = pgTable(
+export const bankAccount = sqliteTable(
   "bank_account",
   {
     id: text("id").primaryKey().$defaultFn(createId),
@@ -15,10 +16,11 @@ export const bankAccount = pgTable(
     bankName: text("bank_name"),
     swift: text("swift"),
     displayName: text("display_name").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .$onUpdate(() => new Date())
-      .notNull(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
   },
-  (table) => [unique("bank_account_iban_unique").on(table.iban)],
+  (table) => [
+    uniqueIndex("bank_account_iban_unique").on(table.iban),
+    index("bank_account_legal_entity_id_idx").on(table.legalEntityId),
+  ],
 )

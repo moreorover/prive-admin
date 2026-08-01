@@ -1,15 +1,13 @@
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
+import { sqliteTable, text } from "drizzle-orm/sqlite-core"
 
 import { user } from "./auth"
+import { createdAt, updatedAt } from "./columns"
 
-export const userSettings = pgTable("user_settings", {
+export const userSettings = sqliteTable("user_settings", {
   userId: text("user_id")
     .primaryKey()
     .references(() => user.id, { onDelete: "cascade" }),
   preferredCurrency: text("preferred_currency").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .defaultNow()
-    .$onUpdate(() => new Date())
-    .notNull(),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
 })

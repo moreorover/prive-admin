@@ -70,6 +70,9 @@ export default defineConfig({
     ],
   },
   test: {
+    alias: {
+      "cloudflare:workers": new URL("./packages/db/src/test/cloudflare-workers.ts", import.meta.url).pathname,
+    },
     include: ["{apps,packages}/**/src/**/*.test.{ts,tsx}"],
     exclude: ["**/dist/**", "**/node_modules/**", ".worktrees/**"],
   },
