@@ -37,6 +37,7 @@ export const hairAssigned = pgTable("hair_assigned", {
   soldFor: integer("sold_for").default(0).notNull(),
   profit: integer("profit").default(0).notNull(),
   pricePerGram: integer("price_per_gram").default(0).notNull(),
+  soldAt: timestamp("sold_at", { withTimezone: true }).defaultNow().notNull(),
   clientId: text("client_id")
     .notNull()
     .references(() => customer.id, { onDelete: "cascade" }),

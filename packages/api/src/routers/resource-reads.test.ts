@@ -19,6 +19,8 @@ const servicesMock = vi.hoisted(() => ({
   createBankAccount: vi.fn(),
   getBankAccount: vi.fn(),
   getHairAssigned: vi.fn(),
+  createHairAssigned: vi.fn(),
+  updateHairAssigned: vi.fn(),
   updateBankAccount: vi.fn(),
   listHairAssigned: vi.fn(),
   listHairOrders: vi.fn(),
@@ -140,6 +142,50 @@ describe("resource read routers", () => {
 
     await expect(caller.get({ id: "hair-sale-1" })).resolves.toBe(hairSale)
     expect(servicesMock.getHairAssigned).toHaveBeenCalledWith("hair-sale-1")
+  })
+
+  it("creates a hair sale without accepting a selected event date", async () => {
+    const caller = hairAssignedRouter.createCaller(ctx)
+    const hairSale = { id: "hair-sale-1", clientId: "customer-1" }
+    const soldAt = new Date("2026-07-14T00:00:00.000Z")
+    servicesMock.createHairAssigned.mockResolvedValue(hairSale)
+
+    await expect(
+      caller.create({
+        hairOrderId: "hair-order-1",
+        clientId: "customer-1",
+        appointmentId: null,
+        soldAt,
+      } as never),
+    ).resolves.toBe(hairSale)
+    expect(servicesMock.createHairAssigned).toHaveBeenCalledWith({
+      hairOrderId: "hair-order-1",
+      clientId: "customer-1",
+      appointmentId: null,
+      createdById: "user-1",
+    })
+  })
+
+  it("updates a hair sale with the selected event date", async () => {
+    const caller = hairAssignedRouter.createCaller(ctx)
+    const hairSale = { id: "hair-sale-1", clientId: "customer-1" }
+    const soldAt = new Date("2026-07-15T00:00:00.000Z")
+    servicesMock.updateHairAssigned.mockResolvedValue(hairSale)
+
+    await expect(
+      caller.update({
+        id: "hair-sale-1",
+        weightInGrams: 80,
+        soldFor: 12000,
+        soldAt,
+      }),
+    ).resolves.toBe(hairSale)
+    expect(servicesMock.updateHairAssigned).toHaveBeenCalledWith({
+      id: "hair-sale-1",
+      weightInGrams: 80,
+      soldFor: 12000,
+      soldAt,
+    })
   })
 
   it("lists customers with page offset applied", async () => {

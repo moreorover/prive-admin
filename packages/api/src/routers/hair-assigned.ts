@@ -74,6 +74,7 @@ export const hairAssignedRouter = router({
         id: z.string().min(1),
         weightInGrams: z.number().int().min(0),
         soldFor: z.number().int().min(0),
+        soldAt: z.coerce.date().optional(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -82,6 +83,7 @@ export const hairAssignedRouter = router({
           id: input.id,
           weightInGrams: input.weightInGrams,
           soldFor: input.soldFor,
+          soldAt: input.soldAt,
         })
       } catch (error) {
         throw toTrpcError(error)

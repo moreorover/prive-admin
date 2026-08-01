@@ -25,7 +25,7 @@ import { type HairSalesSource, PAGE_SIZE } from "../-data/index-data"
 type HairSale = {
   id: string
   appointmentId?: string | null
-  createdAt: string | Date
+  soldAt: string | Date
   weightInGrams: number
   soldFor: number
   profit: number
@@ -154,7 +154,7 @@ export function HairSalesPage({
                   <Table.Td>{formatCents(sale.soldFor)}</Table.Td>
                   <Table.Td>{formatCents(sale.profit)}</Table.Td>
                   <Table.Td>
-                    <ClientDate date={sale.appointment?.startsAt ?? sale.createdAt} />
+                    <ClientDate date={sale.soldAt} />
                   </Table.Td>
                   <Table.Td>
                     <Button

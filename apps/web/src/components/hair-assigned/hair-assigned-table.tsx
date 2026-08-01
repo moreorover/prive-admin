@@ -5,6 +5,7 @@ import { IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { createContext, useContext } from "react"
 
+import { ClientDate } from "@/components/client-date"
 import {
   type CompoundTableColumnComponent,
   getCompoundTableColumns,
@@ -21,6 +22,7 @@ export type HairAssignedRow = {
   soldFor: number
   profit: number
   pricePerGram: number
+  soldAt?: string | Date
   client?: { id: string; name: string } | null
   hairOrder?: { id: string; uid: number } | null
 }
@@ -56,6 +58,7 @@ type HairAssignedTableComponent = ((props: HairAssignedTableRootProps) => ReactE
   Client: HairAssignedColumnComponent
   Source: HairAssignedColumnComponent
   HairOrder: HairAssignedColumnComponent
+  SoldAt: HairAssignedColumnComponent
   Weight: HairAssignedColumnComponent
   SoldFor: HairAssignedColumnComponent
   Profit: HairAssignedColumnComponent
@@ -225,6 +228,11 @@ const HairOrder = createColumn("hair-order", "Hair Order", () => {
   )
 })
 
+const SoldAt = createColumn("sold-at", "Sold At", () => {
+  const row = useHairAssignedRow()
+  return <Table.Td>{row.soldAt ? <ClientDate date={row.soldAt} /> : "—"}</Table.Td>
+})
+
 const Weight = createColumn("weight", "Weight", () => {
   const row = useHairAssignedRow()
   return <Table.Td>{row.weightInGrams}g</Table.Td>
@@ -249,6 +257,7 @@ export const HairAssignedTable = Object.assign(HairAssignedTableRoot, {
   Client,
   Source,
   HairOrder,
+  SoldAt,
   Weight,
   SoldFor,
   Profit,
