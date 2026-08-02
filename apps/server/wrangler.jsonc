@@ -25,5 +25,25 @@
         },
       ],
     },
+    "prod": {
+      "workers_dev": true,
+      "secrets": {
+        "required": ["BETTER_AUTH_SECRET", "BETTER_AUTH_URL", "CORS_ORIGIN", "NODE_ENV"],
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "prive-admin-prod",
+          "database_id": "584abb96-8a47-4c60-8153-595410fc8271",
+          "migrations_dir": "../../packages/db/src/migrations",
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "UPLOADS_BUCKET",
+          "bucket_name": "prive-admin",
+        },
+      ],
+    },
   },
 }

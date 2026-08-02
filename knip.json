@@ -3,9 +3,6 @@
   "ignoreBinaries": ["op"],
   "tags": ["-lintignore"],
   "workspaces": {
-    ".": {
-      "entry": ["scripts/**/*.{ts,js,mjs,sh}"]
-    },
     "apps/web": {
       "entry": ["src/router.tsx!", "src/routes/**/*.{ts,tsx}!", "react-doctor.config.json"],
       "ignoreDependencies": ["@mantine/charts"],

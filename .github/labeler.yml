@@ -37,9 +37,9 @@ ci:
 infra:
   - changed-files:
       - any-glob-to-any-file:
-          - docker-compose.yml
-          - Caddyfile
-          - apps/web/Dockerfile
+          - apps/server/wrangler.jsonc
+          - apps/web/wrangler.jsonc
+          - docs/deploy/**
 
 dependencies:
   - changed-files:

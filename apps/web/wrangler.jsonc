@@ -10,5 +10,8 @@
     "dev": {
       "workers_dev": true,
     },
+    "prod": {
+      "workers_dev": true,
+    },
   },
 }

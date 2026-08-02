@@ -6,6 +6,7 @@
     "build": "vp build",
     "check-types": "tsc --noEmit",
     "deploy": "wrangler deploy --env dev",
+    "deploy:prod": "wrangler deploy --env prod",
     "serve": "vp preview",
     "dev": "vp dev"
   },

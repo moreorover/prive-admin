@@ -205,9 +205,6 @@ settings:
 
 catalogs:
   default:
-    '@hono/node-server':
-      specifier: ^2.0.12
-      version: 2.0.12
     '@hono/trpc-server':
       specifier: ^0.4.2
       version: 0.4.2
@@ -232,9 +229,6 @@ catalogs:
     better-auth:
       specifier: ^1.6.25
       version: 1.6.25
-    dotenv:
-      specifier: ^17.4.2
-      version: 17.4.2
     hono:
       specifier: ^4.12.32
       version: 4.12.32
@@ -273,15 +267,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.1.1
-      '@types/pg':
-        specifier: ^8.20.0
-        version: 8.20.0
       knip:
         specifier: ^6.29.0
         version: 6.29.0
-      pg:
-        specifier: ^8.22.0
-        version: 8.22.0
       tsx:
         specifier: 'catalog:'
         version: 4.23.1
@@ -297,9 +285,6 @@ importers:
 
   apps/server:
     dependencies:
-      '@hono/node-server':
-        specifier: 'catalog:'
-        version: 2.0.12(hono@4.12.32)
       '@hono/trpc-server':
         specifier: 'catalog:'
         version: 0.4.2(@trpc/server@11.18.0(typescript@7.0.2))(hono@4.12.32)
@@ -328,9 +313,6 @@ importers:
       tsdown:
         specifier: 'catalog:'
         version: 0.22.14(oxc-resolver@11.24.2)(tsx@4.23.1)(typescript@7.0.2)(unrun@0.2.39)
-      tsx:
-        specifier: 'catalog:'
-        version: 4.23.1
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -526,31 +508,16 @@ importers:
       '@prive-admin-tanstack/env':
         specifier: workspace:*
         version: link:../env
-      dotenv:
-        specifier: 'catalog:'
-        version: 17.4.2
-      dotenv-expand:
-        specifier: ^13.0.0
-        version: 13.0.0
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@cloudflare/workers-types@5.20260801.1)(@types/pg@8.20.0)(kysely@0.29.2)(pg@8.22.0)
-      pg:
-        specifier: ^8.22.0
-        version: 8.22.0
     devDependencies:
       '@prive-admin-tanstack/config':
         specifier: workspace:*
         version: link:../config
-      '@types/pg':
-        specifier: ^8.20.0
-        version: 8.20.0
       drizzle-kit:
         specifier: ^0.31.10
         version: 0.31.10
-      tsdown:
-        specifier: 'catalog:'
-        version: 0.22.14(oxc-resolver@11.24.2)(tsx@4.23.1)(typescript@7.0.2)(unrun@0.2.39)
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -559,19 +526,6 @@ importers:
         version: 0.2.2(@types/node@26.1.1)(@voidzero-dev/vite-plus-core@0.2.2(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.25))(tsx@4.23.1)(typescript@7.0.2)(unrun@0.2.39)(yaml@2.9.0))(esbuild@0.28.1)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.25))(tsx@4.23.1)(typescript@7.0.2)(unrun@0.2.39)(yaml@2.9.0)
 
   packages/env:
-    dependencies:
-      '@t3-oss/env-core':
-        specifier: ^0.13.11
-        version: 0.13.11(typescript@7.0.2)(zod@4.4.3)
-      dotenv:
-        specifier: 'catalog:'
-        version: 17.4.2
-      dotenv-expand:
-        specifier: ^13.0.0
-        version: 13.0.0
-      zod:
-        specifier: 'catalog:'
-        version: 4.4.3
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20260801.1
@@ -1331,12 +1285,6 @@ packages:
 
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
-
-  '@hono/node-server@2.0.12':
-    resolution: {integrity: sha512-eWpQYr67tqJLeaSUl0Q+TquuYfUdTibpOJlUMV2FfUP7+KqCC5TufnwnlXL6mobZBJbGAYRd7ZvEBDCbLInjhg==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      hono: ^4
 
   '@hono/trpc-server@0.4.2':
     resolution: {integrity: sha512-3TDrc42CZLgcTFkXQba+y7JlRWRiyw1AqhLqztWyNS2IFT+3bHld0lxKdGBttCtGKHYx0505dM67RMazjhdZqw==}
@@ -2384,23 +2332,6 @@ packages:
 
   '@standard-schema/utils@0.3.0':
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
-
-  '@t3-oss/env-core@0.13.11':
-    resolution: {integrity: sha512-sM7GYY+KL7H/Hl0BE0inWfk3nRHZOLhmVn7sHGxaZt9FAR6KqREXAE+6TqKfiavfXmpRxO/OZ2QgKRd+oiBYRQ==}
-    peerDependencies:
-      arktype: ^2.1.0
-      typescript: '>=5.0.0'
-      valibot: ^1.0.0-beta.7 || ^1.0.0
-      zod: ^3.24.0 || ^4.0.0
-    peerDependenciesMeta:
-      arktype:
-        optional: true
-      typescript:
-        optional: true
-      valibot:
-        optional: true
-      zod:
-        optional: true
 
   '@tabler/icons-react@3.46.0':
     resolution: {integrity: sha512-CCm7xJWhDT2PH4ZIFkP6AgYKtVhq0gpYkjUN+GVh1AzmIQaa77OW0bQPBPQiTE0PsXMR9oSxFqA3qBglzPyrVQ==}
@@ -3458,14 +3389,6 @@ packages:
 
   dom-helpers@5.2.1:
     resolution: {integrity: sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA==}
-
-  dotenv-expand@13.0.0:
-    resolution: {integrity: sha512-aBfBS8eYIeXmpHI9ThIlA7/WLq+SLt18iXUZhb52rW89QLKQFoIpPG1bPeewoPZsTyjSSO3T7234FBVUM1V2rA==}
-    engines: {node: '>=12'}
-
-  dotenv@17.4.2:
-    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
-    engines: {node: '>=12'}
 
   drizzle-kit@0.31.10:
     resolution: {integrity: sha512-7OZcmQUrdGI+DUNNsKBn1aW8qSoKuTH7d0mYgSP8bAzdFzKoovxEFnoGQp2dVs82EOJeYycqRtciopszwUf8bw==}
@@ -5179,10 +5102,6 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@hono/node-server@2.0.12(hono@4.12.32)':
-    dependencies:
-      hono: 4.12.32
-
   '@hono/trpc-server@0.4.2(@trpc/server@11.18.0(typescript@7.0.2))(hono@4.12.32)':
     dependencies:
       '@trpc/server': 11.18.0(typescript@7.0.2)
@@ -5844,11 +5763,6 @@ snapshots:
 
   '@standard-schema/utils@0.3.0': {}
 
-  '@t3-oss/env-core@0.13.11(typescript@7.0.2)(zod@4.4.3)':
-    optionalDependencies:
-      typescript: 7.0.2
-      zod: 4.4.3
-
   '@tabler/icons-react@3.46.0(react@19.2.8)':
     dependencies:
       '@tabler/icons': 3.46.0
@@ -6404,6 +6318,7 @@ snapshots:
       '@types/node': 26.1.1
       pg-protocol: 1.15.0
       pg-types: 2.2.0
+    optional: true
 
   '@types/react-dom@19.2.3(@types/react@19.2.17)':
     dependencies:
@@ -6969,12 +6884,6 @@ snapshots:
       '@babel/runtime': 7.29.7
       csstype: 3.2.3
 
-  dotenv-expand@13.0.0:
-    dependencies:
-      dotenv: 17.4.2
-
-  dotenv@17.4.2: {}
-
   drizzle-kit@0.31.10:
     dependencies:
       '@drizzle-team/brocli': 0.10.2
@@ -7430,15 +7339,19 @@ snapshots:
   pg-cloudflare@1.4.0:
     optional: true
 
-  pg-connection-string@2.14.0: {}
+  pg-connection-string@2.14.0:
+    optional: true
 
-  pg-int8@1.0.1: {}
+  pg-int8@1.0.1:
+    optional: true
 
   pg-pool@3.14.0(pg@8.22.0):
     dependencies:
       pg: 8.22.0
+    optional: true
 
-  pg-protocol@1.15.0: {}
+  pg-protocol@1.15.0:
+    optional: true
 
   pg-types@2.2.0:
     dependencies:
@@ -7447,6 +7360,7 @@ snapshots:
       postgres-bytea: 1.0.1
       postgres-date: 1.0.7
       postgres-interval: 1.2.0
+    optional: true
 
   pg@8.22.0:
     dependencies:
@@ -7457,10 +7371,12 @@ snapshots:
       pgpass: 1.0.5
     optionalDependencies:
       pg-cloudflare: 1.4.0
+    optional: true
 
   pgpass@1.0.5:
     dependencies:
       split2: 4.2.0
+    optional: true
 
   picocolors@1.1.1: {}
 
@@ -7513,15 +7429,19 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  postgres-array@2.0.0: {}
+  postgres-array@2.0.0:
+    optional: true
 
-  postgres-bytea@1.0.1: {}
+  postgres-bytea@1.0.1:
+    optional: true
 
-  postgres-date@1.0.7: {}
+  postgres-date@1.0.7:
+    optional: true
 
   postgres-interval@1.2.0:
     dependencies:
       xtend: 4.0.2
+    optional: true
 
   prettier@3.9.4: {}
 
@@ -7796,7 +7716,8 @@ snapshots:
   source-map@0.7.6:
     optional: true
 
-  split2@4.2.0: {}
+  split2@4.2.0:
+    optional: true
 
   srvx@0.11.20:
     optional: true
@@ -8153,7 +8074,8 @@ snapshots:
       js-yaml: 4.3.0
     optional: true
 
-  xtend@4.0.2: {}
+  xtend@4.0.2:
+    optional: true
 
   yallist@3.1.1: {}
 
