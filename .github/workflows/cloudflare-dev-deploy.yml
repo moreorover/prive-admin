@@ -22,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: cloudflare-dev
-      url: https://prive-admin-web-dev.mselvenis.workers.dev
     permissions:
       contents: read
 
