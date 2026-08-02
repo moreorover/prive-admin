@@ -1,10 +1,9 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreBinaries": ["op"],
   "tags": ["-lintignore"],
   "workspaces": {
     "apps/web": {
-      "entry": ["src/router.tsx!", "src/routes/**/*.{ts,tsx}!", "react-doctor.config.json"],
+      "entry": ["src/routes/**/*.{ts,tsx}!", "react-doctor.config.json"],
       "ignoreDependencies": ["@mantine/charts"],
       "project": ["src/**/*.{ts,tsx}!"]
     },
