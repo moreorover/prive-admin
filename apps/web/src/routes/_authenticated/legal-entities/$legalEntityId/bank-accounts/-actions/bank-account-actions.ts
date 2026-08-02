@@ -2,6 +2,7 @@ import { notifications } from "@mantine/notifications"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { type Currency } from "@/lib/currency"
+import { apiUrl } from "@/utils/server-url"
 import { trpc } from "@/utils/trpc"
 
 export type BankAccountFormValues = {
@@ -112,7 +113,11 @@ export function useBankEntryAttachmentActions() {
     const fd = new FormData()
     fd.append("entryId", entryId)
     fd.append("file", file)
-    const res = await fetch("/api/statement-attachments/upload", { method: "POST", body: fd })
+    const res = await fetch(apiUrl("/api/statement-attachments/upload"), {
+      method: "POST",
+      body: fd,
+      credentials: "include",
+    })
     if (!res.ok) {
       const body = (await res.json().catch(() => ({}))) as { error?: string }
       throw new Error(body.error || `Upload failed (${res.status})`)

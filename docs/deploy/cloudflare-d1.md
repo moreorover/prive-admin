@@ -77,6 +77,8 @@ The server deploy passes plain Worker variables such as `BETTER_AUTH_URL`, `CORS
 - Pushes to `main` deploy to production through `.github/workflows/cloudflare-prod-deploy.yml` after
   `cloudflare-prod` approval.
 - Production migrations run before the production Workers are deployed.
+- Server and web Worker logs and traces are enabled in Wrangler config. Dev samples all logs/traces; production
+  samples all logs and 10% of traces.
 
 ## Validation
 

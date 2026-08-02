@@ -25,6 +25,7 @@ import { useState } from "react"
 import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { type Currency, formatMinor } from "@/lib/currency"
+import { apiUrl } from "@/utils/server-url"
 
 import { type BankAccountFormValues } from "../-actions/bank-account-actions"
 import { AttachmentsCell } from "./attachments-cell"
@@ -381,7 +382,7 @@ function BankAccountShow({
                       month: String(exportMonth.getMonth() + 1),
                       bankAccountId: id,
                     })
-                    window.location.href = `/api/statement-attachments/export?${params.toString()}`
+                    window.location.href = apiUrl(`/api/statement-attachments/export?${params.toString()}`)
                   }}
                 >
                   Download zip
