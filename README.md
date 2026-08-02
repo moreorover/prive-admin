@@ -101,6 +101,8 @@ prive-admin-tanstack/
 - `vp run db:generate`: Generate D1-compatible Drizzle migrations
 - `vp run db:migrate`: Run database migrations through Drizzle tooling
 - `vp run db:copy:prod-to-dev`: Refresh remote dev D1 from remote production D1
+- `vp run db:copy:dev-to-local`: Refresh local D1 from remote dev D1
+- `vp run db:copy:prod-to-local`: Refresh local D1 from remote production D1
 - `vp run db:studio`: Open database studio UI
 - `vp run check`: Run Oxlint and Oxfmt
 

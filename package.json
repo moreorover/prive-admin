@@ -13,7 +13,9 @@
     "db:studio": "vp run --filter @prive-admin-tanstack/db db:studio",
     "db:generate": "vp run --filter @prive-admin-tanstack/db db:generate",
     "db:migrate": "vp run --filter @prive-admin-tanstack/db db:migrate",
-    "db:copy:prod-to-dev": "scripts/copy_prod_d1_to_dev.sh",
+    "db:copy:prod-to-dev": "scripts/copy_d1_database.sh --source prod --target dev --credentials prod --yes",
+    "db:copy:dev-to-local": "scripts/copy_d1_database.sh --source dev --target local --credentials dev --yes",
+    "db:copy:prod-to-local": "scripts/copy_d1_database.sh --source prod --target local --credentials prod --yes",
     "check": "vp lint && vp fmt --write",
     "prepare": "vp config"
   },

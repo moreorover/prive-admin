@@ -87,13 +87,17 @@ The server deploy passes plain Worker variables such as `BETTER_AUTH_URL`, `CORS
 Use the guarded D1 copy script when dev needs current production data:
 
 ```bash
-DRY_RUN=1 CONFIRM_COPY_PROD_TO_DEV=1 vp run db:copy:prod-to-dev
-CONFIRM_COPY_PROD_TO_DEV=1 vp run db:copy:prod-to-dev
+vp run db:copy:prod-to-dev
+vp run db:copy:dev-to-local
+vp run db:copy:prod-to-local
 ```
 
-The script exports remote `prive-admin-prod`, drops all non-internal tables from remote `prive-admin-dev`, and imports
-the production export into dev. Override the database names with `PROD_D1_DB` and `DEV_D1_DB` only for one-off
-maintenance.
+The shared script exports the selected remote source, drops all non-internal tables from the selected target, and imports
+the export into that target. Use `vp run db:copy:prod-to-dev` to refresh remote dev from production,
+`vp run db:copy:dev-to-local` to seed local D1 from dev, or `vp run db:copy:prod-to-local` to seed local D1 directly
+from production. When `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` are not already set, the script reads them from
+the matching 1Password item: `prive-admin-cloudflare-prod` for production source copies and `prive-admin-cloudflare-dev`
+for dev source copies.
 
 ## Follow-Up
 
