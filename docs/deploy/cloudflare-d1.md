@@ -88,6 +88,19 @@ The server deploy passes plain Worker variables such as `BETTER_AUTH_URL`, `CORS
 - Open `/dashboard`, `/customers`, `/calendar`, `/cash`, `/legal-entities`, and `/documents`.
 - Check Cloudflare D1 query metrics after smoke testing.
 
+## Refresh Dev From Production
+
+Use the guarded D1 copy script when dev needs current production data:
+
+```bash
+DRY_RUN=1 CONFIRM_COPY_PROD_TO_DEV=1 vp run db:copy:prod-to-dev
+CONFIRM_COPY_PROD_TO_DEV=1 vp run db:copy:prod-to-dev
+```
+
+The script exports remote `prive-admin-prod`, drops all non-internal tables from remote `prive-admin-dev`, and imports
+the production export into dev. Override the database names with `PROD_D1_DB` and `DEV_D1_DB` only for one-off
+maintenance.
+
 ## Follow-Up
 
 - Attach the custom domain.
