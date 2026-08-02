@@ -12,9 +12,9 @@
 
 ## One-Time Provisioning
 
-Wrangler needs `CLOUDFLARE_API_TOKEN` in non-interactive environments. Dev deployment values are stored in the
-`prive-admin-cloudflare-dev` 1Password item and loaded by `.github/workflows/cloudflare-dev-deploy.yml` after
-GitHub environment approval for `cloudflare-dev`.
+Wrangler needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in non-interactive environments. Dev deployment
+values are stored in the `prive-admin-cloudflare-dev` 1Password item and loaded by
+`.github/workflows/cloudflare-dev-deploy.yml` after GitHub environment approval for `cloudflare-dev`.
 
 1. Create the remote D1 database:
 
@@ -26,6 +26,7 @@ GitHub environment approval for `cloudflare-dev`.
 3. Confirm the GitHub `cloudflare-dev` environment has required reviewers.
 4. Confirm the `prive-admin-cloudflare-dev` 1Password item contains:
 
+   - `cloudflare/account-id`
    - `cloudflare/api-token`
    - `workers/cors-origin`
    - `workers/node-env`
@@ -47,9 +48,10 @@ GitHub environment approval for `cloudflare-dev`.
    vp run cloudflare:deploy
    ```
 
-   The script requires `CLOUDFLARE_API_TOKEN`, `CORS_ORIGIN`, `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`,
-   `VITE_SERVER_URL`, and `NODE_ENV` in the process environment. In GitHub Actions, 1Password loads these after
-   the `cloudflare-dev` environment is approved.
+   Local deploys require `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and `VITE_SERVER_URL` in the process
+   environment. Server runtime values are managed as Worker secrets in Cloudflare. In GitHub Actions, 1Password
+   loads those values after the `cloudflare-dev` environment is approved, and `cloudflare/wrangler-action` updates
+   the server Worker secrets before deploying.
 
 ## Validation
 

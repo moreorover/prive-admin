@@ -7,7 +7,7 @@
     "dev": "vp run -r --parallel dev",
     "build": "vp run -r build",
     "check-types": "vp run -r check-types",
-    "cloudflare:deploy": "scripts/deploy_cloudflare_dev.sh",
+    "cloudflare:deploy": "vp run server:deploy && vp run web:deploy",
     "dev:web": "vp run --filter web dev",
     "server:deploy": "vp run --filter server deploy",
     "server:dev:worker": "vp run --filter server dev:worker",

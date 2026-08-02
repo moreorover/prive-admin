@@ -8,7 +8,7 @@
     "dev": {
       "workers_dev": true,
       "secrets": {
-        "required": ["BETTER_AUTH_SECRET"],
+        "required": ["BETTER_AUTH_SECRET", "BETTER_AUTH_URL", "CORS_ORIGIN", "NODE_ENV"],
       },
       "d1_databases": [
         {
