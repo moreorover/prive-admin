@@ -23,25 +23,25 @@ vp install
 
 This project uses Cloudflare Workers with D1 and Wrangler for local and remote runtime behavior.
 
-1. Apply local D1 migrations:
+1. Create local Worker secrets:
 
    ```bash
-   pnpm --dir apps/server exec wrangler d1 migrations apply prive-admin-dev --local
+   cp apps/server/.dev.vars.example apps/server/.dev.vars
    ```
 
-2. Start the local Worker API:
+2. Start the local apps:
 
    ```bash
-   vp run server:dev:worker
+   vp run dev
    ```
 
-3. In another shell, start the web app with the local server URL:
+Open the local web URL printed by Vite+ in your browser:
 
-   ```bash
-   VITE_SERVER_URL=http://localhost:8787 vp run dev:web
-   ```
+- Web app: `http://localhost:3001`
+- Worker API: `http://localhost:3000`
+- Wrangler local explorer: `http://localhost:3000/cdn-cgi/local/explorer/`
 
-Open the local web URL printed by Vite+ in your browser.
+The local explorer shows local D1 and R2 contents while `vp run dev` is running.
 
 Schema changes are generated with:
 

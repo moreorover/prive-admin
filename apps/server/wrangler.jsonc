@@ -4,6 +4,32 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat"],
+  "dev": {
+    "port": 3000,
+    "local_protocol": "http",
+  },
+  "vars": {
+    "CORS_ORIGIN": "http://localhost:3001",
+    "BETTER_AUTH_URL": "http://localhost:3000",
+    "NODE_ENV": "development",
+  },
+  "secrets": {
+    "required": ["BETTER_AUTH_SECRET"],
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "prive-admin-dev",
+      "database_id": "596a4e0b-f8a7-4024-a8a2-263503c9309b",
+      "migrations_dir": "../../packages/db/src/migrations",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "UPLOADS_BUCKET",
+      "bucket_name": "prive-admin-dev",
+    },
+  ],
   "env": {
     "dev": {
       "workers_dev": true,
