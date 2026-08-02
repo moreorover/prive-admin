@@ -7,10 +7,8 @@
   "env": {
     "dev": {
       "workers_dev": true,
-      "vars": {
-        "CORS_ORIGIN": "https://prive-admin-web-dev.mselvenis.workers.dev",
-        "BETTER_AUTH_URL": "https://prive-admin-server-dev.mselvenis.workers.dev",
-        "NODE_ENV": "production",
+      "secrets": {
+        "required": ["BETTER_AUTH_SECRET"],
       },
       "d1_databases": [
         {

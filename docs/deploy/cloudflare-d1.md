@@ -12,7 +12,9 @@
 
 ## One-Time Provisioning
 
-Wrangler needs `CLOUDFLARE_API_TOKEN` in this non-interactive environment.
+Wrangler needs `CLOUDFLARE_API_TOKEN` in non-interactive environments. Dev deployment values are stored in the
+`prive-admin-cloudflare-dev` 1Password item and loaded by `.github/workflows/cloudflare-dev-deploy.yml` after
+GitHub environment approval for `cloudflare-dev`.
 
 1. Create the remote D1 database:
 
@@ -21,11 +23,15 @@ Wrangler needs `CLOUDFLARE_API_TOKEN` in this non-interactive environment.
    ```
 
 2. Copy the returned `database_id` into `apps/server/wrangler.jsonc`.
-3. Store the auth secret:
+3. Confirm the GitHub `cloudflare-dev` environment has required reviewers.
+4. Confirm the `prive-admin-cloudflare-dev` 1Password item contains:
 
-   ```bash
-   pnpm --dir apps/server exec wrangler secret put BETTER_AUTH_SECRET --env dev
-   ```
+   - `cloudflare/api-token`
+   - `workers/cors-origin`
+   - `workers/node-env`
+   - `better-auth/BETTER_AUTH_SECRET`
+   - `better-auth/BETTER_AUTH_URL`
+   - `web/VITE_SERVER_URL`
 
 ## First Deploy
 
@@ -38,21 +44,12 @@ Wrangler needs `CLOUDFLARE_API_TOKEN` in this non-interactive environment.
 2. Deploy server and web:
 
    ```bash
-   vp run server:deploy
-   vp run web:deploy
+   vp run cloudflare:deploy
    ```
 
-3. Confirm `apps/server/wrangler.jsonc` vars use the generated URLs:
-
-   ```jsonc
-   {
-     "CORS_ORIGIN": "https://prive-admin-web-dev.mselvenis.workers.dev",
-     "BETTER_AUTH_URL": "https://prive-admin-server-dev.mselvenis.workers.dev",
-     "NODE_ENV": "production"
-   }
-   ```
-
-4. Set `VITE_SERVER_URL` for the web deployment to the generated server Worker URL.
+   The script requires `CLOUDFLARE_API_TOKEN`, `CORS_ORIGIN`, `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`,
+   `VITE_SERVER_URL`, and `NODE_ENV` in the process environment. In GitHub Actions, 1Password loads these after
+   the `cloudflare-dev` environment is approved.
 
 ## Validation
 

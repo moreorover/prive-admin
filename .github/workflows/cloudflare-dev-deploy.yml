@@ -1,0 +1,56 @@
+name: Cloudflare Dev Deploy
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-dev-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy Dev Workers
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-dev
+      url: https://prive-admin-web-dev.mselvenis.workers.dev
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24"
+          cache: true
+
+      - name: Install Dependencies
+        run: vp install --frozen-lockfile
+
+      - name: Load Cloudflare Dev Secrets
+        uses: 1password/load-secrets-action@v4
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          CLOUDFLARE_API_TOKEN: op://prive-admin/prive-admin-cloudflare-dev/cloudflare/api-token
+          CORS_ORIGIN: op://prive-admin/prive-admin-cloudflare-dev/workers/cors-origin
+          BETTER_AUTH_URL: op://prive-admin/prive-admin-cloudflare-dev/better-auth/BETTER_AUTH_URL
+          BETTER_AUTH_SECRET: op://prive-admin/prive-admin-cloudflare-dev/better-auth/BETTER_AUTH_SECRET
+          VITE_SERVER_URL: op://prive-admin/prive-admin-cloudflare-dev/web/VITE_SERVER_URL
+          NODE_ENV: op://prive-admin/prive-admin-cloudflare-dev/workers/node-env
+
+      - name: Deploy Cloudflare Dev
+        run: scripts/deploy_cloudflare_dev.sh
