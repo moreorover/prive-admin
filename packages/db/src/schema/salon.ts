@@ -1,12 +1,12 @@
 import { createId } from "@paralleldrive/cuid2"
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core"
+import { sqliteTable, text } from "drizzle-orm/sqlite-core"
 
-export const salon = pgTable("salon", {
+import { createdAt, updatedAt } from "./columns"
+
+export const salon = sqliteTable("salon", {
   id: text("id").primaryKey().$defaultFn(createId),
   name: text("name").notNull(),
   address: text("address"),
-  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .$onUpdate(() => new Date())
-    .notNull(),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
 })

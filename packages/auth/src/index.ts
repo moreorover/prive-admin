@@ -1,4 +1,4 @@
-import { createDb } from "@prive-admin-tanstack/db"
+import { createDb } from "@prive-admin-tanstack/db/client"
 import * as schema from "@prive-admin-tanstack/db/schema/auth"
 import { env } from "@prive-admin-tanstack/env/server"
 import { betterAuth } from "better-auth"
@@ -9,7 +9,7 @@ export function createAuth() {
 
   return betterAuth({
     database: drizzleAdapter(db, {
-      provider: "pg",
+      provider: "sqlite",
       schema: schema,
     }),
     trustedOrigins: [env.CORS_ORIGIN],
@@ -19,6 +19,11 @@ export function createAuth() {
     },
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
+    advanced: {
+      ipAddress: {
+        ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"],
+      },
+    },
     logger: {
       level: "debug",
     },

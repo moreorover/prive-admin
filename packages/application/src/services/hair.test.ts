@@ -84,11 +84,9 @@ describe("hair service", () => {
       },
       select: vi.fn(() => ({
         from: vi.fn(() => ({
-          where: vi.fn(() => ({
-            for: vi
-              .fn()
-              .mockResolvedValue([{ id: "hair-order-1", weightReceived: 100, weightUsed: 40, pricePerGram: 50 }]),
-          })),
+          where: vi
+            .fn()
+            .mockResolvedValue([{ id: "hair-order-1", weightReceived: 100, weightUsed: 40, pricePerGram: 50 }]),
         })),
       })),
       update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn() })) })),

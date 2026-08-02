@@ -102,7 +102,7 @@ export async function updateHairOrder(input: {
   }
 
   return await db.transaction(async (tx) => {
-    const [existing] = await tx.select().from(hairOrder).where(eq(hairOrder.id, input.id)).for("update")
+    const [existing] = await tx.select().from(hairOrder).where(eq(hairOrder.id, input.id))
     if (!existing) throw notFound("Hair order not found")
 
     const assignedTotal = await assignedWeightTotal(tx, input.id)
@@ -159,7 +159,7 @@ export async function updateHairAssigned(input: { id: string; weightInGrams: num
     })
     if (!existing) throw notFound("Hair assigned not found")
 
-    const [parentOrder] = await tx.select().from(hairOrder).where(eq(hairOrder.id, existing.hairOrderId)).for("update")
+    const [parentOrder] = await tx.select().from(hairOrder).where(eq(hairOrder.id, existing.hairOrderId))
     if (!parentOrder) throw notFound("Hair order not found")
 
     const availableWeight = parentOrder.weightReceived - parentOrder.weightUsed + existing.weightInGrams
@@ -198,7 +198,7 @@ export async function deleteHairAssigned(id: string) {
     })
     if (!existing) throw notFound("Hair assigned not found")
 
-    const [parentOrder] = await tx.select().from(hairOrder).where(eq(hairOrder.id, existing.hairOrderId)).for("update")
+    const [parentOrder] = await tx.select().from(hairOrder).where(eq(hairOrder.id, existing.hairOrderId))
     if (!parentOrder) throw notFound("Hair order not found")
 
     const removed = await removeHairAssigned(tx as any, id)

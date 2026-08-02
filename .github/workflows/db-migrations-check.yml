@@ -32,8 +32,6 @@ jobs:
         run: vp install --frozen-lockfile
 
       - name: Generate migrations
-        env:
-          DATABASE_URL: postgres://placeholder:placeholder@localhost:5432/placeholder
         run: vp run db:generate
 
       - name: Verify migrations are committed

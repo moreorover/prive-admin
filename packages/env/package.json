@@ -5,13 +5,11 @@
   "exports": {
     "./server": "./src/server.ts"
   },
-  "dependencies": {
-    "@t3-oss/env-core": "^0.13.11",
-    "dotenv": "catalog:",
-    "dotenv-expand": "^13.0.0",
-    "zod": "catalog:"
+  "scripts": {
+    "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260801.1",
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:"

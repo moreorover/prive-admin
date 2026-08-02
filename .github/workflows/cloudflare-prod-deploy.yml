@@ -1,0 +1,91 @@
+name: Cloudflare Prod Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Prod Workers
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-prod
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24"
+          cache: true
+
+      - name: Install Dependencies
+        run: vp install --frozen-lockfile
+
+      - name: Load Cloudflare Prod Secrets
+        uses: 1password/load-secrets-action@v4
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: op://prive-admin/prive-admin-cloudflare-prod/cloudflare/account-id
+          CLOUDFLARE_API_TOKEN: op://prive-admin/prive-admin-cloudflare-prod/cloudflare/api-token
+          CORS_ORIGIN: op://prive-admin/prive-admin-cloudflare-prod/workers/cors-origin
+          BETTER_AUTH_URL: op://prive-admin/prive-admin-cloudflare-prod/better-auth/BETTER_AUTH_URL
+          BETTER_AUTH_SECRET: op://prive-admin/prive-admin-cloudflare-prod/better-auth/BETTER_AUTH_SECRET
+          NODE_ENV: op://prive-admin/prive-admin-cloudflare-prod/workers/node-env
+          VITE_SERVER_URL: op://prive-admin/prive-admin-cloudflare-prod/web/VITE_SERVER_URL
+
+      - name: Build Server Worker
+        run: vp run --filter server build
+
+      - name: Build Web Worker
+        run: vp run --filter web build
+        env:
+          VITE_SERVER_URL: ${{ env.VITE_SERVER_URL }}
+
+      - name: Apply D1 Migrations
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/server
+          command: d1 migrations apply prive-admin-prod --remote --env prod
+
+      - name: Deploy Server Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/server
+          command: >-
+            deploy --env prod
+            --var CORS_ORIGIN:${{ env.CORS_ORIGIN }}
+            --var BETTER_AUTH_URL:${{ env.BETTER_AUTH_URL }}
+            --var NODE_ENV:${{ env.NODE_ENV }}
+          environment: prod
+          secrets: |
+            BETTER_AUTH_SECRET
+        env:
+          BETTER_AUTH_SECRET: ${{ env.BETTER_AUTH_SECRET }}
+          CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
+          BETTER_AUTH_URL: ${{ env.BETTER_AUTH_URL }}
+          NODE_ENV: ${{ env.NODE_ENV }}
+
+      - name: Deploy Web Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/web
+          command: deploy --env prod

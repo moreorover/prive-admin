@@ -1,5 +1,7 @@
 import { Anchor, Button, Group, Modal, Stack, Text } from "@mantine/core"
 
+import { apiUrl } from "@/utils/server-url"
+
 export type AttachmentPreview = {
   id: string
   originalName: string
@@ -14,7 +16,9 @@ export function AttachmentPreviewDialog({
   onClose: () => void
 }) {
   const opened = attachment !== null
-  const previewUrl = attachment ? `/api/statement-attachments/preview?id=${encodeURIComponent(attachment.id)}` : ""
+  const previewUrl = attachment
+    ? apiUrl(`/api/statement-attachments/preview?id=${encodeURIComponent(attachment.id)}`)
+    : ""
 
   return (
     <Modal

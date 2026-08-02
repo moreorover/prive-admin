@@ -44,8 +44,8 @@ export async function listHairAssigned(database: Db = db, filter: HairAssignedFi
     const searchPattern = `%${escapeLikePattern(filter.search)}%`
     conditions.push(
       or(
-        sql<boolean>`${hairOrder.uid}::text ilike ${searchPattern}`,
-        sql<boolean>`${customer.name} ilike ${searchPattern}`,
+        sql<boolean>`cast(${hairOrder.uid} as text) like ${searchPattern}`,
+        sql<boolean>`${customer.name} like ${searchPattern}`,
       ),
     )
   }
@@ -162,7 +162,11 @@ export async function createHairOrder(
     createdById: string
   },
 ) {
-  const [result] = await database.insert(hairOrder).values(input).returning()
+  const [maxUidRow] = await database.select({ maxUid: sql<number>`coalesce(max(${hairOrder.uid}), 0)` }).from(hairOrder)
+  const [result] = await database
+    .insert(hairOrder)
+    .values({ ...input, uid: (maxUidRow?.maxUid ?? 0) + 1 })
+    .returning()
   return result
 }
 
@@ -245,14 +249,10 @@ export async function deleteHairAssigned(database: Db = db, id: string) {
 
 export async function recalculateHairOrderPrices(database: Db = db, hairOrderId: string) {
   return database.transaction(async (tx) => {
-    const [order] = await tx.select().from(hairOrder).where(eq(hairOrder.id, hairOrderId)).for("update")
+    const [order] = await tx.select().from(hairOrder).where(eq(hairOrder.id, hairOrderId))
     if (!order) return null
 
-    const assignments = await tx
-      .select()
-      .from(hairAssigned)
-      .where(eq(hairAssigned.hairOrderId, hairOrderId))
-      .for("update")
+    const assignments = await tx.select().from(hairAssigned).where(eq(hairAssigned.hairOrderId, hairOrderId))
 
     const pricePerGram =
       order.total === 0 || order.weightReceived === 0 ? 0 : Math.abs(Math.round(order.total / order.weightReceived))

@@ -4,6 +4,10 @@ import { db, type Db } from "../index"
 import { bankAccount } from "../schema/bank-account"
 import { bankStatementEntry } from "../schema/bank-statement-entry"
 
+function monthFromIsoDate(column: typeof bankStatementEntry.date) {
+  return sql<number>`cast(strftime('%m', ${column}) as integer)`
+}
+
 export async function bankAccountMonthlyBreakdownRows(
   database: Db = db,
   input: { year: number; legalEntityId?: string },
@@ -23,9 +27,9 @@ export async function bankAccountMonthlyBreakdownRows(
   const rows = await database
     .select({
       bankAccountId: bankStatementEntry.bankAccountId,
-      month: sql<number>`extract(month from ${bankStatementEntry.date})::int`,
+      month: monthFromIsoDate(bankStatementEntry.date),
       direction: bankStatementEntry.direction,
-      sum: sql<number>`coalesce(sum(${bankStatementEntry.amount}), 0)::int`,
+      sum: sql<number>`coalesce(sum(${bankStatementEntry.amount}), 0)`,
     })
     .from(bankStatementEntry)
     .where(
@@ -35,11 +39,7 @@ export async function bankAccountMonthlyBreakdownRows(
         inArray(bankStatementEntry.bankAccountId, accountIds),
       ),
     )
-    .groupBy(
-      bankStatementEntry.bankAccountId,
-      sql`extract(month from ${bankStatementEntry.date})`,
-      bankStatementEntry.direction,
-    )
+    .groupBy(bankStatementEntry.bankAccountId, monthFromIsoDate(bankStatementEntry.date), bankStatementEntry.direction)
 
   return { accounts, rows }
 }

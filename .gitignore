@@ -13,6 +13,8 @@ out
 # Environment variables
 .env
 .env*.local
+.dev.vars*
+!.dev.vars.example
 
 # IDEs and editors
 .vscode/*
@@ -41,6 +43,8 @@ lerna-debug.log*
 
 # Better-T-Stack
 .alchemy
+.wrangler/
+**/.wrangler/
 
 # Testing
 coverage
@@ -54,7 +58,6 @@ backups/*.csv
 # Misc
 *.tgz
 .cache
+.tmp/
 tmp
 temp
-
-.env

@@ -8,14 +8,14 @@
     "build": "vp run -r build",
     "check-types": "vp run -r check-types",
     "dev:web": "vp run --filter web dev",
+    "dev:server": "vp run --filter server dev",
     "db:push": "vp run --filter @prive-admin-tanstack/db db:push",
     "db:studio": "vp run --filter @prive-admin-tanstack/db db:studio",
     "db:generate": "vp run --filter @prive-admin-tanstack/db db:generate",
     "db:migrate": "vp run --filter @prive-admin-tanstack/db db:migrate",
-    "compose:up": "docker compose -f docker-compose.dev.yml up -d",
-    "compose:watch": "docker compose -f docker-compose.dev.yml up",
-    "compose:stop": "docker compose -f docker-compose.dev.yml stop",
-    "compose:down": "docker compose -f docker-compose.dev.yml down",
+    "db:copy:prod-to-dev": "scripts/copy_d1_database.sh --source prod --target dev --credentials prod --yes",
+    "db:copy:dev-to-local": "scripts/copy_d1_database.sh --source dev --target local --credentials dev --yes",
+    "db:copy:prod-to-local": "scripts/copy_d1_database.sh --source prod --target local --credentials prod --yes",
     "check": "vp lint && vp fmt --write",
     "prepare": "vp config"
   },
@@ -23,16 +23,10 @@
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
     "knip": "^6.29.0",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:"
-  },
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "11.9.0",
-      "onFail": "warn"
-    }
   },
   "engines": {
     "node": ">=24.18.0"

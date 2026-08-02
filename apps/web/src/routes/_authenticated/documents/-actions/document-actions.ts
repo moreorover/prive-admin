@@ -1,6 +1,7 @@
 import { notifications } from "@mantine/notifications"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
+import { apiUrl } from "@/utils/server-url"
 import { trpc } from "@/utils/trpc"
 
 export function useDocumentActions() {
@@ -35,10 +36,14 @@ export function useDocumentActions() {
     const fd = new FormData()
     if (input?.entryId) fd.append("entryId", input.entryId)
     fd.append("file", file)
-    const res = await fetch("/api/statement-attachments/upload", { method: "POST", body: fd })
+    const res = await fetch(apiUrl("/api/statement-attachments/upload"), {
+      method: "POST",
+      body: fd,
+      credentials: "include",
+    })
     if (!res.ok) {
-      const body = await res.json().catch(() => ({}))
-      throw new Error(body.error ?? `Upload failed (${res.status})`)
+      const body = (await res.json().catch(() => ({}))) as { error?: string }
+      throw new Error(body.error || `Upload failed (${res.status})`)
     }
     notifications.show({ color: "green", message: "Uploaded" })
     await invalidateDocuments()
