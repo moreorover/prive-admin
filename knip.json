@@ -22,6 +22,7 @@
       "project": ["src/**/*.ts!"]
     },
     "packages/env": {
+      "ignoreDependencies": ["cloudflare"],
       "project": ["src/**/*.ts!"]
     },
     "packages/ui": {
