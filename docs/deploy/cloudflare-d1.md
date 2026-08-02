@@ -29,46 +29,20 @@ Wrangler needs `CLOUDFLARE_API_TOKEN` in this non-interactive environment.
 
 ## First Deploy
 
-1. Restore the latest Postgres backup locally:
-
-   ```bash
-   ./scripts/restore_postgres.sh
-   ```
-
-2. Export transformed D1 import SQL:
-
-   ```bash
-   vp run d1:export-from-postgres
-   ```
-
-3. Test the import locally:
-
-   ```bash
-   vp run d1:import:local
-   vp run d1:verify-import
-   ```
-
-4. Apply remote migrations:
+1. Apply remote migrations:
 
    ```bash
    pnpm --dir apps/server exec wrangler d1 migrations apply prive-admin-dev --remote
    ```
 
-5. Import data remotely:
-
-   ```bash
-   vp run d1:import:remote
-   D1_REMOTE=1 vp run d1:verify-import
-   ```
-
-6. Deploy server and web:
+2. Deploy server and web:
 
    ```bash
    vp run server:deploy
    vp run web:deploy
    ```
 
-7. Confirm `apps/server/wrangler.jsonc` vars use the generated URLs:
+3. Confirm `apps/server/wrangler.jsonc` vars use the generated URLs:
 
    ```jsonc
    {
@@ -78,7 +52,7 @@ Wrangler needs `CLOUDFLARE_API_TOKEN` in this non-interactive environment.
    }
    ```
 
-8. Set `VITE_SERVER_URL` for the web deployment to the generated server Worker URL.
+4. Set `VITE_SERVER_URL` for the web deployment to the generated server Worker URL.
 
 ## Validation
 
