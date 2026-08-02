@@ -46,6 +46,14 @@ jobs:
           NODE_ENV: op://prive-admin/prive-admin-cloudflare-prod/workers/node-env
           VITE_SERVER_URL: op://prive-admin/prive-admin-cloudflare-prod/web/VITE_SERVER_URL
 
+      - name: Build Server Worker
+        run: vp run --filter server build
+
+      - name: Build Web Worker
+        run: vp run --filter web build
+        env:
+          VITE_SERVER_URL: ${{ env.VITE_SERVER_URL }}
+
       - name: Apply D1 Migrations
         uses: cloudflare/wrangler-action@v4
         with:
@@ -73,11 +81,6 @@ jobs:
           CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
           BETTER_AUTH_URL: ${{ env.BETTER_AUTH_URL }}
           NODE_ENV: ${{ env.NODE_ENV }}
-
-      - name: Build Web Worker
-        run: vp run --filter web build
-        env:
-          VITE_SERVER_URL: ${{ env.VITE_SERVER_URL }}
 
       - name: Deploy Web Worker
         uses: cloudflare/wrangler-action@v4
