@@ -5,11 +5,12 @@
 - Dev server Worker: `prive-admin-server-dev`
 - Dev web Worker/assets: `prive-admin-web-dev`
 - Dev D1 database: `prive-admin-dev`
+- Dev R2 uploads bucket: `prive-admin-dev`
 - Production server Worker: `prive-admin-server-prod`
 - Production web Worker/assets: `prive-admin-web-prod`
 - Production D1 database: `prive-admin-prod`
+- Production R2 uploads bucket: `prive-admin-prod`
 - Upload bucket binding: `UPLOADS_BUCKET`
-- Existing R2 bucket: `prive-admin`
 - Generated dev server URL: `https://prive-admin-server-dev.mselvenis.workers.dev`
 - Generated dev web URL: `https://prive-admin-web-dev.mselvenis.workers.dev`
 - Generated production server URL: `https://prive-admin-server-prod.mselvenis.workers.dev`
@@ -30,8 +31,15 @@ The server deploy passes plain Worker variables such as `BETTER_AUTH_URL`, `CORS
    ```
 
 2. Copy the returned `database_id` values into `apps/server/wrangler.jsonc`.
-3. Confirm the matching GitHub environment has required reviewers.
-4. Confirm the matching 1Password item contains:
+3. Create the remote R2 buckets:
+
+   ```bash
+   pnpm --dir apps/server exec wrangler r2 bucket create prive-admin-dev
+   pnpm --dir apps/server exec wrangler r2 bucket create prive-admin-prod
+   ```
+
+4. Confirm the matching GitHub environment has required reviewers.
+5. Confirm the matching 1Password item contains:
 
    - `cloudflare/account-id`
    - `cloudflare/api-token`

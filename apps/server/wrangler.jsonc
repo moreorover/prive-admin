@@ -21,7 +21,7 @@
       "r2_buckets": [
         {
           "binding": "UPLOADS_BUCKET",
-          "bucket_name": "prive-admin",
+          "bucket_name": "prive-admin-dev",
         },
       ],
     },
@@ -41,7 +41,7 @@
       "r2_buckets": [
         {
           "binding": "UPLOADS_BUCKET",
-          "bucket_name": "prive-admin",
+          "bucket_name": "prive-admin-prod",
         },
       ],
     },
