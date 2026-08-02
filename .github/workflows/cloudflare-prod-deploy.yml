@@ -43,8 +43,6 @@ jobs:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: op://prive-admin/prive-admin-cloudflare-dev/cloudflare/account-id
           CLOUDFLARE_API_TOKEN: op://prive-admin/prive-admin-cloudflare-dev/cloudflare/api-token
-          CORS_ORIGIN: op://prive-admin/prive-admin-prod/server/CORS_ORIGIN
-          BETTER_AUTH_URL: op://prive-admin/prive-admin-prod/server/BETTER_AUTH_URL
           BETTER_AUTH_SECRET: op://prive-admin/prive-admin-prod/server/BETTER_AUTH_SECRET
           VITE_SERVER_URL: op://prive-admin/prive-admin-prod/web/VITE_SERVER_URL
 
@@ -66,14 +64,8 @@ jobs:
           environment: prod
           secrets: |
             BETTER_AUTH_SECRET
-            BETTER_AUTH_URL
-            CORS_ORIGIN
-            NODE_ENV
         env:
           BETTER_AUTH_SECRET: ${{ env.BETTER_AUTH_SECRET }}
-          BETTER_AUTH_URL: ${{ env.BETTER_AUTH_URL }}
-          CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
-          NODE_ENV: ${{ env.NODE_ENV }}
 
       - name: Build Web Worker
         run: vp run --filter web build

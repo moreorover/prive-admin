@@ -17,10 +17,10 @@
 
 ## One-Time Provisioning
 
-Wrangler needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in non-interactive environments. Dev deployment
-values are stored in `prive-admin-cloudflare-dev`. Production app values are currently loaded from
-`prive-admin-prod`, with Cloudflare account credentials loaded from `prive-admin-cloudflare-dev`. GitHub Actions
-loads the values after the matching GitHub environment is approved.
+Wrangler needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in non-interactive environments. Secret values
+are stored in 1Password. Plain Worker variables such as `BETTER_AUTH_URL`, `CORS_ORIGIN`, and `NODE_ENV` are managed
+in Cloudflare per Worker environment and preserved during deploys with `wrangler deploy --keep-vars`. GitHub Actions
+loads 1Password values after the matching GitHub environment is approved.
 
 1. Create the remote D1 databases:
 
@@ -41,6 +41,12 @@ loads the values after the matching GitHub environment is approved.
    - `better-auth/BETTER_AUTH_URL`
    - `web/VITE_SERVER_URL`
 
+5. Configure the server Worker variables in Cloudflare for each environment before the first deploy:
+
+   - `BETTER_AUTH_URL`
+   - `CORS_ORIGIN`
+   - `NODE_ENV`
+
 ## First Deploy
 
 1. Apply remote migrations:
@@ -54,13 +60,12 @@ loads the values after the matching GitHub environment is approved.
 
    ```bash
    vp run cloudflare:deploy:dev
-   VITE_SERVER_URL=https://prive-admin-server-prod.mselvenis.workers.dev vp run cloudflare:deploy:prod
+   VITE_SERVER_URL=<prod-server-url> vp run cloudflare:deploy:prod
    ```
 
-   Local deploys require `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and `VITE_SERVER_URL` in the process
-   environment. Server runtime values are managed as Worker secrets in Cloudflare. In GitHub Actions, 1Password
-   loads those values after the GitHub environment is approved, and `cloudflare/wrangler-action` updates the server
-   Worker secrets before deploying.
+   Local deploys require `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `BETTER_AUTH_SECRET`, and
+   `VITE_SERVER_URL` in the process environment. `BETTER_AUTH_SECRET` is uploaded as a Worker secret. Server Worker
+   variables are expected to already exist in Cloudflare and are preserved with `--keep-vars`.
 
 ## GitHub Actions
 
