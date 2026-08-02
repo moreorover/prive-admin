@@ -58,17 +58,11 @@ The server deploy passes plain Worker variables such as `BETTER_AUTH_URL`, `CORS
    pnpm --dir apps/server exec wrangler d1 migrations apply prive-admin-prod --remote --env prod
    ```
 
-2. Deploy server and web:
+2. Deploy server and web through GitHub Actions.
 
-   ```bash
-   vp run cloudflare:deploy:dev
-   VITE_SERVER_URL=<prod-server-url> vp run cloudflare:deploy:prod
-   ```
-
-   Local deploys require `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `BETTER_AUTH_SECRET`, and
-   `VITE_SERVER_URL` in the process environment. CI deploys load server runtime values from 1Password, pass
-   `BETTER_AUTH_URL`, `CORS_ORIGIN`, and `NODE_ENV` as plain Worker variables, and upload `BETTER_AUTH_SECRET` as a
-   Worker secret.
+   CI deploys load server runtime values from 1Password, pass `BETTER_AUTH_URL`, `CORS_ORIGIN`, and `NODE_ENV` as
+   plain Worker variables, and upload `BETTER_AUTH_SECRET` as a Worker secret. Avoid local deploy shortcuts for normal
+   releases so GitHub environment approvals and build-before-deploy ordering are preserved.
 
 ## GitHub Actions
 

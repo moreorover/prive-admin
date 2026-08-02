@@ -96,8 +96,7 @@ prive-admin-tanstack/
 - `vp run dev`: Start all applications in development mode
 - `vp run build`: Build all applications
 - `vp run dev:web`: Start only the web application
-- `vp run server:dev:worker`: Start the server Worker with Wrangler
-- `vp run cloudflare:deploy`: Deploy server and web Workers for the configured environment
+- `vp run dev:server`: Start only the server Worker with Wrangler
 - `vp run check-types`: Check TypeScript types across all apps
 - `vp run db:generate`: Generate D1-compatible Drizzle migrations
 - `vp run db:migrate`: Run database migrations through Drizzle tooling

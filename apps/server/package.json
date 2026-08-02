@@ -6,12 +6,7 @@
   "scripts": {
     "build": "tsdown",
     "check-types": "tsc --noEmit",
-    "deploy": "wrangler deploy --env dev --keep-vars",
-    "deploy:prod": "wrangler deploy --env prod --keep-vars",
-    "env:inject": "op inject -i .env.example -o .env --force",
-    "dev": "wrangler d1 migrations apply prive-admin-dev --local && wrangler dev",
-    "dev:worker": "wrangler d1 migrations apply prive-admin-dev --local && wrangler dev",
-    "start": "node dist/index.mjs"
+    "dev": "wrangler d1 migrations apply prive-admin-dev --local && wrangler dev"
   },
   "dependencies": {
     "@hono/trpc-server": "catalog:",

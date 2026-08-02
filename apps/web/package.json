@@ -5,8 +5,6 @@
   "scripts": {
     "build": "vp build",
     "check-types": "tsc --noEmit",
-    "deploy": "wrangler deploy --env dev",
-    "deploy:prod": "wrangler deploy --env prod",
     "serve": "vp preview",
     "dev": "VITE_SERVER_URL=http://localhost:3000 vp dev"
   },
