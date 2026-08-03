@@ -87,9 +87,15 @@ describe("bank statement attachment service", () => {
       body: new Uint8Array([1, 2, 3]),
     })
 
-    const [key] = r2Mock.put.mock.calls[0]
+    const putCall = r2Mock.put.mock.calls[0]
+    expect(putCall).toBeDefined()
+
+    const [key] = putCall!
     expect(key).toMatch(/^statement_uploads\/2025\/03\/[0-9a-f-]+-Bank_receipt\.pdf$/)
-    expect(dbMock.createBankStatementAttachment.mock.calls[0][1].r2Key).toBe(key)
+
+    const createCall = dbMock.createBankStatementAttachment.mock.calls[0]
+    expect(createCall).toBeDefined()
+    expect(createCall![1].r2Key).toBe(key)
   })
 
   it("moves an unassigned upload to the matched statement entry date folder when assigned", async () => {
