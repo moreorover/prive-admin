@@ -21,6 +21,6 @@
     "@types/node": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
-    "wrangler": "^4.55.0"
+    "wrangler": "^4.114.0"
   }
 }
