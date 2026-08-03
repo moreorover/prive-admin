@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import {
   assignBankStatementAttachment,
@@ -30,10 +30,6 @@ vi.mock("../r2", () => ({ r2: r2Mock }))
 describe("bank statement attachment service", () => {
   beforeEach(() => {
     vi.resetAllMocks()
-  })
-
-  afterEach(() => {
-    vi.useRealTimers()
   })
 
   it("forwards document paging and legal entity scope to the database layer", async () => {
@@ -69,9 +65,7 @@ describe("bank statement attachment service", () => {
     })
   })
 
-  it("uses the matched statement entry date for the upload storage folder", async () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date("2026-08-03T12:00:00.000Z"))
+  it("stores uploaded documents under a stable uploads prefix", async () => {
     dbMock.getBankStatementEntry.mockResolvedValue({
       id: "entry-1",
       date: "2025-03-14",
@@ -91,48 +85,29 @@ describe("bank statement attachment service", () => {
     expect(putCall).toBeDefined()
 
     const [key] = putCall!
-    expect(key).toMatch(/^statement_uploads\/2025\/03\/[0-9a-f-]+-Bank_receipt\.pdf$/)
+    expect(key).toMatch(/^uploads\/[0-9a-f-]+-Bank_receipt\.pdf$/)
 
     const createCall = dbMock.createBankStatementAttachment.mock.calls[0]
     expect(createCall).toBeDefined()
     expect(createCall![1].r2Key).toBe(key)
   })
 
-  it("moves an unassigned upload to the matched statement entry date folder when assigned", async () => {
-    const body = new ReadableStream()
-    dbMock.getBankStatementAttachment.mockResolvedValue({
-      id: "attachment-1",
-      bankStatementEntryId: null,
-      r2Key: "statement_uploads/2026/08/attachment-1-Bank_receipt.pdf",
-      originalName: "Bank receipt.pdf",
-      contentType: "application/pdf",
-      size: 3,
-      uploadedById: "user-1",
-    })
-    dbMock.getBankStatementEntry.mockResolvedValue({
-      id: "entry-1",
-      date: "2025-03-14",
-    })
-    r2Mock.get.mockResolvedValue({ body })
+  it("assigns an upload without moving its stored object", async () => {
     dbMock.assignBankStatementAttachment.mockImplementation((_, input) =>
       Promise.resolve({
         id: input.id,
         bankStatementEntryId: input.entryId,
-        r2Key: input.r2Key,
       }),
     )
 
     await assignBankStatementAttachment({ id: "attachment-1", entryId: "entry-1" })
 
-    expect(r2Mock.get).toHaveBeenCalledWith("statement_uploads/2026/08/attachment-1-Bank_receipt.pdf")
-    expect(r2Mock.put).toHaveBeenCalledWith("statement_uploads/2025/03/attachment-1-Bank_receipt.pdf", body, {
-      httpMetadata: { contentType: "application/pdf" },
-    })
     expect(dbMock.assignBankStatementAttachment).toHaveBeenCalledWith(undefined, {
       id: "attachment-1",
       entryId: "entry-1",
-      r2Key: "statement_uploads/2025/03/attachment-1-Bank_receipt.pdf",
     })
-    expect(r2Mock.delete).toHaveBeenCalledWith("statement_uploads/2026/08/attachment-1-Bank_receipt.pdf")
+    expect(r2Mock.get).not.toHaveBeenCalled()
+    expect(r2Mock.put).not.toHaveBeenCalled()
+    expect(r2Mock.delete).not.toHaveBeenCalled()
   })
 })

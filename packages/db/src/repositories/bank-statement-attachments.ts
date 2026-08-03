@@ -111,10 +111,7 @@ export async function countBankStatementAttachments(database: Db = db) {
   return Object.fromEntries(counts)
 }
 
-export async function assignBankStatementAttachment(
-  database: Db = db,
-  input: { id: string; entryId: string; r2Key?: string },
-) {
+export async function assignBankStatementAttachment(database: Db = db, input: { id: string; entryId: string }) {
   const entry = await database.query.bankStatementEntry.findFirst({
     where: eq(bankStatementEntry.id, input.entryId),
     columns: { id: true },
@@ -122,7 +119,7 @@ export async function assignBankStatementAttachment(
   if (!entry) return null
   const [row] = await database
     .update(bankStatementAttachment)
-    .set({ bankStatementEntryId: input.entryId, ...(input.r2Key ? { r2Key: input.r2Key } : {}) })
+    .set({ bankStatementEntryId: input.entryId })
     .where(eq(bankStatementAttachment.id, input.id))
     .returning()
   return row

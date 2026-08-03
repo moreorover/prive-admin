@@ -43,14 +43,6 @@ function readableFromR2Object(object: R2ObjectBody) {
   return Readable.fromWeb(object.body as unknown as NodeReadableStream)
 }
 
-function dateFolder(date: string) {
-  return `${date.slice(0, 4)}/${date.slice(5, 7)}`
-}
-
-function attachmentObjectName(key: string) {
-  return key.split("/").at(-1) ?? key
-}
-
 export async function listBankStatementAttachments(input: {
   assignmentStatus?: "assigned" | "unassigned" | "all"
   pageSize: number
@@ -94,20 +86,14 @@ export async function uploadBankStatementAttachment(input: {
     throw new Error(`File exceeds ${MAX_ATTACHMENT_BYTES} bytes`)
   }
 
-  let folderDate: string | null = null
   if (input.entryId) {
     const entry = await findBankStatementEntry(undefined, input.entryId)
     if (!entry) throw notFound("Statement entry not found")
-    folderDate = entry.date
   }
 
   const safeName = input.fileName.replace(/[^\w.-]+/g, "_")
-  const now = new Date()
-  const folder = folderDate
-    ? dateFolder(folderDate)
-    : `${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}`
   const attachmentId = randomUUID()
-  const key = `statement_uploads/${folder}/${attachmentId}-${safeName}`
+  const key = `uploads/${attachmentId}-${safeName}`
 
   try {
     await r2.put(key, input.body, { httpMetadata: { contentType: input.contentType } })
@@ -159,35 +145,8 @@ export async function getBankStatementAttachmentPreviewResponse(id: string) {
 }
 
 export async function assignBankStatementAttachment(input: { id: string; entryId: string }) {
-  const attachment = await findBankStatementAttachment(undefined, input.id)
-  if (!attachment) throw notFound("Attachment not found")
-
-  const entry = await findBankStatementEntry(undefined, input.entryId)
-  if (!entry) throw notFound("Entry not found")
-
-  const r2Key = `statement_uploads/${dateFolder(entry.date)}/${attachmentObjectName(attachment.r2Key)}`
-  if (r2Key !== attachment.r2Key) {
-    const object = await r2.get(attachment.r2Key)
-    if (!object) throw notFound("Attachment file not found")
-
-    try {
-      await r2.put(r2Key, object.body, { httpMetadata: { contentType: attachment.contentType } })
-    } catch (error) {
-      throw unexpectedError("Failed to move bank statement attachment file", error)
-    }
-  }
-
-  const row = await patchAssignBankStatementAttachment(undefined, { ...input, r2Key })
-  if (!row) throw notFound("Attachment not found")
-
-  if (r2Key !== attachment.r2Key) {
-    try {
-      await r2.delete(attachment.r2Key)
-    } catch (error) {
-      console.warn("[statement-attachment move cleanup]", error)
-    }
-  }
-
+  const row = await patchAssignBankStatementAttachment(undefined, input)
+  if (!row) throw notFound("Entry not found")
   return row
 }
 
