@@ -9,13 +9,13 @@
     "dev": "VITE_SERVER_URL=http://localhost:3000 vp dev"
   },
   "dependencies": {
-    "@mantine/charts": "^9.5.0",
-    "@mantine/core": "^9.5.0",
-    "@mantine/dates": "^9.5.0",
-    "@mantine/form": "^9.5.0",
-    "@mantine/hooks": "^9.5.0",
-    "@mantine/notifications": "^9.5.0",
-    "@mantine/schedule": "^9.5.0",
+    "@mantine/charts": "^9.5.1",
+    "@mantine/core": "^9.5.1",
+    "@mantine/dates": "^9.5.1",
+    "@mantine/form": "^9.5.1",
+    "@mantine/hooks": "^9.5.1",
+    "@mantine/notifications": "^9.5.1",
+    "@mantine/schedule": "^9.5.1",
     "@prive-admin-tanstack/api": "workspace:*",
     "@prive-admin-tanstack/ui": "workspace:*",
     "@tabler/icons-react": "^3.45.0",
@@ -42,6 +42,6 @@
     "postcss-simple-vars": "^7.0.1",
     "typescript": "catalog:",
     "vite-plus": "catalog:",
-    "wrangler": "^4.55.0"
+    "wrangler": "^4.114.0"
   }
 }
