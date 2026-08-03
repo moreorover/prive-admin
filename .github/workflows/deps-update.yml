@@ -51,6 +51,9 @@ jobs:
       - name: Update Lockfile
         run: vp install --no-frozen-lockfile
 
+      - name: Format Updated Files
+        run: vp fmt --write
+
       - name: Create or Update Pull Request
         uses: peter-evans/create-pull-request@v8
         with:
