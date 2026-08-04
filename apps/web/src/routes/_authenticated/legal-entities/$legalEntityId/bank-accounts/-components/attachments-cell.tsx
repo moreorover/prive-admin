@@ -1,16 +1,7 @@
-import {
-  ActionIcon,
-  Badge,
-  FileInput,
-  Group,
-  Popover,
-  Select,
-  Stack,
-  Text,
-  Tooltip,
-  UnstyledButton,
-} from "@mantine/core"
+import { ActionIcon, Anchor, Badge, FileInput, Group, Popover, Select, Stack, Text, Tooltip } from "@mantine/core"
 import { IconLinkOff, IconPaperclip, IconTrash } from "@tabler/icons-react"
+
+import { attachmentPreviewUrl } from "@/components/attachment-preview"
 
 type AttachmentOption = {
   id: string
@@ -29,7 +20,6 @@ export function AttachmentsCell({
   unassignLoading,
   uploadLoading,
   onOpenChange,
-  onPreview,
   onAssign,
   onRemove,
   onUnassign,
@@ -45,7 +35,6 @@ export function AttachmentsCell({
   unassignLoading: boolean
   uploadLoading: boolean
   onOpenChange: (opened: boolean) => void
-  onPreview: (a: AttachmentOption) => void
   onAssign: (attachmentId: string) => void
   onRemove: (attachmentId: string) => void
   onUnassign: (attachmentId: string) => void
@@ -78,17 +67,19 @@ export function AttachmentsCell({
           )}
           {attachments.map((a) => (
             <Group key={a.id} justify="space-between" wrap="nowrap" gap="xs">
-              <UnstyledButton
+              <Anchor
+                href={attachmentPreviewUrl(a)}
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={() => {
                   onOpenChange(false)
-                  onPreview(a)
                 }}
-                style={{ textAlign: "left", flex: 1, minWidth: 0 }}
+                style={{ textAlign: "left", flex: 1, minWidth: 0, wordBreak: "break-all" }}
               >
-                <Text size="xs" td="underline" style={{ wordBreak: "break-all" }}>
+                <Text size="xs" td="underline">
                   {a.originalName}
                 </Text>
-              </UnstyledButton>
+              </Anchor>
               <Group gap={4} wrap="nowrap">
                 <Tooltip label="Unassign" withArrow>
                   <ActionIcon
