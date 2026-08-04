@@ -21,7 +21,8 @@
 Wrangler needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in non-interactive environments. Runtime values
 are stored in 1Password. GitHub Actions loads 1Password values after the matching GitHub environment is approved.
 The server deploy passes plain Worker variables such as `BETTER_AUTH_URL`, `CORS_ORIGIN`, and `NODE_ENV` with
-`wrangler deploy --var`, while `BETTER_AUTH_SECRET` is uploaded as a Worker secret.
+`wrangler deploy --var`. `BETTER_AUTH_SECRET` must already exist as a Worker secret; CI validates it through the
+Wrangler `secrets.required` config but does not mutate secrets during normal deploys.
 
 1. Create the remote D1 databases:
 
@@ -60,8 +61,9 @@ The server deploy passes plain Worker variables such as `BETTER_AUTH_URL`, `CORS
 
 2. Deploy server and web through GitHub Actions.
 
-   CI deploys load server runtime values from 1Password, pass `BETTER_AUTH_URL`, `CORS_ORIGIN`, and `NODE_ENV` as
-   plain Worker variables, and upload `BETTER_AUTH_SECRET` as a Worker secret. Avoid local deploy shortcuts for normal
+   CI deploys load server runtime values from 1Password and pass `BETTER_AUTH_URL`, `CORS_ORIGIN`, and `NODE_ENV` as
+   plain Worker variables. `BETTER_AUTH_SECRET` is configured once as a Worker secret and is not re-uploaded on every
+   deploy, avoiding Cloudflare Worker versions secret-edit restrictions. Avoid local deploy shortcuts for normal
    releases so GitHub environment approvals and build-before-deploy ordering are preserved.
 
 ## GitHub Actions
