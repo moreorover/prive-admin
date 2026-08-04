@@ -1,5 +1,6 @@
 import {
   ActionIcon,
+  Anchor,
   Box,
   Button,
   Container,
@@ -12,14 +13,13 @@ import {
   Table,
   Text,
   Tooltip,
-  UnstyledButton,
 } from "@mantine/core"
 import { notifications } from "@mantine/notifications"
 import { IconLinkOff, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
+import { attachmentPreviewUrl } from "@/components/attachment-preview"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
@@ -62,7 +62,6 @@ export function DocumentsPage({
 }) {
   const [busy, setBusy] = useState(false)
   const [fileInputKey, setFileInputKey] = useState(0)
-  const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
   const documents = documentsQuery.data?.items ?? []
   const totalCount = documentsQuery.data?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
@@ -129,7 +128,6 @@ export function DocumentsPage({
                   removePending={removePending}
                   onUnassign={onUnassign}
                   onRemove={onRemove}
-                  onPreview={setPreviewAttachment}
                 />
               </Table.ScrollContainer>
             ) : (
@@ -149,8 +147,6 @@ export function DocumentsPage({
           ) : null}
         </Stack>
       </Section>
-
-      <AttachmentPreviewDialog attachment={previewAttachment} onClose={() => setPreviewAttachment(null)} />
     </Container>
   )
 }
@@ -161,7 +157,6 @@ function DocumentsTable({
   removePending,
   onUnassign,
   onRemove,
-  onPreview,
 }: {
   documents: Array<{
     attachment: {
@@ -195,7 +190,6 @@ function DocumentsTable({
   removePending: boolean
   onUnassign: (id: string) => void
   onRemove: (id: string) => void
-  onPreview: (attachment: AttachmentPreview) => void
 }) {
   return (
     <Table>
@@ -216,20 +210,16 @@ function DocumentsTable({
           <Table.Tr key={attachment.id}>
             <Table.Td>
               <Stack gap={2}>
-                <UnstyledButton
-                  onClick={() =>
-                    onPreview({
-                      id: attachment.id,
-                      originalName: attachment.originalName,
-                      contentType: attachment.contentType,
-                    })
-                  }
-                  style={{ textAlign: "left" }}
+                <Anchor
+                  href={attachmentPreviewUrl(attachment)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ textAlign: "left", wordBreak: "break-all" }}
                 >
-                  <Text size="sm" td="underline" style={{ wordBreak: "break-all" }}>
+                  <Text size="sm" td="underline">
                     {attachment.originalName}
                   </Text>
-                </UnstyledButton>
+                </Anchor>
                 <Text size="xs" c="dimmed">
                   Uploaded {new Date(attachment.uploadedAt).toLocaleString()}
                 </Text>
