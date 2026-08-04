@@ -248,27 +248,30 @@ export async function deleteHairAssigned(database: Db = db, id: string) {
 }
 
 export async function recalculateHairOrderPrices(database: Db = db, hairOrderId: string) {
-  return database.transaction(async (tx) => {
-    const [order] = await tx.select().from(hairOrder).where(eq(hairOrder.id, hairOrderId))
-    if (!order) return null
+  const [order] = await database.select().from(hairOrder).where(eq(hairOrder.id, hairOrderId))
+  if (!order) return null
 
-    const assignments = await tx.select().from(hairAssigned).where(eq(hairAssigned.hairOrderId, hairOrderId))
+  const assignments = await database.select().from(hairAssigned).where(eq(hairAssigned.hairOrderId, hairOrderId))
 
-    const pricePerGram =
-      order.total === 0 || order.weightReceived === 0 ? 0 : Math.abs(Math.round(order.total / order.weightReceived))
+  const pricePerGram =
+    order.total === 0 || order.weightReceived === 0 ? 0 : Math.abs(Math.round(order.total / order.weightReceived))
 
-    if (order.pricePerGram !== pricePerGram) {
-      await tx.update(hairOrder).set({ pricePerGram }).where(eq(hairOrder.id, hairOrderId))
+  const updates = []
+  if (order.pricePerGram !== pricePerGram) {
+    updates.push(database.update(hairOrder).set({ pricePerGram }).where(eq(hairOrder.id, hairOrderId)))
+  }
+
+  for (const ha of assignments) {
+    const total = pricePerGram === 0 ? 0 : Math.round(pricePerGram * ha.weightInGrams)
+    const profit = ha.soldFor - total
+    if (ha.profit !== profit) {
+      updates.push(database.update(hairAssigned).set({ profit }).where(eq(hairAssigned.id, ha.id)))
     }
+  }
 
-    for (const ha of assignments) {
-      const total = pricePerGram === 0 ? 0 : Math.round(pricePerGram * ha.weightInGrams)
-      const profit = ha.soldFor - total
-      if (ha.profit !== profit) {
-        await tx.update(hairAssigned).set({ profit }).where(eq(hairAssigned.id, ha.id))
-      }
-    }
+  if (updates.length > 0) {
+    await database.batch(updates as never)
+  }
 
-    return { pricePerGram }
-  })
+  return { pricePerGram }
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vite-plus/test"
 
-import { createHairAssigned, updateHairAssigned } from "./hair"
+import { createHairAssigned, recalculateHairOrderPrices, updateHairAssigned } from "./hair"
 
 describe("hair repository", () => {
   it("stores an explicit hair sale event date", async () => {
@@ -50,5 +50,40 @@ describe("hair repository", () => {
         soldAt,
       }),
     )
+  })
+
+  it("recalculates hair order prices without opening a database transaction", async () => {
+    const whereOrder = vi
+      .fn()
+      .mockResolvedValue([{ id: "hair-order-1", total: 12000, weightReceived: 100, pricePerGram: 100 }])
+    const whereAssignments = vi.fn().mockResolvedValue([
+      { id: "hair-assigned-1", weightInGrams: 40, soldFor: 6000, profit: 1000 },
+      { id: "hair-assigned-2", weightInGrams: 20, soldFor: 2500, profit: 100 },
+    ])
+    const fromOrder = vi.fn(() => ({ where: whereOrder }))
+    const fromAssignments = vi.fn(() => ({ where: whereAssignments }))
+    const updateOrderSet = vi.fn(() => ({ where: vi.fn(() => "update-order") }))
+    const updateAssignmentSet = vi
+      .fn()
+      .mockReturnValueOnce({ where: vi.fn(() => "update-assignment-1") })
+      .mockReturnValueOnce({ where: vi.fn(() => "update-assignment-2") })
+    const database = {
+      batch: vi.fn().mockResolvedValue([{}, {}, {}]),
+      select: vi.fn().mockReturnValueOnce({ from: fromOrder }).mockReturnValueOnce({ from: fromAssignments }),
+      transaction: vi.fn(async () => {
+        throw new Error("failed query: begin params:")
+      }),
+      update: vi.fn().mockReturnValueOnce({ set: updateOrderSet }).mockReturnValue({
+        set: updateAssignmentSet,
+      }),
+    } as never
+
+    await recalculateHairOrderPrices(database, "hair-order-1")
+
+    expect((database as any).transaction).not.toHaveBeenCalled()
+    expect(updateOrderSet).toHaveBeenCalledWith({ pricePerGram: 120 })
+    expect(updateAssignmentSet).toHaveBeenCalledWith({ profit: 1200 })
+    expect(updateAssignmentSet).toHaveBeenCalledTimes(1)
+    expect((database as any).batch).toHaveBeenCalledWith(["update-order", "update-assignment-1"])
   })
 })
