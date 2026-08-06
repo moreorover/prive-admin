@@ -1,0 +1,66 @@
+name: Cloudflare Alchemy Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: Cloudflare stage to deploy
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - prod
+
+concurrency:
+  group: cloudflare-alchemy-${{ inputs.stage }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Alchemy ${{ inputs.stage }}
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-${{ inputs.stage }}
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24"
+          cache: true
+
+      - name: Install Dependencies
+        run: vp install --frozen-lockfile
+
+      - name: Load Cloudflare Secrets
+        uses: 1password/load-secrets-action@v4
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: op://prive-admin/prive-admin-cloudflare-${{ inputs.stage }}/cloudflare/account-id
+          CLOUDFLARE_API_TOKEN: op://prive-admin/prive-admin-cloudflare-${{ inputs.stage }}/cloudflare/api-token
+          CORS_ORIGIN: op://prive-admin/prive-admin-cloudflare-${{ inputs.stage }}/workers/cors-origin
+          BETTER_AUTH_URL: op://prive-admin/prive-admin-cloudflare-${{ inputs.stage }}/better-auth/BETTER_AUTH_URL
+          BETTER_AUTH_SECRET: op://prive-admin/prive-admin-cloudflare-${{ inputs.stage }}/better-auth/BETTER_AUTH_SECRET
+          VITE_SERVER_URL: op://prive-admin/prive-admin-cloudflare-${{ inputs.stage }}/web/VITE_SERVER_URL
+          NODE_ENV: op://prive-admin/prive-admin-cloudflare-${{ inputs.stage }}/workers/node-env
+
+      - name: Deploy Alchemy
+        run: vp run deploy:alchemy -- --stage ${{ inputs.stage }}
+        env:
+          ALCHEMY_PASSWORD: ${{ secrets.ALCHEMY_PASSWORD }}
+          ALCHEMY_STATE_TOKEN: ${{ secrets.ALCHEMY_STATE_TOKEN }}
+          BETTER_AUTH_SECRET: ${{ env.BETTER_AUTH_SECRET }}
+          BETTER_AUTH_URL: ${{ env.BETTER_AUTH_URL }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ env.CLOUDFLARE_API_TOKEN }}
+          CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
+          NODE_ENV: ${{ env.NODE_ENV }}
+          NO_TRACK: "1"
+          VITE_SERVER_URL: ${{ env.VITE_SERVER_URL }}
