@@ -92,11 +92,8 @@ export async function uploadBankStatementAttachment(input: {
   }
 
   const safeName = input.fileName.replace(/[^\w.-]+/g, "_")
-  const now = new Date()
-  const yyyy = now.getUTCFullYear()
-  const mm = String(now.getUTCMonth() + 1).padStart(2, "0")
   const attachmentId = randomUUID()
-  const key = `statement_uploads/${yyyy}/${mm}/${attachmentId}-${safeName}`
+  const key = `uploads/${attachmentId}-${safeName}`
 
   try {
     await r2.put(key, input.body, { httpMetadata: { contentType: input.contentType } })
