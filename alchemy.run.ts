@@ -8,6 +8,7 @@ import { cloudflareResourceNames } from "./infra/cloudflare/resources"
 
 const stage = getAlchemyStage()
 const names = cloudflareResourceNames(stage)
+const isStableStage = stage === "dev" || stage === "prod"
 const app = await alchemy("prive-admin", {
   noTrack: process.env.NO_TRACK === "1",
   stage,
@@ -16,14 +17,14 @@ const app = await alchemy("prive-admin", {
 
 const db = await D1Database("database", {
   adopt: true,
-  delete: false,
+  delete: !isStableStage,
   migrationsDir: "./packages/db/src/migrations",
   name: names.database,
 })
 
 const uploadsBucket = await R2Bucket("uploads-bucket", {
   adopt: true,
-  delete: false,
+  delete: !isStableStage,
   name: names.uploadsBucket,
 })
 
@@ -39,24 +40,24 @@ const server = await Worker("server-worker", {
   },
   compatibilityDate: "2026-08-01",
   compatibilityFlags: ["nodejs_compat"],
-  delete: false,
+  delete: !isStableStage,
   entrypoint: "./apps/server/src/index.ts",
   name: names.serverWorker,
   url: true,
-  version: process.env.PR_NUMBER ? `pr-${process.env.PR_NUMBER}` : undefined,
 })
+
+const webServerUrl = process.env.PR_NUMBER ? server.url : (process.env.VITE_SERVER_URL ?? server.url)
 
 const web = await Vite("web-worker", {
   adopt: true,
   bindings: {
-    VITE_SERVER_URL: process.env.VITE_SERVER_URL ?? server.url ?? "",
+    VITE_SERVER_URL: webServerUrl ?? "",
   },
   compatibilityDate: "2026-08-01",
   cwd: "./apps/web",
-  delete: false,
+  delete: !isStableStage,
   name: names.webWorker,
   url: true,
-  version: process.env.PR_NUMBER ? `pr-${process.env.PR_NUMBER}` : undefined,
 })
 
 if (process.env.PR_NUMBER && process.env.GITHUB_REPOSITORY) {
