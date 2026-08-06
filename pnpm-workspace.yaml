@@ -4,6 +4,7 @@ packages:
 
 onlyBuiltDependencies:
   - esbuild
+  - sharp
   - workerd
 
 catalogMode: prefer
@@ -38,6 +39,7 @@ peerDependencyRules:
 
 allowBuilds:
   esbuild: true
+  sharp: true
   workerd: true
 
 minimumReleaseAgeExclude:

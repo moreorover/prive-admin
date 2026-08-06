@@ -76,6 +76,18 @@ Wrangler `secrets.required` config but does not mutate secrets during normal dep
 - Server and web Worker logs and traces are enabled in Wrangler config. Dev samples all logs/traces; production
   samples all logs and 10% of traces.
 
+## Deployment Ownership
+
+Cloudflare app deployment is moving to Alchemy after shadow verification. Stable Cloudflare resources are tracked in
+Terraform under `infra/terraform/cloudflare`.
+
+Current ownership:
+
+- Worker code and static assets: Wrangler until the Alchemy workflow has deployed dev and prod successfully.
+- PR preview Workers/resources: Alchemy.
+- D1 database resources: Terraform after import; migrations run through the app deployment path.
+- R2 uploads buckets: Terraform after import; Worker bindings come from the app deployment path.
+
 ## Validation
 
 - Open server `/` and confirm `OK`.

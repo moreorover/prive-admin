@@ -1,3 +1,6 @@
+# Wrangler remains the authoritative deploy path until
+# Cloudflare Alchemy Deploy has successfully shipped dev and prod.
+
 name: Cloudflare Dev Deploy
 
 on:
