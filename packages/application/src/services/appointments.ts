@@ -1,12 +1,81 @@
-import {
-  createAppointment as insertAppointment,
-  getAppointment as findAppointment,
-  linkPersonnelToAppointment as insertAppointmentPersonnel,
-  listAppointments as fetchAppointments,
-  updateAppointment as patchAppointment,
-} from "@prive-admin-tanstack/db"
+import { createAppointmentRepository, type AppointmentRepository } from "@prive-admin-tanstack/db"
 
 import { notFound, unexpectedError } from "../errors"
+
+type AppointmentServiceDeps = {
+  appointments: AppointmentRepository
+}
+
+export function createAppointmentService(
+  deps: AppointmentServiceDeps = {
+    appointments: createAppointmentRepository(),
+  },
+) {
+  return {
+    async listAppointments(input: {
+      pageSize: number
+      offset: number
+      startDate?: string
+      endDate?: string
+      customerId?: string
+      salonId?: string
+    }) {
+      return deps.appointments.list(input)
+    },
+
+    async getAppointment(id: string) {
+      const result = await deps.appointments.get(id)
+      if (!result) throw notFound("Appointment not found")
+      return result
+    },
+
+    async createAppointment(input: {
+      name: string
+      startsAt: string | Date
+      clientId: string
+      masterId: string
+      salonId: string
+    }) {
+      let result
+      try {
+        result = await deps.appointments.create(input)
+      } catch (error) {
+        throw unexpectedError("Failed to create appointment", error)
+      }
+
+      if (!result) {
+        throw unexpectedError("Failed to create appointment")
+      }
+
+      return result
+    },
+
+    async linkPersonnelToAppointment(input: { appointmentId: string; personnelIds: string[] }) {
+      try {
+        return await deps.appointments.linkPersonnel(input)
+      } catch (error) {
+        throw unexpectedError("Failed to link personnel to appointment", error)
+      }
+    },
+
+    async updateAppointment(input: { id: string; masterId: string }) {
+      let result
+      try {
+        result = await deps.appointments.update(input)
+      } catch (error) {
+        throw unexpectedError("Failed to update appointment", error)
+      }
+
+      if (!result) {
+        throw notFound("Appointment not found")
+      }
+
+      return result
+    },
+  }
+}
+
+const appointmentService = createAppointmentService()
 
 export async function listAppointments(input: {
   pageSize: number
@@ -16,13 +85,11 @@ export async function listAppointments(input: {
   customerId?: string
   salonId?: string
 }) {
-  return fetchAppointments(undefined, input)
+  return appointmentService.listAppointments(input)
 }
 
 export async function getAppointment(id: string) {
-  const result = await findAppointment(undefined, id)
-  if (!result) throw notFound("Appointment not found")
-  return result
+  return appointmentService.getAppointment(id)
 }
 
 export async function createAppointment(input: {
@@ -32,39 +99,13 @@ export async function createAppointment(input: {
   masterId: string
   salonId: string
 }) {
-  let result
-  try {
-    result = await insertAppointment(undefined, input)
-  } catch (error) {
-    throw unexpectedError("Failed to create appointment", error)
-  }
-
-  if (!result) {
-    throw unexpectedError("Failed to create appointment")
-  }
-
-  return result
+  return appointmentService.createAppointment(input)
 }
 
 export async function linkPersonnelToAppointment(input: { appointmentId: string; personnelIds: string[] }) {
-  try {
-    return await insertAppointmentPersonnel(undefined, input)
-  } catch (error) {
-    throw unexpectedError("Failed to link personnel to appointment", error)
-  }
+  return appointmentService.linkPersonnelToAppointment(input)
 }
 
 export async function updateAppointment(input: { id: string; masterId: string }) {
-  let result
-  try {
-    result = await patchAppointment(undefined, input)
-  } catch (error) {
-    throw unexpectedError("Failed to update appointment", error)
-  }
-
-  if (!result) {
-    throw notFound("Appointment not found")
-  }
-
-  return result
+  return appointmentService.updateAppointment(input)
 }
