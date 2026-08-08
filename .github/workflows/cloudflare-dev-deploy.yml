@@ -18,7 +18,8 @@ concurrency:
 jobs:
   deploy:
     name: Deploy Dev Workers
-    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft ==
+      false
     runs-on: ubuntu-latest
     environment:
       name: cloudflare-dev
@@ -39,7 +40,7 @@ jobs:
         run: vp install --frozen-lockfile
 
       - name: Load Cloudflare Dev Secrets
-        uses: 1password/load-secrets-action@v4
+        uses: 1password/load-secrets-action@v5
         with:
           export-env: true
         env:
@@ -67,10 +68,9 @@ jobs:
           accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: apps/server
           command: >-
-            deploy --env dev
-            --var CORS_ORIGIN:${{ env.CORS_ORIGIN }}
-            --var BETTER_AUTH_URL:${{ env.BETTER_AUTH_URL }}
-            --var NODE_ENV:${{ env.NODE_ENV }}
+            deploy --env dev --var CORS_ORIGIN:${{ env.CORS_ORIGIN }} --var
+            BETTER_AUTH_URL:${{ env.BETTER_AUTH_URL }} --var NODE_ENV:${{
+            env.NODE_ENV }}
         env:
           CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
           BETTER_AUTH_URL: ${{ env.BETTER_AUTH_URL }}
