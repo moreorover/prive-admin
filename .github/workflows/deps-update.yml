@@ -27,7 +27,7 @@ jobs:
           cache: true
 
       - name: Load PAT from 1Password
-        uses: 1password/load-secrets-action@v4
+        uses: 1password/load-secrets-action@v5
         with:
           export-env: true
         env:
