@@ -81,12 +81,27 @@ describe("resource read routers", () => {
     expect(servicesMock.getBankAccount).toHaveBeenCalledWith("bank-account-1")
   })
 
-  it("updates an appointment master by id", async () => {
+  it("updates appointment details by id", async () => {
+    const caller = appointmentsRouter.createCaller(ctx)
+    const startsAt = new Date("2026-08-14T09:30:00.000Z")
+    const appointmentRow = { id: "appointment-1", name: "Color refresh", startsAt }
+    servicesMock.updateAppointment.mockResolvedValue(appointmentRow)
+
+    await expect(caller.update({ id: "appointment-1", name: "Color refresh", startsAt })).resolves.toBe(appointmentRow)
+    expect(servicesMock.updateAppointment).toHaveBeenCalledWith({
+      id: "appointment-1",
+      name: "Color refresh",
+      startsAt,
+    })
+  })
+
+  it("updates an appointment master independently", async () => {
     const caller = appointmentsRouter.createCaller(ctx)
     const appointmentRow = { id: "appointment-1", masterId: "master-2" }
     servicesMock.updateAppointment.mockResolvedValue(appointmentRow)
 
     await expect(caller.update({ id: "appointment-1", masterId: "master-2" })).resolves.toBe(appointmentRow)
+    expect(servicesMock.updateAppointment).toHaveBeenCalledWith({ id: "appointment-1", masterId: "master-2" })
   })
 
   it("lists transactions in the standard page envelope", async () => {
