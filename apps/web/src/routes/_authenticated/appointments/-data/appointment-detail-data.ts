@@ -7,6 +7,7 @@ import { trpc } from "@/utils/trpc"
 
 export const APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE = 25
 export const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
+const APPOINTMENT_OPTION_PAGE_SIZE = 100
 
 const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
   Currency,
@@ -37,6 +38,14 @@ export function availableHairOrdersListQueryOptions() {
   return trpc.hairOrders.list.queryOptions({
     availability: "availableForAssignment",
     pageSize: AVAILABLE_HAIR_ORDERS_PAGE_SIZE,
+  })
+}
+
+export function appointmentMasterOptionsQueryOptions(search: string) {
+  return trpc.customers.list.queryOptions({
+    page: 1,
+    pageSize: APPOINTMENT_OPTION_PAGE_SIZE,
+    search: search.trim() || undefined,
   })
 }
 

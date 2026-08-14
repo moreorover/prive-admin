@@ -11,6 +11,7 @@ import { useAppointmentTransactionActions } from "./-actions/appointment-transac
 import { AppointmentDetailPage } from "./-components/appointment-detail-page"
 import {
   APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
+  appointmentMasterOptionsQueryOptions,
   availableHairOrdersListQueryOptions,
   useAppointmentDetailData,
 } from "./-data/appointment-detail-data"
@@ -39,6 +40,7 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
       ),
       context.queryClient.ensureQueryData(trpc.userSettings.get.queryOptions()),
       context.queryClient.prefetchQuery(availableHairOrdersListQueryOptions()),
+      context.queryClient.prefetchQuery(appointmentMasterOptionsQueryOptions("")),
     ])
   },
 })
@@ -58,12 +60,7 @@ function RouteComponent() {
       search: debouncedPickPersonnelSearch.trim() || undefined,
     }),
   ).data
-  const masterCustomersData = useQuery(
-    trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
-      search: debouncedMasterSearch.trim() || undefined,
-    }),
-  ).data
+  const masterCustomersData = useQuery(appointmentMasterOptionsQueryOptions(debouncedMasterSearch)).data
   const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({
     invalidateKeys: [
       { queryKey: detailData.appointmentQueryOptions.queryKey },
@@ -77,7 +74,7 @@ function RouteComponent() {
   const { createTransaction, updateTransaction, deleteTransaction } = useAppointmentTransactionActions({
     appointment: detailData.appointment,
   })
-  const { updateMaster, linkPersonnel } = useAppointmentPersonnelActions({ appointmentId })
+  const { updateAppointment, linkPersonnel } = useAppointmentPersonnelActions({ appointmentId })
 
   return (
     <AppointmentDetailPage
@@ -85,7 +82,6 @@ function RouteComponent() {
       detailData={detailData}
       transactionsPage={transactionsPage}
       hairAssignedPage={hairAssignedPage}
-      masterSearch={masterSearch}
       pickPersonnelSearch={pickPersonnelSearch}
       pickPersonnelCustomersData={pickPersonnelCustomersData}
       masterCustomersData={masterCustomersData}
@@ -99,7 +95,7 @@ function RouteComponent() {
       createTransactionPending={createTransaction.isPending}
       updateTransactionPending={updateTransaction.isPending}
       deleteTransactionPending={deleteTransaction.isPending}
-      updateMasterPending={updateMaster.isPending}
+      updateAppointmentPending={updateAppointment.isPending}
       linkPersonnelPending={linkPersonnel.isPending}
       onCreateHairAssigned={(values) => {
         createHairAssigned.mutate(values)
@@ -119,7 +115,8 @@ function RouteComponent() {
         deleteTransaction.mutate({ id })
         setTransactionsPage(1)
       }}
-      onUpdateMaster={(values) => updateMaster.mutate(values)}
+      onUpdateAppointment={(values) => updateAppointment.mutate(values)}
+      onUpdateMaster={(values) => updateAppointment.mutate(values)}
       onLinkPersonnel={(values) => linkPersonnel.mutate(values)}
     />
   )

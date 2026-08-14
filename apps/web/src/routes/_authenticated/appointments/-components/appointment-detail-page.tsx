@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react"
 
-import { ActionIcon, Button, Card, Container, Group, Menu, Modal, Select, Stack, Text, Title } from "@mantine/core"
-import { IconCash, IconClock, IconDots, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
+import { ActionIcon, Button, Card, Container, Group, Menu, Stack, Text, Title } from "@mantine/core"
+import { IconCash, IconClock, IconDots, IconPencil, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 
@@ -17,9 +17,10 @@ import { DeleteTransactionDialog } from "@/components/transactions/delete-transa
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
 import { formatMinor } from "@/lib/currency"
-import { formatPageRange, type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
+import { formatPageRange } from "@/lib/resource-pagination"
 
 import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, useAppointmentDetailData } from "../-data/appointment-detail-data"
+import { ChangeMasterModal, EditAppointmentModal } from "./appointment-edit-modals"
 import { PickPersonnelModal } from "./pick-personnel-modal"
 
 type AppointmentDetailData = ReturnType<typeof useAppointmentDetailData>
@@ -30,7 +31,6 @@ export function AppointmentDetailPage({
   detailData,
   transactionsPage,
   hairAssignedPage,
-  masterSearch,
   pickPersonnelSearch,
   pickPersonnelCustomersData,
   masterCustomersData,
@@ -44,7 +44,7 @@ export function AppointmentDetailPage({
   createTransactionPending,
   updateTransactionPending,
   deleteTransactionPending,
-  updateMasterPending,
+  updateAppointmentPending,
   linkPersonnelPending,
   onCreateHairAssigned,
   onUpdateHairAssigned,
@@ -52,6 +52,7 @@ export function AppointmentDetailPage({
   onCreateTransaction,
   onUpdateTransaction,
   onDeleteTransaction,
+  onUpdateAppointment,
   onUpdateMaster,
   onLinkPersonnel,
 }: {
@@ -59,7 +60,6 @@ export function AppointmentDetailPage({
   detailData: AppointmentDetailData
   transactionsPage: number
   hairAssignedPage: number
-  masterSearch: string
   pickPersonnelSearch: string
   pickPersonnelCustomersData: CustomersData | undefined
   masterCustomersData: CustomersData | undefined
@@ -73,7 +73,7 @@ export function AppointmentDetailPage({
   createTransactionPending: boolean
   updateTransactionPending: boolean
   deleteTransactionPending: boolean
-  updateMasterPending: boolean
+  updateAppointmentPending: boolean
   linkPersonnelPending: boolean
   onCreateHairAssigned: ComponentProps<typeof CreateHairAssignedDialog>["onCreate"]
   onUpdateHairAssigned: ComponentProps<typeof EditHairAssignedDialog>["onUpdate"]
@@ -81,6 +81,7 @@ export function AppointmentDetailPage({
   onCreateTransaction: ComponentProps<typeof CreateTransactionDialog>["onCreate"]
   onUpdateTransaction: ComponentProps<typeof EditTransactionDialog>["onUpdate"]
   onDeleteTransaction: (id: string) => void
+  onUpdateAppointment: (values: { id: string; name: string; startsAt: string }) => void
   onUpdateMaster: (values: { id: string; masterId: string }) => void
   onLinkPersonnel: (values: { appointmentId: string; personnelIds: string[] }) => void
 }) {
@@ -88,9 +89,8 @@ export function AppointmentDetailPage({
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
   const [pickPersonnelOpen, setPickPersonnelOpen] = useState(false)
+  const [editAppointmentOpen, setEditAppointmentOpen] = useState(false)
   const [changeMasterOpen, setChangeMasterOpen] = useState(false)
-  const [draftMasterId, setDraftMasterId] = useState<string | null>(null)
-  const [selectedMasterOption, setSelectedMasterOption] = useState<SelectOption | null>(null)
   const [createTxOpen, setCreateTxOpen] = useState(false)
   const [createTxCustomerId, setCreateTxCustomerId] = useState<string | null>(null)
   const [editTx, setEditTx] = useState<TransactionRow | null>(null)
@@ -135,12 +135,7 @@ export function AppointmentDetailPage({
   }
 
   const txCustomerId = createTxCustomerId ?? appointment.master.id
-  const masterId = draftMasterId ?? appointment.master.id
   const masterCustomerOptions = masterCustomers.map((c) => ({ value: c.id, label: c.name }))
-  const masterOptions = withPinnedOption(
-    masterCustomerOptions,
-    selectedMasterOption ?? { value: appointment.master.id, label: appointment.master.name },
-  )
 
   const openCreateTx = (customerId: string) => {
     setCreateTxCustomerId(customerId)
@@ -174,6 +169,11 @@ export function AppointmentDetailPage({
             </Group>
           </Group>
         }
+        actions={
+          <Button size="sm" leftSection={<IconPencil size={14} />} onClick={() => setEditAppointmentOpen(true)}>
+            Edit appointment
+          </Button>
+        }
       />
       <Stack>
         <Group grow align="flex-start">
@@ -184,7 +184,10 @@ export function AppointmentDetailPage({
                 variant="subtle"
                 size="xs"
                 leftSection={<IconUser size={12} />}
-                onClick={() => setChangeMasterOpen(true)}
+                onClick={() => {
+                  onMasterSearchChange("")
+                  setChangeMasterOpen(true)
+                }}
               >
                 Change
               </Button>
@@ -458,26 +461,32 @@ export function AppointmentDetailPage({
             setPickPersonnelOpen(false)
           }}
         />
+        {editAppointmentOpen && (
+          <EditAppointmentModal
+            key={`${appointmentId}-${appointment.master.id}`}
+            open={editAppointmentOpen}
+            onOpenChange={setEditAppointmentOpen}
+            currentName={appointment.name}
+            currentStartsAt={appointment.startsAt}
+            loading={updateAppointmentPending}
+            onSubmit={(values) => {
+              onUpdateAppointment({ id: appointmentId, ...values })
+              setEditAppointmentOpen(false)
+            }}
+          />
+        )}
         {changeMasterOpen && (
           <ChangeMasterModal
             key={`${appointmentId}-${appointment.master.id}`}
             open={changeMasterOpen}
             onOpenChange={setChangeMasterOpen}
             currentMasterId={appointment.master.id}
-            masterId={masterId}
-            masterSearch={masterSearch}
-            masterOptions={masterOptions}
-            loading={updateMasterPending}
+            masterOptions={masterCustomerOptions}
+            currentMasterOption={{ value: appointment.master.id, label: appointment.master.name }}
+            loading={updateAppointmentPending}
             onMasterSearchChange={onMasterSearchChange}
-            onMasterChange={(value) => {
-              setDraftMasterId(value)
-              const option = masterOptions.find((candidate) => candidate.value === value)
-              if (option) setSelectedMasterOption(option)
-            }}
-            onSubmit={() => {
-              onUpdateMaster({ id: appointmentId, masterId })
-              setDraftMasterId(null)
-              setSelectedMasterOption(null)
+            onSubmit={(values) => {
+              onUpdateMaster({ id: appointmentId, ...values })
               onMasterSearchChange("")
               setChangeMasterOpen(false)
             }}
@@ -525,94 +534,5 @@ export function AppointmentDetailPage({
         )}
       </Stack>
     </Container>
-  )
-}
-
-type ChangeMasterModalProps = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  currentMasterId: string
-  masterId: string
-  masterSearch: string
-  masterOptions: SelectOption[]
-  loading: boolean
-  onMasterSearchChange: (search: string) => void
-  onMasterChange: (masterId: string | null) => void
-  onSubmit: () => void
-}
-
-function ChangeMasterModal({
-  open,
-  onOpenChange,
-  currentMasterId,
-  masterId,
-  masterSearch,
-  masterOptions,
-  loading,
-  onMasterSearchChange,
-  onMasterChange,
-  onSubmit,
-}: ChangeMasterModalProps) {
-  return (
-    <Modal opened={open} onClose={() => onOpenChange(false)} title="Change master">
-      {open && (
-        <ChangeMasterForm
-          currentMasterId={currentMasterId}
-          masterId={masterId}
-          masterSearch={masterSearch}
-          masterOptions={masterOptions}
-          loading={loading}
-          onMasterSearchChange={onMasterSearchChange}
-          onMasterChange={onMasterChange}
-          onClose={() => onOpenChange(false)}
-          onSubmit={onSubmit}
-        />
-      )}
-    </Modal>
-  )
-}
-
-function ChangeMasterForm({
-  currentMasterId,
-  masterId,
-  masterSearch,
-  masterOptions,
-  loading,
-  onMasterSearchChange,
-  onMasterChange,
-  onClose,
-  onSubmit,
-}: {
-  currentMasterId: string
-  masterId: string
-  masterSearch: string
-  masterOptions: SelectOption[]
-  loading: boolean
-  onMasterSearchChange: (search: string) => void
-  onMasterChange: (masterId: string | null) => void
-  onClose: () => void
-  onSubmit: () => void
-}) {
-  return (
-    <Stack>
-      <Select
-        label="Master"
-        required
-        searchable
-        searchValue={masterSearch}
-        onSearchChange={onMasterSearchChange}
-        value={masterId}
-        onChange={onMasterChange}
-        data={masterOptions}
-      />
-      <Group justify="flex-end" gap="xs">
-        <Button variant="default" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button disabled={!masterId || masterId === currentMasterId} loading={loading} onClick={onSubmit}>
-          Save
-        </Button>
-      </Group>
-    </Stack>
   )
 }
