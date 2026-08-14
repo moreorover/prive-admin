@@ -28,6 +28,7 @@ export function useAppointmentTransactionActions({
 
   const invalidateTransactionQueries = () => {
     queryClient.invalidateQueries({ queryKey: trpc.transactions.list.queryKey() })
+    queryClient.invalidateQueries({ queryKey: trpc.dashboard.transactionStats.queryKey() })
     if (!appointment) return
 
     const customerIds = new Set([
