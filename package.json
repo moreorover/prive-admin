@@ -22,7 +22,7 @@
   "devDependencies": {
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
-    "knip": "^6.29.0",
+    "knip": "^6.32.0",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
@@ -31,5 +31,5 @@
   "engines": {
     "node": ">=24.18.0"
   },
-  "packageManager": "pnpm@11.19.0"
+  "packageManager": "pnpm@11.20.0"
 }
