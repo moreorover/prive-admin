@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy Prod Workers
+    name: Deploy Prod with Alchemy
     runs-on: ubuntu-latest
     environment:
       name: cloudflare-prod
@@ -40,47 +40,26 @@ jobs:
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: op://prive-admin/prive-admin-cloudflare-prod/cloudflare/account-id
           CLOUDFLARE_API_TOKEN: op://prive-admin/prive-admin-cloudflare-prod/cloudflare/api-token
+          CLOUDFLARE_WORKERS_SUBDOMAIN: op://prive-admin/prive-admin-cloudflare-prod/cloudflare/workers-subdomain
           CORS_ORIGIN: op://prive-admin/prive-admin-cloudflare-prod/workers/cors-origin
           BETTER_AUTH_URL: op://prive-admin/prive-admin-cloudflare-prod/better-auth/BETTER_AUTH_URL
           BETTER_AUTH_SECRET: op://prive-admin/prive-admin-cloudflare-prod/better-auth/BETTER_AUTH_SECRET
           NODE_ENV: op://prive-admin/prive-admin-cloudflare-prod/workers/node-env
           VITE_SERVER_URL: op://prive-admin/prive-admin-cloudflare-prod/web/VITE_SERVER_URL
 
-      - name: Build Server Worker
-        run: vp run --filter server build
+      - name: Check Alchemy Stack
+        run: vp run check:alchemy
 
-      - name: Build Web Worker
-        run: vp run --filter web build
+      - name: Deploy Prod Alchemy Stack
+        run: vp run deploy:alchemy --stage prod --yes
         env:
-          VITE_SERVER_URL: ${{ env.VITE_SERVER_URL }}
-
-      - name: Apply D1 Migrations
-        uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: apps/server
-          command: d1 migrations apply prive-admin-prod --remote --env prod
-
-      - name: Deploy Server Worker
-        uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: apps/server
-          command: >-
-            deploy --env prod --var CORS_ORIGIN:${{ env.CORS_ORIGIN }} --var
-            BETTER_AUTH_URL:${{ env.BETTER_AUTH_URL }} --var NODE_ENV:${{
-            env.NODE_ENV }}
-        env:
-          CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
+          BETTER_AUTH_SECRET: ${{ env.BETTER_AUTH_SECRET }}
           BETTER_AUTH_URL: ${{ env.BETTER_AUTH_URL }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ env.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_WORKERS_SUBDOMAIN: ${{ env.CLOUDFLARE_WORKERS_SUBDOMAIN }}
+          CI: "true"
+          CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
           NODE_ENV: ${{ env.NODE_ENV }}
-
-      - name: Deploy Web Worker
-        uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: apps/web
-          command: deploy --env prod
+          NO_TRACK: "1"
+          VITE_SERVER_URL: ${{ env.VITE_SERVER_URL }}

@@ -4,6 +4,8 @@ packages:
 
 onlyBuiltDependencies:
   - esbuild
+  - msgpackr-extract
+  - sharp
   - workerd
 
 catalogMode: prefer
@@ -38,6 +40,7 @@ peerDependencyRules:
 
 allowBuilds:
   esbuild: true
+  msgpackr-extract: true
   sharp: true
   workerd: true
 
