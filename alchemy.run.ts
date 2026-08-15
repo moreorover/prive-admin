@@ -2,6 +2,7 @@ import * as Alchemy from "alchemy"
 import * as Cloudflare from "alchemy/Cloudflare"
 import * as GitHub from "alchemy/GitHub"
 import * as Output from "alchemy/Output"
+import { Stage } from "alchemy/Stage"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Redacted from "effect/Redacted"
@@ -11,11 +12,6 @@ type CloudflareResourceNames = {
   serverWorker: string
   uploadsBucket: string
   webWorker: string
-}
-
-function getAlchemyStage(): string {
-  const defaultStage = process.env.GITHUB_REF_NAME === "main" ? "prod" : "dev"
-  return process.env.ALCHEMY_STAGE ?? process.env.STAGE ?? defaultStage
 }
 
 function requireEnv(name: string): string {
@@ -39,9 +35,6 @@ function cloudflareResourceNames(stage: string): CloudflareResourceNames {
   }
 }
 
-const stage = getAlchemyStage()
-const names = cloudflareResourceNames(stage)
-
 export default Alchemy.Stack(
   "prive-admin",
   {
@@ -49,6 +42,9 @@ export default Alchemy.Stack(
     state: Cloudflare.state(),
   },
   Effect.gen(function* () {
+    const stage = yield* Stage
+    const names = cloudflareResourceNames(stage)
+
     const db = yield* Cloudflare.D1.Database("database", {
       migrationsDir: "./packages/db/src/migrations",
       name: names.database,
