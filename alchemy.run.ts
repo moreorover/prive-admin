@@ -72,9 +72,12 @@ export default Alchemy.Stack(
     })
 
     const serverUrl = Output.map(server.url, (url) => url ?? "")
-    const webServerUrl = process.env.PR_NUMBER ? serverUrl : (process.env.VITE_SERVER_URL ?? serverUrl)
+    const webServerUrl = requireEnv("VITE_SERVER_URL")
 
     const web = yield* Cloudflare.Website.Vite("web-worker", {
+      assets: {
+        notFoundHandling: "single-page-application",
+      },
       compatibility: {
         date: "2026-08-01",
       },
