@@ -227,7 +227,7 @@ cleanup() {
 trap cleanup EXIT
 
 wrangler() {
-  vp -C "$SERVER_DIR" exec wrangler "$@"
+  (cd "$SERVER_DIR" && vp exec wrangler "$@")
 }
 
 load_cloudflare_credentials() {
