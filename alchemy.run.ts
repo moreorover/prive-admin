@@ -6,8 +6,38 @@ import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Redacted from "effect/Redacted"
 
-import { getAlchemyStage, requireEnv } from "./infra/cloudflare/alchemy-env"
-import { cloudflareResourceNames } from "./infra/cloudflare/resources"
+type CloudflareResourceNames = {
+  database: string
+  serverWorker: string
+  uploadsBucket: string
+  webWorker: string
+}
+
+function getAlchemyStage(): string {
+  const defaultStage = process.env.GITHUB_REF_NAME === "main" ? "prod" : "dev"
+  return process.env.ALCHEMY_STAGE ?? process.env.STAGE ?? defaultStage
+}
+
+function requireEnv(name: string): string {
+  const value = process.env[name]
+
+  if (!value) {
+    throw new Error(`${name} is required`)
+  }
+
+  return value
+}
+
+function cloudflareResourceNames(stage: string): CloudflareResourceNames {
+  const normalizedStage = stage.replace(/[^a-zA-Z0-9-]/g, "-").toLowerCase()
+
+  return {
+    database: `prive-admin-${normalizedStage}`,
+    serverWorker: `prive-admin-server-${normalizedStage}`,
+    uploadsBucket: `prive-admin-${normalizedStage}`,
+    webWorker: `prive-admin-web-${normalizedStage}`,
+  }
+}
 
 const stage = getAlchemyStage()
 const names = cloudflareResourceNames(stage)

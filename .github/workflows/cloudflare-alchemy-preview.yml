@@ -56,12 +56,13 @@ jobs:
         run: vp run check:alchemy
 
       - name: Deploy Alchemy Preview
-        run: vp run deploy:alchemy -- --stage pr-${{ github.event.pull_request.number || github.run_number }}
+        run: vp run deploy:alchemy --stage pr-${{ github.event.pull_request.number || github.run_number }} --yes
         env:
           BETTER_AUTH_SECRET: ${{ env.BETTER_AUTH_SECRET }}
           BETTER_AUTH_URL: ${{ env.BETTER_AUTH_URL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ env.CLOUDFLARE_API_TOKEN }}
+          CI: "true"
           CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_ENV: ${{ env.NODE_ENV }}
@@ -107,12 +108,13 @@ jobs:
         run: vp run check:alchemy
 
       - name: Destroy Alchemy Preview
-        run: vp run destroy:alchemy -- --stage pr-${{ github.event.pull_request.number }}
+        run: vp run destroy:alchemy --stage pr-${{ github.event.pull_request.number }} --yes
         env:
           BETTER_AUTH_SECRET: ${{ env.BETTER_AUTH_SECRET }}
           BETTER_AUTH_URL: ${{ env.BETTER_AUTH_URL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ env.CLOUDFLARE_API_TOKEN }}
+          CI: "true"
           CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_ENV: ${{ env.NODE_ENV }}

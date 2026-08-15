@@ -55,8 +55,8 @@ variables such as `BETTER_AUTH_URL`, `CORS_ORIGIN`, `NODE_ENV`, and `VITE_SERVER
 1. Adopt the existing dev and production Cloudflare resources into Alchemy state:
 
    ```bash
-   vp run deploy:alchemy -- --stage dev --adopt
-   vp run deploy:alchemy -- --stage prod --adopt
+   vp run deploy:alchemy --stage dev --adopt --yes
+   vp run deploy:alchemy --stage prod --adopt --yes
    ```
 
 2. After adoption, deploy through GitHub Actions.

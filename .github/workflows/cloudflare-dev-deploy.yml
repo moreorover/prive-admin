@@ -56,12 +56,13 @@ jobs:
         run: vp run check:alchemy
 
       - name: Deploy Dev Alchemy Stack
-        run: vp run deploy:alchemy -- --stage dev
+        run: vp run deploy:alchemy --stage dev --yes
         env:
           BETTER_AUTH_SECRET: ${{ env.BETTER_AUTH_SECRET }}
           BETTER_AUTH_URL: ${{ env.BETTER_AUTH_URL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ env.CLOUDFLARE_API_TOKEN }}
+          CI: "true"
           CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
           NODE_ENV: ${{ env.NODE_ENV }}
           NO_TRACK: "1"

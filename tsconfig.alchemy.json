@@ -6,5 +6,5 @@
     "moduleResolution": "bundler",
     "noEmit": true
   },
-  "include": ["alchemy.run.ts", "infra/cloudflare/**/*.ts"]
+  "include": ["alchemy.run.ts"]
 }
