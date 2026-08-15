@@ -75,6 +75,9 @@ jobs:
           NO_TRACK: "1"
           PR_NUMBER: ${{ github.event.pull_request.number }}
 
+      - name: Seed Preview Database
+        run: scripts/seed_preview_d1_database.sh --preview-db prive-admin-pr-${{ github.event.pull_request.number || github.run_number }}
+
   cleanup:
     name: Destroy Preview
     if: github.event_name == 'pull_request' && github.event.action == 'closed'

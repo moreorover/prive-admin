@@ -19,6 +19,7 @@
     "db:copy:prod-to-dev": "scripts/copy_d1_database.sh --source prod --target dev --credentials prod --yes",
     "db:copy:dev-to-local": "scripts/copy_d1_database.sh --source dev --target local --credentials dev --yes",
     "db:copy:prod-to-local": "scripts/copy_d1_database.sh --source prod --target local --credentials prod --yes",
+    "db:seed:preview": "scripts/seed_preview_d1_database.sh",
     "plan:alchemy": "alchemy plan",
     "check": "vp lint && vp fmt --write",
     "prepare": "vp config"
