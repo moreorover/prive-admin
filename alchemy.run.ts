@@ -1,88 +1,88 @@
-import alchemy from "alchemy"
-import { D1Database, R2Bucket, Vite, Worker } from "alchemy/cloudflare"
-import { GitHubComment } from "alchemy/github"
-import { CloudflareStateStore } from "alchemy/state"
+import * as Alchemy from "alchemy"
+import * as Cloudflare from "alchemy/Cloudflare"
+import * as GitHub from "alchemy/GitHub"
+import * as Output from "alchemy/Output"
+import * as Effect from "effect/Effect"
+import * as Layer from "effect/Layer"
+import * as Redacted from "effect/Redacted"
 
 import { getAlchemyStage, requireEnv } from "./infra/cloudflare/alchemy-env"
 import { cloudflareResourceNames } from "./infra/cloudflare/resources"
 
 const stage = getAlchemyStage()
 const names = cloudflareResourceNames(stage)
-const isStableStage = stage === "dev" || stage === "prod"
-const app = await alchemy("prive-admin", {
-  noTrack: process.env.NO_TRACK === "1",
-  stage,
-  stateStore: (scope) => new CloudflareStateStore(scope),
-})
 
-const db = await D1Database("database", {
-  adopt: true,
-  delete: !isStableStage,
-  migrationsDir: "./packages/db/src/migrations",
-  name: names.database,
-})
-
-const uploadsBucket = await R2Bucket("uploads-bucket", {
-  adopt: true,
-  delete: !isStableStage,
-  name: names.uploadsBucket,
-})
-
-const server = await Worker("server-worker", {
-  adopt: true,
-  bindings: {
-    BETTER_AUTH_SECRET: alchemy.secret.env("BETTER_AUTH_SECRET"),
-    BETTER_AUTH_URL: requireEnv("BETTER_AUTH_URL"),
-    CORS_ORIGIN: requireEnv("CORS_ORIGIN"),
-    DB: db,
-    NODE_ENV: requireEnv("NODE_ENV"),
-    UPLOADS_BUCKET: uploadsBucket,
+export default Alchemy.Stack(
+  "prive-admin",
+  {
+    providers: Layer.mergeAll(Cloudflare.providers(), GitHub.providers()),
+    state: Cloudflare.state(),
   },
-  compatibilityDate: "2026-08-01",
-  compatibilityFlags: ["nodejs_compat"],
-  delete: !isStableStage,
-  entrypoint: "./apps/server/src/index.ts",
-  name: names.serverWorker,
-  url: true,
-})
-
-const webServerUrl = process.env.PR_NUMBER ? server.url : (process.env.VITE_SERVER_URL ?? server.url)
-
-const web = await Vite("web-worker", {
-  adopt: true,
-  bindings: {
-    VITE_SERVER_URL: webServerUrl ?? "",
-  },
-  compatibilityDate: "2026-08-01",
-  cwd: "./apps/web",
-  delete: !isStableStage,
-  name: names.webWorker,
-  url: true,
-})
-
-if (process.env.PR_NUMBER && process.env.GITHUB_REPOSITORY) {
-  const [owner, repository] = process.env.GITHUB_REPOSITORY.split("/")
-
-  if (owner && repository) {
-    await GitHubComment("preview-comment", {
-      body: `Cloudflare preview deployed.
-
-Web: ${web.url}
-Server: ${server.url}
-Stage: ${stage}
-Commit: ${process.env.GITHUB_SHA ?? "local"}
-`,
-      issueNumber: Number(process.env.PR_NUMBER),
-      owner,
-      repository,
+  Effect.gen(function* () {
+    const db = yield* Cloudflare.D1.Database("database", {
+      migrationsDir: "./packages/db/src/migrations",
+      name: names.database,
     })
-  }
-}
 
-console.log({
-  serverUrl: server.url,
-  stage,
-  webUrl: web.url,
-})
+    const uploadsBucket = yield* Cloudflare.R2.Bucket("uploads-bucket", {
+      name: names.uploadsBucket,
+    })
 
-await app.finalize()
+    const server = yield* Cloudflare.Worker("server-worker", {
+      compatibility: {
+        date: "2026-08-01",
+        flags: ["nodejs_compat"],
+      },
+      env: {
+        BETTER_AUTH_SECRET: Redacted.make(requireEnv("BETTER_AUTH_SECRET")),
+        BETTER_AUTH_URL: requireEnv("BETTER_AUTH_URL"),
+        CORS_ORIGIN: requireEnv("CORS_ORIGIN"),
+        DB: db,
+        NODE_ENV: requireEnv("NODE_ENV"),
+        UPLOADS_BUCKET: uploadsBucket,
+      },
+      main: "./apps/server/src/index.ts",
+      name: names.serverWorker,
+    })
+
+    const serverUrl = Output.map(server.url, (url) => url ?? "")
+    const webServerUrl = process.env.PR_NUMBER ? serverUrl : (process.env.VITE_SERVER_URL ?? serverUrl)
+
+    const web = yield* Cloudflare.Website.Vite("web-worker", {
+      compatibility: {
+        date: "2026-08-01",
+      },
+      env: {
+        VITE_SERVER_URL: webServerUrl,
+      },
+      name: names.webWorker,
+      rootDir: "./apps/web",
+    })
+
+    if (process.env.PR_NUMBER && process.env.GITHUB_REPOSITORY) {
+      const [owner, repository] = process.env.GITHUB_REPOSITORY.split("/")
+
+      if (owner && repository) {
+        yield* GitHub.Comment("preview-comment", {
+          body: Output.interpolate`
+            Cloudflare preview deployed.
+
+            Web: ${web.url}
+            Server: ${serverUrl}
+            Stage: ${stage}
+            Commit: ${process.env.GITHUB_SHA ?? "local"}
+          `,
+          issueNumber: Number(process.env.PR_NUMBER),
+          owner,
+          repository,
+        })
+      }
+    }
+
+    return {
+      serverUrl,
+      stage,
+      webUrl: web.url,
+    }
+  }),
+)

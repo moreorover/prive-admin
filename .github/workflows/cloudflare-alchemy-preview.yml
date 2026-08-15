@@ -52,6 +52,9 @@ jobs:
           BETTER_AUTH_SECRET: op://prive-admin/prive-admin-cloudflare-dev/better-auth/BETTER_AUTH_SECRET
           NODE_ENV: op://prive-admin/prive-admin-cloudflare-dev/workers/node-env
 
+      - name: Check Alchemy Stack
+        run: vp run check:alchemy
+
       - name: Deploy Alchemy Preview
         run: vp run deploy:alchemy -- --stage pr-${{ github.event.pull_request.number || github.run_number }}
         env:
@@ -101,6 +104,9 @@ jobs:
           BETTER_AUTH_URL: op://prive-admin/prive-admin-cloudflare-dev/better-auth/BETTER_AUTH_URL
           BETTER_AUTH_SECRET: op://prive-admin/prive-admin-cloudflare-dev/better-auth/BETTER_AUTH_SECRET
           NODE_ENV: op://prive-admin/prive-admin-cloudflare-dev/workers/node-env
+
+      - name: Check Alchemy Stack
+        run: vp run check:alchemy
 
       - name: Destroy Alchemy Preview
         run: vp run destroy:alchemy -- --stage pr-${{ github.event.pull_request.number }}

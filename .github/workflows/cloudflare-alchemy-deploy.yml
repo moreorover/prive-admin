@@ -11,6 +11,11 @@ on:
         options:
           - dev
           - prod
+      adopt:
+        description: Adopt existing Cloudflare resources into Alchemy state
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: cloudflare-alchemy-${{ inputs.stage }}
@@ -51,8 +56,18 @@ jobs:
           VITE_SERVER_URL: op://prive-admin/prive-admin-cloudflare-${{ inputs.stage }}/web/VITE_SERVER_URL
           NODE_ENV: op://prive-admin/prive-admin-cloudflare-${{ inputs.stage }}/workers/node-env
 
+      - name: Check Alchemy Stack
+        run: vp run check:alchemy
+
       - name: Deploy Alchemy
-        run: vp run deploy:alchemy -- --stage ${{ inputs.stage }}
+        run: |
+          args=(--stage "${{ inputs.stage }}")
+
+          if [[ "${{ inputs.adopt }}" == "true" ]]; then
+            args+=(--adopt)
+          fi
+
+          vp run deploy:alchemy -- "${args[@]}"
         env:
           ALCHEMY_PASSWORD: ${{ secrets.ALCHEMY_PASSWORD }}
           ALCHEMY_STATE_TOKEN: ${{ secrets.ALCHEMY_STATE_TOKEN }}

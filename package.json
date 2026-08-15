@@ -19,14 +19,16 @@
     "db:copy:prod-to-dev": "scripts/copy_d1_database.sh --source prod --target dev --credentials prod --yes",
     "db:copy:dev-to-local": "scripts/copy_d1_database.sh --source dev --target local --credentials dev --yes",
     "db:copy:prod-to-local": "scripts/copy_d1_database.sh --source prod --target local --credentials prod --yes",
-    "plan:alchemy": "alchemy run",
+    "plan:alchemy": "alchemy plan",
     "check": "vp lint && vp fmt --write",
     "prepare": "vp config"
   },
   "devDependencies": {
+    "@effect/platform-node": "^4.0.0-rc.109",
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
-    "alchemy": "^0.93.12",
+    "alchemy": "^2.0.0-beta.65",
+    "effect": "^4.0.0-rc.109",
     "knip": "^6.29.0",
     "tsx": "catalog:",
     "typescript": "catalog:",
