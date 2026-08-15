@@ -20,7 +20,7 @@
     {
       "binding": "DB",
       "database_name": "prive-admin-dev",
-      "database_id": "596a4e0b-f8a7-4024-a8a2-263503c9309b",
+      "database_id": "551ac6ba-90c7-4656-bb31-f485b89edb72",
       "migrations_dir": "../../packages/db/src/migrations",
     },
   ],
@@ -52,7 +52,7 @@
         {
           "binding": "DB",
           "database_name": "prive-admin-dev",
-          "database_id": "596a4e0b-f8a7-4024-a8a2-263503c9309b",
+          "database_id": "551ac6ba-90c7-4656-bb31-f485b89edb72",
           "migrations_dir": "../../packages/db/src/migrations",
         },
       ],
