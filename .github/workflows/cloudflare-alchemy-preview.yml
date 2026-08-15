@@ -76,7 +76,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
 
       - name: Seed Preview Database
-        run: scripts/seed_preview_d1_database.sh --preview-db prive-admin-pr-${{ github.event.pull_request.number || github.run_number }}
+        run: vp run db:seed:preview --preview-db prive-admin-pr-${{ github.event.pull_request.number || github.run_number }}
 
   cleanup:
     name: Destroy Preview

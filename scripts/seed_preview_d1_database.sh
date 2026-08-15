@@ -87,7 +87,7 @@ if [[ -z "$PREVIEW_D1_DB" ]]; then
 fi
 
 wrangler() {
-  pnpm --dir "$SERVER_DIR" exec wrangler "$@"
+  vp -C "$SERVER_DIR" exec wrangler "$@"
 }
 
 load_cloudflare_credentials() {
