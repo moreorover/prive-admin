@@ -18,10 +18,11 @@
 
 ## One-Time Provisioning
 
-Alchemy needs `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `ALCHEMY_PASSWORD`, and `ALCHEMY_STATE_TOKEN` in
-non-interactive environments. Runtime values are stored in 1Password. GitHub Actions loads 1Password values after the
-matching GitHub environment is approved. The Alchemy stack passes Worker variables such as `BETTER_AUTH_URL`,
-`CORS_ORIGIN`, `NODE_ENV`, and `VITE_SERVER_URL`.
+Alchemy needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in non-interactive environments. With
+`Cloudflare.state()`, Alchemy resolves its state-store credentials from Cloudflare Secrets Store during CI, so no
+separate Alchemy password or state token needs to be stored in 1Password. Runtime values are stored in 1Password.
+GitHub Actions loads 1Password values after the matching GitHub environment is approved. The Alchemy stack passes Worker
+variables such as `BETTER_AUTH_URL`, `CORS_ORIGIN`, `NODE_ENV`, and `VITE_SERVER_URL`.
 
 1. Create the remote D1 databases:
 
