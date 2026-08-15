@@ -29,7 +29,7 @@
     "@types/node": "catalog:",
     "alchemy": "^2.0.0-beta.65",
     "effect": "^4.0.0-rc.109",
-    "knip": "^6.29.0",
+    "knip": "^6.32.0",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
@@ -38,5 +38,5 @@
   "engines": {
     "node": ">=24.18.0"
   },
-  "packageManager": "pnpm@11.17.0"
+  "packageManager": "pnpm@11.20.0"
 }
