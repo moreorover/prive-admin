@@ -34,9 +34,29 @@ export default defineConfig({
     ignorePatterns: [".agents", "**/*.html", "docs", "routeTree.gen.ts", "packages/db/src/migrations"],
   },
   lint: {
+    plugins: ["typescript", "unicorn"],
     rules: {
       "vite-plus/prefer-vite-plus-imports": "error",
     },
+    overrides: [
+      {
+        files: ["**/*.test.ts", "**/*.test.tsx"],
+        plugins: ["typescript", "unicorn", "vitest"],
+      },
+      {
+        files: ["apps/web/**", "packages/ui/**"],
+        plugins: ["typescript", "unicorn", "react", "jsx-a11y"],
+      },
+      {
+        files: [
+          "apps/web/**/*.test.ts",
+          "apps/web/**/*.test.tsx",
+          "packages/ui/**/*.test.ts",
+          "packages/ui/**/*.test.tsx",
+        ],
+        plugins: ["typescript", "unicorn", "react", "jsx-a11y", "vitest"],
+      },
+    ],
     env: {
       builtin: true,
     },
@@ -50,6 +70,9 @@ export default defineConfig({
     ],
   },
   test: {
+    alias: {
+      "cloudflare:workers": new URL("./packages/db/src/test/cloudflare-workers.ts", import.meta.url).pathname,
+    },
     include: ["{apps,packages}/**/src/**/*.test.{ts,tsx}"],
     exclude: ["**/dist/**", "**/node_modules/**", ".worktrees/**"],
   },

@@ -1,0 +1,99 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "prive-admin-server",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "dev": {
+    "port": 3000,
+    "local_protocol": "http",
+  },
+  "vars": {
+    "CORS_ORIGIN": "http://localhost:3001",
+    "BETTER_AUTH_URL": "http://localhost:3000",
+    "NODE_ENV": "development",
+  },
+  "secrets": {
+    "required": ["BETTER_AUTH_SECRET"],
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "prive-admin-dev",
+      "database_id": "551ac6ba-90c7-4656-bb31-f485b89edb72",
+      "migrations_dir": "../../packages/db/src/migrations",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "UPLOADS_BUCKET",
+      "bucket_name": "prive-admin-dev",
+    },
+  ],
+  "env": {
+    "dev": {
+      "workers_dev": true,
+      "observability": {
+        "enabled": true,
+        "logs": {
+          "enabled": true,
+          "invocation_logs": true,
+          "head_sampling_rate": 1,
+        },
+        "traces": {
+          "enabled": true,
+          "head_sampling_rate": 1,
+        },
+      },
+      "secrets": {
+        "required": ["BETTER_AUTH_SECRET"],
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "prive-admin-dev",
+          "database_id": "551ac6ba-90c7-4656-bb31-f485b89edb72",
+          "migrations_dir": "../../packages/db/src/migrations",
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "UPLOADS_BUCKET",
+          "bucket_name": "prive-admin-dev",
+        },
+      ],
+    },
+    "prod": {
+      "workers_dev": true,
+      "observability": {
+        "enabled": true,
+        "logs": {
+          "enabled": true,
+          "invocation_logs": true,
+          "head_sampling_rate": 1,
+        },
+        "traces": {
+          "enabled": true,
+          "head_sampling_rate": 0.1,
+        },
+      },
+      "secrets": {
+        "required": ["BETTER_AUTH_SECRET"],
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "prive-admin-prod",
+          "database_id": "584abb96-8a47-4c60-8153-595410fc8271",
+          "migrations_dir": "../../packages/db/src/migrations",
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "UPLOADS_BUCKET",
+          "bucket_name": "prive-admin-prod",
+        },
+      ],
+    },
+  },
+}

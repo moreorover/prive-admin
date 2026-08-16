@@ -9,6 +9,8 @@ jobs:
   taze:
     name: Run taze major
     runs-on: ubuntu-latest
+    env:
+      VITE_GIT_HOOKS: "0"
 
     permissions:
       contents: write
@@ -25,7 +27,7 @@ jobs:
           cache: true
 
       - name: Load PAT from 1Password
-        uses: 1password/load-secrets-action@v4
+        uses: 1password/load-secrets-action@v5
         with:
           export-env: true
         env:
@@ -41,13 +43,16 @@ jobs:
           command: |
             set -eo pipefail
             log=$(mktemp)
-            vp dlx taze major -r -w --maturity-period 7 --concurrency 3 2>&1 | tee "$log"
+            vp dlx taze major -r -w --maturity-period 7 --maturity-period-exclude '@mantine/*' --concurrency 3 2>&1 | tee "$log"
             if grep -q 'Timeout requesting' "$log"; then
               echo "::warning::taze hit registry timeouts for one or more packages; continuing with resolved updates"
             fi
 
       - name: Update Lockfile
         run: vp install --no-frozen-lockfile
+
+      - name: Format Updated Files
+        run: vp fmt --write
 
       - name: Create or Update Pull Request
         uses: peter-evans/create-pull-request@v8

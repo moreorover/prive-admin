@@ -1,5 +1,6 @@
+import { useDebouncedCallback } from "@mantine/hooks"
 import { createFileRoute, redirect } from "@tanstack/react-router"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
 import { trpc } from "@/utils/trpc"
@@ -7,6 +8,8 @@ import { trpc } from "@/utils/trpc"
 import { useHairAssignmentActions } from "../../-actions/hair-assignment-actions"
 import { HairSalesPage } from "./-components/hair-sales-page"
 import { HAIR_SALES_PAGE_SIZE, hairSalesQueryOptions, searchSchema, useHairSalesData } from "./-data/hair-sales-data"
+
+const searchNavigationDebounceMs = 300
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId/hair-sales")({
   component: RouteComponent,
@@ -39,6 +42,7 @@ function RouteComponent() {
   const [hairDeleteItem, setHairDeleteItem] = useState<HairAssignedRow | null>(null)
   const page = search.page ?? 1
   const searchValue = search.search ?? ""
+  const [draftSearch, setDraftSearch] = useState(searchValue)
   const data = useHairSalesData({ customerId, page, search: searchValue, availableHairOrdersEnabled: hairCreateOpen })
   const customerSummaryQueryKey = trpc.customers.summary.queryOptions({ id: customerId }).queryKey
   const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({
@@ -46,11 +50,18 @@ function RouteComponent() {
     selectedEditItem: hairEditItem,
     selectedDeleteItem: hairDeleteItem,
   })
+  const navigateToSearch = useDebouncedCallback((nextSearch: string) => {
+    navigate({ search: { page: 1, search: nextSearch }, replace: true })
+  }, searchNavigationDebounceMs)
+
+  useEffect(() => {
+    setDraftSearch(searchValue)
+  }, [searchValue])
 
   return (
     <HairSalesPage
       customerId={customerId}
-      searchValue={searchValue}
+      searchValue={draftSearch}
       data={data}
       hairCreateOpen={hairCreateOpen}
       hairEditItem={hairEditItem}
@@ -61,14 +72,22 @@ function RouteComponent() {
       onHairCreateOpenChange={setHairCreateOpen}
       onHairEditItemChange={setHairEditItem}
       onHairDeleteItemChange={setHairDeleteItem}
-      onSearchChange={(nextSearch) => navigate({ search: { page: 1, search: nextSearch }, replace: true })}
-      onPageChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
+      onSearchChange={(nextSearch) => {
+        setDraftSearch(nextSearch)
+        navigateToSearch(nextSearch)
+      }}
+      onPageChange={(nextPage) => {
+        navigateToSearch.cancel()
+        navigate({ search: { page: nextPage, search: searchValue } })
+      }}
       onCreate={(values) => {
+        navigateToSearch.cancel()
         createHairAssigned.mutate(values)
         navigate({ search: { page: 1, search: searchValue }, replace: true })
       }}
       onUpdate={(values) => updateHairAssigned.mutate(values)}
       onDelete={(id) => {
+        navigateToSearch.cancel()
         deleteHairAssigned.mutate({ id })
         navigate({ search: { page: 1, search: searchValue }, replace: true })
       }}

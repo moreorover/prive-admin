@@ -1,4 +1,5 @@
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3"
+import type { ReadableStream as NodeReadableStream } from "node:stream/web"
+
 import {
   createBankStatementAttachment as insertBankStatementAttachment,
   assignBankStatementAttachment as patchAssignBankStatementAttachment,
@@ -15,7 +16,7 @@ import { randomUUID } from "node:crypto"
 import { Readable } from "node:stream"
 
 import { notFound, unexpectedError } from "../errors"
-import { bucketName, r2 } from "../r2"
+import { r2 } from "../r2"
 
 const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024
 const INLINE_SAFE_TYPES = new Set([
@@ -37,6 +38,10 @@ const ZipArchive = (
     }
   }
 ).ZipArchive
+
+function readableFromR2Object(object: R2ObjectBody) {
+  return Readable.fromWeb(object.body as unknown as NodeReadableStream)
+}
 
 export async function listBankStatementAttachments(input: {
   assignmentStatus?: "assigned" | "unassigned" | "all"
@@ -94,14 +99,7 @@ export async function uploadBankStatementAttachment(input: {
   const key = `statement_uploads/${yyyy}/${mm}/${attachmentId}-${safeName}`
 
   try {
-    await r2.send(
-      new PutObjectCommand({
-        Bucket: bucketName,
-        Key: key,
-        Body: input.body,
-        ContentType: input.contentType,
-      }),
-    )
+    await r2.put(key, input.body, { httpMetadata: { contentType: input.contentType } })
   } catch (error) {
     throw unexpectedError("Failed to upload bank statement attachment", error)
   }
@@ -127,8 +125,8 @@ export async function getBankStatementAttachment(id: string) {
 
 export async function getBankStatementAttachmentPreview(id: string) {
   const row = await getBankStatementAttachment(id)
-  const object = await r2.send(new GetObjectCommand({ Bucket: bucketName, Key: row.r2Key }))
-  return { row, body: object.Body ?? null }
+  const object = await r2.get(row.r2Key)
+  return { row, body: object?.body ?? null }
 }
 
 export async function getBankStatementAttachmentPreviewResponse(id: string) {
@@ -139,7 +137,7 @@ export async function getBankStatementAttachmentPreviewResponse(id: string) {
   const disposition = INLINE_SAFE_TYPES.has(contentType) ? "inline" : "attachment"
   const filename = encodeURIComponent(preview.row.originalName)
 
-  return new Response(Readable.toWeb(preview.body as Readable) as unknown as ReadableStream, {
+  return new Response(preview.body, {
     headers: {
       "Content-Type": contentType,
       "Content-Disposition": `${disposition}; filename="${filename}"; filename*=UTF-8''${filename}`,
@@ -170,7 +168,7 @@ export async function deleteBankStatementAttachment(id: string) {
 export async function deleteBankStatementAttachmentFile(id: string) {
   const row = await getBankStatementAttachment(id)
   try {
-    await r2.send(new DeleteObjectCommand({ Bucket: bucketName, Key: row.r2Key }))
+    await r2.delete(row.r2Key)
   } catch (error) {
     throw unexpectedError("Failed to delete bank statement attachment file", error)
   }
@@ -195,13 +193,12 @@ export async function listBankStatementAttachmentExportFiles(input: {
   const rows = await listBankStatementAttachmentExportRows(input)
   const files: Array<{ name: string; body: Readable | Buffer }> = []
   for (const { attachment, entry } of rows) {
-    const object = await r2.send(new GetObjectCommand({ Bucket: bucketName, Key: attachment.r2Key }))
-    const body = object.Body as Readable | Buffer | null | undefined
-    if (!body) continue
+    const object = await r2.get(attachment.r2Key)
+    if (!object) continue
     const counterparty = (entry.counterpartyName ?? "").replace(/[^\w.-]+/g, "_").slice(0, 60) || "unknown"
     files.push({
       name: `${entry.date}_${counterparty}_${attachment.originalName}`,
-      body,
+      body: readableFromR2Object(object),
     })
   }
   return files

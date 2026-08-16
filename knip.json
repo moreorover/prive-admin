@@ -1,14 +1,13 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreBinaries": ["op"],
   "tags": ["-lintignore"],
   "workspaces": {
     ".": {
-      "entry": ["scripts/**/*.{ts,js,mjs,sh}"]
+      "entry": ["alchemy.run.ts"]
     },
     "apps/web": {
-      "entry": ["src/router.tsx!", "src/routes/**/*.{ts,tsx}!", "react-doctor.config.json"],
-      "ignoreDependencies": ["@mantine/charts"],
+      "entry": ["src/routes/**/*.{ts,tsx}!", "react-doctor.config.json"],
+      "ignoreDependencies": ["@mantine/charts", "wrangler"],
       "project": ["src/**/*.{ts,tsx}!"]
     },
     "apps/server": {
@@ -22,6 +21,7 @@
       "project": ["src/**/*.ts!"]
     },
     "packages/env": {
+      "ignoreDependencies": ["cloudflare"],
       "project": ["src/**/*.ts!"]
     },
     "packages/ui": {

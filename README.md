@@ -7,7 +7,7 @@
 - **Mantine** - React component library (`@mantine/core`, `@mantine/form`, charts, dates, schedule, notifications, modals)
 - **Shared UI package** - Mantine `MantineProvider`, theme, and color-scheme helpers live in `packages/ui`
 - **Drizzle** - TypeScript-first ORM
-- **PostgreSQL** - Database engine
+- **Cloudflare D1** - SQLite-compatible database engine
 - **Authentication** - Better-Auth
 - **Vite+** - Unified runtime, package, build, lint, format, and test tooling
 
@@ -19,26 +19,35 @@ First, install the dependencies:
 vp install
 ```
 
-## Database Setup
+## Local Development
 
-This project uses PostgreSQL with Drizzle ORM.
+This project uses Cloudflare Workers with D1 and Wrangler for local and remote runtime behavior.
 
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/web/.env` file with your PostgreSQL connection details.
+1. Create local Worker secrets:
 
-3. Apply the schema to your database:
+   ```bash
+   cp apps/server/.dev.vars.example apps/server/.dev.vars
+   ```
+
+2. Start the local apps:
+
+   ```bash
+   vp run dev
+   ```
+
+Open the local web URL printed by Vite+ in your browser:
+
+- Web app: `http://localhost:3001`
+- Worker API: `http://localhost:3000`
+- Wrangler local explorer: `http://localhost:3000/cdn-cgi/local/explorer/`
+
+The local explorer shows local D1 and R2 contents while `vp run dev` is running.
+
+Schema changes are generated with:
 
 ```bash
-vp run db:push
+vp run db:generate
 ```
-
-Then, run the development server:
-
-```bash
-vp run dev
-```
-
-Open [http://localhost:3001](http://localhost:3001) in your browser to see the fullstack application.
 
 ## UI Customization
 
@@ -87,33 +96,25 @@ prive-admin-tanstack/
 - `vp run dev`: Start all applications in development mode
 - `vp run build`: Build all applications
 - `vp run dev:web`: Start only the web application
+- `vp run dev:server`: Start only the server Worker with Wrangler
 - `vp run check-types`: Check TypeScript types across all apps
-- `vp run db:push`: Push schema changes to database
-- `vp run db:generate`: Generate database client/types
-- `vp run db:migrate`: Run database migrations
+- `vp run db:generate`: Generate D1-compatible Drizzle migrations
+- `vp run db:migrate`: Run database migrations through Drizzle tooling
+- `vp run db:copy:prod-to-dev`: Refresh remote dev D1 from remote production D1
+- `vp run db:copy:dev-to-local`: Refresh local D1 from remote dev D1
+- `vp run db:copy:prod-to-local`: Refresh local D1 from remote production D1
 - `vp run db:studio`: Open database studio UI
-- `vp run compose:up` / `compose:stop` / `compose:down` / `compose:watch`: Manage local dev compose stack (Postgres + MinIO)
 - `vp run check`: Run Oxlint and Oxfmt
 
 ## Deployment
 
-The production stack runs on VPS `prive` via Docker Compose. The
-authoritative deploy doc is [`docs/deploy/vps-setup.md`](docs/deploy/vps-setup.md).
+Deployments target Cloudflare Workers, D1, and R2. The authoritative deploy
+runbook is [`docs/deploy/cloudflare-d1.md`](docs/deploy/cloudflare-d1.md).
 
-- Pull requests to `main` run source and Docker build checks
-  (`.github/workflows/pr-build.yml`). Merges to `main` do not deploy.
-- Creating a semver tag such as `v1.4.0` from a commit on `main` runs the
-  release workflow, publishes `ghcr.io/<repo>-{web,server,migrate}` images
-  tagged with `{latest,<commit-sha>,v1.4.0}`, and deploys that tag to the VPS
-  (`.github/workflows/release.yml`).
-- All runtime secrets live in the 1Password vault `prive-admin`,
-  spread across three items: `prive-admin-prod` (app, postgres, infra),
-  `Cloudflare R2` (R2 keys + bucket), and `tailscale-oauth` (TS
-  OAuth). The workflow pulls them at deploy time using a
-  service-account token (`OP_SERVICE_ACCOUNT_TOKEN` — the only
-  remaining GitHub Actions secret).
-- Rollback to a previous image:
-
-  ```bash
-  ssh root@prive 'cd ~/prive-admin && IMAGE_TAG=<old-tag-or-sha> docker compose up -d web'
-  ```
+- Pull requests to `main` run source checks and the environment-gated
+  Cloudflare dev deployment.
+- Pushes to `main` run the environment-gated Cloudflare production deployment.
+- Runtime values live in the 1Password vault `prive-admin`, in
+  environment-specific items such as `prive-admin-cloudflare-dev`.
+- GitHub Actions loads 1Password values after the matching GitHub environment
+  approval and deploys through `cloudflare/wrangler-action`.

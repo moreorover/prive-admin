@@ -22,9 +22,10 @@ import { IconDotsVertical, IconDownload } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
+import { type AttachmentPreview } from "@/components/attachment-preview"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { type Currency, formatMinor } from "@/lib/currency"
+import { apiUrl } from "@/utils/server-url"
 
 import { type BankAccountFormValues } from "../-actions/bank-account-actions"
 import { AttachmentsCell } from "./attachments-cell"
@@ -244,7 +245,6 @@ function BankAccountShow({
     const d = new Date()
     return new Date(d.getFullYear(), d.getMonth(), 1)
   })
-  const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
   const [uploadingAttachmentEntryId, setUploadingAttachmentEntryId] = useState<string | null>(null)
   const entries = statementEntriesData?.items ?? []
   const entriesTotalCount = statementEntriesData?.totalCount ?? 0
@@ -381,7 +381,7 @@ function BankAccountShow({
                       month: String(exportMonth.getMonth() + 1),
                       bankAccountId: id,
                     })
-                    window.location.href = `/api/statement-attachments/export?${params.toString()}`
+                    window.location.href = apiUrl(`/api/statement-attachments/export?${params.toString()}`)
                   }}
                 >
                   Download zip
@@ -441,7 +441,6 @@ function BankAccountShow({
                         unassignLoading={unassignPending}
                         uploadLoading={uploadingAttachmentEntryId === e.id}
                         onOpenChange={(opened) => onOpenAttachmentEntryChange(opened ? e.id : null)}
-                        onPreview={setPreviewAttachment}
                         onAssign={(attachmentId) => onAssign(attachmentId, e.id)}
                         onRemove={onRemove}
                         onUnassign={onUnassign}
@@ -518,7 +517,6 @@ function BankAccountShow({
           }}
         />
       )}
-      <AttachmentPreviewDialog attachment={previewAttachment} onClose={() => setPreviewAttachment(null)} />
     </>
   )
 }

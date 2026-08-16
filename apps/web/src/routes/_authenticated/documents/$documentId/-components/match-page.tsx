@@ -21,7 +21,7 @@ import { IconArrowLeft } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { AttachmentPreviewDialog, type AttachmentPreview } from "@/components/attachment-preview-dialog"
+import { attachmentPreviewUrl } from "@/components/attachment-preview"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
@@ -66,7 +66,6 @@ export function DocumentMatchPage({
   onAssign: (entryId: string) => void
   onPageChange: (page: number) => void
 }) {
-  const [previewAttachment, setPreviewAttachment] = useState<AttachmentPreview | null>(null)
   const [filters, setFilters] = useState<DocumentMatchCandidateFilters>({
     legalEntityId: "",
     bankAccountId: "",
@@ -137,14 +136,11 @@ export function DocumentMatchPage({
                     </Text>
                   </Stack>
                   <Button
+                    component="a"
+                    href={attachmentPreviewUrl(document)}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     variant="default"
-                    onClick={() =>
-                      setPreviewAttachment({
-                        id: document.id,
-                        originalName: document.originalName,
-                        contentType: document.contentType,
-                      })
-                    }
                   >
                     Preview document
                   </Button>
@@ -256,8 +252,6 @@ export function DocumentMatchPage({
           </Grid>
         ) : null}
       </BoxWithLoader>
-
-      <AttachmentPreviewDialog attachment={previewAttachment} onClose={() => setPreviewAttachment(null)} />
     </Container>
   )
 }

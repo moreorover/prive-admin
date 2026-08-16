@@ -1,61 +1,12 @@
 {
   "version": "7",
-  "dialect": "postgresql",
+  "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
-      "version": "7",
-      "when": 1777204274149,
-      "tag": "0000_naive_proteus",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1777724148446,
-      "tag": "0001_plain_young_avengers",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1778606017255,
-      "tag": "0002_workable_microbe",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1781464805882,
-      "tag": "0003_drop_transaction_linking",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1781539200000,
-      "tag": "0004_drop_hair_order_legal_entity",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1782935417468,
-      "tag": "0005_flaky_maestro",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1782936085139,
-      "tag": "0006_deep_lilith",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1783001514529,
-      "tag": "0007_parched_shiva",
+      "version": "6",
+      "when": 1785617845108,
+      "tag": "0000_melodic_major_mapleleaf",
       "breakpoints": true
     }
   ]

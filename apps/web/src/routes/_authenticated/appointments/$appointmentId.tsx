@@ -1,3 +1,4 @@
+import { useDebouncedValue } from "@mantine/hooks"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
@@ -8,9 +9,14 @@ import { useAppointmentPersonnelActions } from "../-actions/appointment-actions"
 import { useHairAssignmentActions } from "../-actions/hair-assignment-actions"
 import { useAppointmentTransactionActions } from "./-actions/appointment-transaction-actions"
 import { AppointmentDetailPage } from "./-components/appointment-detail-page"
-import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, useAppointmentDetailData } from "./-data/appointment-detail-data"
+import {
+  APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
+  appointmentMasterOptionsQueryOptions,
+  useAppointmentDetailData,
+} from "./-data/appointment-detail-data"
 
 const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
+const searchDebounceMs = 300
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: RouteComponent,
@@ -45,6 +51,8 @@ function RouteComponent() {
   const [changeMasterOpen, setChangeMasterOpen] = useState(false)
   const [masterSearch, setMasterSearch] = useState("")
   const [pickPersonnelSearch, setPickPersonnelSearch] = useState("")
+  const [debouncedMasterSearch] = useDebouncedValue(masterSearch, searchDebounceMs)
+  const [debouncedPickPersonnelSearch] = useDebouncedValue(pickPersonnelSearch, searchDebounceMs)
   const detailData = useAppointmentDetailData({
     appointmentId,
     hairAssignedPage,
@@ -54,15 +62,12 @@ function RouteComponent() {
   const pickPersonnelCustomersData = useQuery({
     ...trpc.customers.list.queryOptions({
       ...defaultCustomersListInput,
-      search: pickPersonnelSearch.trim() || undefined,
+      search: debouncedPickPersonnelSearch.trim() || undefined,
     }),
     enabled: pickPersonnelOpen,
   }).data
   const masterCustomersData = useQuery({
-    ...trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
-      search: masterSearch.trim() || undefined,
-    }),
+    ...appointmentMasterOptionsQueryOptions(debouncedMasterSearch),
     enabled: changeMasterOpen,
   }).data
   const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({
@@ -78,7 +83,7 @@ function RouteComponent() {
   const { createTransaction, updateTransaction, deleteTransaction } = useAppointmentTransactionActions({
     appointment: detailData.appointment,
   })
-  const { updateMaster, linkPersonnel } = useAppointmentPersonnelActions({ appointmentId })
+  const { updateAppointment, linkPersonnel } = useAppointmentPersonnelActions({ appointmentId })
 
   return (
     <AppointmentDetailPage
@@ -89,7 +94,6 @@ function RouteComponent() {
       createOpen={createOpen}
       pickPersonnelOpen={pickPersonnelOpen}
       changeMasterOpen={changeMasterOpen}
-      masterSearch={masterSearch}
       pickPersonnelSearch={pickPersonnelSearch}
       pickPersonnelCustomersData={pickPersonnelCustomersData}
       masterCustomersData={masterCustomersData}
@@ -106,7 +110,7 @@ function RouteComponent() {
       createTransactionPending={createTransaction.isPending}
       updateTransactionPending={updateTransaction.isPending}
       deleteTransactionPending={deleteTransaction.isPending}
-      updateMasterPending={updateMaster.isPending}
+      updateAppointmentPending={updateAppointment.isPending}
       linkPersonnelPending={linkPersonnel.isPending}
       onCreateHairAssigned={(values) => {
         createHairAssigned.mutate(values)
@@ -126,7 +130,8 @@ function RouteComponent() {
         deleteTransaction.mutate({ id })
         setTransactionsPage(1)
       }}
-      onUpdateMaster={(values) => updateMaster.mutate(values)}
+      onUpdateAppointment={(values) => updateAppointment.mutate(values)}
+      onUpdateMaster={(values) => updateAppointment.mutate(values)}
       onLinkPersonnel={(values) => linkPersonnel.mutate(values)}
     />
   )

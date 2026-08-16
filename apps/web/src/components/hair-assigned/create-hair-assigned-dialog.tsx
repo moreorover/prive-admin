@@ -92,7 +92,11 @@ export function CreateHairAssignedDialog({
             loading={loading}
             onClick={() =>
               selectedOrderId &&
-              onCreate({ hairOrderId: selectedOrderId, clientId, appointmentId: appointmentId ?? null })
+              onCreate({
+                hairOrderId: selectedOrderId,
+                clientId,
+                appointmentId: appointmentId ?? null,
+              })
             }
           >
             Assign

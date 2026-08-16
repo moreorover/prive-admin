@@ -1,0 +1,135 @@
+name: Cloudflare Alchemy Preview
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - closed
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-alchemy-preview-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy Preview
+    if: github.event_name != 'pull_request' || (github.event.action != 'closed' && github.event.pull_request.draft == false)
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-preview
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24"
+          cache: true
+
+      - name: Install Dependencies
+        run: vp install --frozen-lockfile
+
+      - name: Load Cloudflare Dev Secrets
+        uses: 1password/load-secrets-action@v5
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: op://prive-admin/prive-admin-cloudflare-dev/cloudflare/account-id
+          CLOUDFLARE_API_TOKEN: op://prive-admin/prive-admin-cloudflare-dev/cloudflare/api-token
+          CLOUDFLARE_WORKERS_SUBDOMAIN: op://prive-admin/prive-admin-cloudflare-dev/cloudflare/workers-subdomain
+          CORS_ORIGIN: op://prive-admin/prive-admin-cloudflare-dev/workers/cors-origin
+          BETTER_AUTH_URL: op://prive-admin/prive-admin-cloudflare-dev/better-auth/BETTER_AUTH_URL
+          BETTER_AUTH_SECRET: op://prive-admin/prive-admin-cloudflare-dev/better-auth/BETTER_AUTH_SECRET
+          NODE_ENV: op://prive-admin/prive-admin-cloudflare-dev/workers/node-env
+
+      - name: Set Preview URLs
+        run: |
+          stage="pr-${{ github.event.pull_request.number || github.run_number }}"
+          web_url="https://prive-admin-web-${stage}.${CLOUDFLARE_WORKERS_SUBDOMAIN}.workers.dev"
+          server_url="https://prive-admin-server-${stage}.${CLOUDFLARE_WORKERS_SUBDOMAIN}.workers.dev"
+          {
+            echo "BETTER_AUTH_URL=${server_url}"
+            echo "CORS_ORIGIN=${web_url}"
+            echo "VITE_SERVER_URL=${server_url}"
+          } >> "$GITHUB_ENV"
+
+      - name: Check Alchemy Stack
+        run: vp run check:alchemy
+
+      - name: Deploy Alchemy Preview
+        run: vp run deploy:alchemy --stage pr-${{ github.event.pull_request.number || github.run_number }} --yes
+        env:
+          CI: "true"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NO_TRACK: "1"
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+
+      - name: Seed Preview Database
+        run: vp run db:seed:preview --preview-db prive-admin-pr-${{ github.event.pull_request.number || github.run_number }}
+
+  cleanup:
+    name: Destroy Preview
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24"
+          cache: true
+
+      - name: Install Dependencies
+        run: vp install --frozen-lockfile
+
+      - name: Load Cloudflare Dev Secrets
+        uses: 1password/load-secrets-action@v5
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: op://prive-admin/prive-admin-cloudflare-dev/cloudflare/account-id
+          CLOUDFLARE_API_TOKEN: op://prive-admin/prive-admin-cloudflare-dev/cloudflare/api-token
+          CLOUDFLARE_WORKERS_SUBDOMAIN: op://prive-admin/prive-admin-cloudflare-dev/cloudflare/workers-subdomain
+          CORS_ORIGIN: op://prive-admin/prive-admin-cloudflare-dev/workers/cors-origin
+          BETTER_AUTH_URL: op://prive-admin/prive-admin-cloudflare-dev/better-auth/BETTER_AUTH_URL
+          BETTER_AUTH_SECRET: op://prive-admin/prive-admin-cloudflare-dev/better-auth/BETTER_AUTH_SECRET
+          NODE_ENV: op://prive-admin/prive-admin-cloudflare-dev/workers/node-env
+
+      - name: Set Preview URLs
+        run: |
+          stage="pr-${{ github.event.pull_request.number }}"
+          web_url="https://prive-admin-web-${stage}.${CLOUDFLARE_WORKERS_SUBDOMAIN}.workers.dev"
+          server_url="https://prive-admin-server-${stage}.${CLOUDFLARE_WORKERS_SUBDOMAIN}.workers.dev"
+          {
+            echo "BETTER_AUTH_URL=${server_url}"
+            echo "CORS_ORIGIN=${web_url}"
+            echo "VITE_SERVER_URL=${server_url}"
+          } >> "$GITHUB_ENV"
+
+      - name: Check Alchemy Stack
+        run: vp run check:alchemy
+
+      - name: Destroy Alchemy Preview
+        run: vp run destroy:alchemy --stage pr-${{ github.event.pull_request.number }} --yes
+        env:
+          CI: "true"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NO_TRACK: "1"
+          PR_NUMBER: ${{ github.event.pull_request.number }}

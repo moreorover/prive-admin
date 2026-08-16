@@ -1,16 +1,15 @@
 import {
   createHairAssigned as insertHairAssigned,
   createHairOrder as insertHairOrder,
-  deleteHairAssigned as removeHairAssigned,
   getHairAssigned as findHairAssigned,
   getHairOrder as findHairOrder,
   listHairAssigned as fetchHairAssigned,
   listHairOrders as fetchHairOrders,
   recalculateHairOrderPrices as recalculateHairOrderPricesRepo,
-  updateHairAssigned as patchHairAssigned,
   updateHairOrder as patchHairOrder,
 } from "@prive-admin-tanstack/db"
 import { db } from "@prive-admin-tanstack/db"
+import { appointment } from "@prive-admin-tanstack/db/schema/appointment"
 import { hairAssigned, hairOrder } from "@prive-admin-tanstack/db/schema/hair"
 import { eq, sql } from "drizzle-orm"
 
@@ -100,27 +99,25 @@ export async function updateHairOrder(input: {
     throw badRequest("Weight used cannot exceed weight received")
   }
 
-  return await db.transaction(async (tx) => {
-    const [existing] = await tx.select().from(hairOrder).where(eq(hairOrder.id, input.id)).for("update")
-    if (!existing) throw notFound("Hair order not found")
+  const [existing] = await db.select().from(hairOrder).where(eq(hairOrder.id, input.id))
+  if (!existing) throw notFound("Hair order not found")
 
-    const assignedTotal = await assignedWeightTotal(tx, input.id)
-    if (assignedTotal > input.weightReceived) {
-      throw badRequest(`Weight received cannot be less than assigned weight (${assignedTotal}g assigned)`)
-    }
+  const assignedTotal = await assignedWeightTotal(db, input.id)
+  if (assignedTotal > input.weightReceived) {
+    throw badRequest(`Weight received cannot be less than assigned weight (${assignedTotal}g assigned)`)
+  }
 
-    const result = await patchHairOrder(tx as any, {
-      id: input.id,
-      placedAt: dateValue(input.placedAt),
-      arrivedAt: dateValue(input.arrivedAt),
-      status: input.status,
-      weightReceived: input.weightReceived,
-      weightUsed: assignedTotal,
-      total: input.total,
-    })
-    if (!result) throw unexpectedError("Failed to update hair order")
-    return result
+  const result = await patchHairOrder(undefined, {
+    id: input.id,
+    placedAt: dateValue(input.placedAt),
+    arrivedAt: dateValue(input.arrivedAt),
+    status: input.status,
+    weightReceived: input.weightReceived,
+    weightUsed: assignedTotal,
+    total: input.total,
   })
+  if (!result) throw unexpectedError("Failed to update hair order")
+  return result
 }
 
 export async function recalculateHairOrderPrices(hairOrderId: string) {
@@ -135,65 +132,76 @@ export async function createHairAssigned(input: {
   appointmentId?: string | null
   createdById: string
 }) {
-  const result = await insertHairAssigned(undefined, input)
+  const soldAt = input.appointmentId ? await appointmentStartsAt(input.appointmentId) : undefined
+  const result = await insertHairAssigned(undefined, { ...input, soldAt })
   if (!result) throw unexpectedError("Failed to create hair assignment")
   return result
 }
 
-export async function updateHairAssigned(input: { id: string; weightInGrams: number; soldFor: number }) {
-  return await db.transaction(async (tx) => {
-    const existing = await tx.query.hairAssigned.findFirst({
-      where: eq(hairAssigned.id, input.id),
-      columns: { hairOrderId: true, weightInGrams: true },
-    })
-    if (!existing) throw notFound("Hair assigned not found")
-
-    const [parentOrder] = await tx.select().from(hairOrder).where(eq(hairOrder.id, existing.hairOrderId)).for("update")
-    if (!parentOrder) throw notFound("Hair order not found")
-
-    const availableWeight = parentOrder.weightReceived - parentOrder.weightUsed + existing.weightInGrams
-    if (input.weightInGrams > availableWeight) {
-      throw badRequest(`Weight exceeds available stock (${availableWeight}g available)`)
-    }
-
-    const pricePerGram = input.weightInGrams > 0 ? Math.round(input.soldFor / input.weightInGrams) : 0
-    const profit = input.soldFor - input.weightInGrams * parentOrder.pricePerGram
-
-    const updated = await patchHairAssigned(tx as any, {
-      id: input.id,
-      weightInGrams: input.weightInGrams,
-      soldFor: input.soldFor,
-      pricePerGram,
-      profit,
-    })
-    if (!updated) throw unexpectedError("Failed to update hair assignment")
-
-    const assignedTotal = await assignedWeightTotal(tx, parentOrder.id)
-    if (assignedTotal > parentOrder.weightReceived) {
-      throw badRequest(`Assigned weight cannot exceed weight received (${parentOrder.weightReceived}g received)`)
-    }
-
-    await tx.update(hairOrder).set({ weightUsed: assignedTotal }).where(eq(hairOrder.id, parentOrder.id))
-    return updated
+async function appointmentStartsAt(appointmentId: string) {
+  const result = await db.query.appointment.findFirst({
+    where: eq(appointment.id, appointmentId),
+    columns: { startsAt: true },
   })
+  if (!result) throw notFound("Appointment not found")
+  return result.startsAt
+}
+
+export async function updateHairAssigned(input: { id: string; weightInGrams: number; soldFor: number; soldAt?: Date }) {
+  const existing = await db.query.hairAssigned.findFirst({
+    where: eq(hairAssigned.id, input.id),
+    columns: { appointmentId: true, hairOrderId: true, weightInGrams: true },
+  })
+  if (!existing) throw notFound("Hair assigned not found")
+
+  const [parentOrder] = await db.select().from(hairOrder).where(eq(hairOrder.id, existing.hairOrderId))
+  if (!parentOrder) throw notFound("Hair order not found")
+
+  const availableWeight = parentOrder.weightReceived - parentOrder.weightUsed + existing.weightInGrams
+  if (input.weightInGrams > availableWeight) {
+    throw badRequest(`Weight exceeds available stock (${availableWeight}g available)`)
+  }
+
+  const pricePerGram = input.weightInGrams > 0 ? Math.round(input.soldFor / input.weightInGrams) : 0
+  const profit = input.soldFor - input.weightInGrams * parentOrder.pricePerGram
+  const soldAt = existing.appointmentId ? await appointmentStartsAt(existing.appointmentId) : input.soldAt
+  const assignedTotal = parentOrder.weightUsed - existing.weightInGrams + input.weightInGrams
+
+  const [updatedRows] = await db.batch([
+    db
+      .update(hairAssigned)
+      .set({
+        weightInGrams: input.weightInGrams,
+        soldFor: input.soldFor,
+        pricePerGram,
+        profit,
+        ...(soldAt ? { soldAt } : {}),
+      })
+      .where(eq(hairAssigned.id, input.id))
+      .returning(),
+    db.update(hairOrder).set({ weightUsed: assignedTotal }).where(eq(hairOrder.id, parentOrder.id)),
+  ])
+  const updated = updatedRows[0]
+  if (!updated) throw unexpectedError("Failed to update hair assignment")
+  return updated
 }
 
 export async function deleteHairAssigned(id: string) {
-  return await db.transaction(async (tx) => {
-    const existing = await tx.query.hairAssigned.findFirst({
-      where: eq(hairAssigned.id, id),
-    })
-    if (!existing) throw notFound("Hair assigned not found")
-
-    const [parentOrder] = await tx.select().from(hairOrder).where(eq(hairOrder.id, existing.hairOrderId)).for("update")
-    if (!parentOrder) throw notFound("Hair order not found")
-
-    const removed = await removeHairAssigned(tx as any, id)
-    if (!removed) throw unexpectedError("Failed to delete hair assignment")
-
-    const assignedTotal = await assignedWeightTotal(tx, parentOrder.id)
-    await tx.update(hairOrder).set({ weightUsed: assignedTotal }).where(eq(hairOrder.id, parentOrder.id))
-
-    return removed
+  const existing = await db.query.hairAssigned.findFirst({
+    where: eq(hairAssigned.id, id),
   })
+  if (!existing) throw notFound("Hair assigned not found")
+
+  const [parentOrder] = await db.select().from(hairOrder).where(eq(hairOrder.id, existing.hairOrderId))
+  if (!parentOrder) throw notFound("Hair order not found")
+
+  const assignedTotal = parentOrder.weightUsed - existing.weightInGrams
+  const [removedRows] = await db.batch([
+    db.delete(hairAssigned).where(eq(hairAssigned.id, id)).returning(),
+    db.update(hairOrder).set({ weightUsed: assignedTotal }).where(eq(hairOrder.id, parentOrder.id)),
+  ])
+  const removed = removedRows[0]
+  if (!removed) throw unexpectedError("Failed to delete hair assignment")
+
+  return removed
 }

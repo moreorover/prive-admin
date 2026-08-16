@@ -178,6 +178,7 @@ export function HairOrderDetailPage({
           >
             <HairAssignedTable items={hairOrder.hairAssigned ?? []}>
               <HairAssignedTable.Client />
+              <HairAssignedTable.SoldAt />
               <HairAssignedTable.Weight />
               <HairAssignedTable.SoldFor />
               <HairAssignedTable.Profit />

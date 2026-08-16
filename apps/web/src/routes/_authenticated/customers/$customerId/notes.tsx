@@ -1,9 +1,13 @@
+import { useDebouncedCallback } from "@mantine/hooks"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
+import { useEffect, useState } from "react"
 
 import { useCustomerNoteActions } from "./-actions/note-actions"
 import { NotesPage } from "./-components/notes-page"
 import { PAGE_SIZE, notesQueryOptions, searchSchema } from "./-data/notes-data"
+
+const searchNavigationDebounceMs = 300
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId/notes")({
   component: RouteComponent,
@@ -31,23 +35,40 @@ function RouteComponent() {
   const navigate = Route.useNavigate()
   const page = search.page ?? 1
   const searchValue = search.search ?? ""
+  const [draftSearch, setDraftSearch] = useState(searchValue)
   const data = useQuery(notesQueryOptions(customerId, page, searchValue)).data
+  const navigateToSearch = useDebouncedCallback((nextSearch: string) => {
+    navigate({ search: { page: 1, search: nextSearch }, replace: true })
+  }, searchNavigationDebounceMs)
   const { createNote, deleteNote } = useCustomerNoteActions({
     customerId,
-    onCreated: () => navigate({ search: { page: 1, search: searchValue }, replace: true }),
+    onCreated: () => {
+      navigateToSearch.cancel()
+      navigate({ search: { page: 1, search: searchValue }, replace: true })
+    },
   })
+
+  useEffect(() => {
+    setDraftSearch(searchValue)
+  }, [searchValue])
 
   return (
     <NotesPage
       customerId={customerId}
       page={page}
-      searchValue={searchValue}
+      searchValue={draftSearch}
       data={data}
       createPending={createNote.isPending}
       onCreateNote={(values) => createNote.mutateAsync(values)}
       onDeleteNote={(id) => deleteNote.mutate({ id })}
-      onSearchChange={(nextSearch) => navigate({ search: { page: 1, search: nextSearch }, replace: true })}
-      onPageChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
+      onSearchChange={(nextSearch) => {
+        setDraftSearch(nextSearch)
+        navigateToSearch(nextSearch)
+      }}
+      onPageChange={(nextPage) => {
+        navigateToSearch.cancel()
+        navigate({ search: { page: nextPage, search: searchValue } })
+      }}
     />
   )
 }

@@ -20,26 +20,18 @@ function escapeLikePattern(value: string) {
   return value.replace(/[\\%_]/g, "\\$&")
 }
 
-function hairAssignedDateCondition(filter: Pick<HairAssignedFilter, "source" | "from" | "to">) {
+function hairAssignedDateCondition(filter: Pick<HairAssignedFilter, "from" | "to">) {
   if (!filter.from && !filter.to) return undefined
 
-  const appointmentDateChecks = [isNotNull(hairAssigned.appointmentId)]
-  const individualDateChecks = [isNull(hairAssigned.appointmentId)]
+  const dateChecks = []
   if (filter.from) {
-    appointmentDateChecks.push(gte(appointment.startsAt, filter.from))
-    individualDateChecks.push(gte(hairAssigned.createdAt, filter.from))
+    dateChecks.push(gte(hairAssigned.soldAt, filter.from))
   }
   if (filter.to) {
-    appointmentDateChecks.push(lt(appointment.startsAt, filter.to))
-    individualDateChecks.push(lt(hairAssigned.createdAt, filter.to))
+    dateChecks.push(lt(hairAssigned.soldAt, filter.to))
   }
 
-  const appointmentDateCondition = and(...appointmentDateChecks)
-  const individualDateCondition = and(...individualDateChecks)
-
-  if (filter.source === "appointment") return appointmentDateCondition
-  if (filter.source === "individual") return individualDateCondition
-  return or(appointmentDateCondition, individualDateCondition)
+  return and(...dateChecks)
 }
 
 export async function listHairAssigned(database: Db = db, filter: HairAssignedFilter) {
@@ -52,8 +44,8 @@ export async function listHairAssigned(database: Db = db, filter: HairAssignedFi
     const searchPattern = `%${escapeLikePattern(filter.search)}%`
     conditions.push(
       or(
-        sql<boolean>`${hairOrder.uid}::text ilike ${searchPattern}`,
-        sql<boolean>`${customer.name} ilike ${searchPattern}`,
+        sql<boolean>`cast(${hairOrder.uid} as text) like ${searchPattern}`,
+        sql<boolean>`${customer.name} like ${searchPattern}`,
       ),
     )
   }
@@ -70,6 +62,7 @@ export async function listHairAssigned(database: Db = db, filter: HairAssignedFi
       soldFor: hairAssigned.soldFor,
       profit: hairAssigned.profit,
       pricePerGram: hairAssigned.pricePerGram,
+      soldAt: hairAssigned.soldAt,
       clientId: hairAssigned.clientId,
       createdById: hairAssigned.createdById,
       createdAt: hairAssigned.createdAt,
@@ -93,7 +86,7 @@ export async function listHairAssigned(database: Db = db, filter: HairAssignedFi
     .leftJoin(customer, eq(hairAssigned.clientId, customer.id))
     .leftJoin(hairOrder, eq(hairAssigned.hairOrderId, hairOrder.id))
     .where(where)
-    .orderBy(desc(hairAssigned.createdAt), desc(hairAssigned.id))
+    .orderBy(desc(hairAssigned.soldAt), desc(hairAssigned.id))
     .limit(filter.pageSize)
     .offset(filter.offset)
 
@@ -169,7 +162,11 @@ export async function createHairOrder(
     createdById: string
   },
 ) {
-  const [result] = await database.insert(hairOrder).values(input).returning()
+  const [maxUidRow] = await database.select({ maxUid: sql<number>`coalesce(max(${hairOrder.uid}), 0)` }).from(hairOrder)
+  const [result] = await database
+    .insert(hairOrder)
+    .values({ ...input, uid: (maxUidRow?.maxUid ?? 0) + 1 })
+    .returning()
   return result
 }
 
@@ -206,6 +203,7 @@ export async function createHairAssigned(
     hairOrderId: string
     clientId: string
     appointmentId?: string | null
+    soldAt?: Date
     createdById: string
   },
 ) {
@@ -215,6 +213,7 @@ export async function createHairAssigned(
       hairOrderId: input.hairOrderId,
       clientId: input.clientId,
       appointmentId: input.appointmentId ?? null,
+      ...(input.soldAt ? { soldAt: input.soldAt } : {}),
       createdById: input.createdById,
     })
     .returning()
@@ -223,7 +222,7 @@ export async function createHairAssigned(
 
 export async function updateHairAssigned(
   database: Db = db,
-  input: { id: string; weightInGrams: number; soldFor: number; pricePerGram: number; profit: number },
+  input: { id: string; weightInGrams: number; soldFor: number; pricePerGram: number; profit: number; soldAt?: Date },
 ) {
   const [updated] = await database
     .update(hairAssigned)
@@ -232,6 +231,7 @@ export async function updateHairAssigned(
       soldFor: input.soldFor,
       pricePerGram: input.pricePerGram,
       profit: input.profit,
+      ...(input.soldAt ? { soldAt: input.soldAt } : {}),
     })
     .where(eq(hairAssigned.id, input.id))
     .returning()
@@ -248,31 +248,30 @@ export async function deleteHairAssigned(database: Db = db, id: string) {
 }
 
 export async function recalculateHairOrderPrices(database: Db = db, hairOrderId: string) {
-  return database.transaction(async (tx) => {
-    const [order] = await tx.select().from(hairOrder).where(eq(hairOrder.id, hairOrderId)).for("update")
-    if (!order) return null
+  const [order] = await database.select().from(hairOrder).where(eq(hairOrder.id, hairOrderId))
+  if (!order) return null
 
-    const assignments = await tx
-      .select()
-      .from(hairAssigned)
-      .where(eq(hairAssigned.hairOrderId, hairOrderId))
-      .for("update")
+  const assignments = await database.select().from(hairAssigned).where(eq(hairAssigned.hairOrderId, hairOrderId))
 
-    const pricePerGram =
-      order.total === 0 || order.weightReceived === 0 ? 0 : Math.abs(Math.round(order.total / order.weightReceived))
+  const pricePerGram =
+    order.total === 0 || order.weightReceived === 0 ? 0 : Math.abs(Math.round(order.total / order.weightReceived))
 
-    if (order.pricePerGram !== pricePerGram) {
-      await tx.update(hairOrder).set({ pricePerGram }).where(eq(hairOrder.id, hairOrderId))
+  const updates = []
+  if (order.pricePerGram !== pricePerGram) {
+    updates.push(database.update(hairOrder).set({ pricePerGram }).where(eq(hairOrder.id, hairOrderId)))
+  }
+
+  for (const ha of assignments) {
+    const total = pricePerGram === 0 ? 0 : Math.round(pricePerGram * ha.weightInGrams)
+    const profit = ha.soldFor - total
+    if (ha.profit !== profit) {
+      updates.push(database.update(hairAssigned).set({ profit }).where(eq(hairAssigned.id, ha.id)))
     }
+  }
 
-    for (const ha of assignments) {
-      const total = pricePerGram === 0 ? 0 : Math.round(pricePerGram * ha.weightInGrams)
-      const profit = ha.soldFor - total
-      if (ha.profit !== profit) {
-        await tx.update(hairAssigned).set({ profit }).where(eq(hairAssigned.id, ha.id))
-      }
-    }
+  if (updates.length > 0) {
+    await database.batch(updates as never)
+  }
 
-    return { pricePerGram }
-  })
+  return { pricePerGram }
 }

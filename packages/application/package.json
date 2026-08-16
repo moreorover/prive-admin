@@ -22,11 +22,10 @@
     "test:watch": "vp test"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1085.0",
     "@prive-admin-tanstack/db": "workspace:*",
     "@prive-admin-tanstack/env": "workspace:*",
     "archiver": "^8.0.0",
-    "csv-parse": "^7.0.1",
+    "csv-parse": "^7.0.2",
     "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {

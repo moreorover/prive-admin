@@ -12,6 +12,7 @@ const formatCents = (cents: number) => `€${(cents / 100).toFixed(2)}`
 type HairSaleDetail = {
   id: string
   appointmentId: string | null
+  soldAt: string | Date
   createdAt: string | Date
   weightInGrams: number
   soldFor: number
@@ -122,12 +123,12 @@ export function HairSaleDetailPage({ sale }: { sale: HairSaleDetail | undefined 
                     />
                   )}
                 >
-                  <ClientDate date={sale.appointment?.startsAt ?? sale.createdAt} />
+                  <ClientDate date={sale.soldAt} />
                 </Anchor>
               </Group>
             ) : (
               <Text size="sm" c="dimmed">
-                Direct sale created <ClientDate date={sale.createdAt} />.
+                Direct sale sold <ClientDate date={sale.soldAt} />.
               </Text>
             )}
           </Stack>

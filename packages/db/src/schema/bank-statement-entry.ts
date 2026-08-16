@@ -1,9 +1,10 @@
 import { createId } from "@paralleldrive/cuid2"
-import { pgTable, integer, text, timestamp, date, unique } from "drizzle-orm/pg-core"
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core"
 
 import { bankAccount } from "./bank-account"
+import { createdAt, updatedAt } from "./columns"
 
-export const bankStatementEntry = pgTable(
+export const bankStatementEntry = sqliteTable(
   "bank_statement_entry",
   {
     id: text("id").primaryKey().$defaultFn(createId),
@@ -12,7 +13,7 @@ export const bankStatementEntry = pgTable(
       .references(() => bankAccount.id, { onDelete: "restrict" }),
     externalRef: text("external_ref").notNull(), // transakcijos kodas
     docNumber: text("doc_number"),
-    date: date("date").notNull(),
+    date: text("date").notNull(),
     amount: integer("amount").notNull(), // minor units
     currency: text("currency").notNull(),
     direction: text("direction").notNull(), // 'D' | 'C'
@@ -23,11 +24,13 @@ export const bankStatementEntry = pgTable(
     purpose: text("purpose"),
     transactionType: text("transaction_type"),
     status: text("status").notNull().default("PENDING"), // 'PENDING' | 'IGNORED'
-    importedAt: timestamp("imported_at", { withTimezone: true }).defaultNow().notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .$onUpdate(() => new Date())
-      .notNull(),
+    importedAt: createdAt("imported_at"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
   },
-  (table) => [unique("bank_statement_entry_account_ref_unique").on(table.bankAccountId, table.externalRef)],
+  (table) => [
+    uniqueIndex("bank_statement_entry_account_ref_unique").on(table.bankAccountId, table.externalRef),
+    index("bank_statement_entry_bank_account_id_idx").on(table.bankAccountId),
+    index("bank_statement_entry_date_idx").on(table.date),
+  ],
 )

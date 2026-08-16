@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from "node:fs"
-import { join, relative } from "node:path"
+import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vite-plus/test"
 
@@ -23,9 +23,7 @@ function publicRouteFiles(dir: string): string[] {
 describe("route component organization", () => {
   it.each(publicRouteFiles(routesDir))("keeps custom components outside route file %s", (path) => {
     const source = readFileSync(path, "utf8")
-    const routePath = relative(routesDir, path)
-
-    expect(source, routePath).not.toMatch(/function\s+(?!Route\b|RouteComponent\b)[A-Z][A-Za-z0-9_]*/)
-    expect(source, routePath).not.toMatch(/(?:const|let|var)\s+(?!Route\b|RouteComponent\b)[A-Z][A-Za-z0-9_]*\s*=/)
+    expect(source).not.toMatch(/function\s+(?!Route\b|RouteComponent\b)[A-Z][A-Za-z0-9_]*/)
+    expect(source).not.toMatch(/(?:const|let|var)\s+(?!Route\b|RouteComponent\b)[A-Z][A-Za-z0-9_]*\s*=/)
   })
 })

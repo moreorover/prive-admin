@@ -23,18 +23,27 @@ function routePageFiles(dir: string): string[] {
 describe("route data organization", () => {
   it.each(routePageFiles(routesDir))("keeps mutation orchestration outside %s", (path) => {
     const source = readFileSync(path, "utf8")
-    const routePath = relative(routesDir, path)
-
-    expect(source, routePath).not.toContain("useMutation({")
-    expect(source, routePath).not.toMatch(/const\s+\w*invalidate\w*\s*=/)
+    expect(source).not.toContain("useMutation({")
+    expect(source).not.toMatch(/const\s+\w*invalidate\w*\s*=/)
   })
 
   it.each(routePageFiles(routesDir))("keeps dialog option prefetches out of route loaders %s", (path) => {
     const source = readFileSync(path, "utf8")
-    const routePath = relative(routesDir, path)
 
-    expect(source, routePath).not.toMatch(
+    expect(source).not.toMatch(
       /queryClient\.prefetchQuery\((appointment(Customer|Master|Salon)OptionsQueryOptions|availableHairOrdersListQueryOptions)/,
     )
+  })
+
+  it.each(routePageFiles(routesDir))("gates route-owned dialog option queries behind open state %s", (path) => {
+    const source = readFileSync(path, "utf8")
+    const routePath = relative(routesDir, path)
+    const dialogOptionQueryPattern =
+      /useQuery\(\{\s*\.\.\.(appointment(Customer|Master|Salon)OptionsQueryOptions|availableHairOrdersListQueryOptions)\(/g
+
+    for (const match of source.matchAll(dialogOptionQueryPattern)) {
+      const queryBlock = source.slice(match.index, source.indexOf("}).data", match.index) + 7)
+      expect(`${routePath}\n${queryBlock}`).toMatch(/enabled:\s*\w+(Open|DialogOpen)/)
+    }
   })
 })

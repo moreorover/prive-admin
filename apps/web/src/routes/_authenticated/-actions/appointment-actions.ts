@@ -29,22 +29,23 @@ export function useCreateAppointmentAction({
 
 export function useAppointmentPersonnelActions({
   appointmentId,
-  onMasterUpdated,
+  onAppointmentUpdated,
   onPersonnelLinked,
 }: {
   appointmentId: string
-  onMasterUpdated?: () => void
+  onAppointmentUpdated?: () => void
   onPersonnelLinked?: () => void
 }) {
   const queryClient = useQueryClient()
   const appointmentQueryKey = trpc.appointments.get.queryOptions({ id: appointmentId }).queryKey
 
-  const updateMaster = useMutation({
+  const updateAppointment = useMutation({
     ...trpc.appointments.update.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: appointmentQueryKey })
-      notifications.show({ color: "green", message: "Master updated." })
-      onMasterUpdated?.()
+      queryClient.invalidateQueries({ queryKey: trpc.appointments.list.queryKey() })
+      notifications.show({ color: "green", message: "Appointment updated." })
+      onAppointmentUpdated?.()
     },
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
@@ -59,5 +60,5 @@ export function useAppointmentPersonnelActions({
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
-  return { updateMaster, linkPersonnel }
+  return { updateAppointment, updateMaster: updateAppointment, linkPersonnel }
 }

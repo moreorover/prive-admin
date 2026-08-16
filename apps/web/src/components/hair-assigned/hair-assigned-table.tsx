@@ -5,6 +5,7 @@ import { IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { createContext, useContext } from "react"
 
+import { ClientDate } from "@/components/client-date"
 import {
   type CompoundTableColumnComponent,
   getCompoundTableColumns,
@@ -21,6 +22,7 @@ export type HairAssignedRow = {
   soldFor: number
   profit: number
   pricePerGram: number
+  soldAt?: string | Date
   client?: { id: string; name: string } | null
   hairOrder?: { id: string; uid: number } | null
 }
@@ -56,6 +58,7 @@ type HairAssignedTableComponent = ((props: HairAssignedTableRootProps) => ReactE
   Client: HairAssignedColumnComponent
   Source: HairAssignedColumnComponent
   HairOrder: HairAssignedColumnComponent
+  SoldAt: HairAssignedColumnComponent
   Weight: HairAssignedColumnComponent
   SoldFor: HairAssignedColumnComponent
   Profit: HairAssignedColumnComponent
@@ -82,33 +85,15 @@ function getHairAssignedPagination(children: ReactNode) {
   return getCompoundTablePagination<HairAssignedPaginationProps>(children)
 }
 
-function createColumn(columnKey: string, label: string, Cell: () => ReactElement): HairAssignedColumnComponent {
-  const Column = (() => null) as unknown as HairAssignedColumnComponent
+function createColumn<Props = object>(
+  columnKey: string,
+  label: string,
+  Cell: HairAssignedColumnComponent<Props>["Cell"],
+): HairAssignedColumnComponent<Props> {
+  const Column = (() => null) as unknown as HairAssignedColumnComponent<Props>
   Column.columnKey = columnKey
   Column.Header = () => <Table.Th>{label}</Table.Th>
   Column.Cell = Cell
-  return Column
-}
-
-function createActionsColumn(): HairAssignedColumnComponent<HairAssignedActionsProps> {
-  const Column = (() => null) as unknown as HairAssignedColumnComponent<HairAssignedActionsProps>
-  Column.columnKey = "actions"
-  Column.Header = () => <Table.Th />
-  Column.Cell = ({ onEdit, onDelete }) => {
-    const row = useHairAssignedRow()
-    return (
-      <Table.Td>
-        <Group gap={4}>
-          <ActionIcon variant="subtle" size="sm" onClick={() => onEdit(row)} aria-label="Edit">
-            <IconPencil size={14} />
-          </ActionIcon>
-          <ActionIcon variant="subtle" size="sm" color="red" onClick={() => onDelete(row)} aria-label="Delete">
-            <IconTrash size={14} />
-          </ActionIcon>
-        </Group>
-      </Table.Td>
-    )
-  }
   return Column
 }
 
@@ -225,6 +210,11 @@ const HairOrder = createColumn("hair-order", "Hair Order", () => {
   )
 })
 
+const SoldAt = createColumn("sold-at", "Sold At", () => {
+  const row = useHairAssignedRow()
+  return <Table.Td>{row.soldAt ? <ClientDate date={row.soldAt} /> : "—"}</Table.Td>
+})
+
 const Weight = createColumn("weight", "Weight", () => {
   const row = useHairAssignedRow()
   return <Table.Td>{row.weightInGrams}g</Table.Td>
@@ -245,14 +235,31 @@ const PricePerGram = createColumn("price-per-gram", "€/g", () => {
   return <Table.Td>{formatCents(row.pricePerGram)}</Table.Td>
 })
 
+const Actions = createColumn<HairAssignedActionsProps>("actions", "", ({ onEdit, onDelete }) => {
+  const row = useHairAssignedRow()
+  return (
+    <Table.Td>
+      <Group gap={4}>
+        <ActionIcon variant="subtle" size="sm" onClick={() => onEdit(row)} aria-label="Edit">
+          <IconPencil size={14} />
+        </ActionIcon>
+        <ActionIcon variant="subtle" size="sm" color="red" onClick={() => onDelete(row)} aria-label="Delete">
+          <IconTrash size={14} />
+        </ActionIcon>
+      </Group>
+    </Table.Td>
+  )
+})
+
 export const HairAssignedTable = Object.assign(HairAssignedTableRoot, {
   Client,
   Source,
   HairOrder,
+  SoldAt,
   Weight,
   SoldFor,
   Profit,
   PricePerGram,
-  Actions: createActionsColumn(),
+  Actions,
   Pagination: TablePagination,
 }) satisfies HairAssignedTableComponent

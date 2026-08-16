@@ -98,6 +98,7 @@ export function HairSalesPage({
               <HairAssignedTable.Client />
               <HairAssignedTable.Source />
               <HairAssignedTable.HairOrder />
+              <HairAssignedTable.SoldAt />
               <HairAssignedTable.Weight />
               <HairAssignedTable.SoldFor />
               <HairAssignedTable.Profit />

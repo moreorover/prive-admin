@@ -1,6 +1,7 @@
+import { useDebouncedCallback, useDebouncedValue } from "@mantine/hooks"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { trpc } from "@/utils/trpc"
 
@@ -13,6 +14,9 @@ import {
   appointmentsQueryOptions,
   searchSchema,
 } from "./-data/appointments-data"
+
+const searchNavigationDebounceMs = 300
+const searchDebounceMs = 300
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId/appointments")({
   validateSearch: searchSchema,
@@ -43,10 +47,12 @@ function RouteComponent() {
   const page = search.page ?? 1
   const searchValue = search.search ?? ""
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [draftSearch, setDraftSearch] = useState(searchValue)
   const [masterSearch, setMasterSearch] = useState("")
+  const [debouncedMasterSearch] = useDebouncedValue(masterSearch, searchDebounceMs)
   const data = useQuery(appointmentsQueryOptions(customerId, page, searchValue)).data
   const masterCustomersData = useQuery({
-    ...appointmentMasterOptionsQueryOptions(masterSearch),
+    ...appointmentMasterOptionsQueryOptions(debouncedMasterSearch),
     enabled: createDialogOpen,
   }).data
   const salonsData = useQuery({
@@ -64,12 +70,19 @@ function RouteComponent() {
       }
     },
   })
+  const navigateToSearch = useDebouncedCallback((nextSearch: string) => {
+    navigate({ search: { page: 1, search: nextSearch }, replace: true })
+  }, searchNavigationDebounceMs)
+
+  useEffect(() => {
+    setDraftSearch(searchValue)
+  }, [searchValue])
 
   return (
     <CustomerAppointmentsPage
       customerId={customerId}
       page={page}
-      searchValue={searchValue}
+      searchValue={draftSearch}
       data={data}
       createDialogOpen={createDialogOpen}
       masterSearch={masterSearch}
@@ -79,8 +92,14 @@ function RouteComponent() {
       onCreateAppointment={(values) => createAppointment.mutate(values)}
       onCreateDialogOpenChange={setCreateDialogOpen}
       onMasterSearchChange={setMasterSearch}
-      onSearchChange={(nextSearch) => navigate({ search: { page: 1, search: nextSearch }, replace: true })}
-      onPageChange={(nextPage) => navigate({ search: { page: nextPage, search: searchValue } })}
+      onSearchChange={(nextSearch) => {
+        setDraftSearch(nextSearch)
+        navigateToSearch(nextSearch)
+      }}
+      onPageChange={(nextPage) => {
+        navigateToSearch.cancel()
+        navigate({ search: { page: nextPage, search: searchValue } })
+      }}
     />
   )
 }

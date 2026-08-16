@@ -1,0 +1,65 @@
+name: Cloudflare Prod Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Prod with Alchemy
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-prod
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24"
+          cache: true
+
+      - name: Install Dependencies
+        run: vp install --frozen-lockfile
+
+      - name: Load Cloudflare Prod Secrets
+        uses: 1password/load-secrets-action@v5
+        with:
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: op://prive-admin/prive-admin-cloudflare-prod/cloudflare/account-id
+          CLOUDFLARE_API_TOKEN: op://prive-admin/prive-admin-cloudflare-prod/cloudflare/api-token
+          CLOUDFLARE_WORKERS_SUBDOMAIN: op://prive-admin/prive-admin-cloudflare-prod/cloudflare/workers-subdomain
+          CORS_ORIGIN: op://prive-admin/prive-admin-cloudflare-prod/workers/cors-origin
+          BETTER_AUTH_URL: op://prive-admin/prive-admin-cloudflare-prod/better-auth/BETTER_AUTH_URL
+          BETTER_AUTH_SECRET: op://prive-admin/prive-admin-cloudflare-prod/better-auth/BETTER_AUTH_SECRET
+          NODE_ENV: op://prive-admin/prive-admin-cloudflare-prod/workers/node-env
+          VITE_SERVER_URL: op://prive-admin/prive-admin-cloudflare-prod/web/VITE_SERVER_URL
+
+      - name: Check Alchemy Stack
+        run: vp run check:alchemy
+
+      - name: Deploy Prod Alchemy Stack
+        run: vp run deploy:alchemy --stage prod --yes
+        env:
+          BETTER_AUTH_SECRET: ${{ env.BETTER_AUTH_SECRET }}
+          BETTER_AUTH_URL: ${{ env.BETTER_AUTH_URL }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ env.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_WORKERS_SUBDOMAIN: ${{ env.CLOUDFLARE_WORKERS_SUBDOMAIN }}
+          CI: "true"
+          CORS_ORIGIN: ${{ env.CORS_ORIGIN }}
+          NODE_ENV: ${{ env.NODE_ENV }}
+          NO_TRACK: "1"
+          VITE_SERVER_URL: ${{ env.VITE_SERVER_URL }}

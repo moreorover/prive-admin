@@ -5,6 +5,8 @@ import { createElement, Fragment } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vite-plus/test"
 
+import { LocaleProvider } from "@/lib/locale-context"
+
 import { getHairAssignedSource } from "./hair-assigned-source"
 import { HairAssignedTable } from "./hair-assigned-table"
 
@@ -16,6 +18,7 @@ const hairAssignedRows = [
     soldFor: 3400,
     profit: 1200,
     pricePerGram: 283,
+    soldAt: "2026-07-14T00:00:00.000Z",
     client: null,
     hairOrder: null,
   },
@@ -27,9 +30,13 @@ function renderHairAssignedTable(children: ReactNode) {
       MantineProvider,
       null,
       createElement(
-        HairAssignedTable,
-        { items: hairAssignedRows } as ComponentProps<typeof HairAssignedTable>,
-        children,
+        LocaleProvider,
+        { value: { locale: "en-GB", timeZone: "UTC" } },
+        createElement(
+          HairAssignedTable,
+          { items: hairAssignedRows } as ComponentProps<typeof HairAssignedTable>,
+          children,
+        ),
       ),
     ),
   )
@@ -76,6 +83,7 @@ describe("hair assigned table compound columns", () => {
         createElement(HairAssignedTable.Client),
         createElement(HairAssignedTable.Source),
         createElement(HairAssignedTable.HairOrder),
+        createElement(HairAssignedTable.SoldAt),
         createElement(HairAssignedTable.Actions, { onEdit: () => {}, onDelete: () => {} }),
       ),
     )
@@ -83,6 +91,8 @@ describe("hair assigned table compound columns", () => {
     expect(markup).toContain("Client")
     expect(markup).toContain("Source")
     expect(markup).toContain("Hair Order")
+    expect(markup).toContain("Sold At")
+    expect(markup).toContain("14/07/2026")
   })
 
   it("omits columns that are not declared", () => {
