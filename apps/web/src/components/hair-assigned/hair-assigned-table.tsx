@@ -85,33 +85,15 @@ function getHairAssignedPagination(children: ReactNode) {
   return getCompoundTablePagination<HairAssignedPaginationProps>(children)
 }
 
-function createColumn(columnKey: string, label: string, Cell: () => ReactElement): HairAssignedColumnComponent {
-  const Column = (() => null) as unknown as HairAssignedColumnComponent
+function createColumn<Props = object>(
+  columnKey: string,
+  label: string,
+  Cell: HairAssignedColumnComponent<Props>["Cell"],
+): HairAssignedColumnComponent<Props> {
+  const Column = (() => null) as unknown as HairAssignedColumnComponent<Props>
   Column.columnKey = columnKey
   Column.Header = () => <Table.Th>{label}</Table.Th>
   Column.Cell = Cell
-  return Column
-}
-
-function createActionsColumn(): HairAssignedColumnComponent<HairAssignedActionsProps> {
-  const Column = (() => null) as unknown as HairAssignedColumnComponent<HairAssignedActionsProps>
-  Column.columnKey = "actions"
-  Column.Header = () => <Table.Th />
-  Column.Cell = ({ onEdit, onDelete }) => {
-    const row = useHairAssignedRow()
-    return (
-      <Table.Td>
-        <Group gap={4}>
-          <ActionIcon variant="subtle" size="sm" onClick={() => onEdit(row)} aria-label="Edit">
-            <IconPencil size={14} />
-          </ActionIcon>
-          <ActionIcon variant="subtle" size="sm" color="red" onClick={() => onDelete(row)} aria-label="Delete">
-            <IconTrash size={14} />
-          </ActionIcon>
-        </Group>
-      </Table.Td>
-    )
-  }
   return Column
 }
 
@@ -253,6 +235,22 @@ const PricePerGram = createColumn("price-per-gram", "€/g", () => {
   return <Table.Td>{formatCents(row.pricePerGram)}</Table.Td>
 })
 
+const Actions = createColumn<HairAssignedActionsProps>("actions", "", ({ onEdit, onDelete }) => {
+  const row = useHairAssignedRow()
+  return (
+    <Table.Td>
+      <Group gap={4}>
+        <ActionIcon variant="subtle" size="sm" onClick={() => onEdit(row)} aria-label="Edit">
+          <IconPencil size={14} />
+        </ActionIcon>
+        <ActionIcon variant="subtle" size="sm" color="red" onClick={() => onDelete(row)} aria-label="Delete">
+          <IconTrash size={14} />
+        </ActionIcon>
+      </Group>
+    </Table.Td>
+  )
+})
+
 export const HairAssignedTable = Object.assign(HairAssignedTableRoot, {
   Client,
   Source,
@@ -262,6 +260,6 @@ export const HairAssignedTable = Object.assign(HairAssignedTableRoot, {
   SoldFor,
   Profit,
   PricePerGram,
-  Actions: createActionsColumn(),
+  Actions,
   Pagination: TablePagination,
 }) satisfies HairAssignedTableComponent

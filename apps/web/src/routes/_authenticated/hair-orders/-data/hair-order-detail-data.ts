@@ -15,13 +15,14 @@ export function availableHairOrdersListQueryOptions() {
   })
 }
 
-export function useHairOrderDetailData(hairOrderId: string) {
+export function useHairOrderDetailData(hairOrderId: string, availableHairOrdersEnabled: boolean) {
   const hairOrderQueryOptions = hairOrderDetailQueryOptions(hairOrderId)
   const availableHairOrdersQueryOptions = availableHairOrdersListQueryOptions()
   const { data: hairOrder } = useQuery(hairOrderQueryOptions)
-  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
-    availableHairOrdersQueryOptions,
-  )
+  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery({
+    ...availableHairOrdersQueryOptions,
+    enabled: availableHairOrdersEnabled,
+  })
   const assignedClientSummaryKeys = Array.from(
     new Set([
       ...(hairOrder?.hairAssigned ?? []).map((ha) => ha.client.id),

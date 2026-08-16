@@ -3,7 +3,6 @@ import type { ComponentProps } from "react"
 import { Button, Group, Pagination, Stack, Table, Text, TextInput } from "@mantine/core"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
-import { useState } from "react"
 
 import { CreateAppointmentDialog } from "@/components/appointments/create-appointment-dialog"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
@@ -20,11 +19,13 @@ export function CustomerAppointmentsPage({
   page,
   searchValue,
   data,
+  createDialogOpen,
   masterSearch,
   masterCustomersData,
   salonsData,
   createPending,
   onCreateAppointment,
+  onCreateDialogOpenChange,
   onMasterSearchChange,
   onSearchChange,
   onPageChange,
@@ -33,17 +34,17 @@ export function CustomerAppointmentsPage({
   page: number
   searchValue: string
   data: { items: AppointmentRow[]; totalCount: number } | undefined
+  createDialogOpen: boolean
   masterSearch: string
   masterCustomersData: OptionData | undefined
   salonsData: OptionData | undefined
   createPending: boolean
   onCreateAppointment: ComponentProps<typeof CreateAppointmentDialog>["onCreate"]
+  onCreateDialogOpenChange: (open: boolean) => void
   onMasterSearchChange: (search: string) => void
   onSearchChange: (search: string) => void
   onPageChange: (page: number) => void
 }) {
-  const [dialogOpen, setDialogOpen] = useState(false)
-
   const normalizedSearch = searchValue.trim()
   const masterOptions = (masterCustomersData?.items ?? []).map((customer) => ({
     value: customer.id,
@@ -78,7 +79,7 @@ export function CustomerAppointmentsPage({
               variant="default"
               size="sm"
               leftSection={<IconPlus size={12} />}
-              onClick={() => setDialogOpen(true)}
+              onClick={() => onCreateDialogOpenChange(true)}
             >
               New
             </Button>
@@ -134,13 +135,13 @@ export function CustomerAppointmentsPage({
         </Stack>
 
         <CreateAppointmentDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
+          open={createDialogOpen}
+          onOpenChange={onCreateDialogOpenChange}
           defaultClientId={customerId}
           loading={createPending}
           onCreate={(values) => {
             onCreateAppointment(values)
-            setDialogOpen(false)
+            onCreateDialogOpenChange(false)
           }}
           clientOptions={[]}
           masterOptions={masterOptions}

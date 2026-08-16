@@ -50,6 +50,42 @@ function renderAppointmentDetailPage(props: Partial<ComponentProps<typeof Appoin
     currenciesPresent: [],
     txDefaultCurrency: "EUR",
   } as never
+  const defaultProps = {
+    appointmentId: "appointment-1",
+    detailData,
+    transactionsPage: 1,
+    hairAssignedPage: 1,
+    createOpen: false,
+    pickPersonnelOpen: false,
+    changeMasterOpen: false,
+    pickPersonnelSearch: "",
+    pickPersonnelCustomersData: undefined,
+    masterCustomersData: { items: [] },
+    onTransactionsPageChange: () => {},
+    onHairAssignedPageChange: () => {},
+    onCreateOpenChange: () => {},
+    onPickPersonnelOpenChange: () => {},
+    onChangeMasterOpenChange: () => {},
+    onMasterSearchChange: () => {},
+    onPickPersonnelSearchChange: () => {},
+    createHairAssignedPending: false,
+    updateHairAssignedPending: false,
+    deleteHairAssignedPending: false,
+    createTransactionPending: false,
+    updateTransactionPending: false,
+    deleteTransactionPending: false,
+    updateAppointmentPending: false,
+    linkPersonnelPending: false,
+    onCreateHairAssigned: () => {},
+    onUpdateHairAssigned: () => {},
+    onDeleteHairAssigned: () => {},
+    onCreateTransaction: () => {},
+    onUpdateTransaction: () => {},
+    onDeleteTransaction: () => {},
+    onUpdateAppointment: () => {},
+    onUpdateMaster: () => {},
+    onLinkPersonnel: () => {},
+  } satisfies ComponentProps<typeof AppointmentDetailPage>
 
   return renderToStaticMarkup(
     createElement(
@@ -59,36 +95,9 @@ function renderAppointmentDetailPage(props: Partial<ComponentProps<typeof Appoin
         LocaleProvider,
         { value: { locale: "en-US", timeZone: "UTC" } },
         createElement(AppointmentDetailPage, {
-          appointmentId: "appointment-1",
-          detailData,
-          transactionsPage: 1,
-          hairAssignedPage: 1,
-          pickPersonnelSearch: "",
-          pickPersonnelCustomersData: undefined,
-          masterCustomersData: { items: [] },
-          onTransactionsPageChange: () => {},
-          onHairAssignedPageChange: () => {},
-          onMasterSearchChange: () => {},
-          onPickPersonnelSearchChange: () => {},
-          createHairAssignedPending: false,
-          updateHairAssignedPending: false,
-          deleteHairAssignedPending: false,
-          createTransactionPending: false,
-          updateTransactionPending: false,
-          deleteTransactionPending: false,
-          updateAppointmentPending: false,
-          linkPersonnelPending: false,
-          onCreateHairAssigned: () => {},
-          onUpdateHairAssigned: () => {},
-          onDeleteHairAssigned: () => {},
-          onCreateTransaction: () => {},
-          onUpdateTransaction: () => {},
-          onDeleteTransaction: () => {},
-          onUpdateAppointment: () => {},
-          onUpdateMaster: () => {},
-          onLinkPersonnel: () => {},
+          ...defaultProps,
           ...props,
-        }),
+        } as ComponentProps<typeof AppointmentDetailPage>),
       ),
     ),
   )
@@ -98,7 +107,7 @@ describe("AppointmentDetailPage", () => {
   it("clears master search before opening the change master dialog", () => {
     const source = readFileSync(new URL("./appointment-detail-page.tsx", import.meta.url), "utf8")
 
-    expect(source).toMatch(/onMasterSearchChange\(""\)[\s\S]*setChangeMasterOpen\(true\)/)
+    expect(source).toMatch(/onMasterSearchChange\(""\)[\s\S]*onChangeMasterOpenChange\(true\)/)
   })
 
   it("offers an appointment details edit action", () => {

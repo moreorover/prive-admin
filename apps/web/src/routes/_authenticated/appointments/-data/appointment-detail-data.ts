@@ -53,10 +53,12 @@ export function useAppointmentDetailData({
   appointmentId,
   hairAssignedPage,
   transactionsPage,
+  availableHairOrdersEnabled,
 }: {
   appointmentId: string
   hairAssignedPage: number
   transactionsPage: number
+  availableHairOrdersEnabled: boolean
 }) {
   const appointmentQueryOptions = appointmentDetailQueryOptions(appointmentId)
   const availableHairOrdersQueryOptions = availableHairOrdersListQueryOptions()
@@ -64,9 +66,10 @@ export function useAppointmentDetailData({
   const transactionsQueryOptions = appointmentTransactionsQueryOptions(appointmentId, transactionsPage)
 
   const { data: appointment } = useQuery(appointmentQueryOptions)
-  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
-    availableHairOrdersQueryOptions,
-  )
+  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery({
+    ...availableHairOrdersQueryOptions,
+    enabled: availableHairOrdersEnabled,
+  })
   const { data: hairAssignedData } = useQuery(hairAssignedQueryOptions)
   const { data: transactionsData } = useQuery(transactionsQueryOptions)
   const { data: userSettings } = useQuery(trpc.userSettings.get.queryOptions())
