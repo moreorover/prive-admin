@@ -12,6 +12,14 @@ catalogMode: prefer
 
 catalog:
   "@hono/trpc-server": 0.4.2
+  "@mantine/charts": 9.5.2
+  "@mantine/core": 9.5.2
+  "@mantine/dates": 9.5.2
+  "@mantine/form": 9.5.2
+  "@mantine/hooks": 9.5.2
+  "@mantine/modals": 9.5.2
+  "@mantine/notifications": 9.5.2
+  "@mantine/schedule": 9.5.2
   "@trpc/client": 11.18.0
   "@trpc/server": 11.18.0
   "@trpc/tanstack-react-query": 11.18.0

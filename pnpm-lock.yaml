@@ -208,6 +208,30 @@ catalogs:
     '@hono/trpc-server':
       specifier: 0.4.2
       version: 0.4.2
+    '@mantine/charts':
+      specifier: 9.5.2
+      version: 9.5.2
+    '@mantine/core':
+      specifier: 9.5.2
+      version: 9.5.2
+    '@mantine/dates':
+      specifier: 9.5.2
+      version: 9.5.2
+    '@mantine/form':
+      specifier: 9.5.2
+      version: 9.5.2
+    '@mantine/hooks':
+      specifier: 9.5.2
+      version: 9.5.2
+    '@mantine/modals':
+      specifier: 9.5.2
+      version: 9.5.2
+    '@mantine/notifications':
+      specifier: 9.5.2
+      version: 9.5.2
+    '@mantine/schedule':
+      specifier: 9.5.2
+      version: 9.5.2
     '@trpc/client':
       specifier: 11.18.0
       version: 11.18.0
@@ -332,25 +356,25 @@ importers:
   apps/web:
     dependencies:
       '@mantine/charts':
-        specifier: 9.5.2
+        specifier: 'catalog:'
         version: 9.5.2(@mantine/core@9.5.2(@mantine/hooks@9.5.2(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mantine/hooks@9.5.2(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(recharts@3.9.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@17.0.2)(react@19.2.8)(redux@5.0.1))
       '@mantine/core':
-        specifier: 9.5.2
+        specifier: 'catalog:'
         version: 9.5.2(@mantine/hooks@9.5.2(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@mantine/dates':
-        specifier: 9.5.2
+        specifier: 'catalog:'
         version: 9.5.2(@mantine/core@9.5.2(@mantine/hooks@9.5.2(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mantine/hooks@9.5.2(react@19.2.8))(dayjs@1.11.21)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@mantine/form':
-        specifier: 9.5.2
+        specifier: 'catalog:'
         version: 9.5.2(react@19.2.8)
       '@mantine/hooks':
-        specifier: 9.5.2
+        specifier: 'catalog:'
         version: 9.5.2(react@19.2.8)
       '@mantine/notifications':
-        specifier: 9.5.2
+        specifier: 'catalog:'
         version: 9.5.2(@mantine/core@9.5.2(@mantine/hooks@9.5.2(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mantine/hooks@9.5.2(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@mantine/schedule':
-        specifier: 9.5.2
+        specifier: 'catalog:'
         version: 9.5.2(@mantine/core@9.5.2(@mantine/hooks@9.5.2(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mantine/dates@9.5.2(@mantine/core@9.5.2(@mantine/hooks@9.5.2(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mantine/hooks@9.5.2(react@19.2.8))(dayjs@1.11.21)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mantine/hooks@9.5.2(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@prive-admin-tanstack/api':
         specifier: workspace:*
@@ -552,16 +576,16 @@ importers:
   packages/ui:
     dependencies:
       '@mantine/core':
-        specifier: 9.5.2
+        specifier: 'catalog:'
         version: 9.5.2(@mantine/hooks@9.5.2(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@mantine/hooks':
-        specifier: 9.5.2
+        specifier: 'catalog:'
         version: 9.5.2(react@19.2.8)
       '@mantine/modals':
-        specifier: 9.5.2
+        specifier: 'catalog:'
         version: 9.5.2(@mantine/core@9.5.2(@mantine/hooks@9.5.2(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mantine/hooks@9.5.2(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@mantine/notifications':
-        specifier: 9.5.2
+        specifier: 'catalog:'
         version: 9.5.2(@mantine/core@9.5.2(@mantine/hooks@9.5.2(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@mantine/hooks@9.5.2(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react:
         specifier: 'catalog:'
