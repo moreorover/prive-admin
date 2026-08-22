@@ -46,7 +46,7 @@ export default Alchemy.Stack(
     const names = cloudflareResourceNames(stage)
 
     const db = yield* Cloudflare.D1.Database("database", {
-      migrationsDir: "./packages/db/src/migrations",
+      migrations: "./packages/db/src/migrations",
       name: names.database,
     })
 
