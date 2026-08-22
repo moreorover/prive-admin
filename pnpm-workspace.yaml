@@ -2,12 +2,6 @@ packages:
   - apps/*
   - packages/*
 
-onlyBuiltDependencies:
-  - esbuild
-  - msgpackr-extract
-  - sharp
-  - workerd
-
 catalogMode: prefer
 
 catalog:
@@ -43,8 +37,6 @@ overrides:
 peerDependencyRules:
   allowAny:
     - vite
-  allowedVersions:
-    vite: "*"
 
 allowBuilds:
   esbuild: true
@@ -53,7 +45,6 @@ allowBuilds:
   workerd: true
 
 minimumReleaseAgeExclude:
-  - "@cloudflare/workers-types@5.20260801.1"
   - "@alchemy.run/cloudflare-runtime@2.0.0-beta.74"
   - "@alchemy.run/floci@2.0.0-beta.74"
   - "@alchemy.run/node-utils@2.0.0-beta.74"
