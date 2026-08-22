@@ -13,10 +13,10 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@mantine/core": "9.5.1",
-    "@mantine/hooks": "9.5.1",
-    "@mantine/modals": "9.5.1",
-    "@mantine/notifications": "9.5.1",
+    "@mantine/core": "9.5.2",
+    "@mantine/hooks": "9.5.2",
+    "@mantine/modals": "9.5.2",
+    "@mantine/notifications": "9.5.2",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
