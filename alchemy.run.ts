@@ -16,6 +16,22 @@ type CloudflareResourceNames = {
   webWorker: string
 }
 
+const workerObservability = {
+  enabled: true,
+  headSamplingRate: 1,
+  logs: {
+    enabled: true,
+    headSamplingRate: 1,
+    invocationLogs: true,
+    persist: true,
+  },
+  traces: {
+    enabled: true,
+    headSamplingRate: 1,
+    persist: true,
+  },
+} as const
+
 function requireEnv(name: string): string {
   const value = process.env[name]
 
@@ -88,6 +104,7 @@ export default Alchemy.Stack(
       },
       main: "./apps/server/src/index.ts",
       name: names.serverWorker,
+      observability: workerObservability,
     })
 
     const serverUrl = Output.map(server.url, (url) => url ?? "")
@@ -104,6 +121,7 @@ export default Alchemy.Stack(
         VITE_SERVER_URL: webServerUrl,
       },
       name: names.webWorker,
+      observability: workerObservability,
       rootDir: "./apps/web",
     })
 
