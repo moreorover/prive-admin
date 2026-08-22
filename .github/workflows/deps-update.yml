@@ -43,7 +43,7 @@ jobs:
           command: |
             set -eo pipefail
             log=$(mktemp)
-            vp dlx taze major -r -w --maturity-period 7 --maturity-period-exclude '@mantine/*' --concurrency 3 2>&1 | tee "$log"
+            vp dlx taze major -r -w --include-locked --maturity-period 7 --maturity-period-exclude '@mantine/*' --concurrency 3 2>&1 | tee "$log"
             if grep -q 'Timeout requesting' "$log"; then
               echo "::warning::taze hit registry timeouts for one or more packages; continuing with resolved updates"
             fi

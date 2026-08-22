@@ -24,13 +24,13 @@
   "dependencies": {
     "@prive-admin-tanstack/db": "workspace:*",
     "@prive-admin-tanstack/env": "workspace:*",
-    "archiver": "^8.0.0",
-    "csv-parse": "^7.0.2",
-    "drizzle-orm": "^0.45.2"
+    "archiver": "8.0.0",
+    "csv-parse": "7.0.2",
+    "drizzle-orm": "0.45.2"
   },
   "devDependencies": {
     "@prive-admin-tanstack/config": "workspace:*",
-    "@types/archiver": "^8.0.0",
+    "@types/archiver": "8.0.0",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   }
