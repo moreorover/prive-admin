@@ -3,7 +3,8 @@
   "tags": ["-lintignore"],
   "workspaces": {
     ".": {
-      "entry": ["alchemy.run.ts"]
+      "entry": ["alchemy.run.ts", "taze.config.js"],
+      "ignoreDependencies": ["taze"]
     },
     "apps/web": {
       "entry": ["src/routes/**/*.{ts,tsx}!", "react-doctor.config.json"],

@@ -35,18 +35,7 @@ jobs:
           DEPS_PAT: op://prive-admin/PAT prive-admin deps bot/token
 
       - name: Run taze major
-        uses: nick-fields/retry@v4
-        with:
-          timeout_minutes: 5
-          max_attempts: 3
-          shell: bash
-          command: |
-            set -eo pipefail
-            log=$(mktemp)
-            vp dlx taze major -r -w --include-locked --maturity-period 7 --maturity-period-exclude '@mantine/*' --concurrency 3 2>&1 | tee "$log"
-            if grep -q 'Timeout requesting' "$log"; then
-              echo "::warning::taze hit registry timeouts for one or more packages; continuing with resolved updates"
-            fi
+        run: vp dlx taze major -r -w
 
       - name: Update Lockfile
         run: vp install --no-frozen-lockfile
