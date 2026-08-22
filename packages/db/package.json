@@ -23,13 +23,13 @@
     "test:watch": "vp test"
   },
   "dependencies": {
-    "@paralleldrive/cuid2": "^3.3.0",
+    "@paralleldrive/cuid2": "3.3.0",
     "@prive-admin-tanstack/env": "workspace:*",
-    "drizzle-orm": "^0.45.2"
+    "drizzle-orm": "0.45.2"
   },
   "devDependencies": {
     "@prive-admin-tanstack/config": "workspace:*",
-    "drizzle-kit": "^0.31.10",
+    "drizzle-kit": "0.31.10",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
   }
