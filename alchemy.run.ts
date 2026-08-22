@@ -6,6 +6,8 @@ import { Stage } from "alchemy/Stage"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
 import * as Redacted from "effect/Redacted"
+import { copyFileSync, mkdirSync, readdirSync, rmSync } from "node:fs"
+import { join, resolve } from "node:path"
 
 type CloudflareResourceNames = {
   database: string
@@ -13,6 +15,22 @@ type CloudflareResourceNames = {
   uploadsBucket: string
   webWorker: string
 }
+
+const workerObservability = {
+  enabled: true,
+  headSamplingRate: 1,
+  logs: {
+    enabled: true,
+    headSamplingRate: 1,
+    invocationLogs: true,
+    persist: true,
+  },
+  traces: {
+    enabled: true,
+    headSamplingRate: 1,
+    persist: true,
+  },
+} as const
 
 function requireEnv(name: string): string {
   const value = process.env[name]
@@ -35,6 +53,22 @@ function cloudflareResourceNames(stage: string): CloudflareResourceNames {
   }
 }
 
+function syncAlchemyMigrations(): string {
+  const sourceDir = resolve(process.cwd(), "packages/db/src/migrations")
+  const targetDir = resolve(process.cwd(), ".tmp/alchemy-migrations")
+
+  rmSync(targetDir, { force: true, recursive: true })
+  mkdirSync(targetDir, { recursive: true })
+
+  for (const entry of readdirSync(sourceDir, { withFileTypes: true })) {
+    if (entry.isFile() && entry.name.endsWith(".sql")) {
+      copyFileSync(join(sourceDir, entry.name), join(targetDir, entry.name))
+    }
+  }
+
+  return ".tmp/alchemy-migrations"
+}
+
 export default Alchemy.Stack(
   "prive-admin",
   {
@@ -44,9 +78,10 @@ export default Alchemy.Stack(
   Effect.gen(function* () {
     const stage = yield* Stage
     const names = cloudflareResourceNames(stage)
+    const migrations = syncAlchemyMigrations()
 
     const db = yield* Cloudflare.D1.Database("database", {
-      migrationsDir: "./packages/db/src/migrations",
+      migrations,
       name: names.database,
     })
 
@@ -69,6 +104,7 @@ export default Alchemy.Stack(
       },
       main: "./apps/server/src/index.ts",
       name: names.serverWorker,
+      observability: workerObservability,
     })
 
     const serverUrl = Output.map(server.url, (url) => url ?? "")
@@ -85,6 +121,7 @@ export default Alchemy.Stack(
         VITE_SERVER_URL: webServerUrl,
       },
       name: names.webWorker,
+      observability: workerObservability,
       rootDir: "./apps/web",
     })
 
