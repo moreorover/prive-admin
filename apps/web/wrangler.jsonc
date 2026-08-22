@@ -9,39 +9,9 @@
   "env": {
     "dev": {
       "workers_dev": true,
-      "observability": {
-        "enabled": true,
-        "head_sampling_rate": 1,
-        "logs": {
-          "head_sampling_rate": 1,
-          "enabled": true,
-          "invocation_logs": true,
-          "persist": true,
-        },
-        "traces": {
-          "enabled": true,
-          "head_sampling_rate": 1,
-          "persist": true,
-        },
-      },
     },
     "prod": {
       "workers_dev": true,
-      "observability": {
-        "enabled": true,
-        "head_sampling_rate": 1,
-        "logs": {
-          "head_sampling_rate": 1,
-          "enabled": true,
-          "invocation_logs": true,
-          "persist": true,
-        },
-        "traces": {
-          "enabled": true,
-          "head_sampling_rate": 1,
-          "persist": true,
-        },
-      },
     },
   },
 }
