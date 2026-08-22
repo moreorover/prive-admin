@@ -34,18 +34,18 @@
     "dev": {
       "workers_dev": true,
       "observability": {
-        "enabled": false,
+        "enabled": true,
         "head_sampling_rate": 1,
         "logs": {
           "head_sampling_rate": 1,
-          "enabled": false,
-          "invocation_logs": false,
-          "persist": false,
+          "enabled": true,
+          "invocation_logs": true,
+          "persist": true,
         },
         "traces": {
-          "enabled": false,
+          "enabled": true,
           "head_sampling_rate": 1,
-          "persist": false,
+          "persist": true,
         },
       },
       "secrets": {
