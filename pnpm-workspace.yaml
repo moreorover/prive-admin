@@ -2,6 +2,8 @@ packages:
   - apps/*
   - packages/*
 
+minimumReleaseAge: 0
+
 catalogMode: prefer
 
 catalog:
@@ -43,18 +45,3 @@ allowBuilds:
   msgpackr-extract: true
   sharp: true
   workerd: true
-
-minimumReleaseAgeExclude:
-  - "@alchemy.run/cloudflare-runtime@2.0.0-beta.74"
-  - "@alchemy.run/floci@2.0.0-beta.74"
-  - "@alchemy.run/node-utils@2.0.0-beta.74"
-  - alchemy@2.0.0-beta.74
-  - "@mantine/charts@9.5.2"
-  - "@mantine/core@9.5.2"
-  - "@mantine/dates@9.5.2"
-  - "@mantine/form@9.5.2"
-  - "@mantine/hooks@9.5.2"
-  - "@mantine/modals@9.5.2"
-  - "@mantine/notifications@9.5.2"
-  - "@mantine/schedule@9.5.2"
-  - "@mantine/store@9.5.2"
