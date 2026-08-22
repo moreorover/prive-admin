@@ -7,5 +7,4 @@ export default defineConfig({
   fastNpmMetaApiEndpoint: "https://npm.antfu.dev/",
   includeLocked: true,
   maturityPeriod: 7,
-  maturityPeriodExclude: ["@mantine/*", "better-auth"],
 })
