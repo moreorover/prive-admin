@@ -41,12 +41,7 @@ jobs:
           max_attempts: 3
           shell: bash
           command: |
-            set -eo pipefail
-            log=$(mktemp)
-            vp dlx taze major -r -w 2>&1 | tee "$log"
-            if grep -q 'Timeout requesting' "$log"; then
-              echo "::warning::taze hit registry timeouts for one or more packages; continuing with resolved updates"
-            fi
+            vp dlx taze major -r -w
 
       - name: Update Lockfile
         run: vp install --no-frozen-lockfile
