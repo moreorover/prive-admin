@@ -9,7 +9,7 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "5.20260815.1",
+    "@cloudflare/workers-types": "5.20260829.1",
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:"
