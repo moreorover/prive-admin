@@ -25,12 +25,12 @@
     "prepare": "vp config"
   },
   "devDependencies": {
-    "@effect/platform-node": "4.0.0-rc.111",
+    "@effect/platform-node": "4.0.0-rc.115",
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
-    "alchemy": "2.0.0-beta.74",
-    "effect": "4.0.0-rc.111",
-    "knip": "6.32.2",
+    "alchemy": "2.0.0-beta.77",
+    "effect": "4.0.0-rc.115",
+    "knip": "6.35.1",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
@@ -39,5 +39,5 @@
   "engines": {
     "node": ">=24.18.0"
   },
-  "packageManager": "pnpm@11.22.0"
+  "packageManager": "pnpm@12.4.1"
 }
