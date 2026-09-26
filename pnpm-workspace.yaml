@@ -8,30 +8,30 @@ catalogMode: prefer
 
 catalog:
   "@hono/trpc-server": 0.4.2
-  "@mantine/charts": 9.5.2
-  "@mantine/core": 9.5.2
-  "@mantine/dates": 9.5.2
-  "@mantine/form": 9.5.2
-  "@mantine/hooks": 9.5.2
-  "@mantine/modals": 9.5.2
-  "@mantine/notifications": 9.5.2
-  "@mantine/schedule": 9.5.2
-  "@trpc/client": 11.18.0
-  "@trpc/server": 11.18.0
-  "@trpc/tanstack-react-query": 11.18.0
-  "@types/node": 26.2.0
-  "@types/react": 19.2.18
-  "@types/react-dom": 19.2.4
-  better-auth: 1.7.1
-  hono: 4.13.2
-  react: 19.2.8
-  react-dom: 19.2.8
-  tsdown: 0.22.14
-  tsx: 4.23.11
+  "@mantine/charts": 9.6.2
+  "@mantine/core": 9.6.2
+  "@mantine/dates": 9.6.2
+  "@mantine/form": 9.6.2
+  "@mantine/hooks": 9.6.2
+  "@mantine/modals": 9.6.2
+  "@mantine/notifications": 9.6.2
+  "@mantine/schedule": 9.6.2
+  "@trpc/client": 11.19.0
+  "@trpc/server": 11.19.0
+  "@trpc/tanstack-react-query": 11.19.0
+  "@types/node": 26.6.2
+  "@types/react": 19.3.0
+  "@types/react-dom": 19.3.0
+  better-auth: 1.7.6
+  hono: 4.13.8
+  react: 19.3.0
+  react-dom: 19.3.0
+  tsdown: 0.23.0
+  tsx: 4.23.13
   typescript: 7.0.2
-  vite: npm:@voidzero-dev/vite-plus-core@0.2.9
-  vite-plus: 0.2.9
-  zod: 4.4.3
+  vite: npm:@voidzero-dev/vite-plus-core@0.3.3
+  vite-plus: 0.3.3
+  zod: 4.6.5
 
 overrides:
   vite: "catalog:"
