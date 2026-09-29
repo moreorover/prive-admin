@@ -18,7 +18,7 @@
     "hono": "catalog:"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "2.0.0-beta.sha-ad79608dd",
+    "@cloudflare/vite-plugin": "catalog:",
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
