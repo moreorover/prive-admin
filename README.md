@@ -21,7 +21,8 @@ vp install
 
 ## Local Development
 
-This project uses Cloudflare Workers with D1 and Wrangler for local and remote runtime behavior.
+This project uses Cloudflare Workers with D1. Wrangler remains the default local runtime and deployment fallback;
+the new Cloudflare `cf` CLI is available as an opt-in development pilot for the server Worker.
 
 1. Create local Worker secrets:
 
@@ -97,6 +98,12 @@ prive-admin-tanstack/
 - `vp run build`: Build all applications
 - `vp run dev:web`: Start only the web application
 - `vp run dev:server`: Start only the server Worker with Wrangler
+- `vp run dev:server:cf`: Start the server Worker with the Cloudflare `cf` Vite pilot
+
+The pilot's configuration, type generation, D1 migration, and build steps pass. The current `cf` beta still fails
+when starting this Worker at runtime in the beta Vite runner, so Wrangler remains the default until that upstream
+compatibility issue is resolved.
+
 - `vp run check-types`: Check TypeScript types across all apps
 - `vp run db:generate`: Generate D1-compatible Drizzle migrations
 - `vp run db:migrate`: Run database migrations through Drizzle tooling

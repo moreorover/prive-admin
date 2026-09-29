@@ -45,6 +45,8 @@ lerna-debug.log*
 .alchemy
 .wrangler/
 **/.wrangler/
+.cloudflare/
+**/.cloudflare/
 
 # Testing
 coverage
