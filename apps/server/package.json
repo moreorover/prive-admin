@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsdown",
     "check-types": "tsc --noEmit",
-    "dev": "wrangler d1 migrations apply prive-admin-dev --local && wrangler dev"
+    "dev": "wrangler d1 migrations apply prive-admin-dev --local && wrangler dev",
+    "dev:cf": "cf d1 migrations apply 551ac6ba-90c7-4656-bb31-f485b89edb72 --local --mode dev --dir ../../packages/db/src/migrations && cf dev --mode dev"
   },
   "dependencies": {
     "@hono/trpc-server": "catalog:",
@@ -17,6 +18,7 @@
     "hono": "catalog:"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "catalog:",
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
     "tsdown": "catalog:",

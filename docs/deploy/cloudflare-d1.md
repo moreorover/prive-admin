@@ -92,7 +92,9 @@ Alchemy owns Cloudflare app infrastructure for dev, production, and PR preview s
 - D1 databases and migrations.
 - R2 uploads buckets and Worker bindings.
 
-Wrangler remains local tooling for development, D1 copy operations, and manual migration fallback commands.
+Wrangler remains the default local tooling, D1 copy utility, and manual migration fallback. The server also has an
+opt-in `cf`/Vite pilot via `vp run dev:server:cf`; that path uses `cf d1 migrations apply` with the same migration
+directory before starting the Vite Worker runtime.
 
 ## Validation
 
