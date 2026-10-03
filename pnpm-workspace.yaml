@@ -2,8 +2,6 @@ packages:
   - apps/*
   - packages/*
 
-minimumReleaseAge: 0
-
 catalogMode: prefer
 
 catalog:
@@ -46,14 +44,3 @@ allowBuilds:
   msgpackr-extract: true
   sharp: true
   workerd: true
-minimumReleaseAgeExclude:
-  - vite-plus
-  - "@voidzero-dev/*"
-  - oxlint
-  - "@oxlint/*"
-  - oxlint-tsgolint
-  - "@oxlint-tsgolint/*"
-  - oxfmt
-  - "@oxfmt/*"
-  - vitest
-  - "@vitest/*"
