@@ -6,7 +6,9 @@ import { Link } from "@tanstack/react-router"
 import dayjs from "dayjs"
 import { createContext, useContext } from "react"
 
-import { CompoundTable, type CompoundTableColumnComponent } from "@/components/compound-table"
+import type { CompoundTableColumnComponent } from "@/components/compound-table-helpers"
+
+import { CompoundTable } from "@/components/compound-table"
 import { ResourcePagination } from "@/components/resource-pagination"
 import { formatMinor } from "@/lib/currency"
 

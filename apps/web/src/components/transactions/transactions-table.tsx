@@ -5,7 +5,9 @@ import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { createContext, useContext } from "react"
 
-import { CompoundTable, type CompoundTableColumnComponent } from "@/components/compound-table"
+import type { CompoundTableColumnComponent } from "@/components/compound-table-helpers"
+
+import { CompoundTable } from "@/components/compound-table"
 import { ResourcePagination } from "@/components/resource-pagination"
 import { type Currency, formatMinor } from "@/lib/currency"
 

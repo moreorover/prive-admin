@@ -5,8 +5,10 @@ import { IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { createContext, useContext } from "react"
 
+import type { CompoundTableColumnComponent } from "@/components/compound-table-helpers"
+
 import { ClientDate } from "@/components/client-date"
-import { CompoundTable, type CompoundTableColumnComponent } from "@/components/compound-table"
+import { CompoundTable } from "@/components/compound-table"
 import { ResourcePagination } from "@/components/resource-pagination"
 
 import { getHairAssignedSource } from "./hair-assigned-source"
