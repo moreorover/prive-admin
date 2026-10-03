@@ -18,6 +18,10 @@
     "./routers": {
       "types": "./src/routers/index.ts",
       "default": "./src/routers/index.ts"
+    },
+    "./routers/customers": {
+      "types": "./src/routers/customers.ts",
+      "default": "./src/routers/customers.ts"
     }
   },
   "scripts": {

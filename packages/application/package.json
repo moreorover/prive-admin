@@ -14,6 +14,10 @@
     "./services": {
       "types": "./src/services/index.ts",
       "default": "./src/services/index.ts"
+    },
+    "./services/customers": {
+      "types": "./src/services/customers.ts",
+      "default": "./src/services/customers.ts"
     }
   },
   "scripts": {
