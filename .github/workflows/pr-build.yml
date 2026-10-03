@@ -38,3 +38,12 @@ jobs:
 
       - name: Run Build
         run: vp run build
+
+      - name: Install Playwright Chromium
+        run: vp run --filter web playwright:install:ci
+
+      - name: Run Storybook Component Tests
+        run: vp run --filter web test-storybook
+
+      - name: Build Storybook
+        run: vp run --filter web build-storybook
