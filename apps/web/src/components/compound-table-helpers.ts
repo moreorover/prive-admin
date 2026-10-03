@@ -8,7 +8,7 @@ export type CompoundTableColumnComponent<Props = object> = ((props: Props) => Re
   Cell: (props: Props) => ReactElement
 }
 
-type CompoundTableColumnElement = ReactElement<object, CompoundTableColumnComponent<object>>
+export type CompoundTableColumnElement = ReactElement<object, CompoundTableColumnComponent<object>>
 
 type CompoundTablePaginationComponent<Props = object> = ((props: Props) => ReactElement) & {
   isTablePagination: true
