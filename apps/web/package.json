@@ -9,6 +9,7 @@
     "serve": "vp preview",
     "dev": "VITE_SERVER_URL=http://localhost:3000 vp dev",
     "playwright:install": "playwright install chromium",
+    "playwright:install:ci": "playwright install --with-deps chromium",
     "storybook": "storybook dev -p 6006",
     "test-storybook": "vp test --config vitest.config.ts --project=storybook --run"
   },

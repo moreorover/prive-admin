@@ -27,6 +27,15 @@ jobs:
       - name: Install Dependencies
         run: vp install --frozen-lockfile
 
+      - name: Install Playwright Chromium
+        run: vp run --filter web playwright:install:ci
+
+      - name: Run Storybook Component Tests
+        run: vp run --filter web test-storybook
+
+      - name: Build Storybook
+        run: vp run --filter web build-storybook
+
       - name: Check
         run: vp check
 
