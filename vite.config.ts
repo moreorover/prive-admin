@@ -89,7 +89,7 @@ export default defineConfig({
       ],
       include: ["apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts", "packages/**/*.tsx"],
       provider: "v8",
-      reporter: ["text", "json-summary", "lcov", "cobertura"],
+      reporter: ["text", "json-summary", "html", "lcov", "cobertura"],
       reportsDirectory: "./coverage",
     },
     include: ["{apps,packages}/**/src/**/*.test.{ts,tsx}"],
