@@ -4,7 +4,7 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "build": "tsdown",
+    "build": "vp pack",
     "check-types": "tsc --noEmit",
     "dev": "wrangler d1 migrations apply prive-admin-dev --local && wrangler dev"
   },
@@ -19,7 +19,6 @@
   "devDependencies": {
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
-    "tsdown": "catalog:",
     "typescript": "catalog:",
     "wrangler": "4.123.0"
   }

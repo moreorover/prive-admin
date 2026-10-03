@@ -61,3 +61,4 @@ backups/*.csv
 .tmp/
 tmp
 temp
+.vitest/
