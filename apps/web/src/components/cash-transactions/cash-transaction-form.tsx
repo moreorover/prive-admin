@@ -80,6 +80,8 @@ export function CashTransactionForm({
     customers.map((customer) => ({ value: customer.id, label: customer.name })),
     selectedCustomerOption ?? initialCustomerOption,
   )
+  const selectedCustomerLabel =
+    selectedCustomerOption?.value === form.values.customerId ? selectedCustomerOption.label : undefined
 
   return (
     <form
@@ -99,7 +101,7 @@ export function CashTransactionForm({
           label="Customer"
           placeholder="Select a customer..."
           searchable
-          searchValue={customerSearch}
+          searchValue={customerSearch || selectedCustomerLabel || ""}
           onSearchChange={onCustomerSearchChange}
           data={customerOptions}
           value={form.values.customerId}

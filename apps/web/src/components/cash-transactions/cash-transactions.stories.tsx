@@ -57,6 +57,26 @@ export const Form: Story = {
   },
 }
 
+export const SelectCustomer: Story = {
+  render: () => (
+    <CashTransactionForm
+      customers={customers}
+      customerSearch=""
+      onCustomerSearchChange={fn()}
+      initialValues={{ ...formValues, customerId: "" }}
+      submitLabel="Save cash transaction"
+      onSubmit={fn()}
+    />
+  ),
+  play: async ({ canvas, userEvent }) => {
+    const customer = canvas.getByRole("combobox", { name: "Customer" })
+    await userEvent.click(customer)
+    await userEvent.type(customer, "Amelia")
+    await userEvent.keyboard("{ArrowDown}{Enter}")
+    await expect(customer).toHaveValue("Amelia Hart")
+  },
+}
+
 export const Table: Story = {
   render: () => (
     <CashTransactionsTable items={[transaction]}>
