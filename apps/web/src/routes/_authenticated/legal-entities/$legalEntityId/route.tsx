@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { TRPCClientError } from "@trpc/client"
 
 import { trpc } from "@/utils/trpc"
 
@@ -9,14 +8,17 @@ import { LegalEntityLayout } from "./-components/route-page"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId")({
   component: RouteComponent,
+  loader: async ({ context, params }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(trpc.legalEntities.get.queryOptions({ id: params.legalEntityId })),
+      context.queryClient.ensureQueryData(trpc.legalEntities.list.queryOptions({ pageSize: 100 })),
+    ])
+  },
 })
 
 function RouteComponent() {
   const { legalEntityId } = Route.useParams()
-  const legalEntityQuery = useQuery({
-    ...trpc.legalEntities.get.queryOptions({ id: legalEntityId }),
-    retry: (failureCount, error) => !isNotFoundError(error) && failureCount < 3,
-  })
+  const legalEntityQuery = useQuery(trpc.legalEntities.get.queryOptions({ id: legalEntityId }))
   const legalEntitiesData = useQuery(trpc.legalEntities.list.queryOptions({ pageSize: 100 })).data
   const save = useUpdateLegalEntityAction({ legalEntityId })
 
@@ -28,8 +30,4 @@ function RouteComponent() {
       onSaveLegalEntity={(values) => save.mutateAsync(values)}
     />
   )
-}
-
-function isNotFoundError(error: unknown) {
-  return error instanceof TRPCClientError && error.data?.code === "NOT_FOUND"
 }

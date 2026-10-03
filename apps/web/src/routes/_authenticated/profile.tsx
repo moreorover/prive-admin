@@ -15,6 +15,15 @@ import {
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: RouteComponent,
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData({
+        queryKey: sessionsQueryKey,
+        queryFn: () => authClient.listSessions(),
+      }),
+      context.queryClient.ensureQueryData(trpc.userSettings.get.queryOptions()),
+    ])
+  },
 })
 
 function RouteComponent() {
