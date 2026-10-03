@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@prive-admin-tanstack/config": "workspace:*",
-    "drizzle-kit": "0.31.10",
+    "drizzle-kit": "0.31.11",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
   }
