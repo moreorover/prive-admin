@@ -32,6 +32,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@storybook/tanstack-react": "^10.6.0",
     "@tanstack/react-router-devtools": "1.167.2",
     "@tanstack/router-plugin": "1.168.40",
     "@types/react": "catalog:",
@@ -41,6 +42,7 @@
     "postcss": "8.5.28",
     "postcss-preset-mantine": "1.18.0",
     "postcss-simple-vars": "7.0.1",
+    "storybook": "^10.6.0",
     "typescript": "catalog:",
     "vite-plus": "catalog:",
     "wrangler": "4.141.0"
