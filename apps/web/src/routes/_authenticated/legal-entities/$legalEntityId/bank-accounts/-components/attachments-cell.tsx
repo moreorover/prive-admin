@@ -9,16 +9,20 @@ type AttachmentOption = {
   contentType: string
 }
 
+export type AttachmentPendingState = {
+  assign: boolean
+  remove: boolean
+  unassign: boolean
+  upload: boolean
+}
+
 export function AttachmentsCell({
   opened,
   count,
   attachments,
   attachmentsLoading,
   unassignedAttachments,
-  assignLoading,
-  removeLoading,
-  unassignLoading,
-  uploadLoading,
+  pending,
   onOpenChange,
   onAssign,
   onRemove,
@@ -30,10 +34,7 @@ export function AttachmentsCell({
   attachments: AttachmentOption[]
   attachmentsLoading: boolean
   unassignedAttachments: AttachmentOption[]
-  assignLoading: boolean
-  removeLoading: boolean
-  unassignLoading: boolean
-  uploadLoading: boolean
+  pending: AttachmentPendingState
   onOpenChange: (opened: boolean) => void
   onAssign: (attachmentId: string) => void
   onRemove: (attachmentId: string) => void
@@ -86,7 +87,7 @@ export function AttachmentsCell({
                     size="sm"
                     variant="subtle"
                     onClick={() => onUnassign(a.id)}
-                    loading={unassignLoading}
+                    loading={pending.unassign}
                     aria-label="Unassign"
                   >
                     <IconLinkOff size={14} />
@@ -97,7 +98,7 @@ export function AttachmentsCell({
                   variant="subtle"
                   color="red"
                   onClick={() => onRemove(a.id)}
-                  loading={removeLoading}
+                  loading={pending.remove}
                   aria-label="Delete"
                 >
                   <IconTrash size={14} />
@@ -120,14 +121,14 @@ export function AttachmentsCell({
               onChange={(v) => {
                 if (v) onAssign(v)
               }}
-              disabled={assignLoading}
+              disabled={pending.assign}
               comboboxProps={{ withinPortal: false }}
             />
           )}
           <FileInput
             placeholder="Upload new"
             size="xs"
-            disabled={uploadLoading}
+            disabled={pending.upload}
             value={null}
             onChange={(f) => {
               if (f) onUpload(f)

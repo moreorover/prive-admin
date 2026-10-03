@@ -24,7 +24,7 @@ import { type Currency, formatMinor } from "@/lib/currency"
 import { apiUrl } from "@/utils/server-url"
 
 import { type BankAccountFormValues } from "../-actions/bank-account-actions"
-import { AttachmentsCell } from "./attachments-cell"
+import { AttachmentsCell, type AttachmentPendingState } from "./attachments-cell"
 import { BankAccountNewForm, EditBankAccountModal } from "./bank-account-form-modals"
 import { BankAccountSummaryCard } from "./bank-account-summary-card"
 import { BankStatementImportCard, type BankStatementImportResult } from "./bank-statement-import-card"
@@ -384,10 +384,14 @@ function BankAccountShow({
                         attachments={openAttachmentEntryId === e.id ? attachments : []}
                         attachmentsLoading={openAttachmentEntryId === e.id && attachmentsLoading}
                         unassignedAttachments={openAttachmentEntryId === e.id ? unassignedAttachments : []}
-                        assignLoading={assignPending}
-                        removeLoading={removePending}
-                        unassignLoading={unassignPending}
-                        uploadLoading={uploadingAttachmentEntryId === e.id}
+                        pending={
+                          {
+                            assign: assignPending,
+                            remove: removePending,
+                            unassign: unassignPending,
+                            upload: uploadingAttachmentEntryId === e.id,
+                          } satisfies AttachmentPendingState
+                        }
                         onOpenChange={(opened) => onOpenAttachmentEntryChange(opened ? e.id : null)}
                         onAssign={(attachmentId) => onAssign(attachmentId, e.id)}
                         onRemove={onRemove}
