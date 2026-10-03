@@ -1,10 +1,7 @@
 import {
   ActionIcon,
-  Alert,
-  Anchor,
   Button,
   Card,
-  FileInput,
   Group,
   Menu,
   Pagination,
@@ -19,7 +16,6 @@ import { MonthPickerInput } from "@mantine/dates"
 import { useDisclosure } from "@mantine/hooks"
 import { notifications } from "@mantine/notifications"
 import { IconDotsVertical, IconDownload } from "@tabler/icons-react"
-import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { type AttachmentPreview } from "@/components/attachment-preview"
@@ -29,8 +25,9 @@ import { apiUrl } from "@/utils/server-url"
 
 import { type BankAccountFormValues } from "../-actions/bank-account-actions"
 import { AttachmentsCell } from "./attachments-cell"
-import { Field } from "./bank-account-fields"
 import { BankAccountNewForm, EditBankAccountModal } from "./bank-account-form-modals"
+import { BankAccountSummaryCard } from "./bank-account-summary-card"
+import { BankStatementImportCard, type BankStatementImportResult } from "./bank-statement-import-card"
 
 export const STATEMENT_ENTRIES_PAGE_SIZE = 25
 
@@ -47,7 +44,7 @@ type StatementEntry = {
   status: string
   bankAccount?: { displayName: string | null } | null
 }
-type BankAccount = {
+export type BankAccount = {
   id: string
   legalEntityId: string
   iban: string
@@ -235,12 +232,7 @@ function BankAccountShow({
 }) {
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
   const [file, setFile] = useState<File | null>(null)
-  const [importResult, setImportResult] = useState<{
-    accountIban: string
-    total: number
-    inserted: number
-    skipped: number
-  } | null>(null)
+  const [importResult, setImportResult] = useState<BankStatementImportResult | null>(null)
   const [exportMonth, setExportMonth] = useState<Date | null>(() => {
     const d = new Date()
     return new Date(d.getFullYear(), d.getMonth(), 1)
@@ -286,59 +278,15 @@ function BankAccountShow({
           </Button>
         </Group>
 
-        <Card withBorder>
-          <Stack gap="xs">
-            <Field label="Display name" value={bankAccount?.displayName} />
-            <Field
-              label="Legal entity"
-              value={
-                bankAccount?.legalEntity ? (
-                  <Anchor
-                    renderRoot={(props) => (
-                      <Link
-                        to="/legal-entities/$legalEntityId"
-                        params={{ legalEntityId: bankAccount.legalEntity!.id }}
-                        {...props}
-                      />
-                    )}
-                  >
-                    {bankAccount.legalEntity.name}
-                  </Anchor>
-                ) : (
-                  "—"
-                )
-              }
-            />
-            <Field label="IBAN" value={bankAccount ? <code>{bankAccount.iban}</code> : undefined} />
-            <Field label="Currency" value={bankAccount?.currency} />
-            <Field label="Bank" value={bankAccount?.bankName ?? "—"} />
-            <Field label="SWIFT" value={bankAccount?.swift ?? "—"} />
-          </Stack>
-        </Card>
+        <BankAccountSummaryCard bankAccount={bankAccount} />
 
-        <Card withBorder>
-          <Stack>
-            <Text fw={500}>Upload bank statement (SEB or Swedbank CSV)</Text>
-            <Group align="end">
-              <FileInput
-                placeholder="Pick a .csv file"
-                value={file}
-                onChange={setFile}
-                accept=".csv,text/csv"
-                w={400}
-              />
-              <Button onClick={handleUpload} loading={importPending} disabled={!file}>
-                Import
-              </Button>
-            </Group>
-            {importResult && (
-              <Alert variant="light" color="green">
-                IBAN <code>{importResult.accountIban}</code>: imported {importResult.inserted} new entries, skipped{" "}
-                {importResult.skipped} duplicates (total rows {importResult.total}).
-              </Alert>
-            )}
-          </Stack>
-        </Card>
+        <BankStatementImportCard
+          file={file}
+          onFileChange={setFile}
+          onImport={handleUpload}
+          importPending={importPending}
+          importResult={importResult}
+        />
 
         <Group align="end" justify="space-between">
           <Select
