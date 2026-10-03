@@ -1,49 +1,25 @@
-import {
-  ActionIcon,
-  Button,
-  Card,
-  Group,
-  Menu,
-  Pagination,
-  Popover,
-  Select,
-  Stack,
-  Table,
-  Text,
-  Title,
-} from "@mantine/core"
+import { Button, Group, Popover, Select, Stack, Text, Title } from "@mantine/core"
 import { MonthPickerInput } from "@mantine/dates"
 import { useDisclosure } from "@mantine/hooks"
 import { notifications } from "@mantine/notifications"
-import { IconDotsVertical, IconDownload } from "@tabler/icons-react"
+import { IconDownload } from "@tabler/icons-react"
 import { useState } from "react"
 
 import { type AttachmentPreview } from "@/components/attachment-preview"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
-import { type Currency, formatMinor } from "@/lib/currency"
+import { type Currency } from "@/lib/currency"
 import { apiUrl } from "@/utils/server-url"
 
 import { type BankAccountFormValues } from "../-actions/bank-account-actions"
-import { AttachmentsCell, type AttachmentPendingState } from "./attachments-cell"
 import { BankAccountNewForm, EditBankAccountModal } from "./bank-account-form-modals"
 import { BankAccountSummaryCard } from "./bank-account-summary-card"
+import { BankStatementEntriesCard, type StatementEntry } from "./bank-statement-entries-card"
 import { BankStatementImportCard, type BankStatementImportResult } from "./bank-statement-import-card"
 
 export const STATEMENT_ENTRIES_PAGE_SIZE = 25
 
 type LegalEntityOption = { id: string; name: string }
 type AttachmentRow = { attachment: AttachmentPreview }
-type StatementEntry = {
-  id: string
-  date: string
-  amount: number
-  currency: string
-  direction: string
-  counterpartyName: string | null
-  purpose: string | null
-  status: string
-  bankAccount?: { displayName: string | null } | null
-}
 export type BankAccount = {
   id: string
   legalEntityId: string
@@ -339,112 +315,32 @@ function BankAccountShow({
           </Popover>
         </Group>
 
-        <Card withBorder>
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Date</Table.Th>
-                <Table.Th ta="right">Amount</Table.Th>
-                <Table.Th>Counterparty</Table.Th>
-                <Table.Th>Purpose</Table.Th>
-                <Table.Th ta="center" w={60}>
-                  Files
-                </Table.Th>
-                <Table.Th />
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {entries.map((e) => {
-                const sign = e.direction === "C" ? "+" : "−"
-                const color = e.direction === "C" ? "teal" : "red"
-                return (
-                  <Table.Tr key={e.id}>
-                    <Table.Td style={{ whiteSpace: "nowrap" }}>
-                      <Text size="sm">{e.date}</Text>
-                      <Text size="xs" c="dimmed">
-                        {e.bankAccount?.displayName}
-                      </Text>
-                    </Table.Td>
-                    <Table.Td ta="right" style={{ whiteSpace: "nowrap" }}>
-                      <Text size="sm" fw={500} c={color}>
-                        {sign}
-                        {formatMinor(e.amount, e.currency as Currency)}
-                      </Text>
-                    </Table.Td>
-                    <Table.Td>{e.counterpartyName ?? "—"}</Table.Td>
-                    <Table.Td>
-                      <Text size="xs" lineClamp={2}>
-                        {e.purpose ?? "—"}
-                      </Text>
-                    </Table.Td>
-                    <Table.Td ta="center">
-                      <AttachmentsCell
-                        opened={openAttachmentEntryId === e.id}
-                        count={attachmentCounts?.[e.id] ?? 0}
-                        attachments={openAttachmentEntryId === e.id ? attachments : []}
-                        attachmentsLoading={openAttachmentEntryId === e.id && attachmentsLoading}
-                        unassignedAttachments={openAttachmentEntryId === e.id ? unassignedAttachments : []}
-                        pending={
-                          {
-                            assign: assignPending,
-                            remove: removePending,
-                            unassign: unassignPending,
-                            upload: uploadingAttachmentEntryId === e.id,
-                          } satisfies AttachmentPendingState
-                        }
-                        onOpenChange={(opened) => onOpenAttachmentEntryChange(opened ? e.id : null)}
-                        onAssign={(attachmentId) => onAssign(attachmentId, e.id)}
-                        onRemove={onRemove}
-                        onUnassign={onUnassign}
-                        onUpload={(file) => void handleAttachmentUpload(file, e.id)}
-                      />
-                    </Table.Td>
-                    <Table.Td ta="right">
-                      <Menu position="bottom-end" withinPortal>
-                        <Menu.Target>
-                          <ActionIcon variant="subtle" aria-label="Actions">
-                            <IconDotsVertical size={16} />
-                          </ActionIcon>
-                        </Menu.Target>
-                        <Menu.Dropdown>
-                          {e.status === "PENDING" ? (
-                            <Menu.Item color="gray" disabled={ignorePending} onClick={() => onIgnore(e.id)}>
-                              Ignore
-                            </Menu.Item>
-                          ) : (
-                            <Menu.Item disabled={undoPending} onClick={() => onUndo(e.id)}>
-                              Undo ({e.status})
-                            </Menu.Item>
-                          )}
-                        </Menu.Dropdown>
-                      </Menu>
-                    </Table.Td>
-                  </Table.Tr>
-                )
-              })}
-              {entries.length === 0 && (
-                <Table.Tr>
-                  <Table.Td colSpan={6} ta="center" c="dimmed">
-                    No entries.
-                  </Table.Td>
-                </Table.Tr>
-              )}
-            </Table.Tbody>
-          </Table>
-          {showEntriesPagination && (
-            <Group justify="space-between" mt="md">
-              <Text size="sm" c="dimmed">
-                {entriesTotalCount} entr{entriesTotalCount === 1 ? "y" : "ies"} · Page{" "}
-                {Math.min(entriesPage, entriesTotalPages)} of {entriesTotalPages}
-              </Text>
-              <Pagination
-                total={entriesTotalPages}
-                value={Math.min(entriesPage, entriesTotalPages)}
-                onChange={onEntriesPageChange}
-              />
-            </Group>
-          )}
-        </Card>
+        <BankStatementEntriesCard
+          entries={entries}
+          entriesTotalCount={entriesTotalCount}
+          entriesTotalPages={entriesTotalPages}
+          showPagination={showEntriesPagination}
+          page={entriesPage}
+          attachmentCounts={attachmentCounts}
+          attachments={attachments}
+          attachmentsLoading={attachmentsLoading}
+          unassignedAttachments={unassignedAttachments}
+          openAttachmentEntryId={openAttachmentEntryId}
+          uploadingAttachmentEntryId={uploadingAttachmentEntryId}
+          assignPending={assignPending}
+          removePending={removePending}
+          unassignPending={unassignPending}
+          ignorePending={ignorePending}
+          undoPending={undoPending}
+          onPageChange={onEntriesPageChange}
+          onOpenAttachmentEntryChange={onOpenAttachmentEntryChange}
+          onAssign={onAssign}
+          onRemove={onRemove}
+          onUnassign={onUnassign}
+          onUpload={handleAttachmentUpload}
+          onIgnore={onIgnore}
+          onUndo={onUndo}
+        />
       </Stack>
 
       {editOpened && bankAccount && (
