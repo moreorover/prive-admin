@@ -21,5 +21,7 @@ describe("shared component server-state ownership", () => {
     expect(source).not.toContain("useQuery(")
     expect(source).not.toContain("useSuspenseQuery(")
     expect(source).not.toContain("useMutation(")
+    expect(source).not.toMatch(/from ["']@tanstack\/react-query["']/)
+    expect(source).not.toMatch(/from ["']@\/utils\/trpc["']/)
   })
 })
