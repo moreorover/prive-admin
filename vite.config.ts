@@ -76,6 +76,22 @@ export default defineConfig({
     alias: {
       "cloudflare:workers": new URL("./packages/db/src/test/cloudflare-workers.ts", import.meta.url).pathname,
     },
+    coverage: {
+      all: true,
+      exclude: [
+        "**/*.d.ts",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/migrations/**",
+        "**/routeTree.gen.ts",
+        "**/vite.config.ts",
+        "**/wrangler*.ts",
+      ],
+      include: ["apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts", "packages/**/*.tsx"],
+      provider: "v8",
+      reporter: ["text", "json-summary", "html", "lcov", "cobertura"],
+      reportsDirectory: "./coverage",
+    },
     include: ["{apps,packages}/**/src/**/*.test.{ts,tsx}"],
     exclude: ["**/dist/**", "**/node_modules/**", ".worktrees/**"],
   },

@@ -7,7 +7,7 @@ import {
   listCustomerNotes,
   listCustomers,
   updateCustomer,
-} from "@prive-admin-tanstack/application/services"
+} from "@prive-admin-tanstack/application/services/customers"
 import { z } from "zod"
 
 import { toTrpcError } from "../errors"

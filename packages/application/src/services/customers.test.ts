@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
-import { listCustomerAppointments, listCustomerHairAssigned, listCustomerNotes, listCustomers } from "./customers"
+import {
+  createCustomer,
+  listCustomerAppointments,
+  listCustomerHairAssigned,
+  listCustomerNotes,
+  listCustomers,
+} from "./customers"
 
 const dbMock = vi.hoisted(() => ({
   createCustomer: vi.fn(),
@@ -18,6 +24,35 @@ vi.mock("@prive-admin-tanstack/db", () => dbMock)
 describe("customer service", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  it("persists and returns a customer with valid data", async () => {
+    // given
+    const customer = { id: "customer-1", name: "Anna Andersson", phoneNumber: "+37060000000" }
+    dbMock.createCustomer.mockResolvedValue(customer)
+
+    // when
+    await expect(createCustomer({ name: customer.name, phoneNumber: customer.phoneNumber })).resolves.toBe(customer)
+
+    // then
+    expect(dbMock.createCustomer).toHaveBeenCalledWith(undefined, {
+      name: customer.name,
+      phoneNumber: customer.phoneNumber,
+    })
+  })
+
+  it("maps a customer persistence failure to an internal application error", async () => {
+    // given
+    dbMock.createCustomer.mockRejectedValue(new Error("unique constraint"))
+
+    // when
+    await expect(createCustomer({ name: "Anna Andersson", phoneNumber: null })).rejects.toMatchObject({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Failed to create customer",
+    })
+
+    // then
+    expect(dbMock.createCustomer).toHaveBeenCalledOnce()
   })
 
   it("forwards paging and search to the database layer", async () => {

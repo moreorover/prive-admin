@@ -6,7 +6,10 @@
   "scripts": {
     "build": "vp pack",
     "check-types": "tsc --noEmit",
-    "dev": "wrangler d1 migrations apply prive-admin-dev --local && wrangler dev"
+    "dev": "wrangler d1 migrations apply prive-admin-dev --local && wrangler dev",
+    "test": "vp test run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:watch": "vp test"
   },
   "dependencies": {
     "@hono/trpc-server": "catalog:",
@@ -17,9 +20,22 @@
     "hono": "catalog:"
   },
   "devDependencies": {
+    "@cloudflare/vitest-plugin": "catalog:",
     "@prive-admin-tanstack/config": "workspace:*",
+    "@prive-admin-tanstack/db": "workspace:*",
     "@types/node": "catalog:",
+    "@vitest/expect": "catalog:",
+    "@vitest/mocker": "catalog:",
+    "@vitest/pretty-format": "catalog:",
+    "@vitest/runner": "catalog:",
+    "@vitest/snapshot": "catalog:",
+    "@vitest/spy": "catalog:",
+    "@vitest/utils": "catalog:",
+    "drizzle-orm": "catalog:",
     "typescript": "catalog:",
+    "vite": "7.1.7",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:",
     "wrangler": "4.141.0"
   }
 }

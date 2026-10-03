@@ -1,6 +1,12 @@
 import { defineConfig } from "vite-plus"
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "cloudflare:workers": new URL("../../packages/db/src/test/cloudflare-workers.ts", import.meta.url).pathname,
+    },
+    tsconfigPaths: true,
+  },
   pack: {
     entry: ["src/index.ts"],
     deps: {
@@ -12,5 +18,9 @@ export default defineConfig({
       neverBundle: ["@opentelemetry/api"],
       onlyBundle: false,
     },
+  },
+  test: {
+    environment: "node",
+    include: ["src/**/*.test.ts"],
   },
 })

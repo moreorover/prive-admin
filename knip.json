@@ -12,7 +12,16 @@
       "project": ["src/**/*.{ts,tsx}!"]
     },
     "apps/server": {
-      "project": ["src/**/*.ts!"]
+      "entry": ["vitest.integration.config.ts", "integration-tests/**/*.test.ts"],
+      "ignoreDependencies": [
+        "@vitest/expect",
+        "@vitest/mocker",
+        "@vitest/pretty-format",
+        "@vitest/spy",
+        "@vitest/utils",
+        "cloudflare"
+      ],
+      "project": ["src/**/*.ts!", "integration-tests/**/*.ts!"]
     },
     "packages/auth": {
       "project": ["src/**/*.ts!"]

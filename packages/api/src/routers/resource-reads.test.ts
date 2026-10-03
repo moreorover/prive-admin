@@ -38,6 +38,7 @@ const servicesMock = vi.hoisted(() => ({
 }))
 
 vi.mock("@prive-admin-tanstack/application/services", () => servicesMock)
+vi.mock("@prive-admin-tanstack/application/services/customers", () => servicesMock)
 
 const ctx = { session: { user: { id: "user-1" } } } as never
 
