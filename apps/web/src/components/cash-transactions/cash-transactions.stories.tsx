@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/tanstack-react"
 
-import { expect, fn } from "storybook/test"
+import { expect, fn, screen } from "storybook/test"
 
 import { CashTransactionForm } from "./cash-transaction-form"
 import { CashTransactionsTable } from "./cash-transactions-table"
@@ -40,6 +40,10 @@ const formValues = {
   currency: "EUR" as const,
 }
 
+const submitCashTransaction = fn()
+const editCashTransaction = fn()
+const deleteCashTransaction = fn()
+
 export const Form: Story = {
   render: () => (
     <CashTransactionForm
@@ -48,12 +52,19 @@ export const Form: Story = {
       onCustomerSearchChange={fn()}
       initialValues={formValues}
       submitLabel="Save cash transaction"
-      onSubmit={fn()}
+      onSubmit={submitCashTransaction}
     />
   ),
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Save cash transaction" }))
-    await expect(canvas.getByRole("button", { name: "Save cash transaction" })).toBeVisible()
+    await expect(submitCashTransaction).toHaveBeenCalledWith({
+      customerId: "customer-001",
+      createdAt: "2026-09-14",
+      description: "Deposit",
+      notes: "Front desk deposit",
+      amount: 12500,
+      currency: "EUR",
+    })
   },
 }
 
@@ -71,7 +82,6 @@ export const SelectCustomer: Story = {
   play: async ({ canvas, userEvent }) => {
     const customer = canvas.getByRole("combobox", { name: "Customer" })
     await userEvent.click(customer)
-    await userEvent.type(customer, "Amelia")
     await userEvent.keyboard("{ArrowDown}{Enter}")
     await expect(customer).toHaveValue("Amelia Hart")
   },
@@ -85,7 +95,7 @@ export const Table: Story = {
       <CashTransactionsTable.Description />
       <CashTransactionsTable.Amount />
       <CashTransactionsTable.CreatedBy />
-      <CashTransactionsTable.Actions onEdit={fn()} onDelete={fn()} />
+      <CashTransactionsTable.Actions onEdit={editCashTransaction} onDelete={deleteCashTransaction} />
       <CashTransactionsTable.Pagination page={1} pageSize={10} itemCount={1} totalCount={1} onChange={fn()} />
     </CashTransactionsTable>
   ),
@@ -127,5 +137,11 @@ export const EditDialog: Story = {
 }
 
 export const DeleteDialog: Story = {
-  render: () => <DeleteCashTransactionDialog open onOpenChange={fn()} transaction={transaction} onDelete={fn()} />,
+  render: () => (
+    <DeleteCashTransactionDialog open onOpenChange={fn()} transaction={transaction} onDelete={deleteCashTransaction} />
+  ),
+  play: async ({ userEvent }) => {
+    await userEvent.click(screen.getByRole("button", { name: "Delete" }))
+    await expect(deleteCashTransaction).toHaveBeenCalledWith("cash-001")
+  },
 }

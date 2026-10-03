@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/tanstack-react"
 
-import { expect, fn } from "storybook/test"
+import { expect, fn, screen } from "storybook/test"
 
 import { CreateTransactionDialog } from "./create-transaction-dialog"
 import { DeleteTransactionDialog } from "./delete-transaction-dialog"
@@ -24,17 +24,27 @@ const transaction = {
   customer: { id: "customer-001", name: "Amelia Hart" },
 }
 
+const submitTransaction = fn()
+const editTransaction = fn()
+const deleteTransaction = fn()
+const createTransaction = fn()
+
 export const Form: Story = {
   render: () => (
     <TransactionForm
       initialValues={{ name: "Hair service", notes: "Paid by card", amountMajor: 185, currency: "EUR" }}
       submitLabel="Save transaction"
-      onSubmit={fn()}
+      onSubmit={submitTransaction}
     />
   ),
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Save transaction" }))
-    await expect(canvas.getByRole("button", { name: "Save transaction" })).toBeVisible()
+    await expect(submitTransaction).toHaveBeenCalledWith({
+      name: "Hair service",
+      notes: "Paid by card",
+      amount: 18500,
+      currency: "EUR",
+    })
   },
 }
 
@@ -44,7 +54,7 @@ export const Table: Story = {
       <TransactionsTable.Customer />
       <TransactionsTable.Name />
       <TransactionsTable.Amount />
-      <TransactionsTable.Actions onEdit={fn()} onDelete={fn()} />
+      <TransactionsTable.Actions onEdit={editTransaction} onDelete={deleteTransaction} />
       <TransactionsTable.Pagination page={1} pageSize={10} itemCount={1} totalCount={1} onChange={fn()} />
     </TransactionsTable>
   ),
@@ -66,9 +76,20 @@ export const CreateDialog: Story = {
       appointmentId="appointment-001"
       customerId="customer-001"
       defaultCurrency="EUR"
-      onCreate={fn()}
+      onCreate={createTransaction}
     />
   ),
+  play: async ({ userEvent }) => {
+    await userEvent.click(screen.getByRole("button", { name: "Create" }))
+    await expect(createTransaction).toHaveBeenCalledWith({
+      name: null,
+      notes: null,
+      amount: 0,
+      currency: "EUR",
+      appointmentId: "appointment-001",
+      customerId: "customer-001",
+    })
+  },
 }
 
 export const EditDialog: Story = {

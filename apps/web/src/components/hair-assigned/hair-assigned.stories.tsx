@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/tanstack-react"
 
-import { fn } from "storybook/test"
+import { expect, fn, screen } from "storybook/test"
 
 import { CreateHairAssignedDialog } from "./create-hair-assigned-dialog"
 import { DeleteHairAssignedDialog } from "./delete-hair-assigned-dialog"
@@ -25,6 +25,7 @@ const item = {
 }
 
 const orders = [{ id: "order-001", uid: 1024, weightReceived: 500, weightUsed: 120, customer: { name: "Amelia Hart" } }]
+const createHairAssigned = fn()
 
 export const Table: Story = {
   render: () => (
@@ -59,9 +60,18 @@ export const CreateDialog: Story = {
       clientId="customer-001"
       appointmentId="appointment-001"
       availableOrders={orders}
-      onCreate={fn()}
+      onCreate={createHairAssigned}
     />
   ),
+  play: async ({ userEvent }) => {
+    await userEvent.click(screen.getByText("#1024"))
+    await userEvent.click(screen.getByRole("button", { name: "Assign" }))
+    await expect(createHairAssigned).toHaveBeenCalledWith({
+      hairOrderId: "order-001",
+      clientId: "customer-001",
+      appointmentId: "appointment-001",
+    })
+  },
 }
 
 export const NoOrdersDialog: Story = {
