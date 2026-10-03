@@ -5,11 +5,7 @@ import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { createContext, useContext } from "react"
 
-import {
-  type CompoundTableColumnComponent,
-  getCompoundTableColumns,
-  getCompoundTablePagination,
-} from "@/components/compound-table"
+import { CompoundTable, type CompoundTableColumnComponent } from "@/components/compound-table"
 import { ResourcePagination } from "@/components/resource-pagination"
 import { type Currency, formatMinor } from "@/lib/currency"
 
@@ -67,14 +63,6 @@ function useTransactionRow() {
   return row
 }
 
-function getTransactionColumns(children: ReactNode) {
-  return getCompoundTableColumns(children)
-}
-
-function getTransactionPagination(children: ReactNode) {
-  return getCompoundTablePagination<TransactionPaginationProps>(children)
-}
-
 function createColumn(columnKey: string, label: string, Cell: () => ReactElement): TransactionColumnComponent {
   const Column = (() => null) as unknown as TransactionColumnComponent
   Column.columnKey = columnKey
@@ -113,44 +101,26 @@ function createActionsColumn(): TransactionColumnComponent<TransactionActionsPro
 }
 
 function TransactionsTableRoot({ items, children }: TransactionsTableRootProps) {
-  const columns = getTransactionColumns(children)
-  const pagination = getTransactionPagination(children)
-
-  if (items.length === 0) {
-    return (
-      <>
+  return (
+    <CompoundTable
+      items={items}
+      emptyMessage={
         <Text size="sm" c="dimmed">
           No transactions.
         </Text>
-        {pagination ? <pagination.type {...pagination.props} /> : null}
-      </>
-    )
-  }
-
-  return (
-    <>
-      <Table>
-        <Table.Thead>
+      }
+      renderRow={(row, columns) => (
+        <TransactionRowContext.Provider key={row.id} value={row}>
           <Table.Tr>
             {columns.map((column) => (
-              <column.type.Header key={column.type.columnKey} />
+              <column.type.Cell key={column.type.columnKey} {...column.props} />
             ))}
           </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {items.map((row) => (
-            <TransactionRowContext.Provider key={row.id} value={row}>
-              <Table.Tr>
-                {columns.map((column) => (
-                  <column.type.Cell key={column.type.columnKey} {...column.props} />
-                ))}
-              </Table.Tr>
-            </TransactionRowContext.Provider>
-          ))}
-        </Table.Tbody>
-      </Table>
-      {pagination ? <pagination.type {...pagination.props} /> : null}
-    </>
+        </TransactionRowContext.Provider>
+      )}
+    >
+      {children}
+    </CompoundTable>
   )
 }
 
