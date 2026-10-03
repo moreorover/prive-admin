@@ -92,12 +92,12 @@ jobs:
                 lines.push("| No changed source files with coverage data | — |")
               } else {
                 for (const file of changedFiles) {
-                  lines.push(`| \\`${file}\\` | ${format(coverageByFile.get(file).lines)} |`)
+                  lines.push(`| ${file} | ${format(coverageByFile.get(file).lines)} |`)
                 }
               }
             }
 
-            const body = `${lines.join("\\n")}\\n\\n<!-- coverage-report -->`
+            const body = `${lines.join("\n")}\n\n<!-- coverage-report -->`
             await core.summary.addRaw(body).write()
 
             if (context.eventName === "pull_request" && context.payload.pull_request.head.repo.full_name === context.repo.owner + "/" + context.repo.repo) {
