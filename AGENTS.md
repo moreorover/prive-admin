@@ -44,6 +44,8 @@ Components must not initiate server reads or mutations. This applies to shared c
 
 Route files and route/page owner modules own server state. Start read queries in TanStack Router loaders when data is needed for route rendering, and use `queryClient.ensureQueryData` or `prefetchQuery` for preload. Put reusable query option builders in route-local `-data` modules when helpful.
 
+Keep route prefetches and rendered queries identical. Define the query options once in a route owner or route-local `-data` module, use that same builder in both the loader and the component, and include every path or search value that changes the query in `loaderDeps`. Do not prefetch a default or stale variant and then render a different query key; that causes duplicate requests and fetch waterfalls on direct links or shared URLs. Leave interaction-only queries, such as dialog options, lazy and gated by their open state.
+
 Start mutations in route/page owners and pass explicit event handlers such as `onCreate`, `onUpdate`, `onDelete`, or `onSubmit` into child components. Pass data, loading state, and error-display state as props when components need to render pending or failure UI. Mutation side effects such as cache invalidation, navigation, notifications, route refreshes, and dialog close/reset behavior belong in the route/page owner.
 
 Add or update architecture tests when introducing route/component structure so `useQuery`, `useMutation`, and route action hooks stay out of component files.

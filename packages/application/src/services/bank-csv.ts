@@ -146,7 +146,13 @@ function parseSwedbankCsv(content: string): BankCsvParse {
 function detectBankCsvFormat(content: string): "SEB" | "SWEDBANK" {
   const stripped = content.charCodeAt(0) === 0xfeff ? content.slice(1) : content
   const firstLine = stripped.split(/\r?\n/, 1)[0] ?? ""
-  return firstLine.includes('"Account No"') ? "SWEDBANK" : "SEB"
+  const normalizedFirstLine = firstLine
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+  return normalizedFirstLine.includes('"account no"') || normalizedFirstLine.includes('"saskaitos nr."')
+    ? "SWEDBANK"
+    : "SEB"
 }
 
 export function parseBankCsv(content: string): BankCsvParse {

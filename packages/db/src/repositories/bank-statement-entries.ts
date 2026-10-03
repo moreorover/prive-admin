@@ -4,6 +4,8 @@ import { db, type Db } from "../index"
 import { bankAccount } from "../schema/bank-account"
 import { bankStatementEntry } from "../schema/bank-statement-entry"
 
+const BANK_STATEMENT_ENTRY_IMPORT_CHUNK_SIZE = 5
+
 export async function importBankStatementEntries(
   database: Db = db,
   input: {
@@ -25,13 +27,19 @@ export async function importBankStatementEntries(
     }>
   },
 ) {
-  const inserted = await database
-    .insert(bankStatementEntry)
-    .values(input.values)
-    .onConflictDoNothing({
-      target: [bankStatementEntry.bankAccountId, bankStatementEntry.externalRef],
-    })
-    .returning({ id: bankStatementEntry.id })
+  const inserted = []
+
+  for (let index = 0; index < input.values.length; index += BANK_STATEMENT_ENTRY_IMPORT_CHUNK_SIZE) {
+    const rows = await database
+      .insert(bankStatementEntry)
+      .values(input.values.slice(index, index + BANK_STATEMENT_ENTRY_IMPORT_CHUNK_SIZE))
+      .onConflictDoNothing({
+        target: [bankStatementEntry.bankAccountId, bankStatementEntry.externalRef],
+      })
+      .returning({ id: bankStatementEntry.id })
+    inserted.push(...rows)
+  }
+
   return inserted
 }
 
