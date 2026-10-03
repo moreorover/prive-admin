@@ -2,7 +2,6 @@ import { Button, Container, Group, Stack, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { Link } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
-import { useEffect } from "react"
 
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
@@ -28,21 +27,45 @@ export function SalonEdit({
 }) {
   const isNew = salonId === "new"
 
+  return (
+    <SalonForm
+      key={isNew ? "new" : (salon?.id ?? salonId)}
+      salonId={salonId}
+      isNew={isNew}
+      salon={salon}
+      createPending={createPending}
+      updatePending={updatePending}
+      onCreate={onCreate}
+      onUpdate={onUpdate}
+    />
+  )
+}
+
+function SalonForm({
+  salonId,
+  isNew,
+  salon,
+  createPending,
+  updatePending,
+  onCreate,
+  onUpdate,
+}: {
+  salonId: string
+  isNew: boolean
+  salon: SalonRecord | undefined
+  createPending: boolean
+  updatePending: boolean
+  onCreate: (values: SalonValues) => void
+  onUpdate: (values: SalonValues) => void
+}) {
   const form = useForm({
-    initialValues: { id: undefined as string | undefined, name: "", address: "" },
+    initialValues: {
+      id: salon?.id,
+      name: salon?.name ?? "",
+      address: salon?.address ?? "",
+    },
     validate: zodResolver(salonSchema),
   })
-
-  useEffect(() => {
-    if (!isNew && salon) {
-      form.setValues({
-        id: salon.id,
-        name: salon.name,
-        address: salon.address ?? "",
-      })
-      form.resetDirty()
-    }
-  }, [form.setValues, form.resetDirty, isNew, salon])
 
   const handleSubmit = (values: typeof form.values) => {
     if (isNew) {
