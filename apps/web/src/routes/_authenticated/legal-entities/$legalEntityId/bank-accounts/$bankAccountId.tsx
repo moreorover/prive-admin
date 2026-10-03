@@ -13,6 +13,28 @@ import { BankAccountPage, STATEMENT_ENTRIES_PAGE_SIZE, type StatusFilter } from 
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/bank-accounts/$bankAccountId")({
   component: RouteComponent,
+  loader: async ({ context, params }) => {
+    const queries: Promise<unknown>[] = [
+      context.queryClient.ensureQueryData(trpc.legalEntities.list.queryOptions({ pageSize: 100 })),
+      context.queryClient.ensureQueryData(trpc.bankStatementAttachments.counts.queryOptions()),
+    ]
+
+    if (params.bankAccountId !== "new") {
+      queries.push(
+        context.queryClient.ensureQueryData(trpc.bankAccounts.get.queryOptions({ id: params.bankAccountId })),
+        context.queryClient.ensureQueryData(
+          trpc.bankStatementEntries.list.queryOptions({
+            bankAccountId: params.bankAccountId,
+            status: "PENDING",
+            page: 1,
+            pageSize: STATEMENT_ENTRIES_PAGE_SIZE,
+          }),
+        ),
+      )
+    }
+
+    await Promise.all(queries)
+  },
 })
 
 function RouteComponent() {

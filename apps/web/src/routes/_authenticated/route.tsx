@@ -22,6 +22,11 @@ export const Route = createFileRoute("/_authenticated")({
     }
     return { session: session.data }
   },
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(
+      trpc.bankStatementAttachments.list.queryOptions({ assignmentStatus: "unassigned" }),
+    )
+  },
 })
 
 function RouteComponent() {
