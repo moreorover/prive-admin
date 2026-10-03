@@ -16,7 +16,6 @@ jobs:
     permissions:
       contents: read
       code-quality: write
-      pull-requests: write
 
     steps:
       - name: Checkout Code
@@ -42,31 +41,6 @@ jobs:
       - name: Run Tests
         run: vp test run --coverage
 
-      - name: Add Coverage Summary
-        if: always()
-        run: |
-          node <<'NODE'
-          const fs = require("node:fs")
-          const summary = JSON.parse(fs.readFileSync("coverage/coverage-summary.json", "utf8"))
-          const total = summary.total
-          const format = (metric) => `${metric.pct}% (${metric.covered}/${metric.total})`
-
-          fs.appendFileSync(
-            process.env.GITHUB_STEP_SUMMARY,
-            [
-              "## Test coverage",
-              "",
-              "| Metric | Coverage |",
-              "| --- | ---: |",
-              `| Lines | ${format(total.lines)} |`,
-              `| Statements | ${format(total.statements)} |`,
-              `| Functions | ${format(total.functions)} |`,
-              `| Branches | ${format(total.branches)} |`,
-              "",
-            ].join("\\n"),
-          )
-          NODE
-
       - name: Upload Coverage Report
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: actions/upload-code-coverage@v1
@@ -74,7 +48,6 @@ jobs:
           file: coverage/cobertura-coverage.xml
           language: JavaScript
           label: code-coverage/vitest
-          fail-on-error: false
 
       - name: Upload Coverage Artifacts
         uses: actions/upload-artifact@v4
