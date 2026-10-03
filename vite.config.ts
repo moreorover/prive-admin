@@ -35,6 +35,9 @@ export default defineConfig({
   },
   lint: {
     plugins: ["typescript", "unicorn"],
+    categories: {
+      correctness: "error",
+    },
     rules: {
       "vite-plus/prefer-vite-plus-imports": "error",
     },

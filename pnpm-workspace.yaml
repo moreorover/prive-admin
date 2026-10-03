@@ -26,22 +26,34 @@ catalog:
   hono: 4.13.2
   react: 19.2.8
   react-dom: 19.2.8
-  tsdown: 0.22.14
   tsx: 4.23.11
   typescript: 7.0.2
-  vite: npm:@voidzero-dev/vite-plus-core@0.2.9
-  vite-plus: 0.2.9
+  vite: npm:@voidzero-dev/vite-plus-core@1.0.0
+  vite-plus: 1.0.0
   zod: 4.4.3
 
 overrides:
-  vite: "catalog:"
+  vite@*: "catalog:"
 
 peerDependencyRules:
   allowAny:
     - vite
+  allowedVersions:
+    vite: "*"
 
 allowBuilds:
   esbuild: true
   msgpackr-extract: true
   sharp: true
   workerd: true
+minimumReleaseAgeExclude:
+  - vite-plus
+  - "@voidzero-dev/*"
+  - oxlint
+  - "@oxlint/*"
+  - oxlint-tsgolint
+  - "@oxlint-tsgolint/*"
+  - oxfmt
+  - "@oxfmt/*"
+  - vitest
+  - "@vitest/*"
