@@ -1,5 +1,4 @@
 import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-plugin"
-import "@cloudflare/vitest-plugin/types"
 import path from "node:path"
 // oxlint-disable-next-line vite-plus/prefer-vite-plus-imports -- Cloudflare's Worker pool is currently compatible with Vitest 4, not Vite+'s Vitest 5.
 import { defineConfig } from "vitest/config"
