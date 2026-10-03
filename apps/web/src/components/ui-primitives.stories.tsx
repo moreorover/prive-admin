@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/tanstack-react"
 
 import { Badge, Button, Card, Group, Stack, Table, Text, TextInput } from "@mantine/core"
+import { expect } from "storybook/test"
 
 const meta = {
   title: "Foundations/Primitives",
@@ -23,6 +24,11 @@ export const Controls: Story = {
       </Group>
     </Stack>
   ),
+  play: async ({ canvas, userEvent }) => {
+    const search = canvas.getByRole("textbox", { name: "Search clients" })
+    await userEvent.type(search, "Amelia Hart")
+    await expect(search).toHaveValue("Amelia Hart")
+  },
 }
 
 export const DataCard: Story = {

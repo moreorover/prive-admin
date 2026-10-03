@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/tanstack-react"
 
+import { expect } from "storybook/test"
+
 import { BreadcrumbItem, BreadcrumbPortal } from "./breadcrumbs"
 
 const meta = {
@@ -22,4 +24,8 @@ export const NestedLocation: Story = {
       <BreadcrumbPortal />
     </>
   ),
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("navigation", { name: "Breadcrumb" })).toBeInTheDocument()
+    await expect(canvas.getByText("Customers")).toBeInTheDocument()
+  },
 }
