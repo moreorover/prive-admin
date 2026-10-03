@@ -49,7 +49,7 @@ export function AuthenticatedErrorComponent({ error, reset }: ErrorComponentProp
           <Text fw={500}>Something went wrong</Text>
         </Group>
         <Text size="sm" c="dimmed" mb="md">
-          {error.message || "An unexpected error occurred."}
+          {error instanceof Error ? error.message : "An unexpected error occurred."}
         </Text>
         <Button variant="default" size="sm" leftSection={<IconRefresh size={14} />} onClick={handleRetry}>
           Try again
