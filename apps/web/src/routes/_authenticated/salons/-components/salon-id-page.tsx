@@ -10,53 +10,48 @@ import { salonSchema } from "@/lib/schemas"
 type SalonValues = { id?: string; name: string; address: string }
 type SalonRecord = { id: string; name: string; address: string | null }
 
+export function SalonCreate({
+  createPending,
+  onCreate,
+}: {
+  createPending: boolean
+  onCreate: (values: SalonValues) => void
+}) {
+  return <SalonForm key="new" title="New salon" salon={undefined} pending={createPending} onSubmit={onCreate} />
+}
+
 export function SalonEdit({
   salonId,
   salon,
-  createPending,
   updatePending,
-  onCreate,
   onUpdate,
 }: {
   salonId: string
   salon: SalonRecord | undefined
-  createPending: boolean
   updatePending: boolean
-  onCreate: (values: SalonValues) => void
   onUpdate: (values: SalonValues) => void
 }) {
-  const isNew = salonId === "new"
-
   return (
     <SalonForm
-      key={isNew ? "new" : (salon?.id ?? salonId)}
-      salonId={salonId}
-      isNew={isNew}
+      key={salon?.id ?? salonId}
+      title="Edit salon"
       salon={salon}
-      createPending={createPending}
-      updatePending={updatePending}
-      onCreate={onCreate}
-      onUpdate={onUpdate}
+      pending={updatePending}
+      onSubmit={onUpdate}
     />
   )
 }
 
 function SalonForm({
-  salonId,
-  isNew,
+  title,
   salon,
-  createPending,
-  updatePending,
-  onCreate,
-  onUpdate,
+  pending,
+  onSubmit,
 }: {
-  salonId: string
-  isNew: boolean
+  title: string
   salon: SalonRecord | undefined
-  createPending: boolean
-  updatePending: boolean
-  onCreate: (values: SalonValues) => void
-  onUpdate: (values: SalonValues) => void
+  pending: boolean
+  onSubmit: (values: SalonValues) => void
 }) {
   const form = useForm({
     initialValues: {
@@ -67,21 +62,11 @@ function SalonForm({
     validate: zodResolver(salonSchema),
   })
 
-  const handleSubmit = (values: typeof form.values) => {
-    if (isNew) {
-      onCreate(values)
-      return
-    }
-    onUpdate({ ...values, id: salonId })
-  }
-
-  const isSaving = createPending || updatePending
-
   return (
     <Container size="md">
-      <PageHeader title={isNew ? "New salon" : "Edit salon"} description="A location associated with a legal entity." />
+      <PageHeader title={title} description="A location associated with a legal entity." />
       <Section>
-        <form onSubmit={form.onSubmit(handleSubmit)}>
+        <form onSubmit={form.onSubmit(onSubmit)}>
           <Stack>
             <TextInput label="Name" required {...form.getInputProps("name")} />
             <TextInput label="Address" {...form.getInputProps("address")} />
@@ -89,7 +74,7 @@ function SalonForm({
               <Button renderRoot={(props) => <Link to="/salons" {...props} />} variant="subtle">
                 Cancel
               </Button>
-              <Button type="submit" loading={isSaving}>
+              <Button type="submit" loading={pending}>
                 Save
               </Button>
             </Group>
