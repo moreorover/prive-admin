@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react"
 
-import { ActionIcon, Button, Card, Container, Group, Menu, Stack, Text, Title } from "@mantine/core"
-import { IconCash, IconClock, IconDots, IconPencil, IconPlus, IconUser, IconUsers } from "@tabler/icons-react"
+import { Button, Card, Container, Group, Stack, Text, Title } from "@mantine/core"
+import { IconCash, IconClock, IconPencil, IconPlus, IconUser } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 
@@ -21,6 +21,8 @@ import { formatPageRange } from "@/lib/resource-pagination"
 
 import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, useAppointmentDetailData } from "../-data/appointment-detail-data"
 import { ChangeMasterModal, EditAppointmentModal } from "./appointment-edit-modals"
+import { AppointmentNotesCard } from "./appointment-notes-card"
+import { AppointmentPeopleSection } from "./appointment-people-section"
 import { PickPersonnelModal } from "./pick-personnel-modal"
 
 type AppointmentDetailData = ReturnType<typeof useAppointmentDetailData>
@@ -185,96 +187,16 @@ export function AppointmentDetailPage({
         }
       />
       <Stack>
-        <Group grow align="flex-start">
-          <Card withBorder>
-            <Group justify="space-between" mb="sm">
-              <Title order={5}>Master</Title>
-              <Button
-                variant="subtle"
-                size="xs"
-                leftSection={<IconUser size={12} />}
-                onClick={() => {
-                  onMasterSearchChange("")
-                  onChangeMasterOpenChange(true)
-                }}
-              >
-                Change
-              </Button>
-            </Group>
-            <Card withBorder padding="xs">
-              <Group justify="space-between" gap="xs">
-                <Group gap="xs">
-                  <IconUser size={12} />
-                  <Text
-                    renderRoot={(props) => (
-                      <Link to="/customers/$customerId" params={{ customerId: appointment.master.id }} {...props} />
-                    )}
-                    c="blue"
-                    size="sm"
-                  >
-                    {appointment.master.name}
-                  </Text>
-                </Group>
-                <Menu shadow="md" width={180} position="bottom-end">
-                  <Menu.Target>
-                    <ActionIcon variant="subtle" size="sm" aria-label="Master actions">
-                      <IconDots size={14} />
-                    </ActionIcon>
-                  </Menu.Target>
-                  <Menu.Dropdown>
-                    <Menu.Item leftSection={<IconCash size={14} />} onClick={() => openCreateTx(appointment.master.id)}>
-                      New transaction
-                    </Menu.Item>
-                  </Menu.Dropdown>
-                </Menu>
-              </Group>
-            </Card>
-          </Card>
-
-          <Card withBorder>
-            <Group justify="space-between" mb="sm">
-              <Title order={5}>Personnel</Title>
-              <Button
-                variant="subtle"
-                size="xs"
-                leftSection={<IconUsers size={12} />}
-                onClick={() => onPickPersonnelOpenChange(true)}
-              >
-                Pick
-              </Button>
-            </Group>
-            {appointment.personnel && appointment.personnel.length > 0 ? (
-              <Stack gap="xs">
-                {appointment.personnel.map((p) => (
-                  <Card key={p.personnelId} withBorder padding="xs">
-                    <Group justify="space-between" gap="xs">
-                      <Group gap="xs">
-                        <IconUser size={12} />
-                        <Text size="sm">{p.personnel.name}</Text>
-                      </Group>
-                      <Menu shadow="md" width={180} position="bottom-end">
-                        <Menu.Target>
-                          <ActionIcon variant="subtle" size="sm" aria-label="Personnel actions">
-                            <IconDots size={14} />
-                          </ActionIcon>
-                        </Menu.Target>
-                        <Menu.Dropdown>
-                          <Menu.Item leftSection={<IconCash size={14} />} onClick={() => openCreateTx(p.personnelId)}>
-                            New transaction
-                          </Menu.Item>
-                        </Menu.Dropdown>
-                      </Menu>
-                    </Group>
-                  </Card>
-                ))}
-              </Stack>
-            ) : (
-              <Text size="sm" c="dimmed">
-                No personnel assigned.
-              </Text>
-            )}
-          </Card>
-        </Group>
+        <AppointmentPeopleSection
+          master={appointment.master}
+          personnel={appointment.personnel ?? []}
+          onChangeMaster={() => {
+            onMasterSearchChange("")
+            onChangeMasterOpenChange(true)
+          }}
+          onPickPersonnel={() => onPickPersonnelOpenChange(true)}
+          onCreateTransaction={openCreateTx}
+        />
 
         <Card withBorder>
           <Group justify="space-between" mb="sm">
@@ -403,27 +325,7 @@ export function AppointmentDetailPage({
           </HairAssignedTable>
         </Card>
 
-        <Card withBorder>
-          <Title order={5} mb="sm">
-            Notes
-          </Title>
-          {appointment.notes && appointment.notes.length > 0 ? (
-            <Stack gap="xs">
-              {appointment.notes.map((n) => (
-                <Card key={n.id} withBorder padding="sm">
-                  <Text size="sm">{n.note}</Text>
-                  <Text size="xs" c="dimmed" mt={4}>
-                    {n.createdBy?.name ?? "Unknown"} · <ClientDate date={n.createdAt} />
-                  </Text>
-                </Card>
-              ))}
-            </Stack>
-          ) : (
-            <Text size="sm" c="dimmed">
-              No notes.
-            </Text>
-          )}
-        </Card>
+        <AppointmentNotesCard notes={appointment.notes ?? []} />
 
         <CreateHairAssignedDialog
           open={createOpen}
