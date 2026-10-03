@@ -31,6 +31,7 @@
     "alchemy": "2.0.0-beta.79",
     "effect": "4.0.0-rc.117",
     "knip": "6.38.0",
+    "@vitest/coverage-v8": "5.0.1",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",

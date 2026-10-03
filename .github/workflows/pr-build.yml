@@ -1,6 +1,9 @@
 name: PR Build Check
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -12,11 +15,14 @@ jobs:
 
     permissions:
       contents: read
+      code-quality: write
       pull-requests: write
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1.21.1
@@ -32,6 +38,23 @@ jobs:
 
       - name: Check Types
         run: vp run check-types
+
+      - name: Run Tests
+        run: vp test run --coverage
+
+      - name: Upload Coverage Report
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/upload-code-coverage@v1
+        with:
+          file: coverage/cobertura-coverage.xml
+          language: JavaScript
+          label: code-coverage/vitest
+
+      - name: Upload Coverage Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage
 
       - name: Run Knip
         run: vp exec knip --reporter github-actions

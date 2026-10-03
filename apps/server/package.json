@@ -6,7 +6,9 @@
   "scripts": {
     "build": "vp pack",
     "check-types": "tsc --noEmit",
-    "dev": "wrangler d1 migrations apply prive-admin-dev --local && wrangler dev"
+    "dev": "wrangler d1 migrations apply prive-admin-dev --local && wrangler dev",
+    "test": "vp test run",
+    "test:watch": "vp test"
   },
   "dependencies": {
     "@hono/trpc-server": "catalog:",
@@ -20,6 +22,7 @@
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",
+    "vite-plus": "catalog:",
     "wrangler": "4.141.0"
   }
 }
