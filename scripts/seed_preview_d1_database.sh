@@ -167,5 +167,8 @@ echo "Seeding preview D1 database '$PREVIEW_D1_DB' from '$SOURCE_D1_DB'..."
   --target-mode remote \
   --yes
 
+echo "Applying current D1 migrations to preview database '$PREVIEW_D1_DB'..."
+wrangler d1 migrations apply "$PREVIEW_D1_DB" --remote
+
 write_seed_marker
 echo "Preview D1 database '$PREVIEW_D1_DB' seed marker written."
