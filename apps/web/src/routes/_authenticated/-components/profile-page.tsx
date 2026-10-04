@@ -4,6 +4,7 @@ import {
   Button,
   Checkbox,
   Container,
+  Center,
   Group,
   Loader,
   Modal,
@@ -16,6 +17,7 @@ import {
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconAlertCircle, IconDeviceLaptop, IconDeviceMobile } from "@tabler/icons-react"
+import { QRCodeSVG } from "qrcode.react"
 import { useState } from "react"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
@@ -289,7 +291,11 @@ function TwoFactorModal({
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Enable two-factor authentication">
       {setup ? (
         <Stack>
-          <Text size="sm">Add this URI to your authenticator app:</Text>
+          <Text size="sm">Scan this QR code with your authenticator app:</Text>
+          <Center>
+            <QRCodeSVG value={setup.totpURI} size={220} includeMargin />
+          </Center>
+          <Text size="sm">Or copy the setup URI manually:</Text>
           <TextInput value={setup.totpURI} readOnly />
           <Text size="sm" fw={600}>
             Save these backup codes securely:
