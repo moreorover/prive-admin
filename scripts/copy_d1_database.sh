@@ -322,7 +322,7 @@ for (const statement of statements) {
 
   const insertTable = tableFromInsert(statement)
   if (insertTable) {
-    if (insertTable === "sqlite_sequence") {
+    if (insertTable === "sqlite_sequence" || (keepSchema && insertTable === "d1_migrations")) {
       sequenceStatements.push(statement)
     } else {
       const tableInserts = inserts.get(insertTable) ?? []
