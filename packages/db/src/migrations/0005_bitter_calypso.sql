@@ -1,0 +1,1 @@
+-- Metadata-only snapshot reconciliation for the manually committed auth migrations.
