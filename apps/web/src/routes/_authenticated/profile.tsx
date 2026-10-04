@@ -9,6 +9,8 @@ import { trpc } from "@/utils/trpc"
 import { ProfilePage } from "./-components/profile-page"
 import {
   sessionsQueryKey,
+  useAddPasskeyAction,
+  useEnableTwoFactorAction,
   useRevokeSessionAction,
   useUpdateUserProfileAction,
 } from "./profile/-actions/profile-actions"
@@ -41,6 +43,8 @@ function RouteComponent() {
     initialName: current?.user.name ?? "",
     initialCurrency,
   })
+  const addPasskey = useAddPasskeyAction()
+  const twoFactor = useEnableTwoFactorAction()
 
   return (
     <ProfilePage
@@ -54,6 +58,14 @@ function RouteComponent() {
       onTerminatingIdChange={setTerminatingId}
       onRevokeSession={(token) => revokeSession.mutateAsync(token)}
       onUpdateProfile={(values) => updateProfile.updateUserProfile(values)}
+      passkeyPending={addPasskey.submitting}
+      onAddPasskey={addPasskey.addPasskey}
+      twoFactorEnabled={current?.user.twoFactorEnabled ?? false}
+      twoFactorPending={twoFactor.submitting}
+      twoFactorSetup={twoFactor.setup}
+      onEnableTwoFactor={twoFactor.enableTwoFactor}
+      onVerifyTwoFactor={twoFactor.verifyTwoFactor}
+      onCloseTwoFactorSetup={twoFactor.clearSetup}
     />
   )
 }

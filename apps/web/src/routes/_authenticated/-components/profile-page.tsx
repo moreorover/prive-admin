@@ -50,7 +50,7 @@ type ProfileSession = {
   ipAddress?: string | null
 }
 type CurrentSession = {
-  user: { name: string; email: string; emailVerified: boolean }
+  user: { name: string; email: string; emailVerified: boolean; twoFactorEnabled?: boolean | null }
   session: { id: string }
 }
 
@@ -65,6 +65,14 @@ export function ProfilePage({
   onTerminatingIdChange,
   onRevokeSession,
   onUpdateProfile,
+  passkeyPending,
+  onAddPasskey,
+  twoFactorEnabled,
+  twoFactorPending,
+  twoFactorSetup,
+  onEnableTwoFactor,
+  onVerifyTwoFactor,
+  onCloseTwoFactorSetup,
 }: {
   current: CurrentSession | null | undefined
   isPending: boolean
@@ -76,10 +84,19 @@ export function ProfilePage({
   onTerminatingIdChange: (id: string | undefined) => void
   onRevokeSession: (token: string) => Promise<unknown>
   onUpdateProfile: (values: { name: string; preferredCurrency: Currency }) => Promise<void>
+  passkeyPending: boolean
+  onAddPasskey: () => Promise<void>
+  twoFactorEnabled: boolean
+  twoFactorPending: boolean
+  twoFactorSetup: { totpURI: string; backupCodes: string[] } | null
+  onEnableTwoFactor: (password: string) => Promise<void>
+  onVerifyTwoFactor: (code: string) => Promise<void>
+  onCloseTwoFactorSetup: () => void
 }) {
   const [editOpen, setEditOpen] = useState(false)
   const [pwOpen, setPwOpen] = useState(false)
   const [verifyPending, setVerifyPending] = useState(false)
+  const [twoFactorOpen, setTwoFactorOpen] = useState(false)
 
   if (isPending || !current) {
     return <Loader2 />
@@ -91,7 +108,7 @@ export function ProfilePage({
   return (
     <Container size="md">
       <BreadcrumbItem label="Profile" order={10} />
-      <PageHeader title="Profile" description="Manage account details, password, and active sessions." />
+      <PageHeader title="Profile" description="Manage account details, passkeys, password, and active sessions." />
       <Stack>
         <Section
           title="Account"
@@ -104,6 +121,14 @@ export function ProfilePage({
               <Button variant="default" size="sm" onClick={() => setPwOpen(true)}>
                 Change password
               </Button>
+              <Button variant="default" size="sm" loading={passkeyPending} onClick={onAddPasskey}>
+                Add passkey
+              </Button>
+              {!twoFactorEnabled && (
+                <Button variant="default" size="sm" onClick={() => setTwoFactorOpen(true)}>
+                  Enable 2FA
+                </Button>
+              )}
             </Group>
           }
         >
@@ -216,7 +241,83 @@ export function ProfilePage({
         }}
       />
       <ChangePasswordModal open={pwOpen} onOpenChange={setPwOpen} />
+      <TwoFactorModal
+        open={twoFactorOpen}
+        onOpenChange={(open) => {
+          setTwoFactorOpen(open)
+          if (!open) onCloseTwoFactorSetup()
+        }}
+        setup={twoFactorSetup}
+        submitting={twoFactorPending}
+        onEnable={onEnableTwoFactor}
+        onVerify={onVerifyTwoFactor}
+      />
     </Container>
+  )
+}
+
+function TwoFactorModal({
+  open,
+  onOpenChange,
+  setup,
+  submitting,
+  onEnable,
+  onVerify,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  setup: { totpURI: string; backupCodes: string[] } | null
+  submitting: boolean
+  onEnable: (password: string) => Promise<void>
+  onVerify: (code: string) => Promise<void>
+}) {
+  const [password, setPassword] = useState("")
+  const [code, setCode] = useState("")
+  const [verifying, setVerifying] = useState(false)
+
+  const verify = async () => {
+    setVerifying(true)
+    void onVerify(code)
+      .then(() => onOpenChange(false))
+      .catch((error) => {
+        notifications.show({ color: "red", message: error instanceof Error ? error.message : "Invalid code" })
+      })
+      .finally(() => setVerifying(false))
+  }
+
+  return (
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="Enable two-factor authentication">
+      {setup ? (
+        <Stack>
+          <Text size="sm">Add this URI to your authenticator app:</Text>
+          <TextInput value={setup.totpURI} readOnly />
+          <Text size="sm" fw={600}>
+            Save these backup codes securely:
+          </Text>
+          <Text component="pre" size="sm">
+            {setup.backupCodes.join("\n")}
+          </Text>
+          <TextInput
+            label="Authenticator code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            value={code}
+            onChange={(event) => setCode(event.currentTarget.value)}
+          />
+          <Button loading={verifying} disabled={!/^\d{6}$/.test(code)} onClick={verify}>
+            Verify and enable
+          </Button>
+        </Stack>
+      ) : (
+        <Stack>
+          <Text size="sm">Confirm your password to generate a TOTP authenticator setup.</Text>
+          <PasswordInput value={password} onChange={(event) => setPassword(event.currentTarget.value)} autoFocus />
+          <Button loading={submitting} disabled={!password} onClick={() => onEnable(password)}>
+            Generate setup
+          </Button>
+        </Stack>
+      )}
+    </Modal>
   )
 }
 

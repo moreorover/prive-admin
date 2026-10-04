@@ -9,6 +9,7 @@
     "dev": "VITE_SERVER_URL=http://localhost:3000 vp dev"
   },
   "dependencies": {
+    "@better-auth/passkey": "catalog:",
     "@mantine/charts": "catalog:",
     "@mantine/core": "catalog:",
     "@mantine/dates": "catalog:",
