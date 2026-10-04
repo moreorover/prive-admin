@@ -3,7 +3,7 @@ import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import z from "zod"
 
 import { authClient } from "@/lib/auth-client"
@@ -28,13 +28,6 @@ export default function SignInForm({ redirectTo }: { redirectTo?: string }) {
     initialValues: { email: "", password: "", rememberMe: true },
     validate: zodResolver(schema),
   })
-
-  useEffect(() => {
-    if (typeof PublicKeyCredential === "undefined" || !PublicKeyCredential.isConditionalMediationAvailable) return
-    if (!PublicKeyCredential.isConditionalMediationAvailable()) return
-
-    void authClient.signIn.passkey({ autoFill: true })
-  }, [])
 
   const handleSubmit = (values: SignInValues) => {
     setSubmitting(true)
