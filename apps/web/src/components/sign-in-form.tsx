@@ -36,10 +36,10 @@ export default function SignInForm({ redirectTo }: { redirectTo?: string }) {
     void authClient.signIn.passkey({ autoFill: true })
   }, [])
 
-  const handleSubmit = async (values: SignInValues) => {
+  const handleSubmit = (values: SignInValues) => {
     setSubmitting(true)
-    try {
-      await authClient.signIn.email(
+    void authClient.signIn
+      .email(
         { email: values.email, password: values.password, rememberMe: values.rememberMe },
         {
           onSuccess: () => {
@@ -51,9 +51,7 @@ export default function SignInForm({ redirectTo }: { redirectTo?: string }) {
           },
         },
       )
-    } finally {
-      setSubmitting(false)
-    }
+      .finally(() => setSubmitting(false))
   }
 
   if (isPending) {
