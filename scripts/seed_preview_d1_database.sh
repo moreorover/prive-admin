@@ -153,10 +153,16 @@ write_seed_marker() {
     --command "CREATE TABLE IF NOT EXISTS $MARKER_TABLE (key TEXT PRIMARY KEY, value TEXT NOT NULL, copied_at TEXT NOT NULL); INSERT OR REPLACE INTO $MARKER_TABLE (key, value, copied_at) VALUES ('$MARKER_KEY', '1', '$copied_at');"
 }
 
+apply_preview_migrations() {
+  echo "Applying current D1 migrations to preview database '$PREVIEW_D1_DB'..."
+  wrangler d1 migrations apply "$PREVIEW_D1_DB" --remote
+}
+
 load_cloudflare_credentials
 
 if preview_seeded; then
   echo "Preview D1 database '$PREVIEW_D1_DB' was already seeded from '$SOURCE_D1_DB'; skipping copy."
+  apply_preview_migrations
   exit 0
 fi
 
@@ -167,8 +173,7 @@ echo "Seeding preview D1 database '$PREVIEW_D1_DB' from '$SOURCE_D1_DB'..."
   --target-mode remote \
   --yes
 
-echo "Applying current D1 migrations to preview database '$PREVIEW_D1_DB'..."
-wrangler d1 migrations apply "$PREVIEW_D1_DB" --remote
+apply_preview_migrations
 
 write_seed_marker
 echo "Preview D1 database '$PREVIEW_D1_DB' seed marker written."
