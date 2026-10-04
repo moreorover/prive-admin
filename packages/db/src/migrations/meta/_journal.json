@@ -15,6 +15,13 @@
       "when": 1787414351011,
       "tag": "0001_premium_blink",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791135679990,
+      "tag": "0002_classy_blink",
+      "breakpoints": true
     }
   ]
 }
