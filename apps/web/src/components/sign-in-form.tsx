@@ -3,7 +3,7 @@ import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { useNavigate } from "@tanstack/react-router"
 import { zodResolver } from "mantine-form-zod-resolver"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import z from "zod"
 
 import { authClient } from "@/lib/auth-client"
@@ -36,35 +36,25 @@ export default function SignInForm({ redirectTo }: { redirectTo?: string }) {
     void authClient.signIn.passkey({ autoFill: true })
   }, [])
 
-  const handleSubmit = useCallback(
-    (values: SignInValues) => {
-      setSubmitting(true)
-      void authClient.signIn
-        .email(
-          { email: values.email, password: values.password, rememberMe: values.rememberMe },
-          {
-            onSuccess: () => {
-              navigate({ to: redirectTo ?? "/customers" })
-              notifications.show({ color: "green", message: "Sign in successful" })
-            },
-            onError: (error) => {
-              notifications.show({ color: "red", message: error.error.message || error.error.statusText })
-            },
+  const handleSubmit = async (values: SignInValues) => {
+    setSubmitting(true)
+    try {
+      await authClient.signIn.email(
+        { email: values.email, password: values.password, rememberMe: values.rememberMe },
+        {
+          onSuccess: () => {
+            navigate({ to: redirectTo ?? "/customers" })
+            notifications.show({ color: "green", message: "Sign in successful" })
           },
-        )
-        .finally(() => setSubmitting(false))
-    },
-    [navigate, redirectTo],
-  )
-
-  useEffect(() => {
-    if (!form.values.email || !form.values.password || submitting) return
-
-    const timeout = window.setTimeout(() => {
-      void handleSubmit(form.values)
-    }, 150)
-    return () => window.clearTimeout(timeout)
-  }, [form, form.values.email, form.values.password, handleSubmit, submitting])
+          onError: (error) => {
+            notifications.show({ color: "red", message: error.error.message || error.error.statusText })
+          },
+        },
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   if (isPending) {
     return <Loader />
