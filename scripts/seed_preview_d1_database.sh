@@ -127,7 +127,7 @@ preview_seeded() {
     return 1
   fi
 
-  node --input-type=module - "$payload" "$table_name" <<'NODE'
+  node --input-type=module - "$payload" <<'NODE'
 const [, , rawPayload] = process.argv
 
 try {
