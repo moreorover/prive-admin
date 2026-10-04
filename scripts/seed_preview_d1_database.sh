@@ -154,8 +154,47 @@ write_seed_marker() {
 }
 
 apply_preview_migrations() {
+  local migration_config migration_config_output preview_database_id
+
+  migration_config="$(mktemp "${TMPDIR:-/tmp}/prive-admin-preview-wrangler.XXXXXX.json")"
+  migration_config_output="$(mktemp "${TMPDIR:-/tmp}/prive-admin-preview-d1-info.XXXXXX")"
+
   echo "Applying current D1 migrations to preview database '$PREVIEW_D1_DB'..."
-  wrangler d1 migrations apply "$PREVIEW_D1_DB" --remote
+  wrangler d1 info "$PREVIEW_D1_DB" --json >"$migration_config_output"
+  preview_database_id="$(node --input-type=module - "$migration_config_output" <<'NODE'
+import { readFileSync } from "node:fs"
+
+const [, , infoPath] = process.argv
+const rawPayload = readFileSync(infoPath, "utf8")
+const payload = JSON.parse(rawPayload.split("\n").filter((line) => !line.startsWith("[WARN]")).join("\n").trim())
+
+const info = Array.isArray(payload) ? payload[0] : payload
+const databaseId = info?.uuid ?? info?.database_id ?? info?.id
+
+if (!databaseId) {
+  throw new Error("Could not determine the preview D1 database ID")
+}
+
+process.stdout.write(databaseId)
+NODE
+  )"
+
+  node --input-type=module - "$migration_config" "$PREVIEW_D1_DB" "$preview_database_id" "$ROOT_DIR/packages/db/src/migrations" <<'NODE'
+import { writeFileSync } from "node:fs"
+
+const [, , configPath, databaseName, databaseId, migrationsDir] = process.argv
+
+writeFileSync(
+  configPath,
+  JSON.stringify({
+    name: "prive-admin-preview-migrations",
+    d1_databases: [{ binding: "DB", database_name: databaseName, database_id: databaseId, migrations_dir: migrationsDir }],
+  }),
+)
+NODE
+
+  wrangler d1 migrations apply "$PREVIEW_D1_DB" --remote --config "$migration_config"
+  rm -f "$migration_config" "$migration_config_output"
 }
 
 load_cloudflare_credentials
