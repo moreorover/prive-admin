@@ -32,6 +32,7 @@ catalog:
 
 overrides:
   vite@*: "catalog:"
+  "@effect/platform-node-shared": 4.0.0-rc.117
 
 peerDependencyRules:
   allowAny:
