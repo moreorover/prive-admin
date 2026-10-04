@@ -36,13 +36,6 @@
       "when": 1791135681000,
       "tag": "0004_totp_two_factor",
       "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1791141928866,
-      "tag": "0005_bitter_calypso",
-      "breakpoints": true
     }
   ]
 }
