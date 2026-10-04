@@ -153,45 +153,10 @@ write_seed_marker() {
     --command "CREATE TABLE IF NOT EXISTS $MARKER_TABLE (key TEXT PRIMARY KEY, value TEXT NOT NULL, copied_at TEXT NOT NULL); INSERT OR REPLACE INTO $MARKER_TABLE (key, value, copied_at) VALUES ('$MARKER_KEY', '1', '$copied_at');"
 }
 
-preview_has_table() {
-  local table_name payload
-
-  table_name="$1"
-  payload="$(wrangler d1 execute "$PREVIEW_D1_DB" \
-    --remote \
-    --json \
-    --command "SELECT name FROM sqlite_schema WHERE type = 'table' AND name = '$table_name' LIMIT 1;" | json_payload)"
-
-  node --input-type=module - "$payload" <<'NODE'
-const [, , rawPayload, expectedTable] = process.argv
-
-try {
-  const payload = JSON.parse(rawPayload)
-  const found = payload.flatMap((statement) => statement.results ?? []).some((row) => row.name === expectedTable)
-  process.exit(found ? 0 : 1)
-} catch {
-  process.exit(1)
-}
-NODE
-}
-
-ensure_preview_auth_schema() {
-  if ! preview_has_table "passkey"; then
-    echo "Applying passkey migration to preview database '$PREVIEW_D1_DB'..."
-    wrangler d1 execute "$PREVIEW_D1_DB" --remote --yes --file "$ROOT_DIR/packages/db/src/migrations/0003_passkey_authentication.sql"
-  fi
-
-  if ! preview_has_table "two_factor"; then
-    echo "Applying two-factor migration to preview database '$PREVIEW_D1_DB'..."
-    wrangler d1 execute "$PREVIEW_D1_DB" --remote --yes --file "$ROOT_DIR/packages/db/src/migrations/0004_totp_two_factor.sql"
-  fi
-}
-
 load_cloudflare_credentials
 
 if preview_seeded; then
   echo "Preview D1 database '$PREVIEW_D1_DB' was already seeded from '$SOURCE_D1_DB'; skipping copy."
-  ensure_preview_auth_schema
   exit 0
 fi
 
@@ -203,6 +168,5 @@ echo "Seeding preview D1 database '$PREVIEW_D1_DB' from '$SOURCE_D1_DB'..."
   --preserve-schema \
   --yes
 
-ensure_preview_auth_schema
 write_seed_marker
 echo "Preview D1 database '$PREVIEW_D1_DB' seed marker written."
