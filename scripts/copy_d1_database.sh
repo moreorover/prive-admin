@@ -367,7 +367,7 @@ const importSql = [
   ...importOrder.map((tableName) => creates.get(tableName)),
   ...otherStatements,
   ...importOrder.flatMap((tableName) => inserts.get(tableName) ?? []),
-  ...sequenceStatements,
+  // sqlite_sequence is an internal table and may not exist in the target D1 database.
   ...indexes,
   "PRAGMA foreign_keys = ON;",
   "",
