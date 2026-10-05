@@ -30,6 +30,8 @@ import { CURRENCY_OPTIONS, type Currency } from "@/lib/currency"
 
 type ParsedUA = { isMobile: boolean; os: string; browser: string }
 
+const sessionDateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" })
+
 function parseUA(ua: string): ParsedUA {
   const isMobile = /Mobile|Android|iPhone|iPad/.test(ua)
   let os = "Unknown"
@@ -50,7 +52,7 @@ function formatSessionDate(value: Date | string | null | undefined) {
   if (!value) return "Unknown"
   const date = value instanceof Date ? value : new Date(value)
   if (Number.isNaN(date.getTime())) return "Unknown"
-  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(date)
+  return sessionDateFormatter.format(date)
 }
 
 type ProfileSession = {
