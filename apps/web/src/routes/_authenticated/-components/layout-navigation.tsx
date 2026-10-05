@@ -1,7 +1,8 @@
 import { Burger, Drawer, Group, Stack, Title } from "@mantine/core"
 
-import { appNavGroups, flatAppNavItems } from "@/lib/app-navigation"
+import { flatAppNavItems, getVisibleAppNavGroups } from "@/lib/app-navigation"
 
+import { Route } from "../route"
 import classes from "../route.module.css"
 import { DrawerNavGroup, NavLinkButton } from "./nav-link-button"
 import { ColorSchemeToggle, UserSection } from "./user-controls"
@@ -24,11 +25,21 @@ export function HeaderTop({ opened, onToggle }: { opened: boolean; onToggle: () 
 }
 
 export function DesktopTabs({ badges }: { badges: { unassigned: number } }) {
+  const { session } = Route.useRouteContext()
+  const isAdmin = session.user.role?.split(",").includes("admin") ?? false
+
   return (
     <Group className={classes.tabsRow} px="lg" gap={2} wrap="nowrap">
-      {flatAppNavItems.map((item) => (
-        <NavLinkButton key={item.to} item={item} badge={item.badgeKey ? badges[item.badgeKey] : 0} variant="desktop" />
-      ))}
+      {flatAppNavItems
+        .filter((item) => !item.adminOnly || isAdmin)
+        .map((item) => (
+          <NavLinkButton
+            key={item.to}
+            item={item}
+            badge={item.badgeKey ? badges[item.badgeKey] : 0}
+            variant="desktop"
+          />
+        ))}
     </Group>
   )
 }
@@ -42,10 +53,13 @@ export function MobileNavigationDrawer({
   onClose: () => void
   badges: { unassigned: number }
 }) {
+  const { session } = Route.useRouteContext()
+  const isAdmin = session.user.role?.split(",").includes("admin") ?? false
+
   return (
     <Drawer opened={opened} onClose={onClose} title="Privé" size="xs" padding="md">
       <Stack gap="lg">
-        {appNavGroups.map((group) => (
+        {getVisibleAppNavGroups(isAdmin).map((group) => (
           <DrawerNavGroup key={group.label} label={group.label} items={group.items} badges={badges} onClose={onClose} />
         ))}
       </Stack>
