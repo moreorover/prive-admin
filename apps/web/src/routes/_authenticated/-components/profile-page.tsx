@@ -112,7 +112,7 @@ export function ProfilePage({
   passkeyPending: boolean
   onAddPasskey: () => Promise<void>
   revokingPasskeyId: string | undefined
-  onRevokePasskey: (id: string) => Promise<unknown>
+  onRevokePasskey: (id: string, password: string, code: string) => Promise<unknown>
   twoFactorEnabled: boolean
   twoFactorPending: boolean
   twoFactorSetup: { totpURI: string; backupCodes: string[] } | null
@@ -125,6 +125,8 @@ export function ProfilePage({
   const [verifyPending, setVerifyPending] = useState(false)
   const [twoFactorOpen, setTwoFactorOpen] = useState(false)
   const [passkeyToRevoke, setPasskeyToRevoke] = useState<ProfilePasskey | null>(null)
+  const [revokePassword, setRevokePassword] = useState("")
+  const [revokeCode, setRevokeCode] = useState("")
 
   if (isPending || !current) {
     return <Loader2 />
@@ -325,22 +327,53 @@ export function ProfilePage({
         }}
       />
       <ChangePasswordModal open={pwOpen} onOpenChange={setPwOpen} />
-      <Modal opened={passkeyToRevoke !== null} onClose={() => setPasskeyToRevoke(null)} title="Revoke passkey">
+      <Modal
+        opened={passkeyToRevoke !== null}
+        onClose={() => {
+          setPasskeyToRevoke(null)
+          setRevokePassword("")
+          setRevokeCode("")
+        }}
+        title="Revoke passkey"
+      >
         <Stack>
-          <Text size="sm">
-            This will remove this passkey from your account. You will no longer be able to use it to sign in.
-          </Text>
+          <Text size="sm">Confirm your password and authenticator code to remove this passkey from your account.</Text>
+          <PasswordInput
+            label="Current password"
+            name="revoke-current-password"
+            autoComplete="current-password"
+            value={revokePassword}
+            onChange={(event) => setRevokePassword(event.currentTarget.value)}
+          />
+          <TextInput
+            label="Authenticator code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            value={revokeCode}
+            onChange={(event) => setRevokeCode(event.currentTarget.value)}
+            error={!twoFactorEnabled ? "Enable two-factor authentication before revoking passkeys" : undefined}
+          />
           <Group justify="flex-end">
-            <Button variant="default" onClick={() => setPasskeyToRevoke(null)}>
+            <Button
+              variant="default"
+              onClick={() => {
+                setPasskeyToRevoke(null)
+                setRevokePassword("")
+                setRevokeCode("")
+              }}
+            >
               Cancel
             </Button>
             <Button
               color="red"
               loading={revokingPasskeyId === passkeyToRevoke?.id}
+              disabled={!twoFactorEnabled || !revokePassword || !/^\d{6}$/.test(revokeCode)}
               onClick={async () => {
                 if (!passkeyToRevoke) return
-                await onRevokePasskey(passkeyToRevoke.id)
+                await onRevokePasskey(passkeyToRevoke.id, revokePassword, revokeCode)
                 setPasskeyToRevoke(null)
+                setRevokePassword("")
+                setRevokeCode("")
               }}
             >
               Revoke passkey

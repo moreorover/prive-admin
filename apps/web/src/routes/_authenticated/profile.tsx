@@ -68,7 +68,7 @@ function RouteComponent() {
       passkeyPending={addPasskey.submitting}
       onAddPasskey={addPasskey.addPasskey}
       revokingPasskeyId={revokePasskey.isPending ? revokePasskey.variables : undefined}
-      onRevokePasskey={(id) => revokePasskey.mutateAsync(id)}
+      onRevokePasskey={(id, password, code) => revokePasskey.mutateAsync({ id, password, code })}
       twoFactorEnabled={Boolean(current?.user.twoFactorEnabled || twoFactor.enabled)}
       twoFactorPending={twoFactor.submitting}
       twoFactorSetup={twoFactor.setup}
