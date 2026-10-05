@@ -7,12 +7,20 @@ import { type Currency } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
 export const sessionsQueryKey = ["auth", "sessions"] as const
+export const passkeysQueryKey = ["auth", "passkeys"] as const
+
+export async function listPasskeys() {
+  const result = await authClient.passkey.listUserPasskeys()
+  if (result.error) throw new Error(result.error.message)
+  return result.data ?? []
+}
 
 export type TwoFactorSetup = { totpURI: string; backupCodes: string[] }
 
 export function useEnableTwoFactorAction() {
   const [submitting, setSubmitting] = useState(false)
   const [setup, setSetup] = useState<TwoFactorSetup | null>(null)
+  const [enabled, setEnabled] = useState(false)
 
   const enableTwoFactor = async (password: string) => {
     setSubmitting(true)
@@ -37,12 +45,14 @@ export function useEnableTwoFactorAction() {
     if (result.error) throw new Error(result.error.message)
     notifications.show({ color: "green", message: "Two-factor authentication enabled" })
     setSetup(null)
+    setEnabled(true)
   }
 
-  return { submitting, setup, enableTwoFactor, verifyTwoFactor, clearSetup: () => setSetup(null) }
+  return { submitting, setup, enabled, enableTwoFactor, verifyTwoFactor, clearSetup: () => setSetup(null) }
 }
 
 export function useAddPasskeyAction() {
+  const queryClient = useQueryClient()
   const [submitting, setSubmitting] = useState(false)
 
   const addPasskey = async () => {
@@ -51,6 +61,7 @@ export function useAddPasskeyAction() {
       .addPasskey({ name: "Privé passkey" })
       .then((result) => {
         if (result.error) throw new Error(result.error.message)
+        queryClient.invalidateQueries({ queryKey: passkeysQueryKey })
         notifications.show({ color: "green", message: "Passkey added" })
       })
       .catch((error) => {

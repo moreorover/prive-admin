@@ -2,6 +2,7 @@ import { QRCode } from "@gfazioli/mantine-qr-code"
 import {
   Alert,
   Avatar,
+  Badge,
   Button,
   Checkbox,
   Container,
@@ -51,6 +52,12 @@ type ProfileSession = {
   userAgent?: string | null
   ipAddress?: string | null
 }
+type ProfilePasskey = {
+  id: string
+  name?: string | null
+  deviceType: string
+  backedUp: boolean
+}
 type CurrentSession = {
   user: { name: string; email: string; emailVerified: boolean; twoFactorEnabled?: boolean | null }
   session: { id: string }
@@ -60,6 +67,7 @@ export function ProfilePage({
   current,
   isPending,
   sessions,
+  passkeys,
   preferredCurrency,
   terminatingId,
   revokePending,
@@ -79,6 +87,7 @@ export function ProfilePage({
   current: CurrentSession | null | undefined
   isPending: boolean
   sessions: ProfileSession[]
+  passkeys: ProfilePasskey[]
   preferredCurrency: string
   terminatingId: string | undefined
   revokePending: boolean
@@ -123,9 +132,6 @@ export function ProfilePage({
               <Button variant="default" size="sm" onClick={() => setPwOpen(true)}>
                 Change password
               </Button>
-              <Button variant="default" size="sm" loading={passkeyPending} onClick={onAddPasskey}>
-                Add passkey
-              </Button>
               {!twoFactorEnabled && (
                 <Button variant="default" size="sm" onClick={() => setTwoFactorOpen(true)}>
                   Enable 2FA
@@ -146,6 +152,14 @@ export function ProfilePage({
               <Text fz="xs" c="dimmed">
                 Preferred currency: {preferredCurrency}
               </Text>
+              <Group gap="xs">
+                <Text fz="xs" c="dimmed">
+                  Two-factor authentication:
+                </Text>
+                <Badge size="xs" color={twoFactorEnabled ? "green" : "gray"} variant="light">
+                  {twoFactorEnabled ? "Enabled" : "Not enabled"}
+                </Badge>
+              </Group>
             </Stack>
           </Group>
         </Section>
@@ -185,6 +199,39 @@ export function ProfilePage({
             </Stack>
           </Alert>
         )}
+
+        <Section
+          title="Passkeys"
+          description="Use biometrics, a device PIN, or a security key to sign in without your password."
+          actions={
+            <Button variant="default" size="sm" loading={passkeyPending} onClick={onAddPasskey}>
+              Add passkey
+            </Button>
+          }
+        >
+          {passkeys.length === 0 ? (
+            <Text size="sm" c="dimmed">
+              No passkeys registered yet.
+            </Text>
+          ) : (
+            <Stack gap="sm">
+              {passkeys.map((passkey) => (
+                <Group key={passkey.id} justify="space-between">
+                  <Stack gap={0}>
+                    <Text size="sm" fw={500}>
+                      {passkey.name || "Passkey"}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {passkey.deviceType}
+                      {passkey.backedUp ? " · Backed up" : ""}
+                    </Text>
+                  </Stack>
+                  <Badge variant="light">Registered</Badge>
+                </Group>
+              ))}
+            </Stack>
+          )}
+        </Section>
 
         <Section title="Active sessions" description="Devices currently signed in to your account.">
           {sessions.length === 0 ? (
