@@ -1,6 +1,7 @@
 import type { ComponentProps } from "react"
 
 import { MantineProvider } from "@mantine/core"
+import { theme } from "@prive-admin-tanstack/ui/theme"
 import { readFileSync } from "node:fs"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
@@ -90,7 +91,7 @@ function renderAppointmentDetailPage(props: Partial<ComponentProps<typeof Appoin
   return renderToStaticMarkup(
     createElement(
       MantineProvider,
-      null,
+      { theme },
       createElement(
         LocaleProvider,
         { value: { locale: "en-US", timeZone: "UTC" } },
@@ -120,7 +121,7 @@ describe("AppointmentDetailPage", () => {
     const markup = renderToStaticMarkup(
       createElement(
         MantineProvider,
-        null,
+        { theme },
         createElement(EditAppointmentForm, {
           currentName: "Color refresh",
           currentStartsAt: "2026-08-14T09:30:00.000Z",

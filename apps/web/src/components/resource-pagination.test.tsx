@@ -1,4 +1,5 @@
 import { MantineProvider } from "@mantine/core"
+import { theme } from "@prive-admin-tanstack/ui/theme"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vite-plus/test"
@@ -6,7 +7,7 @@ import { describe, expect, it } from "vite-plus/test"
 import { ResourcePagination } from "./resource-pagination"
 
 function renderResourcePagination(props: Parameters<typeof ResourcePagination>[0]) {
-  return renderToStaticMarkup(createElement(MantineProvider, null, createElement(ResourcePagination, props)))
+  return renderToStaticMarkup(createElement(MantineProvider, { theme }, createElement(ResourcePagination, props)))
 }
 
 describe("ResourcePagination", () => {

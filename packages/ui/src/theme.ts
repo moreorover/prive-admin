@@ -3,6 +3,7 @@ import {
   Badge,
   Button,
   Card,
+  type CSSVariablesResolver,
   Divider,
   Menu,
   Modal,
@@ -18,6 +19,60 @@ import {
   Textarea,
   createTheme,
 } from "@mantine/core"
+
+const priveTokens = {
+  shared: {
+    obsidian: "#11100e",
+    bone: "#f4efe6",
+    boneWarm: "#fffcf6",
+    champagne: "#b58b43",
+    mulberry: "#442338",
+    ledger: "#51665b",
+    mist: "#d8d2c8",
+  },
+  light: {
+    pageGlowPrimary: "rgba(255, 249, 236, 0.95)",
+    pageGlowSecondary: "rgba(68, 35, 56, 0.12)",
+    ledgerLineX: "rgba(91, 73, 49, 0.055)",
+    ledgerLineY: "rgba(91, 73, 49, 0.045)",
+    surface: "rgba(255, 252, 246, 0.9)",
+    surfaceStrong: "rgba(255, 252, 246, 0.96)",
+    surfaceMuted: "rgba(255, 252, 246, 0.72)",
+    surfaceRaised: "rgba(255, 252, 246, 0.94)",
+    surfaceShadow: "rgba(74, 55, 24, 0.1)",
+    buttonShadow: "rgba(111, 77, 24, 0.16)",
+    controlBg: "rgba(255, 252, 246, 0.76)",
+    controlBgHover: "rgba(255, 252, 246, 0.96)",
+    border: "rgba(91, 73, 49, 0.16)",
+    borderStrong: "rgba(91, 73, 49, 0.28)",
+    focus: "rgba(181, 139, 67, 0.38)",
+    selection: "rgba(181, 139, 67, 0.24)",
+    body: "#f4efe6",
+    text: "#211c16",
+    dimmed: "#786b5b",
+  },
+  dark: {
+    pageGlowPrimary: "rgba(181, 139, 67, 0.1)",
+    pageGlowSecondary: "rgba(68, 35, 56, 0.34)",
+    ledgerLineX: "rgba(244, 239, 230, 0.035)",
+    ledgerLineY: "rgba(244, 239, 230, 0.026)",
+    surface: "rgba(31, 28, 25, 0.94)",
+    surfaceStrong: "rgba(39, 35, 31, 0.98)",
+    surfaceMuted: "rgba(42, 37, 32, 0.86)",
+    surfaceRaised: "rgba(28, 25, 22, 0.98)",
+    surfaceShadow: "rgba(0, 0, 0, 0.42)",
+    buttonShadow: "rgba(0, 0, 0, 0.3)",
+    controlBg: "rgba(39, 35, 31, 0.92)",
+    controlBgHover: "rgba(54, 48, 42, 0.98)",
+    border: "rgba(244, 239, 230, 0.16)",
+    borderStrong: "rgba(244, 239, 230, 0.28)",
+    focus: "rgba(216, 183, 117, 0.44)",
+    selection: "rgba(181, 139, 67, 0.34)",
+    body: "#11100e",
+    text: "#f8efe3",
+    dimmed: "#bfb4a6",
+  },
+} as const
 
 export const theme = createTheme({
   primaryColor: "champagne",
@@ -127,6 +182,9 @@ export const theme = createTheme({
     to: "mulberry.5",
     deg: 135,
   },
+  other: {
+    prive: priveTokens,
+  },
   components: {
     ActionIcon: ActionIcon.extend({
       defaultProps: {
@@ -221,7 +279,7 @@ export const theme = createTheme({
     }),
     Tabs: Tabs.extend({
       defaultProps: {
-        radius: "xl",
+        radius: "sm",
       },
     }),
     Textarea: Textarea.extend({
@@ -238,3 +296,40 @@ export const theme = createTheme({
     }),
   },
 })
+
+export const cssVariablesResolver: CSSVariablesResolver = (mantineTheme) => {
+  const tokens = mantineTheme.other.prive as typeof priveTokens
+  const sharedVariables = Object.fromEntries(
+    Object.entries(tokens.shared).map(([name, value]) => [
+      `--prive-${name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`,
+      value,
+    ]),
+  )
+  const colorSchemeVariables = (scheme: "light" | "dark") => {
+    const schemeTokens = tokens[scheme]
+    return Object.fromEntries(
+      Object.entries(schemeTokens).map(([name, value]) => [
+        `--prive-${name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`,
+        value,
+      ]),
+    )
+  }
+
+  return {
+    variables: sharedVariables,
+    light: {
+      ...colorSchemeVariables("light"),
+      "--prive-surface-alpha": "color-mix(in srgb, var(--mantine-color-body) 88%, transparent)",
+      "--mantine-color-body": tokens.light.body,
+      "--mantine-color-text": tokens.light.text,
+      "--mantine-color-dimmed": tokens.light.dimmed,
+    },
+    dark: {
+      ...colorSchemeVariables("dark"),
+      "--prive-surface-alpha": "color-mix(in srgb, var(--mantine-color-body) 88%, transparent)",
+      "--mantine-color-body": tokens.dark.body,
+      "--mantine-color-text": tokens.dark.text,
+      "--mantine-color-dimmed": tokens.dark.dimmed,
+    },
+  }
+}
