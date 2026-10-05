@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as TwoFactorRouteImport } from './routes/two-factor'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAppointmentsRouteRouteImport } from './routes/_authenticated/appointments/route'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedCashRouteImport } from './routes/_authenticated/cash'
@@ -23,6 +24,7 @@ import { Route as AuthenticatedHairOrdersRouteRouteImport } from './routes/_auth
 import { Route as AuthenticatedHairSalesRouteRouteImport } from './routes/_authenticated/hair-sales/route'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments/$appointmentId'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as AuthenticatedCustomersCustomerIdRouteRouteImport } from './routes/_authenticated/customers/$customerId/route'
@@ -66,6 +68,11 @@ const TwoFactorRoute = TwoFactorRouteImport.update({
   id: '/two-factor',
   path: '/two-factor',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAppointmentsRouteRoute =
   AuthenticatedAppointmentsRouteRouteImport.update({
@@ -121,6 +128,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
 const AuthenticatedAppointmentsAppointmentIdRoute =
   AuthenticatedAppointmentsAppointmentIdRouteImport.update({
@@ -272,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/two-factor': typeof TwoFactorRoute
+  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/appointments': typeof AuthenticatedAppointmentsRouteRouteWithChildren
   '/customers': typeof AuthenticatedCustomersRouteRouteWithChildren
   '/documents': typeof AuthenticatedDocumentsRouteRouteWithChildren
@@ -284,6 +297,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteRouteWithChildren
   '/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/hair-sales/$hairSaleId': typeof AuthenticatedHairSalesHairSaleIdRoute
@@ -311,12 +325,14 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/two-factor': typeof TwoFactorRoute
+  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/appointments': typeof AuthenticatedAppointmentsRouteRouteWithChildren
   '/calendar': typeof AuthenticatedCalendarRoute
   '/cash': typeof AuthenticatedCashRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/hair-sales/$hairSaleId': typeof AuthenticatedHairSalesHairSaleIdRoute
@@ -346,6 +362,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/two-factor': typeof TwoFactorRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/appointments': typeof AuthenticatedAppointmentsRouteRouteWithChildren
   '/_authenticated/customers': typeof AuthenticatedCustomersRouteRouteWithChildren
   '/_authenticated/documents': typeof AuthenticatedDocumentsRouteRouteWithChildren
@@ -358,6 +375,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteRouteWithChildren
   '/_authenticated/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/_authenticated/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/_authenticated/hair-sales/$hairSaleId': typeof AuthenticatedHairSalesHairSaleIdRoute
@@ -387,6 +405,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/two-factor'
+    | '/admin'
     | '/appointments'
     | '/customers'
     | '/documents'
@@ -399,6 +418,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/customers/$customerId'
     | '/legal-entities/$legalEntityId'
+    | '/admin/users'
     | '/appointments/$appointmentId'
     | '/hair-orders/$hairOrderId'
     | '/hair-sales/$hairSaleId'
@@ -426,12 +446,14 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/two-factor'
+    | '/admin'
     | '/appointments'
     | '/calendar'
     | '/cash'
     | '/dashboard'
     | '/profile'
     | '/settings'
+    | '/admin/users'
     | '/appointments/$appointmentId'
     | '/hair-orders/$hairOrderId'
     | '/hair-sales/$hairSaleId'
@@ -460,6 +482,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/two-factor'
+    | '/_authenticated/admin'
     | '/_authenticated/appointments'
     | '/_authenticated/customers'
     | '/_authenticated/documents'
@@ -472,6 +495,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/legal-entities/$legalEntityId'
+    | '/_authenticated/admin/users'
     | '/_authenticated/appointments/$appointmentId'
     | '/_authenticated/hair-orders/$hairOrderId'
     | '/_authenticated/hair-sales/$hairSaleId'
@@ -532,6 +556,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/two-factor'
       preLoaderRoute: typeof TwoFactorRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/appointments': {
       id: '/_authenticated/appointments'
@@ -602,6 +633,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/appointments/$appointmentId': {
       id: '/_authenticated/appointments/$appointmentId'
@@ -774,6 +812,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+}
+
+const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
+  {
+    AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+  }
+
+const AuthenticatedAdminRouteRouteWithChildren =
+  AuthenticatedAdminRouteRoute._addFileChildren(
+    AuthenticatedAdminRouteRouteChildren,
+  )
+
 interface AuthenticatedAppointmentsRouteRouteChildren {
   AuthenticatedAppointmentsAppointmentIdRoute: typeof AuthenticatedAppointmentsAppointmentIdRoute
 }
@@ -912,6 +964,7 @@ const AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAppointmentsRouteRoute: typeof AuthenticatedAppointmentsRouteRouteWithChildren
   AuthenticatedCustomersRouteRoute: typeof AuthenticatedCustomersRouteRouteWithChildren
   AuthenticatedDocumentsRouteRoute: typeof AuthenticatedDocumentsRouteRouteWithChildren
@@ -930,6 +983,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAppointmentsRouteRoute:
     AuthenticatedAppointmentsRouteRouteWithChildren,
   AuthenticatedCustomersRouteRoute:

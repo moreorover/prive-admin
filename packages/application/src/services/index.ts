@@ -1,4 +1,5 @@
 export * from "./appointments"
+export * from "./admin-users"
 export * from "./bank-statement-attachments"
 export * from "./bank-csv"
 export * from "./bank-statement-entries"
