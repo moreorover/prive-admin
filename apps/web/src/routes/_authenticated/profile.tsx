@@ -8,7 +8,12 @@ import { trpc } from "@/utils/trpc"
 
 import { ProfilePage } from "./-components/profile-page"
 import {
+  listPasskeys,
+  passkeysQueryKey,
   sessionsQueryKey,
+  useAddPasskeyAction,
+  useEnableTwoFactorAction,
+  useRevokePasskeyAction,
   useRevokeSessionAction,
   useUpdateUserProfileAction,
 } from "./profile/-actions/profile-actions"
@@ -21,6 +26,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
         queryKey: sessionsQueryKey,
         queryFn: () => authClient.listSessions(),
       }),
+      context.queryClient.ensureQueryData({ queryKey: passkeysQueryKey, queryFn: listPasskeys }),
       context.queryClient.ensureQueryData(trpc.userSettings.get.queryOptions()),
     ])
   },
@@ -33,6 +39,7 @@ function RouteComponent() {
     queryKey: sessionsQueryKey,
     queryFn: () => authClient.listSessions(),
   }).data
+  const passkeys = useQuery({ queryKey: passkeysQueryKey, queryFn: listPasskeys }).data
   const userSettingsQueryOptions = trpc.userSettings.get.queryOptions()
   const settings = useQuery(userSettingsQueryOptions).data
   const initialCurrency: Currency = settings?.preferredCurrency === "GBP" ? "GBP" : "EUR"
@@ -41,12 +48,16 @@ function RouteComponent() {
     initialName: current?.user.name ?? "",
     initialCurrency,
   })
+  const addPasskey = useAddPasskeyAction({ username: current?.user.email })
+  const revokePasskey = useRevokePasskeyAction()
+  const twoFactor = useEnableTwoFactorAction()
 
   return (
     <ProfilePage
       current={current}
       isPending={isPending}
       sessions={sessionsResult?.data ?? []}
+      passkeys={passkeys ?? []}
       preferredCurrency={settings?.preferredCurrency ?? "EUR"}
       terminatingId={terminatingId}
       revokePending={revokeSession.isPending}
@@ -54,6 +65,16 @@ function RouteComponent() {
       onTerminatingIdChange={setTerminatingId}
       onRevokeSession={(token) => revokeSession.mutateAsync(token)}
       onUpdateProfile={(values) => updateProfile.updateUserProfile(values)}
+      passkeyPending={addPasskey.submitting}
+      onAddPasskey={addPasskey.addPasskey}
+      revokingPasskeyId={revokePasskey.isPending ? revokePasskey.variables : undefined}
+      onRevokePasskey={(id) => revokePasskey.mutateAsync(id)}
+      twoFactorEnabled={Boolean(current?.user.twoFactorEnabled || twoFactor.enabled)}
+      twoFactorPending={twoFactor.submitting}
+      twoFactorSetup={twoFactor.setup}
+      onEnableTwoFactor={twoFactor.enableTwoFactor}
+      onVerifyTwoFactor={twoFactor.verifyTwoFactor}
+      onCloseTwoFactorSetup={twoFactor.clearSetup}
     />
   )
 }

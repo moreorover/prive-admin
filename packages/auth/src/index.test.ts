@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 const betterAuth = vi.fn((options: unknown) => ({ options }))
 
 vi.mock("better-auth/minimal", () => ({ betterAuth }))
+vi.mock("@better-auth/passkey", () => ({ passkey: vi.fn(() => "passkey-plugin") }))
+vi.mock("better-auth/plugins/two-factor", () => ({ twoFactor: vi.fn(() => "two-factor-plugin") }))
 vi.mock("better-auth/adapters/drizzle", () => ({
   drizzleAdapter: vi.fn(() => "drizzle-adapter"),
 }))

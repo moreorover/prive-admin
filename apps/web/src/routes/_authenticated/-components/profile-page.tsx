@@ -1,9 +1,12 @@
+import { QRCode } from "@gfazioli/mantine-qr-code"
 import {
   Alert,
   Avatar,
+  Badge,
   Button,
   Checkbox,
   Container,
+  Center,
   Group,
   Loader,
   Modal,
@@ -27,6 +30,8 @@ import { CURRENCY_OPTIONS, type Currency } from "@/lib/currency"
 
 type ParsedUA = { isMobile: boolean; os: string; browser: string }
 
+const sessionDateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" })
+
 function parseUA(ua: string): ParsedUA {
   const isMobile = /Mobile|Android|iPhone|iPad/.test(ua)
   let os = "Unknown"
@@ -43,14 +48,30 @@ function parseUA(ua: string): ParsedUA {
   return { isMobile, os, browser }
 }
 
+function formatSessionDate(value: Date | string | null | undefined) {
+  if (!value) return "Unknown"
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) return "Unknown"
+  return sessionDateFormatter.format(date)
+}
+
 type ProfileSession = {
   id: string
   token: string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  expiresAt?: Date | string | null
   userAgent?: string | null
   ipAddress?: string | null
 }
+type ProfilePasskey = {
+  id: string
+  name?: string | null
+  deviceType: string
+  backedUp: boolean
+}
 type CurrentSession = {
-  user: { name: string; email: string; emailVerified: boolean }
+  user: { name: string; email: string; emailVerified: boolean; twoFactorEnabled?: boolean | null }
   session: { id: string }
 }
 
@@ -58,6 +79,7 @@ export function ProfilePage({
   current,
   isPending,
   sessions,
+  passkeys,
   preferredCurrency,
   terminatingId,
   revokePending,
@@ -65,10 +87,21 @@ export function ProfilePage({
   onTerminatingIdChange,
   onRevokeSession,
   onUpdateProfile,
+  passkeyPending,
+  onAddPasskey,
+  revokingPasskeyId,
+  onRevokePasskey,
+  twoFactorEnabled,
+  twoFactorPending,
+  twoFactorSetup,
+  onEnableTwoFactor,
+  onVerifyTwoFactor,
+  onCloseTwoFactorSetup,
 }: {
   current: CurrentSession | null | undefined
   isPending: boolean
   sessions: ProfileSession[]
+  passkeys: ProfilePasskey[]
   preferredCurrency: string
   terminatingId: string | undefined
   revokePending: boolean
@@ -76,10 +109,22 @@ export function ProfilePage({
   onTerminatingIdChange: (id: string | undefined) => void
   onRevokeSession: (token: string) => Promise<unknown>
   onUpdateProfile: (values: { name: string; preferredCurrency: Currency }) => Promise<void>
+  passkeyPending: boolean
+  onAddPasskey: () => Promise<void>
+  revokingPasskeyId: string | undefined
+  onRevokePasskey: (id: string) => Promise<unknown>
+  twoFactorEnabled: boolean
+  twoFactorPending: boolean
+  twoFactorSetup: { totpURI: string; backupCodes: string[] } | null
+  onEnableTwoFactor: (password: string) => Promise<void>
+  onVerifyTwoFactor: (code: string) => Promise<void>
+  onCloseTwoFactorSetup: () => void
 }) {
   const [editOpen, setEditOpen] = useState(false)
   const [pwOpen, setPwOpen] = useState(false)
   const [verifyPending, setVerifyPending] = useState(false)
+  const [twoFactorOpen, setTwoFactorOpen] = useState(false)
+  const [passkeyToRevoke, setPasskeyToRevoke] = useState<ProfilePasskey | null>(null)
 
   if (isPending || !current) {
     return <Loader2 />
@@ -91,7 +136,7 @@ export function ProfilePage({
   return (
     <Container size="md">
       <BreadcrumbItem label="Profile" order={10} />
-      <PageHeader title="Profile" description="Manage account details, password, and active sessions." />
+      <PageHeader title="Profile" description="Manage account details, passkeys, password, and active sessions." />
       <Stack>
         <Section
           title="Account"
@@ -104,6 +149,11 @@ export function ProfilePage({
               <Button variant="default" size="sm" onClick={() => setPwOpen(true)}>
                 Change password
               </Button>
+              {!twoFactorEnabled && (
+                <Button variant="default" size="sm" onClick={() => setTwoFactorOpen(true)}>
+                  Enable 2FA
+                </Button>
+              )}
             </Group>
           }
         >
@@ -119,6 +169,14 @@ export function ProfilePage({
               <Text fz="xs" c="dimmed">
                 Preferred currency: {preferredCurrency}
               </Text>
+              <Group gap="xs">
+                <Text fz="xs" c="dimmed">
+                  Two-factor authentication:
+                </Text>
+                <Badge size="xs" color={twoFactorEnabled ? "green" : "gray"} variant="light">
+                  {twoFactorEnabled ? "Enabled" : "Not enabled"}
+                </Badge>
+              </Group>
             </Stack>
           </Group>
         </Section>
@@ -159,6 +217,51 @@ export function ProfilePage({
           </Alert>
         )}
 
+        <Section
+          title="Passkeys"
+          description="Use biometrics, a device PIN, or a security key to sign in without your password."
+          actions={
+            <Button variant="default" size="sm" loading={passkeyPending} onClick={onAddPasskey}>
+              Add passkey
+            </Button>
+          }
+        >
+          {passkeys.length === 0 ? (
+            <Text size="sm" c="dimmed">
+              No passkeys registered yet.
+            </Text>
+          ) : (
+            <Stack gap="sm">
+              {passkeys.map((passkey) => (
+                <Group key={passkey.id} justify="space-between">
+                  <Stack gap={0}>
+                    <Text size="sm" fw={500}>
+                      {passkey.name === user.email ? "Privé passkey" : passkey.name || "Passkey"}
+                    </Text>
+                    <Text size="xs" c="dimmed">
+                      {passkey.deviceType}
+                      {passkey.backedUp ? " · Backed up" : ""}
+                    </Text>
+                  </Stack>
+                  <Group gap="xs">
+                    <Badge variant="light">Registered</Badge>
+                    <Button
+                      size="xs"
+                      variant="subtle"
+                      color="red"
+                      loading={revokingPasskeyId === passkey.id}
+                      disabled={revokingPasskeyId !== undefined}
+                      onClick={() => setPasskeyToRevoke(passkey)}
+                    >
+                      Revoke
+                    </Button>
+                  </Group>
+                </Group>
+              ))}
+            </Stack>
+          )}
+        </Section>
+
         <Section title="Active sessions" description="Devices currently signed in to your account.">
           {sessions.length === 0 ? (
             <Text size="sm" c="dimmed">
@@ -173,10 +276,16 @@ export function ProfilePage({
                 return [
                   <Group key={s.id} gap="xs">
                     {ua.isMobile ? <IconDeviceMobile size={16} /> : <IconDeviceLaptop size={16} />}
-                    <Text size="sm" style={{ flex: 1 }}>
-                      {s.ipAddress && `${s.ipAddress}, `}
-                      {ua.os}, {ua.browser}
-                    </Text>
+                    <Stack gap={0} style={{ flex: 1 }}>
+                      <Text size="sm">
+                        {s.ipAddress && `${s.ipAddress}, `}
+                        {ua.os}, {ua.browser}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        Signed in: {formatSessionDate(s.createdAt)} · Last active: {formatSessionDate(s.updatedAt)} ·
+                        Expires: {formatSessionDate(s.expiresAt)}
+                      </Text>
+                    </Stack>
                     <Button
                       size="xs"
                       variant="subtle"
@@ -216,7 +325,117 @@ export function ProfilePage({
         }}
       />
       <ChangePasswordModal open={pwOpen} onOpenChange={setPwOpen} />
+      <Modal opened={passkeyToRevoke !== null} onClose={() => setPasskeyToRevoke(null)} title="Revoke passkey">
+        <Stack>
+          <Text size="sm">
+            This will remove this passkey from your account. You will no longer be able to use it to sign in.
+          </Text>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={() => setPasskeyToRevoke(null)}>
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              loading={revokingPasskeyId === passkeyToRevoke?.id}
+              onClick={async () => {
+                if (!passkeyToRevoke) return
+                await onRevokePasskey(passkeyToRevoke.id)
+                setPasskeyToRevoke(null)
+              }}
+            >
+              Revoke passkey
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+      <TwoFactorModal
+        open={twoFactorOpen}
+        onOpenChange={(open) => {
+          setTwoFactorOpen(open)
+          if (!open) onCloseTwoFactorSetup()
+        }}
+        setup={twoFactorSetup}
+        submitting={twoFactorPending}
+        onEnable={onEnableTwoFactor}
+        onVerify={onVerifyTwoFactor}
+      />
     </Container>
+  )
+}
+
+function TwoFactorModal({
+  open,
+  onOpenChange,
+  setup,
+  submitting,
+  onEnable,
+  onVerify,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  setup: { totpURI: string; backupCodes: string[] } | null
+  submitting: boolean
+  onEnable: (password: string) => Promise<void>
+  onVerify: (code: string) => Promise<void>
+}) {
+  const [password, setPassword] = useState("")
+  const [code, setCode] = useState("")
+  const [verifying, setVerifying] = useState(false)
+
+  const verify = async () => {
+    setVerifying(true)
+    void onVerify(code)
+      .then(() => onOpenChange(false))
+      .catch((error) => {
+        notifications.show({ color: "red", message: error instanceof Error ? error.message : "Invalid code" })
+      })
+      .finally(() => setVerifying(false))
+  }
+
+  return (
+    <Modal opened={open} onClose={() => onOpenChange(false)} title="Enable two-factor authentication">
+      {setup ? (
+        <Stack>
+          <Text size="sm">Scan this QR code with your authenticator app:</Text>
+          <Center>
+            <QRCode value={setup.totpURI} size="lg" errorCorrectionLevel="H" />
+          </Center>
+          <Text size="sm">Or copy the setup URI manually:</Text>
+          <TextInput value={setup.totpURI} readOnly />
+          <Text size="sm" fw={600}>
+            Save these backup codes securely:
+          </Text>
+          <Text component="pre" size="sm">
+            {setup.backupCodes.join("\n")}
+          </Text>
+          <TextInput
+            label="Authenticator code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            value={code}
+            onChange={(event) => setCode(event.currentTarget.value)}
+          />
+          <Button loading={verifying} disabled={!/^\d{6}$/.test(code)} onClick={verify}>
+            Verify and enable
+          </Button>
+        </Stack>
+      ) : (
+        <Stack>
+          <Text size="sm">Confirm your password to generate a TOTP authenticator setup.</Text>
+          <PasswordInput
+            label="Current password"
+            name="current-password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.currentTarget.value)}
+            autoFocus
+          />
+          <Button loading={submitting} disabled={!password} onClick={() => onEnable(password)}>
+            Generate setup
+          </Button>
+        </Stack>
+      )}
+    </Modal>
   )
 }
 

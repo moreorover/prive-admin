@@ -7,6 +7,7 @@ export const user = sqliteTable("users", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: integer("email_verified", { mode: "boolean" }).default(false).notNull(),
+  twoFactorEnabled: integer("two_factor_enabled", { mode: "boolean" }).default(false).notNull(),
   image: text("image"),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
@@ -62,4 +63,40 @@ export const verification = sqliteTable(
     updatedAt: updatedAt(),
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
+)
+
+export const passkey = sqliteTable(
+  "passkey",
+  {
+    id: text("id").primaryKey(),
+    name: text("name"),
+    publicKey: text("public_key").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    credentialID: text("credential_id").notNull().unique(),
+    counter: integer("counter").notNull(),
+    deviceType: text("device_type").notNull(),
+    backedUp: integer("backed_up", { mode: "boolean" }).notNull(),
+    transports: text("transports"),
+    createdAt: createdAt(),
+    aaguid: text("aaguid"),
+  },
+  (table) => [index("passkey_userId_idx").on(table.userId)],
+)
+
+export const twoFactor = sqliteTable(
+  "two_factor",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    secret: text("secret").notNull(),
+    backupCodes: text("backup_codes").notNull(),
+    verified: integer("verified", { mode: "boolean" }).default(true).notNull(),
+    failedVerificationCount: integer("failed_verification_count").default(0).notNull(),
+    lockedUntil: timestampMs("locked_until"),
+  },
+  (table) => [index("twoFactor_userId_idx").on(table.userId), index("twoFactor_secret_idx").on(table.secret)],
 )

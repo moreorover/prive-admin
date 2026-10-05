@@ -1,10 +1,12 @@
 import type { Auth, BetterAuthOptions, DBAdapter } from "better-auth"
 
+import { passkey } from "@better-auth/passkey"
 import { createDb } from "@prive-admin-tanstack/db/client"
 import * as schema from "@prive-admin-tanstack/db/schema/auth"
 import { env } from "@prive-admin-tanstack/env/server"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { betterAuth } from "better-auth/minimal"
+import { twoFactor } from "better-auth/plugins/two-factor"
 
 type AppAuthOptions = BetterAuthOptions & {
   database: (options: BetterAuthOptions) => DBAdapter<BetterAuthOptions>
@@ -46,6 +48,14 @@ export function createAuth(): AppAuth {
       enabled: true,
       disableSignUp: true,
     },
+    plugins: [
+      passkey({
+        rpName: "Privé",
+        rpID: new URL(env.CORS_ORIGIN).hostname,
+        origin: env.CORS_ORIGIN,
+      }),
+      twoFactor({ issuer: "Privé" }),
+    ],
     session: {
       cookieCache: {
         enabled: true,

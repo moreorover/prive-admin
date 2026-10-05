@@ -13,6 +13,7 @@ CLOUDFLARE_CREDENTIALS_ENV="${CLOUDFLARE_CREDENTIALS_ENV:-}"
 CONFIRM_D1_COPY="${CONFIRM_D1_COPY:-${CONFIRM_COPY_PROD_TO_DEV:-}}"
 DRY_RUN="${DRY_RUN:-}"
 KEEP_D1_COPY_FILES="${KEEP_D1_COPY_FILES:-}"
+PRESERVE_SCHEMA="${PRESERVE_SCHEMA:-0}"
 
 usage() {
   cat <<EOF
@@ -31,6 +32,7 @@ Options:
   --target-mode <remote|local>
                            Explicit target mode. Default: remote
   --dry-run                Export source and generate reset SQL without changing target
+  --preserve-schema        Keep the target schema and replace data only
   --keep-files             Keep temporary export and reset files
   --yes                    Confirm the overwrite
   -h, --help               Show this help
@@ -156,6 +158,10 @@ while [[ $# -gt 0 ]]; do
       DRY_RUN="1"
       shift
       ;;
+    --preserve-schema)
+      PRESERVE_SCHEMA="1"
+      shift
+      ;;
     --keep-files)
       KEEP_D1_COPY_FILES="1"
       shift
@@ -183,6 +189,11 @@ fi
 
 if [[ "$TARGET_D1_REMOTE" != "0" && "$TARGET_D1_REMOTE" != "1" ]]; then
   echo "TARGET_D1_REMOTE must be 0 for local target or 1 for remote target." >&2
+  exit 1
+fi
+
+if [[ "$PRESERVE_SCHEMA" != "0" && "$PRESERVE_SCHEMA" != "1" ]]; then
+  echo "PRESERVE_SCHEMA must be 0 or 1." >&2
   exit 1
 fi
 
@@ -260,10 +271,11 @@ if ! wrangler d1 export "$SOURCE_D1_DB" --remote --skip-confirmation --output "$
 fi
 echo "Exported '$SOURCE_D1_DB' to a temporary SQL file."
 
-node --input-type=module - "$EXPORT_SQL" "$IMPORT_SQL" <<'NODE'
+node --input-type=module - "$EXPORT_SQL" "$IMPORT_SQL" "$PRESERVE_SCHEMA" <<'NODE'
 import { readFileSync, writeFileSync } from "node:fs"
 
-const [, , exportSqlPath, importSqlPath] = process.argv
+const [, , exportSqlPath, importSqlPath, preserveSchema] = process.argv
+const keepSchema = preserveSchema === "1"
 const exportSql = readFileSync(exportSqlPath, "utf8")
 
 const splitStatements = (sql) => {
@@ -310,7 +322,7 @@ for (const statement of statements) {
 
   const insertTable = tableFromInsert(statement)
   if (insertTable) {
-    if (insertTable === "sqlite_sequence") {
+    if (insertTable === "sqlite_sequence" || (keepSchema && insertTable === "d1_migrations")) {
       sequenceStatements.push(statement)
     } else {
       const tableInserts = inserts.get(insertTable) ?? []
@@ -364,11 +376,11 @@ const depth = (tableName) => {
 const importOrder = tableNames.sort((left, right) => depth(left) - depth(right) || left.localeCompare(right))
 const importSql = [
   "PRAGMA foreign_keys = OFF;",
-  ...importOrder.map((tableName) => creates.get(tableName)),
+  ...(keepSchema ? [] : importOrder.map((tableName) => creates.get(tableName))),
   ...otherStatements,
   ...importOrder.flatMap((tableName) => inserts.get(tableName) ?? []),
-  ...sequenceStatements,
-  ...indexes,
+  // sqlite_sequence is an internal table and may not exist in the target D1 database.
+  ...(keepSchema ? [] : indexes),
   "PRAGMA foreign_keys = ON;",
   "",
 ].join("\n")
@@ -383,10 +395,11 @@ wrangler d1 execute "$TARGET_D1_DB" \
   --command "SELECT name, sql FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name;" \
   >"$TARGET_TABLES_JSON"
 
-node --input-type=module - "$TARGET_TABLES_JSON" "$RESET_SQL" "$TARGET_MODE" <<'NODE'
+node --input-type=module - "$TARGET_TABLES_JSON" "$RESET_SQL" "$TARGET_MODE" "$PRESERVE_SCHEMA" <<'NODE'
 import { readFileSync, writeFileSync } from "node:fs"
 
-const [, , tablesJsonPath, resetSqlPath, targetMode] = process.argv
+const [, , tablesJsonPath, resetSqlPath, targetMode, preserveSchema] = process.argv
+const keepSchema = preserveSchema === "1"
 const rawPayload = readFileSync(tablesJsonPath, "utf8")
 const jsonPayload = rawPayload
   .split("\n")
@@ -433,11 +446,17 @@ const depth = (tableName) => {
   return tableDepth
 }
 
-const dropOrder = [...tableNames].sort((left, right) => depth(right) - depth(left) || left.localeCompare(right))
 const quoteIdentifier = (name) => `"${name.replaceAll('"', '""')}"`
+const tableOperations = keepSchema
+  ? tableNames
+      .filter((name) => !name.startsWith("_cf_") && name !== "d1_migrations")
+      .map((name) => `DELETE FROM ${quoteIdentifier(name)};`)
+  : [...tableNames]
+      .sort((left, right) => depth(right) - depth(left) || left.localeCompare(right))
+      .map((name) => `DROP TABLE IF EXISTS ${quoteIdentifier(name)};`)
 const sql = [
   "PRAGMA foreign_keys = OFF;",
-  ...dropOrder.map((name) => `DROP TABLE IF EXISTS ${quoteIdentifier(name)};`),
+  ...tableOperations,
   "PRAGMA foreign_keys = ON;",
   "",
 ].join("\n")

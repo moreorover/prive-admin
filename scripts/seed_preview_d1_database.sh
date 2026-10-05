@@ -165,6 +165,7 @@ echo "Seeding preview D1 database '$PREVIEW_D1_DB' from '$SOURCE_D1_DB'..."
   --source-db "$SOURCE_D1_DB" \
   --target-db "$PREVIEW_D1_DB" \
   --target-mode remote \
+  --preserve-schema \
   --yes
 
 write_seed_marker

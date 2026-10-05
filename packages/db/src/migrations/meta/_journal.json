@@ -22,6 +22,20 @@
       "when": 1791135679990,
       "tag": "0002_classy_blink",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791135680000,
+      "tag": "0003_passkey_authentication",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791135681000,
+      "tag": "0004_totp_two_factor",
+      "breakpoints": true
     }
   ]
 }
