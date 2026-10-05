@@ -84,12 +84,8 @@ export default function SignInForm({ redirectTo }: { redirectTo?: string }) {
       <Divider label="or use your password" labelPosition="center" mb="lg" />
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack gap="md">
-          <TextInput label="Email" type="email" autoComplete="username webauthn" {...form.getInputProps("email")} />
-          <PasswordInput
-            label="Password"
-            autoComplete="current-password webauthn"
-            {...form.getInputProps("password")}
-          />
+          <TextInput label="Email" type="email" autoComplete="username" {...form.getInputProps("email")} />
+          <PasswordInput label="Password" autoComplete="current-password" {...form.getInputProps("password")} />
           <Checkbox label="Remember me" {...form.getInputProps("rememberMe", { type: "checkbox" })} />
           <Button type="submit" fullWidth loading={submitting}>
             Sign In
