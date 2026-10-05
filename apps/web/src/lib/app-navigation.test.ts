@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test"
 
-import { appNavGroups, flatAppNavItems, getActiveAppNavItem } from "./app-navigation"
+import { appNavGroups, flatAppNavItems, getActiveAppNavItem, getVisibleAppNavGroups } from "./app-navigation"
 
 describe("app navigation", () => {
   it("keeps settings as a visible account navigation item", () => {
@@ -24,5 +24,18 @@ describe("app navigation", () => {
       ]),
     )
     expect(flatAppNavItems.find((item) => item.to === "/legal-entities")?.badgeKey).toBeUndefined()
+  })
+
+  it("only exposes user administration to admins", () => {
+    expect(
+      getVisibleAppNavGroups(false)
+        .flatMap((group) => group.items)
+        .some((item) => item.to === "/admin/users"),
+    ).toBe(false)
+    expect(
+      getVisibleAppNavGroups(true)
+        .flatMap((group) => group.items)
+        .some((item) => item.to === "/admin/users"),
+    ).toBe(true)
   })
 })

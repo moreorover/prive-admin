@@ -1,6 +1,6 @@
 import type { ErrorComponentProps } from "@tanstack/react-router"
 
-import { AppShell, Box, Button, Card, Group, Text } from "@mantine/core"
+import { Alert, AppShell, Box, Button, Card, Group, Text } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
 import { IconAlertCircle, IconRefresh } from "@tabler/icons-react"
 import { useQueryErrorResetBoundary } from "@tanstack/react-query"
@@ -11,7 +11,15 @@ import { BreadcrumbProvider } from "@/components/breadcrumbs"
 import classes from "../route.module.css"
 import { DesktopTabs, HeaderTop, MobileNavigationDrawer } from "./layout-navigation"
 
-export function AuthenticatedLayout({ badges }: { badges: { unassigned: number } }) {
+export function AuthenticatedLayout({
+  badges,
+  isImpersonating = false,
+  onStopImpersonating,
+}: {
+  badges: { unassigned: number }
+  isImpersonating?: boolean
+  onStopImpersonating?: () => void
+}) {
   const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] = useDisclosure(false)
 
   return (
@@ -24,6 +32,14 @@ export function AuthenticatedLayout({ badges }: { badges: { unassigned: number }
         <MobileNavigationDrawer opened={mobileOpened} onClose={closeMobile} badges={badges} />
 
         <AppShell.Main className={classes.main}>
+          {isImpersonating && onStopImpersonating && (
+            <Alert color="orange" mb="md" title="Impersonation active">
+              You are viewing the application as another user. Changes you make will use that user&apos;s session.
+              <Button mt="sm" size="xs" variant="light" color="orange" onClick={onStopImpersonating}>
+                Stop impersonating
+              </Button>
+            </Alert>
+          )}
           <Outlet />
         </AppShell.Main>
       </AppShell>
