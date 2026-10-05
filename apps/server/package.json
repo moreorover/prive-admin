@@ -20,6 +20,6 @@
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
     "typescript": "catalog:",
-    "wrangler": "4.141.0"
+    "wrangler": "4.142.0"
   }
 }
