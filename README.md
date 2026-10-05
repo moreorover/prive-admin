@@ -113,7 +113,8 @@ runbook is [`docs/deploy/cloudflare-d1.md`](docs/deploy/cloudflare-d1.md).
 
 - Pull requests to `main` run source checks and the environment-gated
   Cloudflare dev deployment.
-- Pushes to `main` run the environment-gated Cloudflare production deployment.
+- Pushes to `main` run both the environment-gated Cloudflare dev and production
+  deployments.
 - Runtime values live in the 1Password vault `prive-admin`, in
   environment-specific items such as `prive-admin-cloudflare-dev`.
 - GitHub Actions loads 1Password values after the matching GitHub environment
