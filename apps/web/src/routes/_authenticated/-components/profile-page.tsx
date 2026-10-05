@@ -317,7 +317,14 @@ function TwoFactorModal({
       ) : (
         <Stack>
           <Text size="sm">Confirm your password to generate a TOTP authenticator setup.</Text>
-          <PasswordInput value={password} onChange={(event) => setPassword(event.currentTarget.value)} autoFocus />
+          <PasswordInput
+            label="Current password"
+            name="current-password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.currentTarget.value)}
+            autoFocus
+          />
           <Button loading={submitting} disabled={!password} onClick={() => onEnable(password)}>
             Generate setup
           </Button>
