@@ -4,7 +4,6 @@ import { useState } from "react"
 
 import { authClient } from "@/lib/auth-client"
 import { type Currency } from "@/lib/currency"
-import { apiUrl } from "@/utils/server-url"
 import { trpc } from "@/utils/trpc"
 
 export const sessionsQueryKey = ["auth", "sessions"] as const
@@ -80,13 +79,11 @@ export function useRevokePasskeyAction() {
 
   return useMutation({
     mutationFn: async ({ id, password, code }: { id: string; password: string; code: string }) => {
-      const passwordResponse = await fetch(apiUrl("/api/auth/verify-password"), {
+      const passwordResult = await authClient.$fetch("/verify-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ password }),
+        body: { password },
       })
-      if (!passwordResponse.ok) throw new Error("Invalid password")
+      if (passwordResult.error) throw new Error(passwordResult.error.message)
 
       const twoFactorResult = await authClient.twoFactor.verifyTotp({ code, trustDevice: false })
       if (twoFactorResult.error) throw new Error(twoFactorResult.error.message)
