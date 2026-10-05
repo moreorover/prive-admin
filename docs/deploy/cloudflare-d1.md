@@ -78,7 +78,8 @@ recovering a failed deployment, use Wrangler directly:
 
 - Pull requests deploy to dev through `.github/workflows/cloudflare-dev-deploy.yml` after `cloudflare-dev`
   approval.
-- Pushes to `main` deploy to production through `.github/workflows/cloudflare-prod-deploy.yml` after
+- Pushes to `main` deploy to both dev through `.github/workflows/cloudflare-dev-deploy.yml` after
+  `cloudflare-dev` approval and production through `.github/workflows/cloudflare-prod-deploy.yml` after
   `cloudflare-prod` approval.
 - Pull requests also create isolated preview stages through `.github/workflows/cloudflare-alchemy-preview.yml`.
 - Stable dev and production deployments run through Alchemy, including D1 migrations and Worker deployments.
