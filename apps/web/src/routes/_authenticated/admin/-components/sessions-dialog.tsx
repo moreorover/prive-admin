@@ -1,4 +1,4 @@
-import { Button, Loader, Modal, Table, Text } from "@mantine/core"
+import { Button, Loader, Modal, Paper, SimpleGrid, Stack, Text } from "@mantine/core"
 
 import { ClientDate } from "@/components/client-date"
 
@@ -33,46 +33,49 @@ export function SessionsDialog({
       ) : sessions.length === 0 ? (
         <Text c="dimmed">No active sessions.</Text>
       ) : (
-        <Table.ScrollContainer minWidth={620}>
-          <Table>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Started</Table.Th>
-                <Table.Th>Expires</Table.Th>
-                <Table.Th>IP address</Table.Th>
-                <Table.Th>Device</Table.Th>
-                <Table.Th />
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {sessions.map((session) => (
-                <Table.Tr key={session.id}>
-                  <Table.Td>
+        <Stack gap="sm">
+          {sessions.map((session) => (
+            <Paper key={session.id} withBorder p="sm" radius="md">
+              <Stack gap="sm">
+                <Text size="sm" fw={500} style={{ overflowWrap: "anywhere" }}>
+                  {session.userAgent || "Unknown device"}
+                </Text>
+                <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="xs">
+                  <div>
+                    <Text size="xs" c="dimmed">
+                      Started
+                    </Text>
                     <ClientDate date={session.createdAt} />
-                  </Table.Td>
-                  <Table.Td>
+                  </div>
+                  <div>
+                    <Text size="xs" c="dimmed">
+                      Expires
+                    </Text>
                     <ClientDate date={session.expiresAt} />
-                  </Table.Td>
-                  <Table.Td>{session.ipAddress || "—"}</Table.Td>
-                  <Table.Td>{session.userAgent || "Unknown device"}</Table.Td>
-                  <Table.Td>
-                    <Button
-                      size="xs"
-                      variant="light"
-                      color="red"
-                      loading={pending}
-                      onClick={async () => {
-                        await onRevoke(session.token)
-                      }}
-                    >
-                      Revoke
-                    </Button>
-                  </Table.Td>
-                </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        </Table.ScrollContainer>
+                  </div>
+                  <div>
+                    <Text size="xs" c="dimmed">
+                      IP address
+                    </Text>
+                    <Text size="sm">{session.ipAddress || "—"}</Text>
+                  </div>
+                </SimpleGrid>
+                <Button
+                  size="xs"
+                  variant="light"
+                  color="red"
+                  loading={pending}
+                  onClick={async () => {
+                    await onRevoke(session.token)
+                  }}
+                  w="fit-content"
+                >
+                  Revoke session
+                </Button>
+              </Stack>
+            </Paper>
+          ))}
+        </Stack>
       )}
     </Modal>
   )
