@@ -25,8 +25,7 @@ export function HeaderTop({ opened, onToggle }: { opened: boolean; onToggle: () 
 }
 
 export function DesktopTabs({ badges }: { badges: { unassigned: number } }) {
-  const { session } = Route.useRouteContext()
-  const isAdmin = session.user.role?.split(",").includes("admin") ?? false
+  const { isAdmin } = Route.useRouteContext()
 
   return (
     <Group className={classes.tabsRow} px="lg" gap={2} wrap="nowrap">
@@ -53,8 +52,7 @@ export function MobileNavigationDrawer({
   onClose: () => void
   badges: { unassigned: number }
 }) {
-  const { session } = Route.useRouteContext()
-  const isAdmin = session.user.role?.split(",").includes("admin") ?? false
+  const { isAdmin } = Route.useRouteContext()
 
   return (
     <Drawer opened={opened} onClose={onClose} title="Privé" size="xs" padding="md">

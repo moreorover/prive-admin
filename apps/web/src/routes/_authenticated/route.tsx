@@ -21,7 +21,10 @@ export const Route = createFileRoute("/_authenticated")({
         search: { redirect: location.href },
       })
     }
-    return { session: session.data }
+    return {
+      session: session.data,
+      isAdmin: session.data.user.role?.split(",").includes("admin") ?? false,
+    }
   },
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(
