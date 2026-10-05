@@ -235,6 +235,7 @@ export function AdminUsersPage({
         onSubmit={(values) => actions.updateUser.mutateAsync(values)}
       />
       <RoleDialog
+        key={`role-${selected?.id ?? "none"}`}
         user={selected}
         opened={dialog === "role"}
         pending={actions.setRole.isPending}
