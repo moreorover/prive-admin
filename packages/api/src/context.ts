@@ -11,7 +11,7 @@ export async function createContext({ context }: CreateContextOptions) {
     headers: context.req.raw.headers,
   })
 
-  return { session }
+  return { session, headers: context.req.raw.headers }
 }
 
 export type Context = Awaited<ReturnType<typeof createContext>>
