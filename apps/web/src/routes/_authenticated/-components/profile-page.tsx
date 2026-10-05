@@ -46,9 +46,19 @@ function parseUA(ua: string): ParsedUA {
   return { isMobile, os, browser }
 }
 
+function formatSessionDate(value: Date | string | null | undefined) {
+  if (!value) return "Unknown"
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) return "Unknown"
+  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(date)
+}
+
 type ProfileSession = {
   id: string
   token: string
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
+  expiresAt?: Date | string | null
   userAgent?: string | null
   ipAddress?: string | null
 }
@@ -264,10 +274,16 @@ export function ProfilePage({
                 return [
                   <Group key={s.id} gap="xs">
                     {ua.isMobile ? <IconDeviceMobile size={16} /> : <IconDeviceLaptop size={16} />}
-                    <Text size="sm" style={{ flex: 1 }}>
-                      {s.ipAddress && `${s.ipAddress}, `}
-                      {ua.os}, {ua.browser}
-                    </Text>
+                    <Stack gap={0} style={{ flex: 1 }}>
+                      <Text size="sm">
+                        {s.ipAddress && `${s.ipAddress}, `}
+                        {ua.os}, {ua.browser}
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        Signed in: {formatSessionDate(s.createdAt)} · Last active: {formatSessionDate(s.updatedAt)} ·
+                        Expires: {formatSessionDate(s.expiresAt)}
+                      </Text>
+                    </Stack>
                     <Button
                       size="xs"
                       variant="subtle"
