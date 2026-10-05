@@ -25,8 +25,12 @@ export function SessionsDialog({
       opened={Boolean(user)}
       onClose={onClose}
       title={user ? `Sessions for ${user.name}` : "User sessions"}
-      size="lg"
+      size="xl"
       centered
+      styles={{
+        content: { maxWidth: "calc(100vw - 2rem)" },
+        body: { overflowX: "hidden" },
+      }}
     >
       {loading ? (
         <Loader size="sm" />
@@ -35,7 +39,7 @@ export function SessionsDialog({
       ) : (
         <Stack gap="sm">
           {sessions.map((session) => (
-            <Paper key={session.id} withBorder p="sm" radius="md">
+            <Paper key={session.id} withBorder p="sm" radius="md" style={{ minWidth: 0 }}>
               <Stack gap="sm">
                 <Text size="sm" fw={500} style={{ overflowWrap: "anywhere" }}>
                   {session.userAgent || "Unknown device"}
