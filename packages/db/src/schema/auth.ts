@@ -7,6 +7,10 @@ export const user = sqliteTable("users", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: integer("email_verified", { mode: "boolean" }).default(false).notNull(),
+  role: text("role").default("user"),
+  banned: integer("banned", { mode: "boolean" }).default(false),
+  banReason: text("ban_reason"),
+  banExpires: timestampMs("ban_expires"),
   twoFactorEnabled: integer("two_factor_enabled", { mode: "boolean" }).default(false).notNull(),
   image: text("image"),
   createdAt: createdAt(),
@@ -23,6 +27,7 @@ export const session = sqliteTable(
     updatedAt: updatedAt(),
     ipAddress: text("ip_address"),
     userAgent: text("user_agent"),
+    impersonatedBy: text("impersonated_by"),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
