@@ -13,6 +13,26 @@ import { CreateUserDialog, EditUserDialog, PasswordDialog, RoleDialog, type User
 type AdminActions = ReturnType<typeof import("../-actions/admin-actions").useAdminActions>
 type UsersData = { users: UserRecord[]; total: number; limit?: number; offset?: number }
 
+function AdminUsersSearch({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const [draftValue, setDraftValue] = useState(value)
+
+  return (
+    <TextInput
+      label="Search"
+      placeholder="Search by name"
+      leftSection={<IconSearch size={16} />}
+      value={draftValue}
+      onChange={(event) => {
+        const nextValue = event.currentTarget.value
+        setDraftValue(nextValue)
+        onChange(nextValue)
+      }}
+      miw={260}
+      flex={1}
+    />
+  )
+}
+
 export function AdminUsersPage({
   page,
   searchValue,
@@ -51,15 +71,7 @@ export function AdminUsersPage({
       />
       <Section padding={0}>
         <Group p="md" justify="space-between" align="flex-end">
-          <TextInput
-            label="Search"
-            placeholder="Search by name"
-            leftSection={<IconSearch size={16} />}
-            value={searchValue}
-            onChange={(event) => onSearchChange(event.currentTarget.value)}
-            miw={260}
-            flex={1}
-          />
+          <AdminUsersSearch key={searchValue} value={searchValue} onChange={onSearchChange} />
           <Text size="sm" c="dimmed">
             {total} user{total === 1 ? "" : "s"}
           </Text>

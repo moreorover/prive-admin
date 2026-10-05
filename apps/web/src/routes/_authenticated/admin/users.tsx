@@ -1,7 +1,6 @@
 import { useDebouncedCallback } from "@mantine/hooks"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
 
 import { useAdminActions } from "./-actions/admin-actions"
 import { AdminUsersPage } from "./-components/users-page"
@@ -23,23 +22,20 @@ function RouteComponent() {
   const navigate = Route.useNavigate()
   const page = search.page
   const searchValue = search.search
-  const [draftSearch, setDraftSearch] = useState(searchValue)
   const data = useQuery(adminUsersQueryOptions(page, searchValue)).data
   const actions = useAdminActions()
   const navigateToSearch = useDebouncedCallback((nextSearch: string) => {
     navigate({ search: { page: 1, search: nextSearch }, replace: true })
   }, searchNavigationDebounceMs)
 
-  useEffect(() => setDraftSearch(searchValue), [searchValue])
-
   return (
     <AdminUsersPage
+      key={searchValue}
       page={page}
-      searchValue={draftSearch}
+      searchValue={searchValue}
       data={data}
       actions={actions}
       onSearchChange={(nextSearch) => {
-        setDraftSearch(nextSearch)
         navigateToSearch(nextSearch)
       }}
       onPageChange={(nextPage) => {

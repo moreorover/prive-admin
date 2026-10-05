@@ -1,5 +1,7 @@
+import type { FormEvent } from "react"
+
 import { Button, Group, Modal, PasswordInput, Select, Stack, TextInput } from "@mantine/core"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 type UserRecord = {
   id: string
@@ -28,14 +30,15 @@ export function CreateUserDialog({
     role: "user",
   })
 
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    await onSubmit(values)
+    onClose()
+  }
+
   return (
     <Modal opened={opened} onClose={onClose} title="Create user" centered>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault()
-          void onSubmit(values).then(onClose)
-        }}
-      >
+      <form onSubmit={handleSubmit}>
         <Stack>
           <TextInput
             label="Name"
@@ -90,18 +93,18 @@ export function EditUserDialog({
   onClose: () => void
   onSubmit: (values: { userId: string; data: { name: string } }) => Promise<unknown>
 }) {
-  const [name, setName] = useState("")
-  useEffect(() => setName(user?.name ?? ""), [user])
+  const [name, setName] = useState(user?.name ?? "")
   if (!user) return null
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    await onSubmit({ userId: user.id, data: { name } })
+    onClose()
+  }
 
   return (
     <Modal opened={opened} onClose={onClose} title={`Edit ${user.name}`} centered>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault()
-          void onSubmit({ userId: user.id, data: { name } }).then(onClose)
-        }}
-      >
+      <form onSubmit={handleSubmit}>
         <Stack>
           <TextInput label="Name" required value={name} onChange={(event) => setName(event.currentTarget.value)} />
           <Group justify="flex-end">
@@ -133,14 +136,16 @@ export function PasswordDialog({
 }) {
   const [newPassword, setNewPassword] = useState("")
   if (!user) return null
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    await onSubmit({ userId: user.id, newPassword })
+    onClose()
+  }
+
   return (
     <Modal opened={opened} onClose={onClose} title={`Set password for ${user.name}`} centered>
-      <form
-        onSubmit={(event) => {
-          event.preventDefault()
-          void onSubmit({ userId: user.id, newPassword }).then(onClose)
-        }}
-      >
+      <form onSubmit={handleSubmit}>
         <Stack>
           <PasswordInput
             label="New password"
@@ -176,9 +181,14 @@ export function RoleDialog({
   onClose: () => void
   onSubmit: (values: { userId: string; role: "admin" | "user" }) => Promise<unknown>
 }) {
-  const [role, setRole] = useState<"admin" | "user">("user")
-  useEffect(() => setRole(user?.role?.split(",")[0] === "admin" ? "admin" : "user"), [user])
+  const [role, setRole] = useState<"admin" | "user">(user?.role?.split(",")[0] === "admin" ? "admin" : "user")
   if (!user) return null
+
+  const handleSubmit = async () => {
+    await onSubmit({ userId: user.id, role })
+    onClose()
+  }
+
   return (
     <Modal opened={opened} onClose={onClose} title={`Change role for ${user.name}`} centered>
       <Stack>
@@ -192,7 +202,7 @@ export function RoleDialog({
           <Button variant="default" onClick={onClose}>
             Cancel
           </Button>
-          <Button loading={pending} onClick={() => void onSubmit({ userId: user.id, role }).then(onClose)}>
+          <Button loading={pending} onClick={handleSubmit}>
             Save role
           </Button>
         </Group>

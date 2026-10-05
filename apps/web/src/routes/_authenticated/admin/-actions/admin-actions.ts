@@ -8,52 +8,68 @@ async function unwrap<T extends { data: unknown; error: { message?: string } | n
   return result.data
 }
 
+function useAdminMutation<TInput, TResult>(
+  queryClient: ReturnType<typeof useQueryClient>,
+  mutationFn: (input: TInput) => Promise<TResult>,
+  successMessage: string,
+) {
+  return useMutation({
+    mutationFn,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin", "users"] })
+      notifications.show({ color: "green", message: successMessage })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+}
+
 export function useAdminActions() {
   const queryClient = useQueryClient()
-  const refreshUsers = () => queryClient.invalidateQueries({ queryKey: ["admin", "users"] })
-
-  const mutation = <TInput, TResult>(mutationFn: (input: TInput) => Promise<TResult>, successMessage: string) =>
-    useMutation({
-      mutationFn,
-      onSuccess: async () => {
-        await refreshUsers()
-        notifications.show({ color: "green", message: successMessage })
-      },
-      onError: (error) => notifications.show({ color: "red", message: error.message }),
-    })
 
   return {
-    createUser: mutation(
+    createUser: useAdminMutation(
+      queryClient,
       (input: { name: string; email: string; password: string; role: "admin" | "user" }) =>
         authClient.admin.createUser(input).then(unwrap),
       "User created",
     ),
-    updateUser: mutation(
+    updateUser: useAdminMutation(
+      queryClient,
       (input: { userId: string; data: { name: string } }) => authClient.admin.updateUser(input).then(unwrap),
       "User details updated",
     ),
-    setRole: mutation(
+    setRole: useAdminMutation(
+      queryClient,
       (input: { userId: string; role: "admin" | "user" }) => authClient.admin.setRole(input).then(unwrap),
       "User role updated",
     ),
-    setPassword: mutation(
+    setPassword: useAdminMutation(
+      queryClient,
       (input: { userId: string; newPassword: string }) => authClient.admin.setUserPassword(input).then(unwrap),
       "Password updated",
     ),
-    banUser: mutation(
+    banUser: useAdminMutation(
+      queryClient,
       (input: { userId: string; banReason: string }) => authClient.admin.banUser(input).then(unwrap),
       "User banned",
     ),
-    unbanUser: mutation((input: { userId: string }) => authClient.admin.unbanUser(input).then(unwrap), "User unbanned"),
-    revokeSessions: mutation(
+    unbanUser: useAdminMutation(
+      queryClient,
+      (input: { userId: string }) => authClient.admin.unbanUser(input).then(unwrap),
+      "User unbanned",
+    ),
+    revokeSessions: useAdminMutation(
+      queryClient,
       (input: { userId: string }) => authClient.admin.revokeUserSessions(input).then(unwrap),
       "Sessions revoked",
     ),
-    impersonateUser: mutation(
+    impersonateUser: useAdminMutation(
+      queryClient,
       (input: { userId: string }) => authClient.admin.impersonateUser(input).then(unwrap),
       "Impersonation session started",
     ),
-    removeUser: mutation(
+    removeUser: useAdminMutation(
+      queryClient,
       (input: { userId: string }) => authClient.admin.removeUser(input).then(unwrap),
       "User removed",
     ),
