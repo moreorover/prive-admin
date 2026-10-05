@@ -74,6 +74,22 @@ export function useAddPasskeyAction({ username }: { username?: string }) {
   return { submitting, addPasskey }
 }
 
+export function useRevokePasskeyAction() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const result = await authClient.passkey.deletePasskey({ id })
+      if (result.error) throw new Error(result.error.message)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: passkeysQueryKey })
+      notifications.show({ color: "green", message: "Passkey revoked" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+}
+
 export function useRevokeSessionAction({ onRevoked }: { onRevoked?: () => void }) {
   const queryClient = useQueryClient()
 

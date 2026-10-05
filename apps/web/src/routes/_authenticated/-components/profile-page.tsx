@@ -77,6 +77,8 @@ export function ProfilePage({
   onUpdateProfile,
   passkeyPending,
   onAddPasskey,
+  revokingPasskeyId,
+  onRevokePasskey,
   twoFactorEnabled,
   twoFactorPending,
   twoFactorSetup,
@@ -97,6 +99,8 @@ export function ProfilePage({
   onUpdateProfile: (values: { name: string; preferredCurrency: Currency }) => Promise<void>
   passkeyPending: boolean
   onAddPasskey: () => Promise<void>
+  revokingPasskeyId: string | undefined
+  onRevokePasskey: (id: string) => Promise<unknown>
   twoFactorEnabled: boolean
   twoFactorPending: boolean
   twoFactorSetup: { totpURI: string; backupCodes: string[] } | null
@@ -108,6 +112,7 @@ export function ProfilePage({
   const [pwOpen, setPwOpen] = useState(false)
   const [verifyPending, setVerifyPending] = useState(false)
   const [twoFactorOpen, setTwoFactorOpen] = useState(false)
+  const [passkeyToRevoke, setPasskeyToRevoke] = useState<ProfilePasskey | null>(null)
 
   if (isPending || !current) {
     return <Loader2 />
@@ -226,7 +231,19 @@ export function ProfilePage({
                       {passkey.backedUp ? " · Backed up" : ""}
                     </Text>
                   </Stack>
-                  <Badge variant="light">Registered</Badge>
+                  <Group gap="xs">
+                    <Badge variant="light">Registered</Badge>
+                    <Button
+                      size="xs"
+                      variant="subtle"
+                      color="red"
+                      loading={revokingPasskeyId === passkey.id}
+                      disabled={revokingPasskeyId !== undefined}
+                      onClick={() => setPasskeyToRevoke(passkey)}
+                    >
+                      Revoke
+                    </Button>
+                  </Group>
                 </Group>
               ))}
             </Stack>
@@ -290,6 +307,29 @@ export function ProfilePage({
         }}
       />
       <ChangePasswordModal open={pwOpen} onOpenChange={setPwOpen} />
+      <Modal opened={passkeyToRevoke !== null} onClose={() => setPasskeyToRevoke(null)} title="Revoke passkey">
+        <Stack>
+          <Text size="sm">
+            This will remove this passkey from your account. You will no longer be able to use it to sign in.
+          </Text>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={() => setPasskeyToRevoke(null)}>
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              loading={revokingPasskeyId === passkeyToRevoke?.id}
+              onClick={async () => {
+                if (!passkeyToRevoke) return
+                await onRevokePasskey(passkeyToRevoke.id)
+                setPasskeyToRevoke(null)
+              }}
+            >
+              Revoke passkey
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
       <TwoFactorModal
         open={twoFactorOpen}
         onOpenChange={(open) => {

@@ -13,6 +13,7 @@ import {
   sessionsQueryKey,
   useAddPasskeyAction,
   useEnableTwoFactorAction,
+  useRevokePasskeyAction,
   useRevokeSessionAction,
   useUpdateUserProfileAction,
 } from "./profile/-actions/profile-actions"
@@ -48,6 +49,7 @@ function RouteComponent() {
     initialCurrency,
   })
   const addPasskey = useAddPasskeyAction({ username: current?.user.email })
+  const revokePasskey = useRevokePasskeyAction()
   const twoFactor = useEnableTwoFactorAction()
 
   return (
@@ -65,6 +67,8 @@ function RouteComponent() {
       onUpdateProfile={(values) => updateProfile.updateUserProfile(values)}
       passkeyPending={addPasskey.submitting}
       onAddPasskey={addPasskey.addPasskey}
+      revokingPasskeyId={revokePasskey.isPending ? revokePasskey.variables : undefined}
+      onRevokePasskey={(id) => revokePasskey.mutateAsync(id)}
       twoFactorEnabled={Boolean(current?.user.twoFactorEnabled || twoFactor.enabled)}
       twoFactorPending={twoFactor.submitting}
       twoFactorSetup={twoFactor.setup}
