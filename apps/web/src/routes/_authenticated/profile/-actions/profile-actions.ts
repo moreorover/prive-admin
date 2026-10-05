@@ -51,14 +51,15 @@ export function useEnableTwoFactorAction() {
   return { submitting, setup, enabled, enableTwoFactor, verifyTwoFactor, clearSetup: () => setSetup(null) }
 }
 
-export function useAddPasskeyAction() {
+export function useAddPasskeyAction({ username }: { username?: string }) {
   const queryClient = useQueryClient()
   const [submitting, setSubmitting] = useState(false)
 
   const addPasskey = async () => {
     setSubmitting(true)
+    const name = username?.trim()
     void authClient.passkey
-      .addPasskey({ name: "Privé passkey" })
+      .addPasskey(name ? { name } : undefined)
       .then((result) => {
         if (result.error) throw new Error(result.error.message)
         queryClient.invalidateQueries({ queryKey: passkeysQueryKey })

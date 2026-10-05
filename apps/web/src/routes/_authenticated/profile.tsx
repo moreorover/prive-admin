@@ -47,7 +47,7 @@ function RouteComponent() {
     initialName: current?.user.name ?? "",
     initialCurrency,
   })
-  const addPasskey = useAddPasskeyAction()
+  const addPasskey = useAddPasskeyAction({ username: current?.user.email })
   const twoFactor = useEnableTwoFactorAction()
 
   return (

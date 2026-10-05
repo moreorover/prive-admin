@@ -219,7 +219,7 @@ export function ProfilePage({
                 <Group key={passkey.id} justify="space-between">
                   <Stack gap={0}>
                     <Text size="sm" fw={500}>
-                      {passkey.name || "Passkey"}
+                      {passkey.name === user.email ? "Privé passkey" : passkey.name || "Passkey"}
                     </Text>
                     <Text size="xs" c="dimmed">
                       {passkey.deviceType}
