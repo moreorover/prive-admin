@@ -1,4 +1,4 @@
-import { ActionIcon, Badge, Button, Container, Group, Menu, Table, Text, TextInput } from "@mantine/core"
+import { ActionIcon, Badge, Button, Container, Group, Menu, Modal, Table, Text, TextInput } from "@mantine/core"
 import { IconDots, IconPlus, IconSearch, IconShield, IconUserOff, IconUserCheck } from "@tabler/icons-react"
 import { useState } from "react"
 
@@ -61,6 +61,7 @@ export function AdminUsersPage({
 }) {
   const [createOpen, setCreateOpen] = useState(false)
   const [selected, setSelected] = useState<UserRecord | null>(null)
+  const [removeCandidate, setRemoveCandidate] = useState<UserRecord | null>(null)
   const [dialog, setDialog] = useState<"edit" | "role" | "password" | null>(null)
   const users = data?.users ?? []
   const total = data?.total ?? 0
@@ -187,13 +188,7 @@ export function AdminUsersPage({
                           Impersonate user
                         </Menu.Item>
                         <Menu.Divider />
-                        <Menu.Item
-                          color="red"
-                          onClick={() => {
-                            if (window.confirm(`Remove ${user.name}? This cannot be undone.`))
-                              void actions.removeUser.mutateAsync({ userId: user.id })
-                          }}
-                        >
+                        <Menu.Item color="red" onClick={() => setRemoveCandidate(user)}>
                           Remove user
                         </Menu.Item>
                       </Menu.Dropdown>
@@ -250,6 +245,26 @@ export function AdminUsersPage({
         onClose={closeDialog}
         onSubmit={(values) => actions.setPassword.mutateAsync(values)}
       />
+      <Modal opened={Boolean(removeCandidate)} onClose={() => setRemoveCandidate(null)} title="Remove user" centered>
+        <Text size="sm">Remove {removeCandidate?.name}? This cannot be undone.</Text>
+        <Group justify="flex-end" mt="lg">
+          <Button variant="default" onClick={() => setRemoveCandidate(null)}>
+            Cancel
+          </Button>
+          <Button
+            color="red"
+            loading={actions.removeUser.isPending}
+            onClick={() => {
+              if (!removeCandidate) return
+              const userId = removeCandidate.id
+              setRemoveCandidate(null)
+              void actions.removeUser.mutateAsync({ userId })
+            }}
+          >
+            Remove user
+          </Button>
+        </Group>
+      </Modal>
       <SessionsDialog
         user={sessionsUser}
         sessions={sessions}
