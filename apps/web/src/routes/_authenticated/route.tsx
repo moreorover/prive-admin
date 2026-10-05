@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { createFileRoute, redirect } from "@tanstack/react-router"
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
 
 import { authClient } from "@/lib/auth-client"
 import { trpc } from "@/utils/trpc"
@@ -31,8 +31,11 @@ export const Route = createFileRoute("/_authenticated")({
 })
 
 function RouteComponent() {
+  const navigate = useNavigate()
   const currentSession = authClient.useSession()
-  const stopImpersonating = useStopImpersonatingAction({ onStopped: () => window.location.reload() })
+  const stopImpersonating = useStopImpersonatingAction({
+    onStopped: () => void navigate({ to: "/admin/users", search: { page: 1, search: "" } }),
+  })
   const unassignedAttachments = useQuery(
     trpc.bankStatementAttachments.list.queryOptions({ assignmentStatus: "unassigned" }),
   ).data
