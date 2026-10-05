@@ -1,3 +1,4 @@
+import { QRCode } from "@gfazioli/mantine-qr-code"
 import {
   Alert,
   Avatar,
@@ -17,7 +18,6 @@ import {
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { IconAlertCircle, IconDeviceLaptop, IconDeviceMobile } from "@tabler/icons-react"
-import { QRCodeSVG } from "qrcode.react"
 import { useState } from "react"
 
 import { BreadcrumbItem } from "@/components/breadcrumbs"
@@ -293,7 +293,7 @@ function TwoFactorModal({
         <Stack>
           <Text size="sm">Scan this QR code with your authenticator app:</Text>
           <Center>
-            <QRCodeSVG value={setup.totpURI} size={220} includeMargin />
+            <QRCode value={setup.totpURI} size="lg" errorCorrectionLevel="H" />
           </Center>
           <Text size="sm">Or copy the setup URI manually:</Text>
           <TextInput value={setup.totpURI} readOnly />

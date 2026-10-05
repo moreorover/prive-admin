@@ -1,6 +1,8 @@
 import { createRouter as createTanStackRouter } from "@tanstack/react-router"
 
 import Loader from "./components/loader"
+import "@gfazioli/mantine-qr-code/styles.css"
+
 import "./index.css"
 import { routeTree } from "./routeTree.gen"
 import { queryClient, trpc } from "./utils/trpc"
