@@ -91,14 +91,15 @@ export function EditUserDialog({
   opened: boolean
   pending: boolean
   onClose: () => void
-  onSubmit: (values: { userId: string; data: { name: string } }) => Promise<unknown>
+  onSubmit: (values: { userId: string; data: { name: string; email: string } }) => Promise<unknown>
 }) {
   const [name, setName] = useState(user?.name ?? "")
+  const [email, setEmail] = useState(user?.email ?? "")
   if (!user) return null
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    await onSubmit({ userId: user.id, data: { name } })
+    await onSubmit({ userId: user.id, data: { name, email } })
     onClose()
   }
 
@@ -107,6 +108,13 @@ export function EditUserDialog({
       <form onSubmit={handleSubmit}>
         <Stack>
           <TextInput label="Name" required value={name} onChange={(event) => setName(event.currentTarget.value)} />
+          <TextInput
+            label="Email"
+            type="email"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.currentTarget.value)}
+          />
           <Group justify="flex-end">
             <Button variant="default" onClick={onClose}>
               Cancel

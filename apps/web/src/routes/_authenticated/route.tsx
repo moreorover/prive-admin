@@ -4,6 +4,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router"
 import { authClient } from "@/lib/auth-client"
 import { trpc } from "@/utils/trpc"
 
+import { useStopImpersonatingAction } from "./-actions/impersonation-actions"
 import { AuthenticatedErrorComponent, AuthenticatedLayout } from "./-components/route-page"
 
 export const Route = createFileRoute("/_authenticated")({
@@ -30,9 +31,17 @@ export const Route = createFileRoute("/_authenticated")({
 })
 
 function RouteComponent() {
+  const currentSession = authClient.useSession()
+  const stopImpersonating = useStopImpersonatingAction({ onStopped: () => window.location.reload() })
   const unassignedAttachments = useQuery(
     trpc.bankStatementAttachments.list.queryOptions({ assignmentStatus: "unassigned" }),
   ).data
 
-  return <AuthenticatedLayout badges={{ unassigned: unassignedAttachments?.totalCount ?? 0 }} />
+  return (
+    <AuthenticatedLayout
+      badges={{ unassigned: unassignedAttachments?.totalCount ?? 0 }}
+      isImpersonating={Boolean(currentSession.data?.session?.impersonatedBy)}
+      onStopImpersonating={() => stopImpersonating.mutate()}
+    />
+  )
 }

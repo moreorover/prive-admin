@@ -3,6 +3,16 @@ import { z } from "zod"
 
 import { authClient } from "@/lib/auth-client"
 
+export type AdminSession = {
+  id: string
+  token: string
+  createdAt: Date | string
+  updatedAt: Date | string
+  expiresAt: Date | string
+  ipAddress?: string | null
+  userAgent?: string | null
+}
+
 export const adminUsersSearchSchema = z.object({
   page: z.number().int().min(1).catch(1),
   search: z.string().catch(""),
@@ -27,6 +37,19 @@ export function adminUsersQueryOptions(page: number, search: string) {
       })
 
       if (result.error) throw new Error(result.error.message || "Unable to load users")
+      return result.data
+    },
+  })
+}
+
+export function adminUserSessionsQueryOptions(userId: string | null) {
+  return queryOptions({
+    queryKey: ["admin", "sessions", userId],
+    enabled: Boolean(userId),
+    queryFn: async () => {
+      if (!userId) return { sessions: [] as AdminSession[] }
+      const result = await authClient.admin.listUserSessions({ userId })
+      if (result.error) throw new Error(result.error.message || "Unable to load user sessions")
       return result.data
     },
   })

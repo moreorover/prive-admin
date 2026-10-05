@@ -17,6 +17,7 @@ function useAdminMutation<TInput, TResult>(
     mutationFn,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["admin", "users"] })
+      await queryClient.invalidateQueries({ queryKey: ["admin", "sessions"] })
       notifications.show({ color: "green", message: successMessage })
     },
     onError: (error) => notifications.show({ color: "red", message: error.message }),
@@ -35,7 +36,8 @@ export function useAdminActions() {
     ),
     updateUser: useAdminMutation(
       queryClient,
-      (input: { userId: string; data: { name: string } }) => authClient.admin.updateUser(input).then(unwrap),
+      (input: { userId: string; data: { name: string; email: string } }) =>
+        authClient.admin.updateUser(input).then(unwrap),
       "User details updated",
     ),
     setRole: useAdminMutation(
@@ -62,6 +64,11 @@ export function useAdminActions() {
       queryClient,
       (input: { userId: string }) => authClient.admin.revokeUserSessions(input).then(unwrap),
       "Sessions revoked",
+    ),
+    revokeSession: useAdminMutation(
+      queryClient,
+      (input: { sessionToken: string }) => authClient.admin.revokeUserSession(input).then(unwrap),
+      "Session revoked",
     ),
     impersonateUser: useAdminMutation(
       queryClient,

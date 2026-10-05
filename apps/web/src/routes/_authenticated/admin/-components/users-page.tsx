@@ -7,7 +7,8 @@ import { PageHeader } from "@/components/page-header"
 import { ResourcePagination } from "@/components/resource-pagination"
 import { Section } from "@/components/section"
 
-import { ADMIN_USERS_PAGE_SIZE } from "../-data/users-data"
+import { ADMIN_USERS_PAGE_SIZE, type AdminSession } from "../-data/users-data"
+import { SessionsDialog } from "./sessions-dialog"
 import { CreateUserDialog, EditUserDialog, PasswordDialog, RoleDialog, type UserRecord } from "./user-dialogs"
 
 type AdminActions = ReturnType<typeof import("../-actions/admin-actions").useAdminActions>
@@ -38,6 +39,11 @@ export function AdminUsersPage({
   searchValue,
   data,
   actions,
+  sessionsUser,
+  sessions,
+  sessionsPending,
+  onOpenSessions,
+  onCloseSessions,
   onSearchChange,
   onPageChange,
 }: {
@@ -45,6 +51,11 @@ export function AdminUsersPage({
   searchValue: string
   data: UsersData | undefined
   actions: AdminActions
+  sessionsUser: UserRecord | null
+  sessions: AdminSession[]
+  sessionsPending: boolean
+  onOpenSessions: (user: UserRecord) => void
+  onCloseSessions: () => void
   onSearchChange: (search: string) => void
   onPageChange: (page: number) => void
 }) {
@@ -131,6 +142,7 @@ export function AdminUsersPage({
                         >
                           Edit details
                         </Menu.Item>
+                        <Menu.Item onClick={() => onOpenSessions(user)}>View sessions</Menu.Item>
                         <Menu.Item
                           leftSection={<IconShield size={15} />}
                           onClick={() => {
@@ -215,6 +227,7 @@ export function AdminUsersPage({
         onSubmit={(values) => actions.createUser.mutateAsync(values)}
       />
       <EditUserDialog
+        key={`edit-${selected?.id ?? "none"}`}
         user={selected}
         opened={dialog === "edit"}
         pending={actions.updateUser.isPending}
@@ -229,11 +242,20 @@ export function AdminUsersPage({
         onSubmit={(values) => actions.setRole.mutateAsync(values)}
       />
       <PasswordDialog
+        key={`password-${selected?.id ?? "none"}`}
         user={selected}
         opened={dialog === "password"}
         pending={actions.setPassword.isPending}
         onClose={closeDialog}
         onSubmit={(values) => actions.setPassword.mutateAsync(values)}
+      />
+      <SessionsDialog
+        user={sessionsUser}
+        sessions={sessions}
+        loading={sessionsPending}
+        pending={actions.revokeSession.isPending}
+        onClose={onCloseSessions}
+        onRevoke={(sessionToken) => actions.revokeSession.mutateAsync({ sessionToken })}
       />
     </Container>
   )

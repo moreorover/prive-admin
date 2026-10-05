@@ -1,10 +1,13 @@
 import { useDebouncedCallback } from "@mantine/hooks"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
+import { useState } from "react"
+
+import type { UserRecord } from "./-components/user-dialogs"
 
 import { useAdminActions } from "./-actions/admin-actions"
 import { AdminUsersPage } from "./-components/users-page"
-import { adminUsersQueryOptions, adminUsersSearchSchema } from "./-data/users-data"
+import { adminUserSessionsQueryOptions, adminUsersQueryOptions, adminUsersSearchSchema } from "./-data/users-data"
 
 const searchNavigationDebounceMs = 300
 
@@ -24,6 +27,8 @@ function RouteComponent() {
   const searchValue = search.search
   const data = useQuery(adminUsersQueryOptions(page, searchValue)).data
   const actions = useAdminActions()
+  const [sessionsUser, setSessionsUser] = useState<UserRecord | null>(null)
+  const sessions = useQuery(adminUserSessionsQueryOptions(sessionsUser?.id ?? null))
   const navigateToSearch = useDebouncedCallback((nextSearch: string) => {
     navigate({ search: { page: 1, search: nextSearch }, replace: true })
   }, searchNavigationDebounceMs)
@@ -35,6 +40,11 @@ function RouteComponent() {
       searchValue={searchValue}
       data={data}
       actions={actions}
+      sessionsUser={sessionsUser}
+      sessions={sessions.data?.sessions ?? []}
+      sessionsPending={sessions.isPending}
+      onOpenSessions={setSessionsUser}
+      onCloseSessions={() => setSessionsUser(null)}
       onSearchChange={(nextSearch) => {
         navigateToSearch(nextSearch)
       }}
