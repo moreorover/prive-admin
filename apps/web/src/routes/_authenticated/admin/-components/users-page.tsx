@@ -5,6 +5,7 @@ import { useState } from "react"
 import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
 import { ResourcePagination } from "@/components/resource-pagination"
+import { ResourceToolbar } from "@/components/resource-toolbar"
 import { Section } from "@/components/section"
 
 import { ADMIN_USERS_PAGE_SIZE, type AdminSession } from "../-data/users-data"
@@ -82,12 +83,9 @@ export function AdminUsersPage({
         }
       />
       <Section padding={0}>
-        <Group p="md" justify="space-between" align="flex-end">
+        <ResourceToolbar count={total} countLabel={total === 1 ? "user" : "users"}>
           <AdminUsersSearch key={searchValue} value={searchValue} onChange={onSearchChange} />
-          <Text size="sm" c="dimmed">
-            {total} user{total === 1 ? "" : "s"}
-          </Text>
-        </Group>
+        </ResourceToolbar>
         <Table.ScrollContainer minWidth={780}>
           <Table verticalSpacing="sm">
             <Table.Thead>

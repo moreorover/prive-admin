@@ -5,6 +5,7 @@ import { useState } from "react"
 
 import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
+import { ResourceToolbar } from "@/components/resource-toolbar"
 import { Section } from "@/components/section"
 
 import { CustomerFormDialog, type CustomerCreateValues } from "./customer-form-dialog"
@@ -56,7 +57,7 @@ export function CustomersPage({
         }
       />
       <Section padding={0}>
-        <Group p="md" justify="space-between" align="flex-end">
+        <ResourceToolbar count={totalCount} countLabel={totalCount === 1 ? "customer" : "customers"}>
           <TextInput
             label="Search"
             placeholder="Search customers"
@@ -68,10 +69,7 @@ export function CustomersPage({
             miw={260}
             flex={1}
           />
-          <Text size="sm" c="dimmed">
-            {totalCount} customer{totalCount === 1 ? "" : "s"}
-          </Text>
-        </Group>
+        </ResourceToolbar>
         <Table.ScrollContainer minWidth={640}>
           <Table>
             <Table.Thead>

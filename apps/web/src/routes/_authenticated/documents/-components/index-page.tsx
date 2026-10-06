@@ -22,6 +22,7 @@ import { useState } from "react"
 import { attachmentPreviewUrl } from "@/components/attachment-preview"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
+import { ResourceToolbar } from "@/components/resource-toolbar"
 import { Section } from "@/components/section"
 import { type Currency, formatMinor } from "@/lib/currency"
 
@@ -101,7 +102,7 @@ export function DocumentsPage({
 
       <Section padding={documents.length > 0 ? 0 : "lg"}>
         <Stack gap="md">
-          <Group px={documents.length > 0 ? "md" : 0} pt={documents.length > 0 ? "md" : 0} justify="space-between">
+          <ResourceToolbar count={totalCount} countLabel={totalCount === 1 ? "document" : "documents"}>
             <SegmentedControl
               value={status}
               onChange={(value) => onStatusChange(value as DocumentStatus)}
@@ -112,7 +113,7 @@ export function DocumentsPage({
               ]}
               size="sm"
             />
-          </Group>
+          </ResourceToolbar>
 
           <Box pos="relative">
             <LoadingOverlay visible={documentsQuery.isFetching} />
