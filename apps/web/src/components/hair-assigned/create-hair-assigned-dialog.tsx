@@ -53,7 +53,7 @@ export function CreateHairAssignedDialog({
           </Text>
         ) : availableOrders.length > 0 ? (
           <Radio.Group value={selectedOrderId} onChange={setSelectedOrderId}>
-            <Table>
+            <Table className="prive-responsive-table">
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th />
@@ -66,13 +66,15 @@ export function CreateHairAssignedDialog({
               <Table.Tbody>
                 {availableOrders.map((order) => (
                   <Table.Tr key={order.id} onClick={() => setSelectedOrderId(order.id)} style={{ cursor: "pointer" }}>
-                    <Table.Td>
+                    <Table.Td data-label="Select" data-mobile-actions>
                       <Radio value={order.id} />
                     </Table.Td>
-                    <Table.Td>#{order.uid}</Table.Td>
-                    <Table.Td>{order.customer.name}</Table.Td>
-                    <Table.Td>{order.weightReceived}g</Table.Td>
-                    <Table.Td>{order.weightReceived - order.weightUsed}g</Table.Td>
+                    <Table.Td data-label="UID" data-mobile-primary>
+                      #{order.uid}
+                    </Table.Td>
+                    <Table.Td data-label="Customer">{order.customer.name}</Table.Td>
+                    <Table.Td data-label="Received">{order.weightReceived}g</Table.Td>
+                    <Table.Td data-label="Remaining">{order.weightReceived - order.weightUsed}g</Table.Td>
                   </Table.Tr>
                 ))}
               </Table.Tbody>

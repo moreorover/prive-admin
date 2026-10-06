@@ -89,7 +89,7 @@ export function CustomerAppointmentsPage({
       >
         <Stack gap="md">
           {hasItemsOnCurrentPage ? (
-            <Table>
+            <Table className="prive-responsive-table">
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>Name</Table.Th>
@@ -99,7 +99,7 @@ export function CustomerAppointmentsPage({
               <Table.Tbody>
                 {appointments.map((appointment) => (
                   <Table.Tr key={appointment.id}>
-                    <Table.Td>
+                    <Table.Td data-label="Name" data-mobile-primary>
                       <Text
                         renderRoot={(props) => (
                           <Link
@@ -113,7 +113,7 @@ export function CustomerAppointmentsPage({
                         {appointment.name}
                       </Text>
                     </Table.Td>
-                    <Table.Td c="dimmed">
+                    <Table.Td data-label="Date" c="dimmed">
                       <ClientDate date={appointment.startsAt} />
                     </Table.Td>
                   </Table.Tr>

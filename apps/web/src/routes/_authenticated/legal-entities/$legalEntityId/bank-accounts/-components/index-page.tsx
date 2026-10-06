@@ -44,7 +44,7 @@ export function BankAccountsTab({
         }
         padding={0}
       >
-        <Table>
+        <Table className="prive-responsive-table">
           <Table.Thead>
             <Table.Tr>
               <Table.Th>Name</Table.Th>
@@ -56,7 +56,7 @@ export function BankAccountsTab({
           <Table.Tbody>
             {bankAccounts.map((a) => (
               <Table.Tr key={a.id}>
-                <Table.Td>
+                <Table.Td data-label="Name" data-mobile-primary>
                   <Anchor
                     renderRoot={(props) => (
                       <Link
@@ -69,11 +69,11 @@ export function BankAccountsTab({
                     {a.displayName}
                   </Anchor>
                 </Table.Td>
-                <Table.Td>
+                <Table.Td data-label="IBAN">
                   <code>{a.iban}</code>
                 </Table.Td>
-                <Table.Td>{a.currency}</Table.Td>
-                <Table.Td>{a.bankName ?? "—"}</Table.Td>
+                <Table.Td data-label="Currency">{a.currency}</Table.Td>
+                <Table.Td data-label="Bank">{a.bankName ?? "—"}</Table.Td>
               </Table.Tr>
             ))}
             {legalEntity && bankAccounts.length === 0 && (

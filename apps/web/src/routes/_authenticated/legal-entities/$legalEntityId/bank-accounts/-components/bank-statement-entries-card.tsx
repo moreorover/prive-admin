@@ -1,4 +1,4 @@
-import { ActionIcon, Card, Group, Menu, Pagination, Table, Text } from "@mantine/core"
+import { ActionIcon, Card, Group, Menu, Pagination, Table, Text, Tooltip } from "@mantine/core"
 import { IconDotsVertical } from "@tabler/icons-react"
 
 import { type AttachmentPreview } from "@/components/attachment-preview"
@@ -73,7 +73,7 @@ export function BankStatementEntriesCard({
 }: Props) {
   return (
     <Card withBorder>
-      <Table>
+      <Table className="prive-responsive-table">
         <Table.Thead>
           <Table.Tr>
             <Table.Th>Date</Table.Th>
@@ -175,25 +175,25 @@ function StatementEntryRow({
 
   return (
     <Table.Tr>
-      <Table.Td style={{ whiteSpace: "nowrap" }}>
+      <Table.Td data-label="Date" data-mobile-primary style={{ whiteSpace: "nowrap" }}>
         <Text size="sm">{entry.date}</Text>
         <Text size="xs" c="dimmed">
           {entry.bankAccount?.displayName}
         </Text>
       </Table.Td>
-      <Table.Td ta="right" style={{ whiteSpace: "nowrap" }}>
+      <Table.Td data-label="Amount" ta="right" style={{ whiteSpace: "nowrap" }}>
         <Text size="sm" fw={500} c={color}>
           {sign}
           {formatMinor(entry.amount, entry.currency as Currency)}
         </Text>
       </Table.Td>
-      <Table.Td>{entry.counterpartyName ?? "—"}</Table.Td>
-      <Table.Td>
+      <Table.Td data-label="Counterparty">{entry.counterpartyName ?? "—"}</Table.Td>
+      <Table.Td data-label="Purpose">
         <Text size="xs" lineClamp={2}>
           {entry.purpose ?? "—"}
         </Text>
       </Table.Td>
-      <Table.Td ta="center">
+      <Table.Td data-label="Files" ta="center">
         <AttachmentsCell
           opened={opened}
           count={attachmentCount}
@@ -208,12 +208,14 @@ function StatementEntryRow({
           onUpload={onUpload}
         />
       </Table.Td>
-      <Table.Td ta="right">
+      <Table.Td data-label="Actions" data-mobile-actions ta="right">
         <Menu position="bottom-end" withinPortal>
           <Menu.Target>
-            <ActionIcon variant="subtle" aria-label="Actions">
-              <IconDotsVertical size={16} />
-            </ActionIcon>
+            <Tooltip label="More actions" withArrow>
+              <ActionIcon variant="subtle" aria-label="More actions">
+                <IconDotsVertical size={16} />
+              </ActionIcon>
+            </Tooltip>
           </Menu.Target>
           <Menu.Dropdown>
             {entry.status === "PENDING" ? (
