@@ -77,7 +77,7 @@ const priveTokens = {
 export const theme = createTheme({
   primaryColor: "champagne",
   primaryShade: { light: 6, dark: 4 },
-  defaultRadius: "lg",
+  defaultRadius: "md",
   cursorType: "pointer",
   focusRing: "auto",
   focusClassName: "prive-focus",
@@ -139,11 +139,11 @@ export const theme = createTheme({
   white: "#fffcf6",
   black: "#11100e",
   radius: {
-    xs: "0.375rem",
-    sm: "0.625rem",
-    md: "0.875rem",
-    lg: "1.125rem",
-    xl: "1.5rem",
+    xs: "0.25rem",
+    sm: "0.375rem",
+    md: "0.625rem",
+    lg: "0.875rem",
+    xl: "1.125rem",
   },
   spacing: {
     xs: "0.5rem",
@@ -188,7 +188,7 @@ export const theme = createTheme({
   components: {
     ActionIcon: ActionIcon.extend({
       defaultProps: {
-        radius: "xl",
+        radius: "md",
         variant: "subtle",
       },
     }),
@@ -201,7 +201,7 @@ export const theme = createTheme({
     }),
     Button: Button.extend({
       defaultProps: {
-        radius: "xl",
+        radius: "md",
         fw: 700,
       },
     }),
@@ -220,7 +220,7 @@ export const theme = createTheme({
     }),
     Menu: Menu.extend({
       defaultProps: {
-        radius: "lg",
+        radius: "md",
         shadow: "lg",
         transitionProps: { transition: "pop-top-right", duration: 140 },
       },
@@ -228,7 +228,7 @@ export const theme = createTheme({
     Modal: Modal.extend({
       defaultProps: {
         centered: true,
-        radius: "xl",
+        radius: "lg",
         overlayProps: {
           backgroundOpacity: 0.36,
           blur: 8,
@@ -249,7 +249,7 @@ export const theme = createTheme({
     }),
     Pagination: Pagination.extend({
       defaultProps: {
-        radius: "xl",
+        radius: "md",
       },
     }),
     Paper: Paper.extend({
@@ -260,13 +260,13 @@ export const theme = createTheme({
     }),
     PasswordInput: PasswordInput.extend({
       defaultProps: {
-        radius: "lg",
+        radius: "md",
         size: "md",
       },
     }),
     Select: Select.extend({
       defaultProps: {
-        radius: "lg",
+        radius: "md",
         size: "md",
       },
     }),
@@ -274,7 +274,7 @@ export const theme = createTheme({
       defaultProps: {
         highlightOnHover: true,
         horizontalSpacing: "md",
-        verticalSpacing: "sm",
+        verticalSpacing: "xs",
       },
     }),
     Tabs: Tabs.extend({
@@ -290,7 +290,7 @@ export const theme = createTheme({
     }),
     TextInput: TextInput.extend({
       defaultProps: {
-        radius: "lg",
+        radius: "md",
         size: "md",
       },
     }),

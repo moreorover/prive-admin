@@ -1,4 +1,4 @@
-import { ActionIcon, Box, Center, Stack, Title, useMantineColorScheme } from "@mantine/core"
+import { ActionIcon, Box, Card, Center, Stack, Title, useMantineColorScheme } from "@mantine/core"
 import { IconDeviceDesktop, IconMoon, IconSun } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 
@@ -28,13 +28,20 @@ export function RouteComponent() {
       </ActionIcon>
 
       <Center mih="100vh">
-        <Stack align="center" w="100%" maw={420} px="md">
-          <Link to="/">
-            <Title order={2} fw={300}>
-              Privé
+        <Stack align="center" w="100%" maw={440} px="md" gap="lg">
+          <Stack align="center" gap={4}>
+            <Link to="/">
+              <Title order={2} fw={300}>
+                Privé
+              </Title>
+            </Link>
+            <Title order={1} size="h3" fw={600}>
+              Welcome back
             </Title>
-          </Link>
-          <SignInForm redirectTo={redirect} />
+          </Stack>
+          <Card w="100%" padding="lg">
+            <SignInForm redirectTo={redirect} />
+          </Card>
         </Stack>
       </Center>
     </Box>

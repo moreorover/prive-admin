@@ -17,6 +17,7 @@ import { Link } from "@tanstack/react-router"
 
 import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
+import { ResourceToolbar } from "@/components/resource-toolbar"
 import { Section } from "@/components/section"
 import { dateFromMonthKey, monthKeyFromDate } from "@/lib/dashboard-monthly-stats"
 
@@ -68,7 +69,7 @@ export function HairSalesPage({
       />
       <Section padding={0}>
         <Stack gap={0}>
-          <Group p="md" gap="sm" wrap="wrap">
+          <ResourceToolbar count={totalCount} countLabel={totalCount === 1 ? "hair sale" : "hair sales"}>
             <SegmentedControl
               value={source}
               onChange={(value) => onSearchChange({ page: 1, source: value as HairSalesSource })}
@@ -98,7 +99,7 @@ export function HairSalesPage({
               onChange={(event) => onSearchChange({ page: 1, search: event.currentTarget.value })}
               w={260}
             />
-          </Group>
+          </ResourceToolbar>
           <Table>
             <Table.Thead>
               <Table.Tr>
