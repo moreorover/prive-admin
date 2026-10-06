@@ -1,6 +1,7 @@
 import { createRouter as createTanStackRouter } from "@tanstack/react-router"
 
 import Loader from "./components/loader"
+import { NotFoundPage } from "./components/router-fallbacks"
 import "@gfazioli/mantine-qr-code/styles.css"
 
 import "./index.css"
@@ -10,10 +11,11 @@ import { queryClient, trpc } from "./utils/trpc"
 export const router = createTanStackRouter({
   routeTree,
   scrollRestoration: true,
-  defaultPreloadStaleTime: 0,
+  defaultPreload: "intent",
+  defaultPreloadStaleTime: 30_000,
   context: { queryClient, trpc },
   defaultPendingComponent: () => <Loader />,
-  defaultNotFoundComponent: () => <div>Not Found</div>,
+  defaultNotFoundComponent: NotFoundPage,
 })
 
 declare module "@tanstack/react-router" {
