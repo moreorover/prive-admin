@@ -4,56 +4,10 @@
 
 :root,
 [data-mantine-color-scheme="light"] {
-  --prive-obsidian: #11100e;
-  --prive-bone: #f4efe6;
-  --prive-bone-warm: #fffcf6;
-  --prive-champagne: #b58b43;
-  --prive-mulberry: #442338;
-  --prive-ledger: #51665b;
-  --prive-mist: #d8d2c8;
-  --prive-page-glow-primary: rgba(255, 249, 236, 0.95);
-  --prive-page-glow-secondary: rgba(68, 35, 56, 0.12);
-  --prive-ledger-line-x: rgba(91, 73, 49, 0.055);
-  --prive-ledger-line-y: rgba(91, 73, 49, 0.045);
-  --prive-surface: rgba(255, 252, 246, 0.9);
-  --prive-surface-strong: rgba(255, 252, 246, 0.96);
-  --prive-surface-muted: rgba(255, 252, 246, 0.72);
-  --prive-surface-raised: rgba(255, 252, 246, 0.94);
-  --prive-surface-shadow: rgba(74, 55, 24, 0.1);
-  --prive-button-shadow: rgba(111, 77, 24, 0.16);
-  --prive-control-bg: rgba(255, 252, 246, 0.76);
-  --prive-control-bg-hover: rgba(255, 252, 246, 0.96);
-  --prive-surface-alpha: color-mix(in srgb, var(--mantine-color-body) 88%, transparent);
-  --prive-border: rgba(91, 73, 49, 0.16);
-  --prive-border-strong: rgba(91, 73, 49, 0.28);
-  --prive-focus: rgba(181, 139, 67, 0.38);
-  --prive-selection: rgba(181, 139, 67, 0.24);
-  --mantine-color-body: #f4efe6;
-  --mantine-color-text: #211c16;
-  --mantine-color-dimmed: #786b5b;
   color-scheme: light;
 }
 
 [data-mantine-color-scheme="dark"] {
-  --prive-page-glow-primary: rgba(181, 139, 67, 0.1);
-  --prive-page-glow-secondary: rgba(68, 35, 56, 0.34);
-  --prive-ledger-line-x: rgba(244, 239, 230, 0.035);
-  --prive-ledger-line-y: rgba(244, 239, 230, 0.026);
-  --prive-surface: rgba(31, 28, 25, 0.94);
-  --prive-surface-strong: rgba(39, 35, 31, 0.98);
-  --prive-surface-muted: rgba(42, 37, 32, 0.86);
-  --prive-surface-raised: rgba(28, 25, 22, 0.98);
-  --prive-surface-shadow: rgba(0, 0, 0, 0.42);
-  --prive-button-shadow: rgba(0, 0, 0, 0.3);
-  --prive-control-bg: rgba(39, 35, 31, 0.92);
-  --prive-control-bg-hover: rgba(54, 48, 42, 0.98);
-  --prive-border: rgba(244, 239, 230, 0.16);
-  --prive-border-strong: rgba(244, 239, 230, 0.28);
-  --prive-focus: rgba(216, 183, 117, 0.44);
-  --prive-selection: rgba(181, 139, 67, 0.34);
-  --mantine-color-body: #11100e;
-  --mantine-color-text: #f8efe3;
-  --mantine-color-dimmed: #bfb4a6;
   color-scheme: dark;
 }
 
