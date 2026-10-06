@@ -48,7 +48,7 @@ export function PickPersonnelModal({
           onChange={(e) => onSearchChange(e.currentTarget.value)}
         />
         <ScrollArea h={300}>
-          <Table highlightOnHover>
+          <Table className="prive-responsive-table" highlightOnHover>
             <Table.Thead>
               <Table.Tr>
                 <Table.Th w={40} />
@@ -66,7 +66,7 @@ export function PickPersonnelModal({
                       bg={checked ? "var(--prive-selection)" : undefined}
                       onClick={() => toggle(c.id)}
                     >
-                      <Table.Td>
+                      <Table.Td data-label="Select" data-mobile-actions>
                         <Checkbox
                           checked={checked}
                           aria-label={`Select ${c.name}`}
@@ -74,7 +74,9 @@ export function PickPersonnelModal({
                           onClick={(e) => e.stopPropagation()}
                         />
                       </Table.Td>
-                      <Table.Td>{c.name}</Table.Td>
+                      <Table.Td data-label="Name" data-mobile-primary>
+                        {c.name}
+                      </Table.Td>
                     </Table.Tr>
                   )
                 })

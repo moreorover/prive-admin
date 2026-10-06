@@ -86,8 +86,8 @@ export function AdminUsersPage({
         <ResourceToolbar count={total} countLabel={total === 1 ? "user" : "users"}>
           <AdminUsersSearch key={searchValue} value={searchValue} onChange={onSearchChange} />
         </ResourceToolbar>
-        <Table.ScrollContainer minWidth={780}>
-          <Table verticalSpacing="sm">
+        <Table.ScrollContainer minWidth={780} className="prive-responsive-table-scroll">
+          <Table verticalSpacing="sm" className="prive-responsive-table">
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>User</Table.Th>
@@ -100,18 +100,18 @@ export function AdminUsersPage({
             <Table.Tbody>
               {users.map((user) => (
                 <Table.Tr key={user.id}>
-                  <Table.Td>
+                  <Table.Td data-label="User" data-mobile-primary>
                     <Text fw={500}>{user.name}</Text>
                     <Text size="xs" c="dimmed">
                       {user.email}
                     </Text>
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td data-label="Role">
                     <Badge variant="light" color={user.role?.includes("admin") ? "violet" : "gray"}>
                       {user.role ?? "user"}
                     </Badge>
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td data-label="Status">
                     {user.banned ? (
                       <Badge color="red" variant="light">
                         Banned
@@ -122,10 +122,10 @@ export function AdminUsersPage({
                       </Badge>
                     )}
                   </Table.Td>
-                  <Table.Td c="dimmed">
+                  <Table.Td data-label="Joined" c="dimmed">
                     <ClientDate date={user.createdAt as string} />
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td data-label="Actions" data-mobile-actions>
                     <Menu withinPortal position="bottom-end">
                       <Menu.Target>
                         <ActionIcon variant="subtle" aria-label={`Actions for ${user.name}`}>

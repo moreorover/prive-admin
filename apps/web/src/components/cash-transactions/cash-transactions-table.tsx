@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from "react"
 
-import { ActionIcon, Menu, Table, Text } from "@mantine/core"
+import { ActionIcon, Menu, Table, Text, Tooltip } from "@mantine/core"
 import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import dayjs from "dayjs"
@@ -87,12 +87,14 @@ function createActionsColumn(): CashTransactionColumnComponent<CashTransactionAc
   Column.Cell = ({ onEdit, onDelete }) => {
     const row = useCashTransactionRow()
     return (
-      <Table.Td>
+      <Table.Td data-label="Actions" data-mobile-actions>
         <Menu shadow="md" width={140} position="bottom-end">
           <Menu.Target>
-            <ActionIcon variant="subtle" size="sm" aria-label="Actions">
-              <IconDots size={14} />
-            </ActionIcon>
+            <Tooltip label="More actions" withArrow>
+              <ActionIcon variant="subtle" size="sm" aria-label="More actions">
+                <IconDots size={14} />
+              </ActionIcon>
+            </Tooltip>
           </Menu.Target>
           <Menu.Dropdown>
             <Menu.Item leftSection={<IconPencil size={14} />} onClick={() => onEdit(row)}>
@@ -151,13 +153,13 @@ const TablePagination = Object.assign(
 
 const Date = createColumn("date", "Date", () => {
   const row = useCashTransactionRow()
-  return <Table.Td>{dayjs(row.createdAt).format("YYYY-MM-DD")}</Table.Td>
+  return <Table.Td data-label="Date">{dayjs(row.createdAt).format("YYYY-MM-DD")}</Table.Td>
 })
 
 const Customer = createColumn("customer", "Customer", () => {
   const row = useCashTransactionRow()
   return (
-    <Table.Td>
+    <Table.Td data-label="Customer" data-mobile-primary>
       <Text
         renderRoot={(props) => <Link to="/customers/$customerId" params={{ customerId: row.customer.id }} {...props} />}
         c="blue"
@@ -170,18 +172,22 @@ const Customer = createColumn("customer", "Customer", () => {
 
 const Description = createColumn("description", "Description", () => {
   const row = useCashTransactionRow()
-  return <Table.Td>{row.description ?? <Text c="dimmed">—</Text>}</Table.Td>
+  return <Table.Td data-label="Description">{row.description ?? <Text c="dimmed">—</Text>}</Table.Td>
 })
 
 const Amount = createColumn("amount", "Amount", () => {
   const row = useCashTransactionRow()
-  return <Table.Td ta="right">{formatMinor(row.amount, coerceCashTransactionCurrency(row.currency))}</Table.Td>
+  return (
+    <Table.Td data-label="Amount" ta="right">
+      {formatMinor(row.amount, coerceCashTransactionCurrency(row.currency))}
+    </Table.Td>
+  )
 })
 Amount.Header = () => <Table.Th ta="right">Amount</Table.Th>
 
 const CreatedBy = createColumn("created-by", "Created by", () => {
   const row = useCashTransactionRow()
-  return <Table.Td>{row.createdBy.name}</Table.Td>
+  return <Table.Td data-label="Created by">{row.createdBy.name}</Table.Td>
 })
 
 export const CashTransactionsTable = Object.assign(CashTransactionsTableRoot, {

@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from "react"
 
-import { ActionIcon, Badge, Group, Table, Text } from "@mantine/core"
+import { ActionIcon, Badge, Group, Table, Text, Tooltip } from "@mantine/core"
 import { IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { createContext, useContext } from "react"
@@ -133,7 +133,7 @@ const TablePagination = Object.assign(
 const Client = createColumn("client", "Client", () => {
   const row = useHairAssignedRow()
   return (
-    <Table.Td>
+    <Table.Td data-label="Client" data-mobile-primary>
       {row.client ? (
         <Text
           renderRoot={(props) => (
@@ -154,7 +154,7 @@ const Source = createColumn("source", "Source", () => {
   const row = useHairAssignedRow()
   const source = getHairAssignedSource(row)
   return (
-    <Table.Td>
+    <Table.Td data-label="Source">
       <Badge variant="light" color={source.color}>
         {source.label}
       </Badge>
@@ -165,7 +165,7 @@ const Source = createColumn("source", "Source", () => {
 const HairOrder = createColumn("hair-order", "Hair Order", () => {
   const row = useHairAssignedRow()
   return (
-    <Table.Td>
+    <Table.Td data-label="Hair order">
       {row.hairOrder ? (
         <Text
           renderRoot={(props) => (
@@ -184,40 +184,44 @@ const HairOrder = createColumn("hair-order", "Hair Order", () => {
 
 const SoldAt = createColumn("sold-at", "Sold At", () => {
   const row = useHairAssignedRow()
-  return <Table.Td>{row.soldAt ? <ClientDate date={row.soldAt} /> : "—"}</Table.Td>
+  return <Table.Td data-label="Sold at">{row.soldAt ? <ClientDate date={row.soldAt} /> : "—"}</Table.Td>
 })
 
 const Weight = createColumn("weight", "Weight", () => {
   const row = useHairAssignedRow()
-  return <Table.Td>{row.weightInGrams}g</Table.Td>
+  return <Table.Td data-label="Weight">{row.weightInGrams}g</Table.Td>
 })
 
 const SoldFor = createColumn("sold-for", "Sold For", () => {
   const row = useHairAssignedRow()
-  return <Table.Td>{formatCents(row.soldFor)}</Table.Td>
+  return <Table.Td data-label="Sold for">{formatCents(row.soldFor)}</Table.Td>
 })
 
 const Profit = createColumn("profit", "Profit", () => {
   const row = useHairAssignedRow()
-  return <Table.Td>{formatCents(row.profit)}</Table.Td>
+  return <Table.Td data-label="Profit">{formatCents(row.profit)}</Table.Td>
 })
 
 const PricePerGram = createColumn("price-per-gram", "€/g", () => {
   const row = useHairAssignedRow()
-  return <Table.Td>{formatCents(row.pricePerGram)}</Table.Td>
+  return <Table.Td data-label="€/g">{formatCents(row.pricePerGram)}</Table.Td>
 })
 
 const Actions = createColumn<HairAssignedActionsProps>("actions", "", ({ onEdit, onDelete }) => {
   const row = useHairAssignedRow()
   return (
-    <Table.Td>
+    <Table.Td data-label="Actions" data-mobile-actions>
       <Group gap={4}>
-        <ActionIcon variant="subtle" size="sm" onClick={() => onEdit(row)} aria-label="Edit">
-          <IconPencil size={14} />
-        </ActionIcon>
-        <ActionIcon variant="subtle" size="sm" color="red" onClick={() => onDelete(row)} aria-label="Delete">
-          <IconTrash size={14} />
-        </ActionIcon>
+        <Tooltip label="Edit" withArrow>
+          <ActionIcon variant="subtle" size="sm" onClick={() => onEdit(row)} aria-label="Edit">
+            <IconPencil size={14} />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Delete" withArrow>
+          <ActionIcon variant="subtle" size="sm" color="red" onClick={() => onDelete(row)} aria-label="Delete">
+            <IconTrash size={14} />
+          </ActionIcon>
+        </Tooltip>
       </Group>
     </Table.Td>
   )
