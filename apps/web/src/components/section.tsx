@@ -7,7 +7,7 @@ export function Section({
   description,
   actions,
   children,
-  padding = "lg",
+  padding = "md",
 }: {
   title?: ReactNode
   description?: ReactNode
@@ -21,7 +21,7 @@ export function Section({
     <Card padding={0} className="prive-section">
       {hasHeader ? (
         <>
-          <Group justify="space-between" align="flex-start" wrap="wrap" p="lg" pb="md" gap="md">
+          <Group justify="space-between" align="flex-start" wrap="wrap" p="md" pb="sm" gap="md">
             <Stack gap={2} miw={0} flex="1 1 18rem">
               {title ? (
                 <Title order={4} fw={600} lh={1.3}>

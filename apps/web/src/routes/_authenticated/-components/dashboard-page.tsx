@@ -84,7 +84,7 @@ export function DashboardPage({
         }
       />
 
-      <Stack gap="lg">
+      <Stack gap="md">
         <TransactionStatsSection
           currentYearData={transactionData}
           previousYearData={previousTransactionData}
@@ -132,7 +132,7 @@ function TransactionStatsSection({
   return (
     <Section title="Transactions" description="Appointment transaction movement for the selected month.">
       {currencies.length > 0 ? (
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
           {currencies.map((currency) => {
             const current = currentYearData
               ?.find((item) => item.currency === currency)
@@ -190,7 +190,7 @@ function HairStatsSection({
         </Button>
       }
     >
-      <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }}>
+      <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
         <MetricCard
           label="Weight"
           metric={calculateMonthlyMetric(current.weight, previous.weight)}

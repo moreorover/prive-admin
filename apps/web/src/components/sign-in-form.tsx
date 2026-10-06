@@ -1,4 +1,4 @@
-import { Button, Checkbox, Container, Divider, PasswordInput, Stack, Text, TextInput, Title } from "@mantine/core"
+import { Button, Checkbox, Divider, PasswordInput, Stack, Text, TextInput } from "@mantine/core"
 import { useForm } from "@mantine/form"
 import { notifications } from "@mantine/notifications"
 import { useNavigate } from "@tanstack/react-router"
@@ -69,10 +69,7 @@ export default function SignInForm({ redirectTo }: { redirectTo?: string }) {
   }
 
   return (
-    <Container size="xs" mt="xl">
-      <Title order={1} ta="center" mb="lg">
-        Welcome Back
-      </Title>
+    <Stack>
       <Stack gap="md" mb="lg">
         <Button type="button" fullWidth loading={passkeySubmitting} onClick={handlePasskeySignIn}>
           Sign in with a passkey
@@ -92,6 +89,6 @@ export default function SignInForm({ redirectTo }: { redirectTo?: string }) {
           </Button>
         </Stack>
       </form>
-    </Container>
+    </Stack>
   )
 }

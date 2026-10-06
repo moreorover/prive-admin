@@ -14,14 +14,14 @@ export function PageHeader({
   actions?: ReactNode
 }) {
   return (
-    <Group justify="space-between" align="flex-start" wrap="wrap" mb="lg" gap="md">
-      <Stack gap={2} miw={0} flex="1 1 22rem">
+    <Group justify="space-between" align="flex-end" wrap="wrap" mb="xl" gap="lg">
+      <Stack gap={4} miw={0} flex="1 1 22rem">
         <BreadcrumbPortal />
         <Title order={2} fw={600} lh={1.2}>
           {title}
         </Title>
         {description ? (
-          <Box c="dimmed" fz="sm">
+          <Box c="dimmed" fz="sm" maw={680}>
             {description}
           </Box>
         ) : null}

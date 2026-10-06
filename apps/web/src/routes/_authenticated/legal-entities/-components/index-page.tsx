@@ -79,11 +79,11 @@ export function LegalEntitiesIndex({
             const country = legalEntity.country as Country
 
             return (
-              <Card key={legalEntity.id} withBorder padding="lg">
-                <Stack gap="md">
+              <Card key={legalEntity.id} withBorder padding="md">
+                <Stack gap="sm">
                   <Stack gap={4}>
                     <Title
-                      order={3}
+                      order={4}
                       fw={600}
                       renderRoot={(props) => (
                         <Link
