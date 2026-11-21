@@ -9,6 +9,7 @@ export type AttachmentPreview = {
   contentType: string
 }
 
+/** Builds the attachment preview URL for links and embedded viewer sources. */
 export function attachmentPreviewUrl(attachment: Pick<AttachmentPreview, "id">) {
   return apiUrl(`${previewPath}?id=${encodeURIComponent(attachment.id)}`)
 }

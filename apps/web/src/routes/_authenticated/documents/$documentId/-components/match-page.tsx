@@ -21,8 +21,10 @@ import { IconArrowLeft } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { attachmentPreviewUrl } from "@/components/attachment-preview"
+import type { DocumentViewerProps } from "@/components/document-viewer"
+
 import { BreadcrumbItem } from "@/components/breadcrumbs"
+import { DocumentViewer } from "@/components/document-viewer"
 import { PageHeader } from "@/components/page-header"
 import { Section } from "@/components/section"
 import {
@@ -52,6 +54,7 @@ type DocumentQuery = {
 export function DocumentMatchPage({
   page,
   documentQuery,
+  documentViewerProps,
   matchCandidatesData,
   matchCandidatesIsError,
   assignPending,
@@ -60,6 +63,7 @@ export function DocumentMatchPage({
 }: {
   page: number
   documentQuery: DocumentQuery
+  documentViewerProps: DocumentViewerProps | undefined
   matchCandidatesData: { items: DocumentMatchCandidate[]; totalCount: number } | undefined
   matchCandidatesIsError: boolean
   assignPending: boolean
@@ -135,20 +139,12 @@ export function DocumentMatchPage({
                       Uploaded {new Date(document.uploadedAt).toLocaleString()}
                     </Text>
                   </Stack>
-                  <Button
-                    component="a"
-                    href={attachmentPreviewUrl(document)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    variant="default"
-                  >
-                    Preview document
-                  </Button>
                   {document.bankStatementEntryId ? (
                     <Text size="sm" c="dimmed">
                       This document is already matched.
                     </Text>
                   ) : null}
+                  {documentViewerProps && <DocumentViewer {...documentViewerProps} />}
                 </Stack>
               </Section>
             </Grid.Col>

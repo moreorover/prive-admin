@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
+import type { DocumentViewerProps } from "@/components/document-viewer"
+
+import { attachmentPreviewUrl } from "@/components/attachment-preview"
+
 import { useDocumentMatchActions } from "./-actions/document-match-actions"
 import { DocumentMatchPage } from "./-components/match-page"
 import {
@@ -38,6 +42,14 @@ function RouteComponent() {
   const navigate = Route.useNavigate()
   const page = search.page ?? 1
   const documentQuery = useQuery(documentQueryOptions(documentId))
+  const document = documentQuery.data
+  const documentViewerProps: DocumentViewerProps | undefined = document
+    ? {
+        src: attachmentPreviewUrl(document),
+        fileName: document.originalName,
+        mimeType: document.contentType,
+      }
+    : undefined
   const matchCandidatesQuery = useQuery(matchCandidatesQueryOptions(page))
   const { assign } = useDocumentMatchActions({
     documentId,
@@ -48,6 +60,7 @@ function RouteComponent() {
     <DocumentMatchPage
       page={page}
       documentQuery={documentQuery}
+      documentViewerProps={documentViewerProps}
       matchCandidatesData={matchCandidatesQuery.data}
       matchCandidatesIsError={matchCandidatesQuery.isError}
       assignPending={assign.isPending}
