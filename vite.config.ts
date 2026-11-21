@@ -31,7 +31,14 @@ export default defineConfig({
     experimentalSortPackageJson: {
       sortScripts: false,
     },
-    ignorePatterns: [".agents", "**/*.html", "docs", "routeTree.gen.ts", "packages/db/src/migrations"],
+    ignorePatterns: [
+      ".agents",
+      "**/*.html",
+      "docs",
+      "routeTree.gen.ts",
+      "storybook-static",
+      "packages/db/src/migrations",
+    ],
   },
   lint: {
     plugins: ["typescript", "unicorn"],
@@ -64,7 +71,14 @@ export default defineConfig({
       builtin: true,
     },
     globals: {},
-    ignorePatterns: [".agents", "**/*.html", "docs", "routeTree.gen.ts", "packages/db/src/migrations"],
+    ignorePatterns: [
+      ".agents",
+      "**/*.html",
+      "docs",
+      "routeTree.gen.ts",
+      "storybook-static",
+      "packages/db/src/migrations",
+    ],
     jsPlugins: [
       {
         name: "vite-plus",
