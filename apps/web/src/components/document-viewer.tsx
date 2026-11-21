@@ -18,10 +18,11 @@ export type DocumentViewerProps = {
 }
 
 export function DocumentViewer({ src, fileName, mimeType }: DocumentViewerProps) {
+  const attachmentUrl = embeddedAttachmentPreviewUrl(src)
   return (
-    <DocViewerAdapterProvider pdf={pdf}>
+    <DocViewerAdapterProvider pdf={pdf} textCredentials={attachmentUrl ? "include" : undefined}>
       <DocViewer
-        src={embeddedAttachmentPreviewUrl(src)}
+        src={attachmentUrl ?? src}
         fileName={fileName}
         mimeType={mimeType}
         h="clamp(24rem, 65dvh, 48rem)"

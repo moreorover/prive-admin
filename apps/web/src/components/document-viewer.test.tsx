@@ -44,14 +44,38 @@ describe("DocumentViewer", () => {
     })
   })
 
-  it.each(["text/plain", "text/csv"])("uses the authenticated same-origin proxy for %s in development", (mimeType) => {
-    vi.stubEnv("DEV", true)
-    const document = { src: `${previewUrl}%2F2026%20report`, fileName: "statement", mimeType }
+  it.each(["text/plain", "text/csv"])("uses credentialed loading for deployed cross-origin %s", (mimeType) => {
+    vi.stubEnv("DEV", false)
+    const api = "https://prive-admin-server-pr-42.preview.workers.dev"
+    const web = "https://prive-admin-web-pr-42.preview.workers.dev"
+    const document = {
+      src: `${api}/api/statement-attachments/preview?id=attachment-1%2F2026%20report`,
+      fileName: "statement",
+      mimeType,
+    }
     renderToStaticMarkup(createElement(MantineProvider, null, createElement(DocumentViewer, document)))
 
-    const src = vi.mocked(DocViewer).mock.lastCall?.[0].src ?? ""
-    expect(src).toMatch(/^\/api\/statement-attachments\/preview\?/)
-    expect(new URL(src, "http://localhost:3001").searchParams.get("id")).toBe("attachment-1/2026 report")
+    const src = new URL(vi.mocked(DocViewer).mock.lastCall?.[0].src ?? "", web)
+    expect(src.origin).toBe(api)
+    expect(src.searchParams.get("id")).toBe("attachment-1/2026 report")
+    expect(src.searchParams.get("download")).toBe("1")
+    expect(vi.mocked(DocViewerAdapterProvider).mock.lastCall?.[0]).toMatchObject({ textCredentials: "include" })
+  })
+
+  it.each([
+    [
+      "/api/statement-attachments/./preview?id=attachment-1#page=2",
+      "/api/statement-attachments/preview?id=attachment-1&download=1#page=2",
+    ],
+    [
+      "//files.example.org/api/statement-attachments/preview?id=attachment-1",
+      "//files.example.org/api/statement-attachments/preview?id=attachment-1&download=1",
+    ],
+    ["api/statement-attachments/preview?id=attachment-1", "api/statement-attachments/preview?id=attachment-1"],
+  ])("preserves the URL form when adapting %s", (src, expected) => {
+    const document = { src, fileName: "statement.pdf", mimeType: "application/pdf" }
+    renderToStaticMarkup(createElement(MantineProvider, null, createElement(DocumentViewer, document)))
+    expect(vi.mocked(DocViewer).mock.lastCall?.[0].src).toBe(expected)
   })
 
   it("renders the unsupported preview status and preserves the download link", () => {
@@ -75,5 +99,6 @@ describe("DocumentViewer", () => {
     }
     renderToStaticMarkup(createElement(MantineProvider, null, createElement(DocumentViewer, document)))
     expect(vi.mocked(DocViewer).mock.lastCall?.[0].src).toBe(document.src)
+    expect(vi.mocked(DocViewerAdapterProvider).mock.lastCall?.[0]).not.toMatchObject({ textCredentials: "include" })
   })
 })

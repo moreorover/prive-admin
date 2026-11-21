@@ -1,7 +1,7 @@
 import { apiUrl } from "@/utils/server-url"
 
 const previewPath = "/api/statement-attachments/preview"
-const devApiOrigin = "http://localhost:3000"
+const relativeUrlBase = "https://preview.invalid"
 
 export type AttachmentPreview = {
   id: string
@@ -14,12 +14,14 @@ export function attachmentPreviewUrl(attachment: Pick<AttachmentPreview, "id">) 
 }
 
 export function embeddedAttachmentPreviewUrl(src: string) {
-  const url = URL.parse(src, devApiOrigin)
-  if (!url || url.pathname !== previewPath) return src
+  const url = URL.parse(src, src.startsWith("/") ? relativeUrlBase : undefined)
+  if (!url || url.pathname !== previewPath || (url.protocol !== "https:" && url.protocol !== "http:")) return
 
   // The viewer uses the same URL for subresource loads and its download links.
   url.searchParams.set("download", "1")
-  const sameOrigin = src.startsWith(`${previewPath}?`) || src === previewPath
-  const useDevProxy = import.meta.env.DEV && url.origin === devApiOrigin
-  return sameOrigin || useDevProxy ? `${url.pathname}${url.search}` : url.href
+  if (src.startsWith("//")) return url.href.slice(url.protocol.length)
+  if (src.startsWith("/")) {
+    return url.origin === relativeUrlBase ? `${url.pathname}${url.search}${url.hash}` : undefined
+  }
+  return url.href
 }

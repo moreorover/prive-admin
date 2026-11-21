@@ -1,0 +1,148 @@
+diff --git a/dist/cjs/DocViewerAdapterProvider/DocViewerAdapterProvider.cjs b/dist/cjs/DocViewerAdapterProvider/DocViewerAdapterProvider.cjs
+index 86a90c6f6132fa177c67595f15734ef924b37fe8..c7d14aef2b04b4fc46c952947954689f90d7e8af 100644
+--- a/dist/cjs/DocViewerAdapterProvider/DocViewerAdapterProvider.cjs
++++ b/dist/cjs/DocViewerAdapterProvider/DocViewerAdapterProvider.cjs
+@@ -6,14 +6,16 @@ var react = require('react');
+
+ const DocViewerAdapterContext = react.createContext({
+   pdf: void 0,
+-  markdown: void 0
++  markdown: void 0,
++  textCredentials: void 0
+ });
+ function DocViewerAdapterProvider({
+   pdf,
+   markdown,
++  textCredentials,
+   children
+ }) {
+-  const value = react.useMemo(() => ({ pdf, markdown }), [pdf, markdown]);
++  const value = react.useMemo(() => ({ pdf, markdown, textCredentials }), [pdf, markdown, textCredentials]);
+   return /* @__PURE__ */ jsxRuntime.jsx(DocViewerAdapterContext, { value, children });
+ }
+ function useDocViewerAdapters() {
+diff --git a/dist/cjs/hooks/text/use-doc-viewer-text.cjs b/dist/cjs/hooks/text/use-doc-viewer-text.cjs
+index 45ca1d8abc1d3b4ae6bccf25e5b7a8de665e5823..39468829a8558940ab9bd914c53227e507f86adc 100644
+--- a/dist/cjs/hooks/text/use-doc-viewer-text.cjs
++++ b/dist/cjs/hooks/text/use-doc-viewer-text.cjs
+@@ -4,15 +4,18 @@
+ var react = require('react');
+ var format = require('../../utils/format.cjs');
+
++var DocViewerAdapterProvider = require('../../DocViewerAdapterProvider/DocViewerAdapterProvider.cjs');
++
+ const DEFAULT_MAX_TEXT_SIZE = 2e6;
+ function useDocViewerText(src, maxSize) {
++  const { textCredentials } = DocViewerAdapterProvider.useDocViewerAdapters();
+   const [state, setState] = react.useState({ status: "loading" });
+   react.useEffect(() => {
+     const controller = new AbortController();
+     let cancelled = false;
+     setState({ status: "loading" });
+     (async () => {
+-      const response = await fetch(src, { signal: controller.signal });
++      const response = await fetch(src, { signal: controller.signal, credentials: textCredentials });
+       if (!response.ok) {
+         throw new Error(`Request failed with status ${response.status}`);
+       }
+@@ -62,7 +65,7 @@ function useDocViewerText(src, maxSize) {
+       cancelled = true;
+       controller.abort();
+     };
+-  }, [src, maxSize]);
++  }, [src, maxSize, textCredentials]);
+   return state;
+ }
+ function decodeText(bytes, contentType) {
+diff --git a/dist/esm/DocViewerAdapterProvider/DocViewerAdapterProvider.mjs b/dist/esm/DocViewerAdapterProvider/DocViewerAdapterProvider.mjs
+index 5281983b8b36321e8e5afb6e091180331a7f9dcf..07906efbc7a9339ab0d2a763a99087595a8f2410 100644
+--- a/dist/esm/DocViewerAdapterProvider/DocViewerAdapterProvider.mjs
++++ b/dist/esm/DocViewerAdapterProvider/DocViewerAdapterProvider.mjs
+@@ -4,14 +4,16 @@ import { createContext, use, useMemo } from 'react';
+
+ const DocViewerAdapterContext = createContext({
+   pdf: void 0,
+-  markdown: void 0
++  markdown: void 0,
++  textCredentials: void 0
+ });
+ function DocViewerAdapterProvider({
+   pdf,
+   markdown,
++  textCredentials,
+   children
+ }) {
+-  const value = useMemo(() => ({ pdf, markdown }), [pdf, markdown]);
++  const value = useMemo(() => ({ pdf, markdown, textCredentials }), [pdf, markdown, textCredentials]);
+   return /* @__PURE__ */ jsx(DocViewerAdapterContext, { value, children });
+ }
+ function useDocViewerAdapters() {
+diff --git a/dist/esm/hooks/text/use-doc-viewer-text.mjs b/dist/esm/hooks/text/use-doc-viewer-text.mjs
+index 185d8f01afa4e582da728b8dd950dffca6157438..4ce0b12f9a0695f8e18c76eec242459a6deb2422 100644
+--- a/dist/esm/hooks/text/use-doc-viewer-text.mjs
++++ b/dist/esm/hooks/text/use-doc-viewer-text.mjs
+@@ -2,15 +2,18 @@
+ import { useState, useEffect } from 'react';
+ import { formatNumber } from '../../utils/format.mjs';
+
++import { useDocViewerAdapters } from '../../DocViewerAdapterProvider/DocViewerAdapterProvider.mjs';
++
+ const DEFAULT_MAX_TEXT_SIZE = 2e6;
+ function useDocViewerText(src, maxSize) {
++  const { textCredentials } = useDocViewerAdapters();
+   const [state, setState] = useState({ status: "loading" });
+   useEffect(() => {
+     const controller = new AbortController();
+     let cancelled = false;
+     setState({ status: "loading" });
+     (async () => {
+-      const response = await fetch(src, { signal: controller.signal });
++      const response = await fetch(src, { signal: controller.signal, credentials: textCredentials });
+       if (!response.ok) {
+         throw new Error(`Request failed with status ${response.status}`);
+       }
+@@ -60,7 +63,7 @@ function useDocViewerText(src, maxSize) {
+       cancelled = true;
+       controller.abort();
+     };
+-  }, [src, maxSize]);
++  }, [src, maxSize, textCredentials]);
+   return state;
+ }
+ function decodeText(bytes, contentType) {
+diff --git a/dist/types/index.d.mts b/dist/types/index.d.mts
+index 092bb6a7cc0b7a715901234d58bb392f50160d9e..218cf2f27c8f725a65fbef3487f5714524457566 100644
+--- a/dist/types/index.d.mts
++++ b/dist/types/index.d.mts
+@@ -1314,10 +1314,12 @@ interface DocViewerAdapterProviderProps {
+     pdf?: DocViewerPdfAdapter;
+     /** Markdown engine, from `createReactMarkdownAdapter`. Without it markdown files show their source */
+     markdown?: DocViewerMarkdownAdapter;
++    /** Credentials mode for fetches made by text, code, and markdown viewers. Defaults to the browser's fetch default. */
++    textCredentials?: RequestCredentials;
+     children: ReactNode;
+ }
+ /** Gives every viewer inside it the engines that show PDF and markdown files. Engines load when a viewer first needs them */
+-declare function DocViewerAdapterProvider({ pdf, markdown, children, }: DocViewerAdapterProviderProps): react_jsx_runtime.JSX.Element;
++declare function DocViewerAdapterProvider({ pdf, markdown, textCredentials, children, }: DocViewerAdapterProviderProps): react_jsx_runtime.JSX.Element;
+
+ type DocViewerTextState = {
+     status: 'loading';
+diff --git a/dist/types/index.d.ts b/dist/types/index.d.ts
+index 092bb6a7cc0b7a715901234d58bb392f50160d9e..218cf2f27c8f725a65fbef3487f5714524457566 100644
+--- a/dist/types/index.d.ts
++++ b/dist/types/index.d.ts
+@@ -1314,10 +1314,12 @@ interface DocViewerAdapterProviderProps {
+     pdf?: DocViewerPdfAdapter;
+     /** Markdown engine, from `createReactMarkdownAdapter`. Without it markdown files show their source */
+     markdown?: DocViewerMarkdownAdapter;
++    /** Credentials mode for fetches made by text, code, and markdown viewers. Defaults to the browser's fetch default. */
++    textCredentials?: RequestCredentials;
+     children: ReactNode;
+ }
+ /** Gives every viewer inside it the engines that show PDF and markdown files. Engines load when a viewer first needs them */
+-declare function DocViewerAdapterProvider({ pdf, markdown, children, }: DocViewerAdapterProviderProps): react_jsx_runtime.JSX.Element;
++declare function DocViewerAdapterProvider({ pdf, markdown, textCredentials, children, }: DocViewerAdapterProviderProps): react_jsx_runtime.JSX.Element;
+
+ type DocViewerTextState = {
+     status: 'loading';

@@ -47,3 +47,6 @@ allowBuilds:
   msgpackr-extract: true
   sharp: true
   workerd: true
+
+patchedDependencies:
+  mantine-doc-viewer@0.1.0: patches/mantine-doc-viewer@0.1.0.patch
