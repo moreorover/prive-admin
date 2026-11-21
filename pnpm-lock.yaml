@@ -219,8 +219,8 @@ catalogs:
       specifier: 1.7.27
       version: 1.7.27
     hono:
-      specifier: 4.13.16
-      version: 4.13.16
+      specifier: 4.13.19
+      version: 4.13.19
     react:
       specifier: 19.3.0
       version: 19.3.0
@@ -291,7 +291,7 @@ importers:
     dependencies:
       '@hono/trpc-server':
         specifier: 'catalog:'
-        version: 0.4.2(@trpc/server@11.19.0(typescript@7.0.2))(hono@4.13.16)
+        version: 0.4.2(@trpc/server@11.19.0(typescript@7.0.2))(hono@4.13.19)
       '@prive-admin-tanstack/api':
         specifier: workspace:*
         version: link:../../packages/api
@@ -306,7 +306,7 @@ importers:
         version: 11.19.0(typescript@7.0.2)
       hono:
         specifier: 'catalog:'
-        version: 4.13.16
+        version: 4.13.19
     devDependencies:
       '@prive-admin-tanstack/config':
         specifier: workspace:*
@@ -443,7 +443,7 @@ importers:
         version: 11.19.0(typescript@7.0.2)
       hono:
         specifier: 'catalog:'
-        version: 4.13.16
+        version: 4.13.19
       zod:
         specifier: 'catalog:'
         version: 4.6.6
@@ -3657,9 +3657,6 @@ packages:
   '@types/whatwg-url@11.0.5':
     resolution: {integrity: sha512-coYR071JRaHa+xoEvvYqvnIHaVqaYrLPbsufM9BF63HkwI5Lgmy2QR8Q5K/lYDYo5AK82wOvSOS0UsLTpTG7uQ==}
 
-  '@types/ws@8.18.1':
-    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
-
   '@types/ws@8.18.2':
     resolution: {integrity: sha512-67MQl+fpWKVTT1NYdnmo3U4sc/xPo/zQBncVnI74qmQa0z/b+1g6iYqNmGCPbxO+zz2aklb08a0oHfegiVd0/w==}
 
@@ -4965,8 +4962,8 @@ packages:
       crossws:
         optional: true
 
-  hono@4.13.16:
-    resolution: {integrity: sha512-AOLOEhvrV+iH92xXCnFr/5+3KjPKcI3xP63XJtX5spAnkznPdHijlIsUTpi7/9EhWqrTCekw5c5zh1K+YsVw7A==}
+  hono@4.13.19:
+    resolution: {integrity: sha512-KmXvQAXwcAHV+muzbIwoJ23niEB5nMoDVr9WcRkU8mvjUECm/1+7v4Jgp7P7a+H6MLFrh+vXrGonGrGS+RQfkA==}
     engines: {node: '>=16.9.0'}
 
   iconv-lite@0.7.3:
@@ -7147,10 +7144,10 @@ snapshots:
 
   '@hexagon/base64@1.1.28': {}
 
-  '@hono/trpc-server@0.4.2(@trpc/server@11.19.0(typescript@7.0.2))(hono@4.13.16)':
+  '@hono/trpc-server@0.4.2(@trpc/server@11.19.0(typescript@7.0.2))(hono@4.13.19)':
     dependencies:
       '@trpc/server': 11.19.0(typescript@7.0.2)
-      hono: 4.13.16
+      hono: 4.13.19
 
   '@img/colour@1.1.0': {}
 
@@ -7422,8 +7419,8 @@ snapshots:
 
   '@libsql/isomorphic-ws@0.1.5':
     dependencies:
-      '@types/ws': 8.18.1
-      ws: 8.22.0
+      '@types/ws': 8.18.2
+      ws: 8.23.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -9082,11 +9079,6 @@ snapshots:
       '@types/webidl-conversions': 7.0.3
     optional: true
 
-  '@types/ws@8.18.1':
-    dependencies:
-      '@types/node': 26.6.3
-    optional: true
-
   '@types/ws@8.18.2':
     dependencies:
       '@types/node': 26.6.3
@@ -10173,7 +10165,7 @@ snapshots:
       crossws: 0.4.8(srvx@0.11.20)
     optional: true
 
-  hono@4.13.16: {}
+  hono@4.13.19: {}
 
   iconv-lite@0.7.3:
     dependencies:
