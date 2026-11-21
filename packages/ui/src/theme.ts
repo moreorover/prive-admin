@@ -140,17 +140,20 @@ export const theme = createTheme({
   black: "#11100e",
   radius: {
     xs: "0.25rem",
-    sm: "0.375rem",
-    md: "0.625rem",
-    lg: "0.875rem",
-    xl: "1.125rem",
+    sm: "0.25rem",
+    md: "0.5rem",
+    lg: "0.75rem",
+    xl: "1rem",
   },
   spacing: {
+    xxs: "0.25rem",
     xs: "0.5rem",
     sm: "0.75rem",
     md: "1rem",
     lg: "1.5rem",
-    xl: "2.25rem",
+    xl: "2rem",
+    "2xl": "3rem",
+    "3xl": "4.5rem",
   },
   fontSizes: {
     xs: "0.75rem",
@@ -160,27 +163,22 @@ export const theme = createTheme({
     xl: "1.25rem",
   },
   shadows: {
-    xs: "0 1px 2px color-mix(in srgb, var(--mantine-color-black) 10%, transparent)",
-    sm: "0 8px 20px color-mix(in srgb, var(--mantine-color-black) 8%, transparent)",
-    md: "0 18px 44px color-mix(in srgb, var(--mantine-color-black) 11%, transparent)",
-    lg: "0 26px 70px color-mix(in srgb, var(--mantine-color-black) 14%, transparent)",
-    xl: "0 34px 90px color-mix(in srgb, var(--mantine-color-black) 18%, transparent)",
+    xs: "0 1px 2px color-mix(in srgb, var(--mantine-color-black) 8%, transparent)",
+    sm: "0 4px 14px color-mix(in srgb, var(--mantine-color-black) 8%, transparent)",
+    md: "0 12px 28px color-mix(in srgb, var(--mantine-color-black) 10%, transparent)",
+    lg: "0 20px 48px color-mix(in srgb, var(--mantine-color-black) 12%, transparent)",
+    xl: "0 28px 64px color-mix(in srgb, var(--mantine-color-black) 14%, transparent)",
   },
   headings: {
     fontFamily: '"Fraunces", "Iowan Old Style", serif',
     fontWeight: "520",
     textWrap: "balance",
     sizes: {
-      h1: { fontSize: "clamp(3rem, 7vw, 6.75rem)", lineHeight: "0.9" },
-      h2: { fontSize: "clamp(2rem, 3.2vw, 3.25rem)", lineHeight: "0.98" },
-      h3: { fontSize: "1.75rem", lineHeight: "1.05" },
-      h4: { fontSize: "1.25rem", lineHeight: "1.15" },
+      h1: { fontSize: "clamp(2.25rem, 4vw, 4rem)", lineHeight: "1.02" },
+      h2: { fontSize: "clamp(1.75rem, 3vw, 2.5rem)", lineHeight: "1.08" },
+      h3: { fontSize: "1.5rem", lineHeight: "1.2" },
+      h4: { fontSize: "1.25rem", lineHeight: "1.2" },
     },
-  },
-  defaultGradient: {
-    from: "champagne.4",
-    to: "mulberry.5",
-    deg: 135,
   },
   other: {
     prive: priveTokens,
@@ -194,8 +192,8 @@ export const theme = createTheme({
     }),
     Badge: Badge.extend({
       defaultProps: {
-        radius: "sm",
-        tt: "uppercase",
+        radius: "xl",
+        tt: "none",
         fw: 700,
       },
     }),
@@ -208,7 +206,7 @@ export const theme = createTheme({
     Card: Card.extend({
       defaultProps: {
         withBorder: true,
-        radius: "md",
+        radius: "lg",
         padding: "lg",
         shadow: "xs",
       },
@@ -221,8 +219,8 @@ export const theme = createTheme({
     Menu: Menu.extend({
       defaultProps: {
         radius: "md",
-        shadow: "lg",
-        transitionProps: { transition: "pop-top-right", duration: 140 },
+        shadow: "sm",
+        transitionProps: { transition: "fade", duration: 180 },
       },
     }),
     Modal: Modal.extend({
@@ -230,8 +228,8 @@ export const theme = createTheme({
         centered: true,
         radius: "lg",
         overlayProps: {
-          backgroundOpacity: 0.36,
-          blur: 8,
+          backgroundOpacity: 0.42,
+          blur: 4,
         },
       },
     }),
@@ -254,8 +252,8 @@ export const theme = createTheme({
     }),
     Paper: Paper.extend({
       defaultProps: {
-        radius: "md",
-        shadow: "sm",
+        radius: "lg",
+        shadow: "xs",
       },
     }),
     PasswordInput: PasswordInput.extend({
@@ -274,7 +272,7 @@ export const theme = createTheme({
       defaultProps: {
         highlightOnHover: true,
         horizontalSpacing: "md",
-        verticalSpacing: "xs",
+        verticalSpacing: "sm",
       },
     }),
     Tabs: Tabs.extend({
@@ -284,7 +282,7 @@ export const theme = createTheme({
     }),
     Textarea: Textarea.extend({
       defaultProps: {
-        radius: "lg",
+        radius: "md",
         size: "md",
       },
     }),
