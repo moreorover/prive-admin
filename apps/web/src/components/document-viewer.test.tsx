@@ -1,8 +1,11 @@
 import type { DocViewerAdapterProviderProps, DocViewerProps } from "mantine-doc-viewer"
+import type { BaseCanvasFactory } from "pdfjs-dist/types/src/display/canvas_factory"
 import type { ReactElement } from "react"
 
 import { MantineProvider } from "@mantine/core"
 import { DocViewer, DocViewerAdapterProvider } from "mantine-doc-viewer"
+import { readFile } from "node:fs/promises"
+import { fileURLToPath } from "node:url"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { afterEach, describe, expect, it, vi } from "vite-plus/test"
@@ -42,6 +45,30 @@ describe("DocumentViewer", () => {
       withCredentials: true,
       disableRange: true,
     })
+  })
+
+  it("renders both halves of an image-only CCITT scan using the viewer's public decoder assets", async () => {
+    const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs")
+    const props = { src: previewUrl, fileName: "scan.pdf", mimeType: "application/pdf" }
+    renderToStaticMarkup(createElement(MantineProvider, null, createElement(DocumentViewer, props)))
+    const options = vi.mocked(DocViewerAdapterProvider).mock.lastCall?.[0].pdf?.getOptions?.(props.src)
+    const publicDir = new URL("../../public/", import.meta.url)
+    const wasmUrl =
+      typeof options?.wasmUrl === "string" ? fileURLToPath(new URL(`.${options.wasmUrl}`, publicDir)) : undefined
+    const data = await readFile(new URL("./__fixtures__/ccitt-scan.pdf", import.meta.url))
+    const task = getDocument({ data: new Uint8Array(data), wasmUrl })
+    try {
+      const pdf = await task.promise
+      const page = await pdf.getPage(1)
+      const viewport = page.getViewport({ scale: 1 })
+      const factory = pdf.canvasFactory as BaseCanvasFactory
+      const { context } = factory.create(viewport.width, viewport.height)
+      await page.render({ canvas: context.canvas, viewport }).promise
+      expect(Array.from(context.getImageData(3, 8, 1, 1).data)).toEqual([255, 255, 255, 255])
+      expect(Array.from(context.getImageData(12, 8, 1, 1).data)).toEqual([0, 0, 0, 255])
+    } finally {
+      await task.destroy()
+    }
   })
 
   it.each(["text/plain", "text/csv"])("uses credentialed loading for deployed cross-origin %s", (mimeType) => {

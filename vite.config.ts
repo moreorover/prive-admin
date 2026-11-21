@@ -64,7 +64,14 @@ export default defineConfig({
       builtin: true,
     },
     globals: {},
-    ignorePatterns: [".agents", "**/*.html", "docs", "routeTree.gen.ts", "packages/db/src/migrations"],
+    ignorePatterns: [
+      ".agents",
+      "**/*.html",
+      "docs",
+      "routeTree.gen.ts",
+      "packages/db/src/migrations",
+      "apps/web/public/pdfjs-wasm",
+    ],
     jsPlugins: [
       {
         name: "vite-plus",

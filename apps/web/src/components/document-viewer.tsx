@@ -6,6 +6,7 @@ import { embeddedAttachmentPreviewUrl } from "./attachment-preview"
 const pdf = createPdfJsAdapter(() => import("pdfjs-dist"), {
   workerSrc,
   options: {
+    wasmUrl: `${import.meta.env.BASE_URL}pdfjs-wasm/`,
     withCredentials: true,
     disableRange: true,
   },
