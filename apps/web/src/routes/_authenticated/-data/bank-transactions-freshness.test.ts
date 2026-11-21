@@ -71,6 +71,9 @@ function serveUpdatedResources() {
         procedures.map((procedure) => {
           let data
           switch (procedure) {
+            case "bankStatementAttachments.counts":
+              data = {}
+              break
             case "legalEntities.list":
               data = { items: [renamedEntity], totalCount: 1, page: 1, pageSize: 100 }
               break

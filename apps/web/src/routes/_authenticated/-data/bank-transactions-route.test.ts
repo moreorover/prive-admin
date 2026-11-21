@@ -1,6 +1,8 @@
 import { QueryClient } from "@tanstack/react-query"
 import { describe, expect, it, vi } from "vite-plus/test"
 
+import { trpc } from "@/utils/trpc"
+
 import { Route } from "../bank-transactions"
 import {
   bankTransactionsOptionsQueryOptions,
@@ -30,6 +32,7 @@ function createClient() {
     entities: [{ id: "entity-1", name: "First" }],
     accounts: [{ id: "account-1", legalEntityId: "entity-1", displayName: "Main", iban: "LT123" }],
   })
+  client.setQueryData(trpc.bankStatementAttachments.counts.queryOptions().queryKey, {})
   return client
 }
 
@@ -59,6 +62,7 @@ describe("bank transactions route owner", () => {
           type: "query",
         },
       ],
+      [["bankStatementAttachments", "counts"], { type: "query" }],
     ])
     expect(fetch.mock.calls[0]?.[0].queryKey).toEqual(["bank-transactions", "filter-options"])
     expect(client.getQueryData(renderedOptions.queryKey)?.page).toBe(3)
