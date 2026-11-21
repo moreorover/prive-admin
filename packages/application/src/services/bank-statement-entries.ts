@@ -42,7 +42,11 @@ export async function listBankStatementEntries(input: {
   pageSize: number
   offset: number
   bankAccountId?: string
+  legalEntityId?: string
   status?: "PENDING" | "IGNORED"
+  from?: string
+  to?: string
+  query?: string
 }) {
   return fetchBankStatementEntries(undefined, input)
 }

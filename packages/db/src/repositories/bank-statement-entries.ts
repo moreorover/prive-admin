@@ -1,4 +1,4 @@
-import { and, count, desc, eq } from "drizzle-orm"
+import { and, count, desc, eq, gte, inArray, lte, or, sql } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { bankAccount } from "../schema/bank-account"
@@ -52,11 +52,61 @@ export async function findBankAccountByIban(database: Db = db, iban: string) {
 
 export async function listBankStatementEntries(
   database: Db = db,
-  filter: { pageSize: number; offset: number; bankAccountId?: string; status?: "PENDING" | "IGNORED" },
+  filter: {
+    pageSize: number
+    offset: number
+    bankAccountId?: string
+    legalEntityId?: string
+    status?: "PENDING" | "IGNORED"
+    from?: string
+    to?: string
+    query?: string
+  },
 ) {
   const conditions = []
   if (filter.bankAccountId) conditions.push(eq(bankStatementEntry.bankAccountId, filter.bankAccountId))
   if (filter.status) conditions.push(eq(bankStatementEntry.status, filter.status))
+  if (filter.legalEntityId) {
+    conditions.push(
+      inArray(
+        bankStatementEntry.bankAccountId,
+        database
+          .select({ id: bankAccount.id })
+          .from(bankAccount)
+          .where(eq(bankAccount.legalEntityId, filter.legalEntityId)),
+      ),
+    )
+  }
+  if (filter.from) conditions.push(gte(bankStatementEntry.date, filter.from))
+  if (filter.to) conditions.push(lte(bankStatementEntry.date, filter.to))
+  const query = filter.query?.trim()
+  if (query) {
+    const entryTextMatches = [
+      bankStatementEntry.counterpartyName,
+      bankStatementEntry.purpose,
+      bankStatementEntry.docNumber,
+      bankStatementEntry.externalRef,
+      bankStatementEntry.counterpartyIban,
+      bankStatementEntry.counterpartyBank,
+    ].map((column) => sql`instr(lower(${column}), lower(${query})) > 0`)
+    conditions.push(
+      or(
+        ...entryTextMatches,
+        inArray(
+          bankStatementEntry.bankAccountId,
+          database
+            .select({ id: bankAccount.id })
+            .from(bankAccount)
+            .where(
+              or(
+                sql`instr(lower(${bankAccount.iban}), lower(${query})) > 0`,
+                sql`instr(lower(${bankAccount.bankName}), lower(${query})) > 0`,
+              ),
+            ),
+        ),
+      ),
+    )
+  }
   const where = conditions.length > 0 ? and(...conditions) : undefined
 
   const items = await database.query.bankStatementEntry.findMany({

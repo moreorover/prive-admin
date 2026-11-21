@@ -12,11 +12,15 @@ import { z } from "zod"
 
 import { toTrpcError } from "../errors"
 import { protectedProcedure, router } from "../index"
-import { getOffset, pagedResult, pageSchema } from "../pagination"
+import { getOffset, pagedResult, pageSchema, searchSchema } from "../pagination"
 
 const bankStatementEntryListSchema = pageSchema.extend({
   bankAccountId: z.string().optional(),
   status: z.enum(["PENDING", "IGNORED"]).optional(),
+  legalEntityId: z.string().min(1).optional(),
+  from: z.iso.date().optional(),
+  to: z.iso.date().optional(),
+  query: searchSchema,
 })
 
 export const bankStatementEntriesRouter = router({
@@ -74,6 +78,10 @@ export const bankStatementEntriesRouter = router({
         offset: getOffset(input),
         bankAccountId: input.bankAccountId,
         status: input.status,
+        legalEntityId: input.legalEntityId,
+        from: input.from,
+        to: input.to,
+        query: input.query,
       })
       return pagedResult(result.items, input, result.totalCount)
     } catch (error) {
