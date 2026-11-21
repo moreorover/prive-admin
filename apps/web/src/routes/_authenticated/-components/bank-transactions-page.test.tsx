@@ -1,14 +1,16 @@
-import { MantineProvider } from "@mantine/core"
+import { Button, MantineProvider } from "@mantine/core"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vite-plus/test"
 
+import { BankTransactionImport } from "@/components/bank-transactions/bank-transaction-import"
 import {
   BankTransactionsTable,
   type BankTransactionsTableProps,
 } from "@/components/bank-transactions/bank-transactions-table"
 import { elements } from "@/components/bank-transactions/test-elements"
 import { BreadcrumbProvider } from "@/components/breadcrumbs"
+import { PageHeader } from "@/components/page-header"
 
 import { BankTransactionsPage } from "./bank-transactions-page"
 
@@ -196,4 +198,27 @@ describe("BankTransactionsPage shell", () => {
     expect(markup).toContain("Main account")
     expect(markup).not.toContain("Excluded account")
   })
+})
+
+it("opens the workspace import card from the header using owner callbacks", () => {
+  const importAction = {
+    opened: false,
+    onOpen: vi.fn<() => void>(),
+    onCancel: vi.fn<() => void>(),
+    file: null,
+    onFileChange: vi.fn<(file: File | null) => void>(),
+    onPreview: vi.fn<() => void>(),
+    onImport: vi.fn<() => void>(),
+    importPending: false,
+    importResult: null,
+  }
+  const closed = elements(BankTransactionsPage({ ...pageProps(), importAction }))
+  expect(closed.some((el) => el.type === BankTransactionImport)).toBe(false)
+  const header = closed.find((el) => el.type === PageHeader)!
+  const action = elements(header.props.actions).find((el) => el.type === Button)!
+  expect(action.props.children).toBe("Import CSV")
+  action.props.onClick()
+  expect(importAction.onOpen).toHaveBeenCalledOnce()
+  const opened = elements(BankTransactionsPage({ ...pageProps(), importAction: { ...importAction, opened: true } }))
+  expect(opened.find((el) => el.type === BankTransactionImport)?.props.onImport).toBe(importAction.onImport)
 })

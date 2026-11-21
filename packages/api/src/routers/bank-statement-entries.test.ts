@@ -3,12 +3,11 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { bankStatementEntriesRouter } from "./bank-statement-entries"
 
 const servicesMock = vi.hoisted(() => ({
-  findBankAccountForIban: vi.fn(),
   getBankStatementEntry: vi.fn(),
   ignoreBankStatementEntry: vi.fn(),
-  importBankStatementEntries: vi.fn(),
   listBankStatementEntries: vi.fn(),
-  parseBankCsv: vi.fn(),
+  previewBankStatementCsv: vi.fn(),
+  importBankStatementCsv: vi.fn(),
   undoBankStatementEntry: vi.fn(),
 }))
 
@@ -98,5 +97,37 @@ describe("bank statement entries router", () => {
     const caller = bankStatementEntriesRouter.createCaller(ctx)
     await expect(caller.list(input)).rejects.toMatchObject({ code: "BAD_REQUEST" })
     expect(servicesMock.listBankStatementEntries).not.toHaveBeenCalled()
+  })
+})
+
+describe("CSV transport", () => {
+  beforeEach(() => vi.resetAllMocks())
+  it("previews without invoking the import service", async () => {
+    const preview = {
+      accountIban: "LT121000011101001000",
+      total: 2,
+      account: { id: "a", displayName: "Main", legalEntity: { id: "e", name: "Prive" } },
+    }
+    servicesMock.previewBankStatementCsv.mockResolvedValue(preview)
+    expect(await bankStatementEntriesRouter.createCaller(ctx).previewCsv({ csv: "csv" })).toEqual(preview)
+    expect(servicesMock.previewBankStatementCsv).toHaveBeenCalledWith({ csv: "csv" })
+    expect(servicesMock.importBankStatementCsv).not.toHaveBeenCalled()
+  })
+
+  it("returns the stable import result from the application use case", async () => {
+    const result = { accountIban: "LT121000011101001000", total: 5, inserted: 3, skipped: 2 }
+    servicesMock.importBankStatementCsv.mockResolvedValue(result)
+    expect(await bankStatementEntriesRouter.createCaller(ctx).importCsv({ csv: "csv" })).toEqual(result)
+    expect(servicesMock.importBankStatementCsv).toHaveBeenCalledWith({ csv: "csv" })
+  })
+
+  it.each(["previewCsv", "importCsv"] as const)("maps validation errors from %s to BAD_REQUEST", async (procedure) => {
+    const { badRequest } = await import("@prive-admin-tanstack/application/errors")
+    servicesMock.previewBankStatementCsv.mockRejectedValue(badRequest("Invalid account IBAN"))
+    servicesMock.importBankStatementCsv.mockRejectedValue(badRequest("Invalid account IBAN"))
+    await expect(bankStatementEntriesRouter.createCaller(ctx)[procedure]({ csv: "csv" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Invalid account IBAN",
+    })
   })
 })

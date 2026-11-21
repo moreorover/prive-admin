@@ -1,13 +1,11 @@
-import { badRequest } from "@prive-admin-tanstack/application/errors"
 import {
-  findBankAccountForIban,
   getBankStatementEntry,
   ignoreBankStatementEntry,
-  importBankStatementEntries,
+  importBankStatementCsv,
+  previewBankStatementCsv,
   listBankStatementEntries,
   undoBankStatementEntry,
 } from "@prive-admin-tanstack/application/services"
-import { parseBankCsv } from "@prive-admin-tanstack/application/services"
 import { z } from "zod"
 
 import { toTrpcError } from "../errors"
@@ -24,48 +22,17 @@ const bankStatementEntryListSchema = pageSchema.extend({
 })
 
 export const bankStatementEntriesRouter = router({
+  previewCsv: protectedProcedure.input(z.object({ csv: z.string().min(1) })).mutation(async ({ input }) => {
+    try {
+      return await previewBankStatementCsv(input)
+    } catch (error) {
+      throw toTrpcError(error)
+    }
+  }),
+
   importCsv: protectedProcedure.input(z.object({ csv: z.string().min(1) })).mutation(async ({ input }) => {
     try {
-      const parsed = parseBankCsv(input.csv)
-
-      const account = await findBankAccountForIban(parsed.accountIban)
-      if (!account) {
-        throw badRequest(
-          `No bank account configured for IBAN ${parsed.accountIban}. Add it from the legal entity's Bank accounts tab first.`,
-        )
-      }
-
-      if (parsed.rows.length === 0) {
-        return { accountIban: parsed.accountIban, inserted: 0, skipped: 0, total: 0 }
-      }
-
-      const values = parsed.rows.map((r: (typeof parsed.rows)[number]) => ({
-        bankAccountId: account.id,
-        externalRef: r.externalRef,
-        docNumber: r.docNumber || null,
-        date: r.date,
-        amount: r.accountAmount,
-        currency: r.accountCurrency || account.currency,
-        direction: r.direction,
-        counterpartyName: r.counterpartyName,
-        counterpartyIban: r.counterpartyIban,
-        counterpartyBank: r.counterpartyBank,
-        swift: r.swift,
-        purpose: r.purpose,
-        transactionType: r.transactionType,
-      }))
-
-      const inserted = await importBankStatementEntries({
-        accountIban: parsed.accountIban,
-        values,
-      })
-
-      return {
-        accountIban: parsed.accountIban,
-        total: values.length,
-        inserted: inserted.length,
-        skipped: values.length - inserted.length,
-      }
+      return await importBankStatementCsv(input)
     } catch (error) {
       throw toTrpcError(error)
     }

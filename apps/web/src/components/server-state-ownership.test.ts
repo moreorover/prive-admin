@@ -30,7 +30,7 @@ describe("shared component server-state ownership", () => {
     "keeps route hooks and action owners out of bank transaction component %s",
     (path) => {
       const source = readFileSync(path, "utf8")
-      expect(source).not.toMatch(/\b(useQueries|useNavigate|useSearch|use\w+Actions)\s*\(/)
+      expect(source).not.toMatch(/\b(useQueries|useNavigate|useSearch|useBankTransactionImport|use\w+Actions)\s*\(/)
       expect(source).not.toMatch(/\bRoute\.use/)
       expect(source).not.toMatch(/from ["'].*\/-actions\//)
     },

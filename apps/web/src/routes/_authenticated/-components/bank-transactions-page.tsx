@@ -2,6 +2,10 @@ import { Alert, Box, Button, Container, LoadingOverlay, Stack, Text } from "@man
 
 import { BankTransactionFilters } from "@/components/bank-transactions/bank-transaction-filters"
 import {
+  BankTransactionImport,
+  type BankTransactionImportProps,
+} from "@/components/bank-transactions/bank-transaction-import"
+import {
   BankTransactionsTable,
   type BankTransactionsTableProps,
 } from "@/components/bank-transactions/bank-transactions-table"
@@ -20,6 +24,7 @@ import type {
 
 export function BankTransactionsPage({
   search,
+  importAction,
   options,
   result,
   isFetching,
@@ -29,6 +34,7 @@ export function BankTransactionsPage({
   onPageChange,
   onViewAllTransactions,
 }: {
+  importAction?: BankTransactionImportProps & { opened: boolean; onOpen: () => void }
   search: BankTransactionsSearch
   options: BankTransactionsOptions
   result: BankTransactionsResult | undefined
@@ -48,9 +54,11 @@ export function BankTransactionsPage({
     <Container size="xl">
       <BreadcrumbItem label="Bank transactions" order={10} />
       <PageHeader
+        actions={importAction ? <Button onClick={importAction.onOpen}>Import CSV</Button> : null}
         title="Bank transactions"
         description="Review bank transactions across legal entities and bank accounts."
       />
+      {importAction?.opened ? <BankTransactionImport {...importAction} /> : null}
       <Section padding={0}>
         <Box component="section" aria-label="Transaction filters">
           <ResourceToolbar count={totalCount} countLabel={totalCount === 1 ? "transaction" : "transactions"}>

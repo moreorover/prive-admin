@@ -55,3 +55,8 @@ export async function updateBankAccount(
     .returning()
   return row
 }
+
+// Import validation must inspect every configured account to detect normalized collisions.
+export async function listBankAccounts(database: Db = db) {
+  return database.query.bankAccount.findMany({ with: { legalEntity: true } })
+}

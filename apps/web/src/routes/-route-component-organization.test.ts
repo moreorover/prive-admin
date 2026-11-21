@@ -24,10 +24,11 @@ describe("route component organization", () => {
   it("keeps the bank transactions page prop-driven", () => {
     const source = readFileSync(join(routesDir, "_authenticated/-components/bank-transactions-page.tsx"), "utf8")
     expect(source).not.toMatch(
-      /\b(useQuery|useSuspenseQuery|useQueries|useMutation|useNavigate|useSearch|use\w+Actions)\s*\(/,
+      /\b(useQuery|useSuspenseQuery|useQueries|useMutation|useNavigate|useSearch|useBankTransactionImport|use\w+Actions)\s*\(/,
     )
     expect(source).not.toMatch(/from ["'](@\/utils\/trpc|@tanstack\/react-query|@tanstack\/react-router)["']/)
     expect(source).not.toMatch(/\bRoute\.use/)
+    expect(source).not.toMatch(/from ["'].*\/-actions\//)
   })
 
   it.each(publicRouteFiles(routesDir))("keeps custom components outside route file %s", (path) => {

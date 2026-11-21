@@ -5,6 +5,7 @@ import { useState } from "react"
 
 import { trpc } from "@/utils/trpc"
 
+import { useBankTransactionImport } from "./-actions/bank-transaction-import-actions"
 import { BankTransactionsPage } from "./-components/bank-transactions-page"
 import {
   bankTransactionsOptionsQueryOptions,
@@ -36,6 +37,7 @@ export const Route = createFileRoute("/_authenticated/bank-transactions")({
 })
 
 function RouteComponent() {
+  const importAction = useBankTransactionImport()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
   const { queryClient } = Route.useRouteContext()
@@ -71,6 +73,7 @@ function RouteComponent() {
 
   return (
     <BankTransactionsPage
+      importAction={importAction}
       search={search}
       options={optionsQuery.data ?? { entities: [], accounts: [] }}
       result={transactionsQuery.data}

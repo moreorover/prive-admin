@@ -47,3 +47,69 @@ describe("BankTransactionImport", () => {
     expect(html).toContain("imported 3 new entries, skipped 2 duplicates (total rows 5)")
   })
 })
+
+describe("workspace confirmation", () => {
+  const preview = {
+    accountIban: "LT121000011101001000",
+    total: 5,
+    account: { id: "a", displayName: "Main account", legalEntity: { id: "e", name: "Prive LT" } },
+  }
+  const props = {
+    file: new File(["csv"], "statement.csv"),
+    onFileChange: vi.fn<(file: File | null) => void>(),
+    onPreview: vi.fn<() => void>(),
+    onImport: vi.fn<() => void>(),
+    importPending: false,
+    importResult: null,
+    preview: null as typeof preview | null,
+    previewPending: false,
+    error: null as string | null,
+  }
+
+  it("offers only preview until an account has been validated", () => {
+    const controls = elements(BankTransactionImport(props))
+    const buttons = controls.filter((el) => el.type === Button)
+    expect(buttons.map((el) => el.props.children)).toEqual(["Preview CSV"])
+    buttons[0]!.props.onClick()
+    expect(props.onPreview).toHaveBeenCalledOnce()
+    expect(props.onImport).not.toHaveBeenCalled()
+  })
+
+  it("shows destination and row count before the explicit confirm action", () => {
+    const html = renderToStaticMarkup(
+      createElement(MantineProvider, null, createElement(BankTransactionImport, { ...props, preview })),
+    )
+    expect(html).toContain("LT121000011101001000")
+    expect(html).toContain("Main account")
+    expect(html).toContain("Prive LT")
+    expect(html).toContain("5 rows")
+    const confirm = elements(BankTransactionImport({ ...props, preview })).find(
+      (el) => el.type === Button && el.props.children === "Confirm import",
+    )!
+    confirm.props.onClick()
+    expect(props.onImport).toHaveBeenCalledOnce()
+  })
+
+  it("locks file selection and confirmation while importing", () => {
+    const controls = elements(BankTransactionImport({ ...props, preview, importPending: true }))
+    expect(controls.find((el) => el.type === FileInput)!.props.disabled).toBe(true)
+    expect(controls.find((el) => el.type === Button)!.props.loading).toBe(true)
+  })
+
+  it("renders validation errors with a setup link and no confirmation", () => {
+    const html = renderToStaticMarkup(
+      createElement(
+        MantineProvider,
+        null,
+        createElement(BankTransactionImport, {
+          ...props,
+          error: "No bank account configured",
+          setupHref: "/legal-entities",
+        }),
+      ),
+    )
+    expect(html).toContain("No bank account configured")
+    expect(html).toContain('href="/legal-entities"')
+    expect(html).not.toContain("Confirm import")
+  })
+})
