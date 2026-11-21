@@ -100,7 +100,7 @@ export function HairSalesPage({
               w={260}
             />
           </ResourceToolbar>
-          <Table>
+          <Table className="prive-responsive-table">
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>Client</Table.Th>
@@ -116,7 +116,7 @@ export function HairSalesPage({
             <Table.Tbody>
               {hairSales.map((sale) => (
                 <Table.Tr key={sale.id}>
-                  <Table.Td>
+                  <Table.Td data-label="Client" data-mobile-primary>
                     {sale.client ? (
                       <Anchor
                         renderRoot={(props) => (
@@ -129,12 +129,12 @@ export function HairSalesPage({
                       "—"
                     )}
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td data-label="Source">
                     <Badge variant="light" color={sale.appointmentId ? "blue" : "grape"}>
                       {sale.appointmentId ? "Appointment" : "Individual"}
                     </Badge>
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td data-label="Hair order">
                     {sale.hairOrder ? (
                       <Anchor
                         renderRoot={(props) => (
@@ -151,13 +151,13 @@ export function HairSalesPage({
                       "—"
                     )}
                   </Table.Td>
-                  <Table.Td>{sale.weightInGrams}g</Table.Td>
-                  <Table.Td>{formatCents(sale.soldFor)}</Table.Td>
-                  <Table.Td>{formatCents(sale.profit)}</Table.Td>
-                  <Table.Td>
+                  <Table.Td data-label="Weight">{sale.weightInGrams}g</Table.Td>
+                  <Table.Td data-label="Sold for">{formatCents(sale.soldFor)}</Table.Td>
+                  <Table.Td data-label="Profit">{formatCents(sale.profit)}</Table.Td>
+                  <Table.Td data-label="Date">
                     <ClientDate date={sale.soldAt} />
                   </Table.Td>
-                  <Table.Td>
+                  <Table.Td data-label="Actions" data-mobile-actions>
                     <Button
                       renderRoot={(props) => (
                         <Link to="/hair-sales/$hairSaleId" params={{ hairSaleId: sale.id }} {...props} />

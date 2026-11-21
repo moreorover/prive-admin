@@ -1,7 +1,8 @@
-import { Badge, Skeleton, Table, Text } from "@mantine/core"
+import { Skeleton, Table, Text } from "@mantine/core"
 import { Link } from "@tanstack/react-router"
 
 import { ClientDate } from "@/components/client-date"
+import { StatusBadge } from "@/components/status-badge"
 
 type HairOrderRow = {
   id: string
@@ -20,7 +21,7 @@ export function HairOrdersTable({
   isLoading: boolean
 }) {
   return (
-    <Table>
+    <Table className="prive-responsive-table">
       <Table.Thead>
         <Table.Tr>
           <Table.Th>#</Table.Th>
@@ -34,26 +35,26 @@ export function HairOrdersTable({
         {isLoading
           ? Array.from({ length: 5 }).map((_, i) => (
               <Table.Tr key={i}>
-                <Table.Td>
+                <Table.Td data-label="#" data-mobile-primary>
                   <Skeleton h={14} w={30} />
                 </Table.Td>
-                <Table.Td>
+                <Table.Td data-label="Customer">
                   <Skeleton h={14} w={90} />
                 </Table.Td>
-                <Table.Td>
+                <Table.Td data-label="Status">
                   <Skeleton h={14} w={60} />
                 </Table.Td>
-                <Table.Td>
+                <Table.Td data-label="Weight">
                   <Skeleton h={14} w={50} />
                 </Table.Td>
-                <Table.Td>
+                <Table.Td data-label="Placed">
                   <Skeleton h={14} w={70} />
                 </Table.Td>
               </Table.Tr>
             ))
           : hairOrders?.map((ho) => (
               <Table.Tr key={ho.id}>
-                <Table.Td>
+                <Table.Td data-label="#" data-mobile-primary>
                   <Text
                     renderRoot={(props) => (
                       <Link to="/hair-orders/$hairOrderId" params={{ hairOrderId: ho.id }} {...props} />
@@ -64,12 +65,18 @@ export function HairOrdersTable({
                     #{ho.uid}
                   </Text>
                 </Table.Td>
-                <Table.Td c="dimmed">{ho.customer?.name ?? "—"}</Table.Td>
-                <Table.Td>
-                  <Badge variant={ho.status === "COMPLETED" ? "light" : "outline"}>{ho.status}</Badge>
+                <Table.Td data-label="Customer" c="dimmed">
+                  {ho.customer?.name ?? "—"}
                 </Table.Td>
-                <Table.Td c="dimmed">{ho.weightReceived}g</Table.Td>
-                <Table.Td c="dimmed">{ho.placedAt ? <ClientDate date={ho.placedAt} /> : "—"}</Table.Td>
+                <Table.Td data-label="Status">
+                  <StatusBadge status={ho.status} />
+                </Table.Td>
+                <Table.Td data-label="Weight" c="dimmed">
+                  {ho.weightReceived}g
+                </Table.Td>
+                <Table.Td data-label="Placed" c="dimmed">
+                  {ho.placedAt ? <ClientDate date={ho.placedAt} /> : "—"}
+                </Table.Td>
               </Table.Tr>
             ))}
         {!isLoading && hairOrders?.length === 0 && (

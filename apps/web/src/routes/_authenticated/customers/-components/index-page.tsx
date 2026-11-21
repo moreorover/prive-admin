@@ -70,8 +70,8 @@ export function CustomersPage({
             flex={1}
           />
         </ResourceToolbar>
-        <Table.ScrollContainer minWidth={640}>
-          <Table>
+        <Table.ScrollContainer minWidth={640} className="prive-responsive-table-scroll">
+          <Table className="prive-responsive-table">
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>Name</Table.Th>
@@ -82,7 +82,7 @@ export function CustomersPage({
             <Table.Tbody>
               {customers.map((c) => (
                 <Table.Tr key={c.id}>
-                  <Table.Td>
+                  <Table.Td data-label="Name" data-mobile-primary>
                     <Text
                       renderRoot={(props) => (
                         <Link to="/customers/$customerId" params={{ customerId: c.id }} {...props} />
@@ -93,8 +93,10 @@ export function CustomersPage({
                       {c.name}
                     </Text>
                   </Table.Td>
-                  <Table.Td c="dimmed">{c.phoneNumber ?? "—"}</Table.Td>
-                  <Table.Td c="dimmed">
+                  <Table.Td data-label="Phone" c="dimmed">
+                    {c.phoneNumber ?? "—"}
+                  </Table.Td>
+                  <Table.Td data-label="Created" c="dimmed">
                     <ClientDate date={c.createdAt} />
                   </Table.Td>
                 </Table.Tr>

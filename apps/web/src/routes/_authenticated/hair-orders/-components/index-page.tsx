@@ -152,7 +152,7 @@ export function HairOrdersPage({
             Inbound stock
           </Text>
         </ResourceToolbar>
-        <Table.ScrollContainer minWidth={760}>
+        <Table.ScrollContainer minWidth={760} className="prive-responsive-table-scroll">
           <HairOrdersTable hairOrders={hairOrders} isLoading={isLoading} />
         </Table.ScrollContainer>
         {showPagination && (

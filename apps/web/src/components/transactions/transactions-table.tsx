@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from "react"
 
-import { ActionIcon, Menu, Table, Text } from "@mantine/core"
+import { ActionIcon, Menu, Table, Text, Tooltip } from "@mantine/core"
 import { IconDots, IconPencil, IconTrash } from "@tabler/icons-react"
 import { Link } from "@tanstack/react-router"
 import { createContext, useContext } from "react"
@@ -80,12 +80,14 @@ function createActionsColumn(): TransactionColumnComponent<TransactionActionsPro
   Column.Cell = ({ onEdit, onDelete }) => {
     const row = useTransactionRow()
     return (
-      <Table.Td>
+      <Table.Td data-label="Actions" data-mobile-actions>
         <Menu shadow="md" width={140} position="bottom-end">
           <Menu.Target>
-            <ActionIcon variant="subtle" size="sm" aria-label="Actions">
-              <IconDots size={14} />
-            </ActionIcon>
+            <Tooltip label="More actions" withArrow>
+              <ActionIcon variant="subtle" size="sm" aria-label="More actions">
+                <IconDots size={14} />
+              </ActionIcon>
+            </Tooltip>
           </Menu.Target>
           <Menu.Dropdown>
             <Menu.Item leftSection={<IconPencil size={14} />} onClick={() => onEdit(row)}>
@@ -145,7 +147,7 @@ const TablePagination = Object.assign(
 const Customer = createColumn("customer", "Customer", () => {
   const row = useTransactionRow()
   return (
-    <Table.Td>
+    <Table.Td data-label="Customer" data-mobile-primary>
       {row.customer ? (
         <Text
           renderRoot={(props) => (
@@ -164,12 +166,12 @@ const Customer = createColumn("customer", "Customer", () => {
 
 const Name = createColumn("name", "Name", () => {
   const row = useTransactionRow()
-  return <Table.Td>{row.name ?? <Text c="dimmed">—</Text>}</Table.Td>
+  return <Table.Td data-label="Name">{row.name ?? <Text c="dimmed">—</Text>}</Table.Td>
 })
 
 const Amount = createColumn("amount", "Amount", () => {
   const row = useTransactionRow()
-  return <Table.Td>{formatMinor(row.amount, row.currency)}</Table.Td>
+  return <Table.Td data-label="Amount">{formatMinor(row.amount, row.currency)}</Table.Td>
 })
 
 export const TransactionsTable = Object.assign(TransactionsTableRoot, {

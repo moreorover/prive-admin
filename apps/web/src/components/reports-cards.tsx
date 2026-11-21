@@ -31,7 +31,7 @@ export function BankAccountReportBlock({ a }: { a: BankAccountMonthlyBreakdown }
           </Text>
         </Group>
         <Box style={{ overflowX: "auto" }}>
-          <Table striped highlightOnHover verticalSpacing="xs" miw={520}>
+          <Table className="prive-responsive-table" striped highlightOnHover verticalSpacing="xs" miw={520}>
             <Table.Thead>
               <Table.Tr>
                 <Table.Th>Month</Table.Th>
@@ -45,28 +45,32 @@ export function BankAccountReportBlock({ a }: { a: BankAccountMonthlyBreakdown }
                 const net = m.in - m.out
                 return (
                   <Table.Tr key={m.month}>
-                    <Table.Td>{MONTH_NAMES[m.month - 1]}</Table.Td>
-                    <Table.Td ta="right" c={m.in > 0 ? "teal" : "dimmed"}>
+                    <Table.Td data-label="Month" data-mobile-primary>
+                      {MONTH_NAMES[m.month - 1]}
+                    </Table.Td>
+                    <Table.Td data-label="In" ta="right" c={m.in > 0 ? "teal" : "dimmed"}>
                       {formatMinor(m.in, a.currency as Currency)}
                     </Table.Td>
-                    <Table.Td ta="right" c={m.out > 0 ? "red" : "dimmed"}>
+                    <Table.Td data-label="Out" ta="right" c={m.out > 0 ? "red" : "dimmed"}>
                       {formatMinor(m.out, a.currency as Currency)}
                     </Table.Td>
-                    <Table.Td ta="right" c={net > 0 ? "teal" : net < 0 ? "red" : "dimmed"} fw={500}>
+                    <Table.Td data-label="Net" ta="right" c={net > 0 ? "teal" : net < 0 ? "red" : "dimmed"} fw={500}>
                       {formatMinor(net, a.currency as Currency)}
                     </Table.Td>
                   </Table.Tr>
                 )
               })}
               <Table.Tr>
-                <Table.Td fw={600}>Total</Table.Td>
-                <Table.Td ta="right" fw={600} c="teal">
+                <Table.Td data-label="Month" data-mobile-primary fw={600}>
+                  Total
+                </Table.Td>
+                <Table.Td data-label="In" ta="right" fw={600} c="teal">
                   {formatMinor(a.totalIn, a.currency as Currency)}
                 </Table.Td>
-                <Table.Td ta="right" fw={600} c="red">
+                <Table.Td data-label="Out" ta="right" fw={600} c="red">
                   {formatMinor(a.totalOut, a.currency as Currency)}
                 </Table.Td>
-                <Table.Td ta="right" fw={700} c={a.totalIn - a.totalOut >= 0 ? "teal" : "red"}>
+                <Table.Td data-label="Net" ta="right" fw={700} c={a.totalIn - a.totalOut >= 0 ? "teal" : "red"}>
                   {formatMinor(a.totalIn - a.totalOut, a.currency as Currency)}
                 </Table.Td>
               </Table.Tr>

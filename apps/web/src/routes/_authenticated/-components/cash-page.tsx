@@ -175,7 +175,7 @@ export function CashPage({
 
         <Box pos="relative">
           <LoadingOverlay visible={isFetching} />
-          <Table.ScrollContainer minWidth={760}>
+          <Table.ScrollContainer minWidth={760} className="prive-responsive-table-scroll">
             <CashTransactionsTable items={result?.items ?? []}>
               <CashTransactionsTable.Date />
               <CashTransactionsTable.Customer />

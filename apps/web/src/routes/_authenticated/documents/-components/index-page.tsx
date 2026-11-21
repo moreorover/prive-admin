@@ -24,6 +24,7 @@ import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { ResourceToolbar } from "@/components/resource-toolbar"
 import { Section } from "@/components/section"
+import { StatusBadge } from "@/components/status-badge"
 import { type Currency, formatMinor } from "@/lib/currency"
 
 import { type DocumentStatus, PAGE_SIZE } from "../-data/index-data"
@@ -122,7 +123,7 @@ export function DocumentsPage({
                 Unable to load documents.
               </Text>
             ) : documents.length > 0 ? (
-              <Table.ScrollContainer minWidth={980}>
+              <Table.ScrollContainer minWidth={980} className="prive-responsive-table-scroll">
                 <DocumentsTable
                   documents={documents}
                   unassignPending={unassignPending}
@@ -193,7 +194,7 @@ function DocumentsTable({
   onRemove: (id: string) => void
 }) {
   return (
-    <Table>
+    <Table className="prive-responsive-table">
       <Table.Thead>
         <Table.Tr>
           <Table.Th>File</Table.Th>
@@ -209,7 +210,7 @@ function DocumentsTable({
       <Table.Tbody>
         {documents.map(({ attachment, assignmentState, entry, bankAccount, legalEntity }) => (
           <Table.Tr key={attachment.id}>
-            <Table.Td>
+            <Table.Td data-label="File" data-mobile-primary>
               <Stack gap={2}>
                 <Anchor
                   href={attachmentPreviewUrl(attachment)}
@@ -226,7 +227,7 @@ function DocumentsTable({
                 </Text>
               </Stack>
             </Table.Td>
-            <Table.Td>
+            <Table.Td data-label="Assignment">
               {assignmentState === "unassigned" ? (
                 <Button
                   size="xs"
@@ -241,8 +242,8 @@ function DocumentsTable({
                 <Text size="sm">Assigned</Text>
               )}
             </Table.Td>
-            <Table.Td>{legalEntity?.name ?? "-"}</Table.Td>
-            <Table.Td>
+            <Table.Td data-label="Legal entity">{legalEntity?.name ?? "-"}</Table.Td>
+            <Table.Td data-label="Bank account">
               {bankAccount ? (
                 <Stack gap={2}>
                   <Text size="sm">{bankAccount.displayName}</Text>
@@ -256,7 +257,7 @@ function DocumentsTable({
                 "-"
               )}
             </Table.Td>
-            <Table.Td>
+            <Table.Td data-label="Entry">
               {entry ? (
                 <Stack gap={2}>
                   <Text size="sm">{entry.date}</Text>
@@ -269,9 +270,9 @@ function DocumentsTable({
                 "-"
               )}
             </Table.Td>
-            <Table.Td>{entry?.counterpartyName ?? "-"}</Table.Td>
-            <Table.Td>{entry?.status ?? "-"}</Table.Td>
-            <Table.Td ta="right">
+            <Table.Td data-label="Counterparty">{entry?.counterpartyName ?? "-"}</Table.Td>
+            <Table.Td data-label="Status">{entry ? <StatusBadge status={entry.status} /> : "-"}</Table.Td>
+            <Table.Td data-label="Actions" data-mobile-actions ta="right">
               <Group gap={4} justify="flex-end" wrap="nowrap">
                 {assignmentState === "assigned" ? (
                   <Tooltip label="Unassign">

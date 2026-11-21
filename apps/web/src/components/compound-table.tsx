@@ -30,7 +30,7 @@ export function CompoundTable<Row>({ items, children, emptyMessage, renderRow }:
 
   return (
     <>
-      <Table>
+      <Table className="prive-responsive-table">
         <Table.Thead>
           <Table.Tr>
             {columns.map((column) => (

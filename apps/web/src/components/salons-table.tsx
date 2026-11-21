@@ -9,7 +9,7 @@ type SalonRow = {
 
 export function SalonsTable({ salons }: { salons: SalonRow[] }) {
   return (
-    <Table>
+    <Table className="prive-responsive-table">
       <Table.Thead>
         <Table.Tr>
           <Table.Th>Name</Table.Th>
@@ -20,9 +20,11 @@ export function SalonsTable({ salons }: { salons: SalonRow[] }) {
       <Table.Tbody>
         {salons.map((s) => (
           <Table.Tr key={s.id}>
-            <Table.Td>{s.name}</Table.Td>
-            <Table.Td>{s.address ?? "—"}</Table.Td>
-            <Table.Td>
+            <Table.Td data-label="Name" data-mobile-primary>
+              {s.name}
+            </Table.Td>
+            <Table.Td data-label="Address">{s.address ?? "—"}</Table.Td>
+            <Table.Td data-label="Actions" data-mobile-actions>
               <Anchor renderRoot={(props) => <Link to="/salons/$salonId" params={{ salonId: s.id }} {...props} />}>
                 Edit
               </Anchor>
