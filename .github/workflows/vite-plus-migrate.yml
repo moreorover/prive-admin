@@ -37,16 +37,33 @@ jobs:
         run: vp install --no-frozen-lockfile
 
       - name: Create or Update Pull Request
-        uses: peter-evans/create-pull-request@v8
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: chore/vite-plus-migrate
-          base: main
-          commit-message: "chore(deps): migrate Vite+ toolchain"
-          title: "chore(deps): migrate Vite+ toolchain"
-          body: |
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MIGRATION_BRANCH: chore/vite-plus-migrate
+          PR_TITLE: "chore(deps): migrate Vite+ toolchain"
+          PR_BODY: |-
             Automated Vite+ migration followed by a lockfile update.
 
             Run manually from the Actions tab or on the weekly schedule.
-          labels: dependencies
-          delete-branch: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$MIGRATION_BRANCH" || true
+          git switch -C "$MIGRATION_BRANCH"
+          git add --all
+
+          if git diff --cached --quiet; then
+            echo "No Vite+ migration changes detected."
+            exit 0
+          fi
+
+          git commit -m "$PR_TITLE"
+          git push --force-with-lease origin "HEAD:$MIGRATION_BRANCH"
+
+          existing_pr="$(gh pr list --base main --head "$MIGRATION_BRANCH" --state open --json url --jq '.[0].url')"
+          if [[ -n "$existing_pr" ]]; then
+            gh pr edit "$existing_pr" --title "$PR_TITLE" --body "$PR_BODY"
+          else
+            gh pr create --base main --head "$MIGRATION_BRANCH" \
+              --title "$PR_TITLE" --body "$PR_BODY" --label dependencies
+          fi
