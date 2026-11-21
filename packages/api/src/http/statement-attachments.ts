@@ -44,7 +44,7 @@ statementAttachmentRoutes.get("/preview", async (c) => {
   if (!id) return c.json({ error: "Missing id" }, 400)
 
   try {
-    return await getBankStatementAttachmentPreviewResponse(id)
+    return await getBankStatementAttachmentPreviewResponse(id, { download: c.req.query("download") === "1" })
   } catch {
     return c.json({ error: "Not found" }, 404)
   }

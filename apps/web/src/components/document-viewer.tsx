@@ -1,6 +1,8 @@
 import { createPdfJsAdapter, DocViewer, DocViewerAdapterProvider } from "mantine-doc-viewer"
 import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?url"
 
+import { embeddedAttachmentPreviewUrl } from "./attachment-preview"
+
 const pdf = createPdfJsAdapter(() => import("pdfjs-dist"), {
   workerSrc,
   options: {
@@ -19,7 +21,7 @@ export function DocumentViewer({ src, fileName, mimeType }: DocumentViewerProps)
   return (
     <DocViewerAdapterProvider pdf={pdf}>
       <DocViewer
-        src={src}
+        src={embeddedAttachmentPreviewUrl(src)}
         fileName={fileName}
         mimeType={mimeType}
         h="clamp(24rem, 65dvh, 48rem)"

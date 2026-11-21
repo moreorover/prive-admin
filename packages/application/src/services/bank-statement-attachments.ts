@@ -129,12 +129,12 @@ export async function getBankStatementAttachmentPreview(id: string) {
   return { row, body: object?.body ?? null }
 }
 
-export async function getBankStatementAttachmentPreviewResponse(id: string) {
+export async function getBankStatementAttachmentPreviewResponse(id: string, { download = false } = {}) {
   const preview = await getBankStatementAttachmentPreview(id)
   if (!preview.body) throw new Error("Empty body")
 
   const contentType = preview.row.contentType || "application/octet-stream"
-  const disposition = INLINE_SAFE_TYPES.has(contentType) ? "inline" : "attachment"
+  const disposition = !download && INLINE_SAFE_TYPES.has(contentType) ? "inline" : "attachment"
   const filename = encodeURIComponent(preview.row.originalName)
 
   return new Response(preview.body, {
