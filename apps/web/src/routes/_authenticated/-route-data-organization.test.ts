@@ -21,6 +21,15 @@ function routePageFiles(dir: string): string[] {
 }
 
 describe("route data organization", () => {
+  it("shares bank transaction query options between loader and rendered query", () => {
+    const source = readFileSync(join(routesDir, "bank-transactions.tsx"), "utf8")
+    expect(source).toContain("validateSearch: bankTransactionsSearchSchema")
+    expect(source).toMatch(/loaderDeps: \({ search }\) => search/)
+    expect(source).toContain("ensureQueryData(bankTransactionsQueryOptions(deps))")
+    expect(source).toContain("useQuery(bankTransactionsQueryOptions(search))")
+    expect(source).not.toContain("bankStatementEntries.list.queryOptions")
+  })
+
   it.each(routePageFiles(routesDir))("keeps mutation orchestration outside %s", (path) => {
     const source = readFileSync(path, "utf8")
     expect(source).not.toContain("useMutation({")
