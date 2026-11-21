@@ -79,6 +79,14 @@ a {
   min-width: 0;
 }
 
+.mantine-DocViewer-root .mantine-DocViewer-search {
+  flex-wrap: wrap;
+}
+
+.mantine-DocViewer-root .mantine-DocViewer-searchInput {
+  flex-basis: min(100%, 10rem);
+}
+
 .prive-page-header-actions,
 .prive-section-actions {
   justify-content: flex-start !important;
