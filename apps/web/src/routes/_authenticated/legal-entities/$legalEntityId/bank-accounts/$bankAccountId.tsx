@@ -1,7 +1,9 @@
+import { notifications } from "@mantine/notifications"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
+import { useBankAttachmentExport } from "@/routes/_authenticated/-actions/bank-attachment-export-actions"
 import { trpc } from "@/utils/trpc"
 
 import {
@@ -38,6 +40,8 @@ export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntit
 })
 
 function RouteComponent() {
+  const exportAction = useBankAttachmentExport()
+  const [uploadingAttachmentEntryId, setUploadingAttachmentEntryId] = useState<string | null>(null)
   const { bankAccountId, legalEntityId } = Route.useParams()
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("PENDING")
   const [openAttachmentEntryId, setOpenAttachmentEntryId] = useState<string | null>(null)
@@ -82,6 +86,8 @@ function RouteComponent() {
 
   return (
     <BankAccountPage
+      exportAction={exportAction}
+      uploadingAttachmentEntryId={uploadingAttachmentEntryId}
       bankAccountId={bankAccountId}
       legalEntityId={legalEntityId}
       legalEntities={legalEntitiesData?.items ?? []}
@@ -116,7 +122,12 @@ function RouteComponent() {
       onAssign={(id, entryId) => assign.mutate({ id, entryId })}
       onRemove={(id) => remove.mutate({ id })}
       onUnassign={(id) => unassign.mutate({ id })}
-      onUploadAttachment={(file, entryId) => upload(file, entryId)}
+      onUploadAttachment={async (file, entryId) => {
+        setUploadingAttachmentEntryId(entryId)
+        await upload(file, entryId)
+          .catch((error: unknown) => notifications.show({ color: "red", message: (error as Error).message }))
+          .finally(() => setUploadingAttachmentEntryId(null))
+      }}
     />
   )
 }

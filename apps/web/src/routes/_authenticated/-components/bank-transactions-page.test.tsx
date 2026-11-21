@@ -81,6 +81,7 @@ const entry = {
 }
 function pageProps() {
   return {
+    exportAction: { pending: false, onExport: vi.fn<(id: string, month: Date) => void>() },
     search: { status: "PENDING" as const, page: 1 },
     options: { entities: [], accounts: [] },
     result: { items: [], totalCount: 0, page: 1, pageSize: 10 },
@@ -221,4 +222,32 @@ it("opens the workspace import card from the header using owner callbacks", () =
   expect(importAction.onOpen).toHaveBeenCalledOnce()
   const opened = elements(BankTransactionsPage({ ...pageProps(), importAction: { ...importAction, opened: true } }))
   expect(opened.find((el) => el.type === BankTransactionImport)?.props.onImport).toBe(importAction.onImport)
+})
+
+it("offers account-scoped export beside import and narrows picker choices to the entity", async () => {
+  const { BankAttachmentExport } = await import("@/components/bank-transactions/bank-attachment-export")
+  const exportAction = { pending: false, onExport: vi.fn<(id: string, month: Date) => void>() }
+  const input = {
+    ...pageProps(),
+    exportAction,
+    search: { status: "PENDING" as const, page: 1, entityId: "e" },
+    options: {
+      entities: [],
+      accounts: [
+        { id: "a", legalEntityId: "e", displayName: "Main", iban: "LT123" },
+        { id: "b", legalEntityId: "other", displayName: "Other", iban: "LT456" },
+      ],
+    },
+  }
+  const header = elements(BankTransactionsPage(input)).find((el) => el.type === PageHeader)!
+  const picker = elements(header.props.actions).find((el) => el.type === BankAttachmentExport)
+  expect(picker).toBeDefined()
+  expect(picker!.props.bankAccountId).toBeUndefined()
+  expect(picker!.props.accounts.map((account: { id: string }) => account.id)).toEqual(["a"])
+  picker!.props.onExport("a", new Date(2026, 10, 1))
+  expect(exportAction.onExport).toHaveBeenCalledWith("a", new Date(2026, 10, 1))
+  const filtered = elements(BankTransactionsPage({ ...input, search: { ...input.search, bankAccountId: "a" } })).find(
+    (el) => el.type === PageHeader,
+  )!
+  expect(elements(filtered.props.actions).find((el) => el.type === BankAttachmentExport)!.props.bankAccountId).toBe("a")
 })

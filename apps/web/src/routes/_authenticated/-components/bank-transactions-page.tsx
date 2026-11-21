@@ -1,5 +1,9 @@
-import { Alert, Box, Button, Container, LoadingOverlay, Stack, Text } from "@mantine/core"
+import { Alert, Box, Button, Container, Group, LoadingOverlay, Stack, Text } from "@mantine/core"
 
+import {
+  BankAttachmentExport,
+  type BankAttachmentExportProps,
+} from "@/components/bank-transactions/bank-attachment-export"
 import { BankTransactionFilters } from "@/components/bank-transactions/bank-transaction-filters"
 import {
   BankTransactionImport,
@@ -22,9 +26,14 @@ import type {
   BankTransactionsSearch,
 } from "../-data/bank-transactions-data"
 
+function exportAccountsForEntity(accounts: BankTransactionsOptions["accounts"], entityId?: string) {
+  return entityId ? accounts.filter((account) => account.legalEntityId === entityId) : accounts
+}
+
 export function BankTransactionsPage({
   search,
   importAction,
+  exportAction,
   options,
   result,
   isFetching,
@@ -34,6 +43,7 @@ export function BankTransactionsPage({
   onPageChange,
   onViewAllTransactions,
 }: {
+  exportAction: Pick<BankAttachmentExportProps, "pending" | "onExport">
   importAction?: BankTransactionImportProps & { opened: boolean; onOpen: () => void }
   search: BankTransactionsSearch
   options: BankTransactionsOptions
@@ -54,7 +64,17 @@ export function BankTransactionsPage({
     <Container size="xl">
       <BreadcrumbItem label="Bank transactions" order={10} />
       <PageHeader
-        actions={importAction ? <Button onClick={importAction.onOpen}>Import CSV</Button> : null}
+        actions={
+          <Group>
+            <BankAttachmentExport
+              key={`${search.entityId ?? "all"}:${search.bankAccountId ?? "all"}`}
+              {...exportAction}
+              bankAccountId={search.bankAccountId}
+              accounts={exportAccountsForEntity(options.accounts, search.entityId)}
+            />
+            {importAction ? <Button onClick={importAction.onOpen}>Import CSV</Button> : null}
+          </Group>
+        }
         title="Bank transactions"
         description="Review bank transactions across legal entities and bank accounts."
       />
@@ -89,17 +109,7 @@ export function BankTransactionsPage({
             />
           ) : null}
           {!error && result?.items.length === 0 ? (
-            <Stack align="center" gap="sm" p="xl">
-              <Text fw={500}>{search.status === "PENDING" ? "No pending transactions" : "No transactions found"}</Text>
-              <Text c="dimmed" size="sm">
-                Try changing the filters to see more transactions.
-              </Text>
-              {search.status === "PENDING" ? (
-                <Button variant="light" onClick={onViewAllTransactions}>
-                  View all transactions
-                </Button>
-              ) : null}
-            </Stack>
+            <BankTransactionsEmptyState status={search.status} onViewAllTransactions={onViewAllTransactions} />
           ) : null}
         </Box>
         {result && result.totalCount > result.pageSize ? (
@@ -114,5 +124,27 @@ export function BankTransactionsPage({
         ) : null}
       </Section>
     </Container>
+  )
+}
+
+function BankTransactionsEmptyState({
+  status,
+  onViewAllTransactions,
+}: {
+  status: BankTransactionsSearch["status"]
+  onViewAllTransactions: () => void
+}) {
+  return (
+    <Stack align="center" gap="sm" p="xl">
+      <Text fw={500}>{status === "PENDING" ? "No pending transactions" : "No transactions found"}</Text>
+      <Text c="dimmed" size="sm">
+        Try changing the filters to see more transactions.
+      </Text>
+      {status === "PENDING" ? (
+        <Button variant="light" onClick={onViewAllTransactions}>
+          View all transactions
+        </Button>
+      ) : null}
+    </Stack>
   )
 }

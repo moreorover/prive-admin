@@ -33,6 +33,8 @@ describe("shared component server-state ownership", () => {
       expect(source).not.toMatch(/\b(useQueries|useNavigate|useSearch|useBankTransactionImport|use\w+Actions)\s*\(/)
       expect(source).not.toMatch(/\bRoute\.use/)
       expect(source).not.toMatch(/from ["'].*\/-actions\//)
+      expect(source).not.toMatch(/\bfetch\s*\(/)
+      expect(source).not.toMatch(/from ["'](@\/utils\/server-url|@mantine\/notifications)["']/)
     },
   )
 })

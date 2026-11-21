@@ -1,14 +1,14 @@
-import { Button, Group, Popover, Select, Stack, Text, Title } from "@mantine/core"
-import { MonthPickerInput } from "@mantine/dates"
+import { Button, Group, Select, Stack, Title } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
-import { notifications } from "@mantine/notifications"
-import { IconDownload } from "@tabler/icons-react"
 import { useState } from "react"
 
 import { type AttachmentPreview } from "@/components/attachment-preview"
+import {
+  BankAttachmentExport,
+  type BankAttachmentExportProps,
+} from "@/components/bank-transactions/bank-attachment-export"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { type Currency } from "@/lib/currency"
-import { apiUrl } from "@/utils/server-url"
 
 import { type BankAccountFormValues } from "../-actions/bank-account-actions"
 import { BankAccountNewForm, EditBankAccountModal } from "./bank-account-form-modals"
@@ -65,6 +65,8 @@ export function BankAccountPage({
   onRemove,
   onUnassign,
   onUploadAttachment,
+  uploadingAttachmentEntryId,
+  exportAction,
 }: {
   bankAccountId: string
   legalEntityId: string
@@ -97,7 +99,9 @@ export function BankAccountPage({
   onAssign: (id: string, entryId: string) => void
   onRemove: (id: string) => void
   onUnassign: (id: string) => void
-  onUploadAttachment: (file: File, entryId: string) => Promise<unknown>
+  onUploadAttachment: (file: File, entryId: string) => Promise<void>
+  uploadingAttachmentEntryId: string | null
+  exportAction: Pick<BankAttachmentExportProps, "pending" | "onExport">
 }) {
   return bankAccountId === "new" ? (
     <BankAccountNewForm
@@ -139,6 +143,8 @@ export function BankAccountPage({
       onRemove={onRemove}
       onUnassign={onUnassign}
       onUploadAttachment={onUploadAttachment}
+      uploadingAttachmentEntryId={uploadingAttachmentEntryId}
+      exportAction={exportAction}
     />
   )
 }
@@ -174,6 +180,8 @@ function BankAccountShow({
   onRemove,
   onUnassign,
   onUploadAttachment,
+  uploadingAttachmentEntryId,
+  exportAction,
 }: {
   id: string
   legalEntityId: string
@@ -204,16 +212,13 @@ function BankAccountShow({
   onAssign: (id: string, entryId: string) => void
   onRemove: (id: string) => void
   onUnassign: (id: string) => void
-  onUploadAttachment: (file: File, entryId: string) => Promise<unknown>
+  onUploadAttachment: (file: File, entryId: string) => Promise<void>
+  uploadingAttachmentEntryId: string | null
+  exportAction: Pick<BankAttachmentExportProps, "pending" | "onExport">
 }) {
   const [editOpened, { open: openEdit, close: closeEdit }] = useDisclosure(false)
   const [file, setFile] = useState<File | null>(null)
   const [importResult, setImportResult] = useState<BankStatementImportResult | null>(null)
-  const [exportMonth, setExportMonth] = useState<Date | null>(() => {
-    const d = new Date()
-    return new Date(d.getFullYear(), d.getMonth(), 1)
-  })
-  const [uploadingAttachmentEntryId, setUploadingAttachmentEntryId] = useState<string | null>(null)
   const entries = statementEntriesData?.items ?? []
   const entriesTotalCount = statementEntriesData?.totalCount ?? 0
   const entriesTotalPages = Math.max(1, Math.ceil(entriesTotalCount / STATEMENT_ENTRIES_PAGE_SIZE))
@@ -229,17 +234,6 @@ function BankAccountShow({
     setImportResult(result)
     setFile(null)
     onEntriesPageChange(1)
-  }
-
-  const handleAttachmentUpload = async (file: File, entryId: string) => {
-    setUploadingAttachmentEntryId(entryId)
-    try {
-      await onUploadAttachment(file, entryId)
-    } catch (err) {
-      notifications.show({ color: "red", message: (err as Error).message })
-    } finally {
-      setUploadingAttachmentEntryId(null)
-    }
   }
 
   return (
@@ -278,41 +272,7 @@ function BankAccountShow({
             }}
             w={180}
           />
-          <Popover position="bottom-end" withArrow shadow="md" width={260}>
-            <Popover.Target>
-              <Button variant="default" leftSection={<IconDownload size={16} />}>
-                Export attachments
-              </Button>
-            </Popover.Target>
-            <Popover.Dropdown>
-              <Stack gap="xs">
-                <Text fw={500} size="sm">
-                  Download attachments as zip
-                </Text>
-                <MonthPickerInput
-                  label="Month"
-                  value={exportMonth}
-                  onChange={(v) => setExportMonth(v ? new Date(v) : null)}
-                  popoverProps={{ withinPortal: false }}
-                />
-                <Button
-                  leftSection={<IconDownload size={16} />}
-                  disabled={!exportMonth}
-                  onClick={() => {
-                    if (!exportMonth) return
-                    const params = new URLSearchParams({
-                      year: String(exportMonth.getFullYear()),
-                      month: String(exportMonth.getMonth() + 1),
-                      bankAccountId: id,
-                    })
-                    window.location.href = apiUrl(`/api/statement-attachments/export?${params.toString()}`)
-                  }}
-                >
-                  Download zip
-                </Button>
-              </Stack>
-            </Popover.Dropdown>
-          </Popover>
+          <BankAttachmentExport {...exportAction} bankAccountId={id} />
         </Group>
 
         <BankStatementEntriesCard
@@ -337,7 +297,7 @@ function BankAccountShow({
           onAssign={onAssign}
           onRemove={onRemove}
           onUnassign={onUnassign}
-          onUpload={handleAttachmentUpload}
+          onUpload={onUploadAttachment}
           onIgnore={onIgnore}
           onUndo={onUndo}
         />

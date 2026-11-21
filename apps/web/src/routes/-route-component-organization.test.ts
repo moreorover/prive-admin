@@ -31,6 +31,20 @@ describe("route component organization", () => {
     expect(source).not.toMatch(/from ["'].*\/-actions\//)
   })
 
+  it("keeps account-detail attachment downloads and notifications in the route owner", () => {
+    const source = readFileSync(
+      join(
+        routesDir,
+        "_authenticated/legal-entities/$legalEntityId/bank-accounts/-components/bank-account-id-page.tsx",
+      ),
+      "utf8",
+    )
+    expect(source).not.toMatch(/\b(useQuery|useMutation|useBankAttachmentExport)\s*\(/)
+    expect(source).not.toMatch(/\bfetch\s*\(/)
+    expect(source).not.toMatch(/window\.location|notifications\.show/)
+    expect(source).not.toMatch(/from ["'](@\/utils\/server-url|@mantine\/notifications)["']/)
+  })
+
   it.each(publicRouteFiles(routesDir))("keeps custom components outside route file %s", (path) => {
     const source = readFileSync(path, "utf8")
     expect(source).not.toMatch(/function\s+(?!Route\b|RouteComponent\b)[A-Z][A-Za-z0-9_]*/)
