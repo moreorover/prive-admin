@@ -209,6 +209,77 @@ describe("bank statement entry listing", () => {
     expect(result.totalCount).toBe(ids.length)
   })
 
+  it.each(["counterpartyName", "purpose", "docNumber", "externalRef", "counterpartyIban", "counterpartyBank"] as const)(
+    "matches accented mixed-case %s before pagination and counting",
+    async (field) => {
+      await database.insert(schema.bankStatementEntry).values([
+        {
+          ...statementEntryValue("accent-1"),
+          id: "accent-1",
+          bankAccountId: "account-1",
+          date: "2026-11-20",
+          [field]: "ŠIAULIŲ BANKAS — ÉCOLE",
+        },
+        {
+          ...statementEntryValue("accent-2"),
+          id: "accent-2",
+          bankAccountId: "account-1",
+          date: "2026-11-10",
+          [field]: "s\u030Ciauliu\u0328 bankas — e\u0301cole",
+        },
+        {
+          ...statementEntryValue("accent-other"),
+          id: "accent-other",
+          bankAccountId: "account-3",
+          date: "2026-11-25",
+          [field]: "ŠIAULIŲ BANKAS — ÉCOLE",
+        },
+      ])
+      for (const query of ["šiaulių", "ŠiAuLiŲ", "école", "E\u0301COLE"]) {
+        const result = await listBankStatementEntries(database as never, {
+          pageSize: 1,
+          offset: 1,
+          legalEntityId: "entity-1",
+          from: "2026-11-01",
+          to: "2026-11-30",
+          status: "PENDING",
+          query,
+        })
+        expect(result.items.map((row) => row.id)).toEqual(["accent-2"])
+        expect(result.totalCount).toBe(2)
+        expect(result.items[0]?.bankAccount.legalEntity.id).toBe("entity-1")
+      }
+    },
+  )
+
+  it.each(["bankName", "iban"] as const)("matches accented source-account %s before paging", async (field) => {
+    await database.insert(schema.bankAccount).values({
+      id: "accent-account",
+      legalEntityId: "entity-1",
+      iban: "LT444",
+      currency: "EUR",
+      displayName: "Accented",
+      [field]: "ŠIAULIŲ BANKAS",
+    })
+    await database.insert(schema.bankStatementEntry).values([
+      {
+        ...statementEntryValue("accent-source-1"),
+        id: "accent-source-1",
+        bankAccountId: "accent-account",
+        date: "2026-11-20",
+      },
+      {
+        ...statementEntryValue("accent-source-2"),
+        id: "accent-source-2",
+        bankAccountId: "accent-account",
+        date: "2026-11-10",
+      },
+    ])
+    const result = await listBankStatementEntries(database as never, { pageSize: 1, offset: 1, query: "šiaulių" })
+    expect(result.items.map((row) => row.id)).toEqual(["accent-source-2"])
+    expect(result.totalCount).toBe(2)
+  })
+
   it("combines text, status, date, entity and account filters for items and count", async () => {
     const result = await listBankStatementEntries(database as never, {
       pageSize: 1,

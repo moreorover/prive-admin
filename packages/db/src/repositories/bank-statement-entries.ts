@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, inArray, lte, or, sql } from "drizzle-orm"
+import { and, count, desc, eq, gte, inArray, lte } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { bankAccount } from "../schema/bank-account"
@@ -79,35 +79,43 @@ export async function listBankStatementEntries(
   }
   if (filter.from) conditions.push(gte(bankStatementEntry.date, filter.from))
   if (filter.to) conditions.push(lte(bankStatementEntry.date, filter.to))
+  const where = conditions.length > 0 ? and(...conditions) : undefined
   const query = filter.query?.trim()
   if (query) {
-    const entryTextMatches = [
-      bankStatementEntry.counterpartyName,
-      bankStatementEntry.purpose,
-      bankStatementEntry.docNumber,
-      bankStatementEntry.externalRef,
-      bankStatementEntry.counterpartyIban,
-      bankStatementEntry.counterpartyBank,
-    ].map((column) => sql`instr(lower(${column}), lower(${query})) > 0`)
-    conditions.push(
-      or(
-        ...entryTextMatches,
-        inArray(
-          bankStatementEntry.bankAccountId,
-          database
-            .select({ id: bankAccount.id })
-            .from(bankAccount)
-            .where(
-              or(
-                sql`instr(lower(${bankAccount.iban}), lower(${query})) > 0`,
-                sql`instr(lower(${bankAccount.bankName}), lower(${query})) > 0`,
-              ),
-            ),
-        ),
-      ),
+    // D1's SQLite lower() only folds ASCII. Match the searchable projection in
+    // JavaScript before counting/paging, then hydrate only the selected rows.
+    const candidates = await database
+      .select({
+        id: bankStatementEntry.id,
+        counterpartyName: bankStatementEntry.counterpartyName,
+        purpose: bankStatementEntry.purpose,
+        docNumber: bankStatementEntry.docNumber,
+        externalRef: bankStatementEntry.externalRef,
+        counterpartyIban: bankStatementEntry.counterpartyIban,
+        counterpartyBank: bankStatementEntry.counterpartyBank,
+        accountIban: bankAccount.iban,
+        accountBankName: bankAccount.bankName,
+      })
+      .from(bankStatementEntry)
+      .innerJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
+      .where(where)
+      .orderBy(desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt))
+    const normalizedQuery = normalizeSearchText(query)
+    const matchingIds = candidates.flatMap(({ id, ...text }) =>
+      Object.values(text).some((value) => value != null && normalizeSearchText(value).includes(normalizedQuery))
+        ? [id]
+        : [],
     )
+    const pageIds = matchingIds.slice(filter.offset, filter.offset + filter.pageSize)
+    if (pageIds.length === 0) return { items: [], totalCount: matchingIds.length }
+
+    const items = await database.query.bankStatementEntry.findMany({
+      where: inArray(bankStatementEntry.id, pageIds),
+      with: { bankAccount: { with: { legalEntity: true } } },
+      orderBy: [desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt)],
+    })
+    return { items, totalCount: matchingIds.length }
   }
-  const where = conditions.length > 0 ? and(...conditions) : undefined
 
   const items = await database.query.bankStatementEntry.findMany({
     where,
@@ -146,4 +154,8 @@ export async function undoBankStatementEntry(database: Db = db, id: string) {
     .where(eq(bankStatementEntry.id, id))
     .returning({ id: bankStatementEntry.id, status: bankStatementEntry.status })
   return row
+}
+
+function normalizeSearchText(value: string) {
+  return value.normalize("NFC").toLowerCase().normalize("NFC")
 }
