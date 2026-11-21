@@ -1,5 +1,6 @@
 import { Button, Group, Select, Stack, Title } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
+import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { type AttachmentPreview } from "@/components/attachment-preview"
@@ -243,9 +244,28 @@ function BankAccountShow({
       <Stack>
         <Group justify="space-between">
           <Title order={3}>{bankAccount?.displayName ?? "Bank account"}</Title>
-          <Button onClick={openEdit} disabled={!bankAccount}>
-            Edit
-          </Button>
+          <Group>
+            <Button
+              variant="default"
+              renderRoot={(props) => (
+                <Link
+                  to="/bank-transactions"
+                  search={{
+                    entityId: bankAccount?.legalEntityId ?? legalEntityId,
+                    bankAccountId: id,
+                    status: "PENDING",
+                    page: 1,
+                  }}
+                  {...props}
+                />
+              )}
+            >
+              Bank transactions
+            </Button>
+            <Button onClick={openEdit} disabled={!bankAccount}>
+              Edit
+            </Button>
+          </Group>
         </Group>
 
         <BankAccountSummaryCard bankAccount={bankAccount} />
