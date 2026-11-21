@@ -44,7 +44,7 @@ textarea {
 
 a {
   color: inherit;
-  text-decoration-color: color-mix(in srgb, var(--prive-accent) 56%, transparent);
+  text-decoration-color: color-mix(in srgb, var(--prive-champagne) 56%, transparent);
   text-decoration-thickness: 0.08em;
   text-underline-offset: 0.2em;
 }
@@ -126,7 +126,7 @@ a {
 [class^="mantine-Button-root"][data-variant="default"]:hover,
 [class*=" mantine-Button-root"][data-variant="default"]:hover {
   background: var(--prive-control-bg-hover);
-  border-color: color-mix(in srgb, var(--prive-accent) 48%, var(--prive-border-strong));
+  border-color: color-mix(in srgb, var(--prive-champagne) 48%, var(--prive-border-strong));
 }
 
 [class^="mantine-Input-input"],
@@ -149,7 +149,7 @@ a {
 
 [class^="mantine-Input-input"]:focus,
 [class*=" mantine-Input-input"]:focus {
-  border-color: color-mix(in srgb, var(--prive-accent) 72%, var(--prive-border-strong));
+  border-color: color-mix(in srgb, var(--prive-champagne) 72%, var(--prive-border-strong));
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--prive-focus) 34%, transparent);
 }
 
