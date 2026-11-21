@@ -1,6 +1,6 @@
-import { Alert, Box, Button, Container, LoadingOverlay, NativeSelect, Stack, Text, TextInput } from "@mantine/core"
-import { IconSearch } from "@tabler/icons-react"
+import { Alert, Box, Button, Container, LoadingOverlay, Stack, Text } from "@mantine/core"
 
+import { BankTransactionFilters } from "@/components/bank-transactions/bank-transaction-filters"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { ResourcePagination } from "@/components/resource-pagination"
@@ -33,7 +33,6 @@ export function BankTransactionsPage({
   onPageChange: (page: number) => void
   onViewAllTransactions: () => void
 }) {
-  const accounts = options.accounts.filter((account) => !search.entityId || account.legalEntityId === search.entityId)
   const totalCount = result?.totalCount
 
   return (
@@ -46,59 +45,11 @@ export function BankTransactionsPage({
       <Section padding={0}>
         <Box component="section" aria-label="Transaction filters">
           <ResourceToolbar count={totalCount} countLabel={totalCount === 1 ? "transaction" : "transactions"}>
-            <NativeSelect
-              label="Legal entity"
-              data={[
-                { value: "", label: "All legal entities" },
-                ...options.entities.map((entity) => ({ value: entity.id, label: entity.name })),
-              ]}
-              value={search.entityId ?? ""}
-              onChange={(event) => onFiltersChange({ entityId: event.currentTarget.value || undefined })}
-            />
-            <NativeSelect
-              label="Bank account"
-              data={[
-                { value: "", label: "All bank accounts" },
-                ...accounts.map((account) => ({
-                  value: account.id,
-                  label: `${account.displayName} · ${account.iban}`,
-                })),
-              ]}
-              value={search.bankAccountId ?? ""}
-              onChange={(event) => onFiltersChange({ bankAccountId: event.currentTarget.value || undefined })}
-            />
-            <NativeSelect
-              label="Status"
-              data={[
-                { value: "PENDING", label: "Pending" },
-                { value: "IGNORED", label: "Ignored" },
-                { value: "ALL", label: "All statuses" },
-              ]}
-              value={search.status}
-              onChange={(event) =>
-                onFiltersChange({ status: event.currentTarget.value as BankTransactionsSearch["status"] })
-              }
-            />
-            <TextInput
-              label="From"
-              type="date"
-              value={search.from ?? ""}
-              onChange={(event) => onFiltersChange({ from: event.currentTarget.value || undefined })}
-            />
-            <TextInput
-              label="To"
-              type="date"
-              value={search.to ?? ""}
-              onChange={(event) => onFiltersChange({ to: event.currentTarget.value || undefined })}
-            />
-            <TextInput
-              label="Search"
-              placeholder="Counterparty, purpose, reference or bank"
-              leftSection={<IconSearch size={16} />}
-              maxLength={120}
-              value={search.q ?? ""}
-              onChange={(event) => onFiltersChange({ q: event.currentTarget.value || undefined })}
-              flex="1 1 18rem"
+            <BankTransactionFilters
+              entities={options.entities}
+              accounts={options.accounts}
+              values={search}
+              onChange={onFiltersChange}
             />
           </ResourceToolbar>
         </Box>
