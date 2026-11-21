@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/bank-transactions")({
   validateSearch: bankTransactionsSearchSchema,
   loaderDeps: ({ search }) => search,
   loader: async ({ context, deps }) => {
-    const options = await context.queryClient.ensureQueryData(bankTransactionsOptionsQueryOptions(context.queryClient))
+    const options = await context.queryClient.fetchQuery(bankTransactionsOptionsQueryOptions(context.queryClient))
     const normalized = normalizeBankTransactionsAccount(deps, options.accounts)
     if (normalized !== deps) {
       throw redirect({ to: "/bank-transactions", search: normalized, replace: true })

@@ -40,10 +40,10 @@ describe("bank transactions route owner", () => {
     expect(deps).toEqual(search)
     const renderedOptions = bankTransactionsQueryOptions(search)
     client.setQueryData(renderedOptions.queryKey, { items: [], totalCount: 21, page: 3, pageSize: 10 })
+    const fetch = vi.spyOn(client, "fetchQuery")
     const ensure = vi.spyOn(client, "ensureQueryData")
     await load(client, deps)
     expect(ensure.mock.calls.map(([options]) => options.queryKey)).toEqual([
-      ["bank-transactions", "filter-options"],
       [
         ["bankStatementEntries", "list"],
         {
@@ -60,12 +60,14 @@ describe("bank transactions route owner", () => {
         },
       ],
     ])
+    expect(fetch.mock.calls[0]?.[0].queryKey).toEqual(["bank-transactions", "filter-options"])
     expect(client.getQueryData(renderedOptions.queryKey)?.page).toBe(3)
     client.clear()
   })
 
   it("redirects incompatible direct links before requesting any transaction data", async () => {
     const client = createClient()
+    const fetch = vi.spyOn(client, "fetchQuery")
     const ensure = vi.spyOn(client, "ensureQueryData")
     await expect(load(client, { ...search, entityId: "entity-2" })).rejects.toMatchObject({
       options: {
@@ -79,7 +81,8 @@ describe("bank transactions route owner", () => {
         },
       },
     })
-    expect(ensure.mock.calls.map(([options]) => options.queryKey)).toEqual([["bank-transactions", "filter-options"]])
+    expect(fetch.mock.calls[0]?.[0].queryKey).toEqual(["bank-transactions", "filter-options"])
+    expect(ensure).not.toHaveBeenCalled()
     client.clear()
   })
 })

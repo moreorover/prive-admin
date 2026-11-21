@@ -65,17 +65,15 @@ export function bankTransactionsOptionsQueryOptions(queryClient: QueryClient) {
   return queryOptions({
     queryKey: ["bank-transactions", "filter-options"],
     queryFn: async (): Promise<BankTransactionsOptions> => {
-      const firstPage = await queryClient.ensureQueryData(
-        trpc.legalEntities.list.queryOptions({ page: 1, pageSize: 100 }),
-      )
+      const firstPage = await queryClient.fetchQuery(trpc.legalEntities.list.queryOptions({ page: 1, pageSize: 100 }))
       const remainingPages = await Promise.all(
         Array.from({ length: Math.ceil(firstPage.totalCount / 100) - 1 }, (_, index) =>
-          queryClient.ensureQueryData(trpc.legalEntities.list.queryOptions({ page: index + 2, pageSize: 100 })),
+          queryClient.fetchQuery(trpc.legalEntities.list.queryOptions({ page: index + 2, pageSize: 100 })),
         ),
       )
       const entities = [firstPage, ...remainingPages].flatMap((page) => page.items)
       const details = await Promise.all(
-        entities.map((entity) => queryClient.ensureQueryData(trpc.legalEntities.get.queryOptions({ id: entity.id }))),
+        entities.map((entity) => queryClient.fetchQuery(trpc.legalEntities.get.queryOptions({ id: entity.id }))),
       )
       return { entities, accounts: details.flatMap((entity) => entity.bankAccounts) }
     },
