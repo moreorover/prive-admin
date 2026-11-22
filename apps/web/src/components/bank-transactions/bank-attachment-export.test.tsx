@@ -29,8 +29,8 @@ describe("account-scoped attachment export picker", () => {
     const controls = elements(BankAttachmentExportForm(input))
     const select = controls.find((el) => el.type === Select)!
     expect(select.props.data).toEqual([
-      { value: "a", label: "Main · LT123" },
-      { value: "b", label: "Reserve · LT456" },
+      { value: "a", label: "LT123 · Main" },
+      { value: "b", label: "LT456 · Reserve" },
     ])
     const button = controls.find((el) => el.type === Button)!
     expect(button.props.disabled).toBe(true)
@@ -41,6 +41,12 @@ describe("account-scoped attachment export picker", () => {
     const selected = elements(BankAttachmentExportForm({ ...input, bankAccountId: "b" }))
     selected.find((el) => el.type === Button)!.props.onClick()
     expect(input.onExport).toHaveBeenCalledWith("b", month)
+  })
+
+  it("does not repeat an IBAN when the account display name is the IBAN", () => {
+    const input = { ...props(), accounts: [{ id: "a", displayName: "LT123", iban: "LT123" }] }
+    const select = elements(BankAttachmentExportForm(input)).find((el) => el.type === Select)!
+    expect(select.props.data).toEqual([{ value: "a", label: "LT123" }])
   })
 
   it("reuses the filtered or detail account and passes the chosen month to the owner", () => {

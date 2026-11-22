@@ -3,6 +3,8 @@ import { MonthPickerInput } from "@mantine/dates"
 import { IconDownload } from "@tabler/icons-react"
 import { useState } from "react"
 
+import { formatBankAccountLabel } from "@/lib/bank-account-display"
+
 type ExportAccount = { id: string; displayName: string; iban: string }
 export type BankAttachmentExportProps = {
   accounts?: ExportAccount[]
@@ -45,7 +47,10 @@ export function BankAttachmentExportForm({
         <Select
           label="Bank account"
           placeholder="Select an account"
-          data={accounts.map((account) => ({ value: account.id, label: `${account.displayName} · ${account.iban}` }))}
+          data={accounts.map((account) => ({
+            value: account.id,
+            label: formatBankAccountLabel({ displayName: account.displayName, iban: account.iban }),
+          }))}
           value={bankAccountId}
           onChange={onAccountChange}
           disabled={pending}
