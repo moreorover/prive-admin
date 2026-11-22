@@ -7,6 +7,7 @@ import {
   bankTransactionsOptionsQueryOptions,
   bankTransactionsQueryOptions,
   bankTransactionsSearchSchema,
+  normalizeBankTransactionsSearch,
   normalizeBankTransactionsAccount,
   updateBankTransactionsFilters,
 } from "./bank-transactions-data"
@@ -19,7 +20,7 @@ const accounts = [
 describe("bank transactions route data", () => {
   it("defaults to page one and pending across all accounts", () => {
     const search = bankTransactionsSearchSchema.parse({})
-    expect(search).toEqual({ status: "PENDING", page: 1 })
+    expect(search).toEqual({ page: 1 })
     expect(bankTransactionsQueryOptions(search).queryKey).toEqual([
       ["bankStatementEntries", "list"],
       { input: { page: 1, status: "PENDING" }, type: "query" },
@@ -86,6 +87,11 @@ describe("bank transactions route data", () => {
     ])
   })
 
+  it("removes the default pending status from URL search state", () => {
+    expect(normalizeBankTransactionsSearch({ status: "PENDING", page: 1 })).toEqual({ page: 1 })
+    expect(normalizeBankTransactionsSearch({ status: "ALL", page: 1 })).toEqual({ status: "ALL", page: 1 })
+  })
+
   it.each([
     { status: "PROCESSED" },
     { page: 0 },
@@ -117,7 +123,6 @@ describe("bank transactions route data", () => {
       bankAccountId: undefined,
       page: 1,
       q: "rent",
-      status: "PENDING",
     })
     expect(updateBankTransactionsFilters(search, { entityId: undefined }, accounts).bankAccountId).toBe("account-1")
   })
@@ -128,7 +133,6 @@ describe("bank transactions route data", () => {
       entityId: "entity-2",
       bankAccountId: undefined,
       page: 1,
-      status: "PENDING",
     })
   })
 

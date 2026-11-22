@@ -49,6 +49,7 @@ export function BankTransactionsPage({
   onViewAllTransactions: () => void
 }) {
   const totalCount = result?.totalCount ?? 0
+  const status = search.status ?? "PENDING"
 
   return (
     <Container size="xl">
@@ -96,7 +97,7 @@ export function BankTransactionsPage({
             />
           ) : null}
           {!error && result?.items.length === 0 ? (
-            <BankTransactionsEmptyState status={search.status} onViewAllTransactions={onViewAllTransactions} />
+            <BankTransactionsEmptyState status={status} onViewAllTransactions={onViewAllTransactions} />
           ) : null}
         </Box>
         {result && result.totalCount > result.pageSize ? (
