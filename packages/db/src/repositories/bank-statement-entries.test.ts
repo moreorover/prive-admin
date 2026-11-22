@@ -209,6 +209,16 @@ describe("bank statement entry listing", () => {
     expect(result.items.map((row) => row.id)).toEqual(["start-later", "start"])
   })
 
+  it("filters across multiple bank accounts", async () => {
+    const result = await listBankStatementEntries(database as never, {
+      pageSize: 10,
+      offset: 0,
+      bankAccountIds: ["account-1", "account-2"],
+    })
+    expect(result.items.map((row) => row.bankAccountId)).toEqual(["account-2", "account-2", "account-1", "account-1"])
+    expect(result.totalCount).toBe(4)
+  })
+
   it.each([
     { from: "2026-11-01", to: "2026-11-30", ids: ["end", "middle", "start-later", "start"] },
     { from: "2026-11-30", ids: ["after", "end"] },

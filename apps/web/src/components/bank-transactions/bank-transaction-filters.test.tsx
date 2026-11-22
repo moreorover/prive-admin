@@ -1,4 +1,4 @@
-import { NativeSelect, Select, TextInput } from "@mantine/core"
+import { MultiSelect, NativeSelect, Select, TextInput } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { describe, expect, it, vi } from "vite-plus/test"
 
@@ -19,7 +19,11 @@ function controls(values = { entityId: "entity-1", bankAccountId: "account-1", s
   const findControl = (label: string) => {
     const found = tree.find(
       (el) =>
-        (el.type === DateInput || el.type === NativeSelect || el.type === Select || el.type === TextInput) &&
+        (el.type === DateInput ||
+          el.type === MultiSelect ||
+          el.type === NativeSelect ||
+          el.type === Select ||
+          el.type === TextInput) &&
         el.props.label === label,
     )
     if (!found) return undefined
@@ -39,44 +43,38 @@ function change(control: Record<string, any>, value: string) {
 describe("BankTransactionFilters", () => {
   it("lists bank accounts with their legal entity context", () => {
     const { control } = controls()
-    const accountControl = control("Bank account")
+    const accountControl = control("Bank accounts")
     expect(accountControl.data).toEqual([
-      { value: "", label: "All bank accounts" },
-      {
-        group: "First",
-        items: [
-          { value: "entity:entity-1", label: "All bank accounts" },
-          { value: "account-1", label: "LT123 · Main · First" },
-        ],
-      },
-      {
-        group: "Second",
-        items: [
-          { value: "entity:entity-2", label: "All bank accounts" },
-          { value: "account-2", label: "GB456 · Reserve · Second" },
-        ],
-      },
+      { value: "account-1", label: "LT123" },
+      { value: "account-2", label: "GB456" },
     ])
     const option = accountControl.renderOption({
-      option: { value: "account-1", label: "LT123 · Main · First" },
+      option: { value: "account-1", label: "LT123" },
     })
     expect(option.props.children[0].props.children).toBe("First")
     expect(option.props.children[1].props.children).toBe("LT123")
-    expect(accountControl.value).toBe("account-1")
+    expect(accountControl.value).toEqual(["account-1"])
     expect(
-      controls({ entityId: "entity-2", bankAccountId: "account-1", status: "PENDING", page: 2 }).control("Bank account")
-        .value,
-    ).toBe("account-1")
+      controls({ entityId: "entity-2", bankAccountId: "account-1", status: "PENDING", page: 2 }).control(
+        "Bank accounts",
+      ).value,
+    ).toEqual(["account-1"])
   })
 
   it("emits account patches from the selector", () => {
     const { control, onChange } = controls()
-    control("Bank account").onChange("account-2")
-    expect(onChange).toHaveBeenLastCalledWith({ entityId: "entity-2", bankAccountId: "account-2" })
-    control("Bank account").onChange("entity:entity-2")
-    expect(onChange).toHaveBeenLastCalledWith({ entityId: "entity-2", bankAccountId: undefined })
-    control("Bank account").onChange("")
-    expect(onChange).toHaveBeenLastCalledWith({ entityId: "entity-1", bankAccountId: undefined })
+    control("Bank accounts").onChange(["account-1", "account-2"])
+    expect(onChange).toHaveBeenLastCalledWith({
+      entityId: undefined,
+      bankAccountId: undefined,
+      bankAccountIds: ["account-1", "account-2"],
+    })
+    control("Bank accounts").onChange([])
+    expect(onChange).toHaveBeenLastCalledWith({
+      entityId: undefined,
+      bankAccountId: undefined,
+      bankAccountIds: undefined,
+    })
   })
 
   it("keeps an entity scope when clearing its account selection", () => {
@@ -86,8 +84,12 @@ describe("BankTransactionFilters", () => {
       status: "PENDING",
       page: 2,
     })
-    control("Bank account").onChange("")
-    expect(onChange).toHaveBeenLastCalledWith({ entityId: "entity-1", bankAccountId: undefined })
+    control("Bank accounts").onChange(["account-1"])
+    expect(onChange).toHaveBeenLastCalledWith({
+      entityId: undefined,
+      bankAccountId: undefined,
+      bankAccountIds: ["account-1"],
+    })
   })
 
   it("removes the status control and emits date and search patches", () => {

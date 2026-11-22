@@ -1,4 +1,4 @@
-import { Select, Stack, Text, TextInput } from "@mantine/core"
+import { MultiSelect, Stack, Text, TextInput } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { IconSearch } from "@tabler/icons-react"
 
@@ -7,8 +7,6 @@ import type {
   BankTransactionsOptions,
   BankTransactionsSearch,
 } from "@/routes/_authenticated/-data/bank-transactions-data"
-
-import { formatBankAccountLabel } from "@/lib/bank-account-display"
 
 export function BankTransactionFilters({
   entities,
@@ -22,7 +20,6 @@ export function BankTransactionFilters({
   onChange: (filters: BankTransactionsFilters) => void
 }) {
   const entityNames = new Map(entities.map((entity) => [entity.id, entity.name]))
-  const selectedValue = values.bankAccountId ?? (values.entityId ? `entity:${values.entityId}` : "")
   const accountDetails = new Map(
     accounts.map((account) => [
       account.id,
@@ -35,29 +32,15 @@ export function BankTransactionFilters({
 
   return (
     <>
-      <Select
-        label="Bank account"
+      <MultiSelect
+        label="Bank accounts"
         searchable
         clearable
-        data={[
-          { value: "", label: "All bank accounts" },
-          ...entities.map((entity) => ({
-            group: entity.name,
-            items: [
-              { value: `entity:${entity.id}`, label: "All bank accounts" },
-              ...accounts
-                .filter((account) => account.legalEntityId === entity.id)
-                .map((account) => ({
-                  value: account.id,
-                  label: formatBankAccountLabel({
-                    iban: account.iban,
-                    displayName: account.displayName,
-                    legalEntityName: entity.name,
-                  }),
-                })),
-            ],
-          })),
-        ]}
+        placeholder="All bank accounts"
+        data={accounts.map((account) => ({
+          value: account.id,
+          label: account.iban,
+        }))}
         renderOption={({ option }) => {
           const details = accountDetails.get(option.value)
           if (!details) return option.label
@@ -71,18 +54,9 @@ export function BankTransactionFilters({
             </Stack>
           )
         }}
-        value={selectedValue}
+        value={values.bankAccountIds ?? (values.bankAccountId ? [values.bankAccountId] : [])}
         onChange={(value) => {
-          if (!value) {
-            onChange({ entityId: values.entityId, bankAccountId: undefined })
-            return
-          }
-          if (value.startsWith("entity:")) {
-            onChange({ entityId: value.slice("entity:".length), bankAccountId: undefined })
-            return
-          }
-          const account = accounts.find((candidate) => candidate.id === value)
-          onChange({ entityId: account?.legalEntityId, bankAccountId: value })
+          onChange({ entityId: undefined, bankAccountId: undefined, bankAccountIds: value.length ? value : undefined })
         }}
       />
       <DateInput

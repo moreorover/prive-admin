@@ -151,7 +151,7 @@ describe("BankTransactionsPage shell", () => {
     const markup = renderPage()
     for (const label of [
       "Bank transactions",
-      "Bank account",
+      "Bank accounts",
       "From",
       "To",
       "Search",
@@ -196,8 +196,8 @@ describe("BankTransactionsPage shell", () => {
         ],
       },
     })
-    expect(markup).toContain("Main account")
-    expect(markup).not.toContain("Excluded account")
+    expect(markup).toContain("LT123")
+    expect(markup).not.toContain("GB456")
   })
 })
 

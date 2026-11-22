@@ -62,6 +62,14 @@ describe("bank transactions route data", () => {
     ])
   })
 
+  it("maps multiple selected bank accounts to the list API", () => {
+    const search = bankTransactionsSearchSchema.parse({ bankAccountIds: ["account-1", "account-2"] })
+    expect(bankTransactionsQueryOptions(search).queryKey).toEqual([
+      ["bankStatementEntries", "list"],
+      { input: { bankAccountIds: ["account-1", "account-2"], page: 1, status: "PENDING" }, type: "query" },
+    ])
+  })
+
   it("preserves spaces while typing and omits a whitespace-only API query", () => {
     const search = bankTransactionsSearchSchema.parse({ q: "rent " })
     expect(search.q).toBe("rent ")

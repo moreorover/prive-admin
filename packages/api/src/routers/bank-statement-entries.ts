@@ -14,6 +14,7 @@ import { getOffset, pagedResult, pageSchema, searchSchema } from "../pagination"
 
 const bankStatementEntryListSchema = pageSchema.extend({
   bankAccountId: z.string().optional(),
+  bankAccountIds: z.array(z.string().min(1)).optional(),
   status: z.enum(["PENDING", "IGNORED"]).optional(),
   legalEntityId: z.string().min(1).optional(),
   from: z.iso.date().optional(),
@@ -44,6 +45,7 @@ export const bankStatementEntriesRouter = router({
         pageSize: input.pageSize,
         offset: getOffset(input),
         bankAccountId: input.bankAccountId,
+        bankAccountIds: input.bankAccountIds,
         status: input.status,
         legalEntityId: input.legalEntityId,
         from: input.from,

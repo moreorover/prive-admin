@@ -11,6 +11,7 @@ const optionalFilter = z.string().trim().min(1).optional()
 export const bankTransactionsSearchSchema = z.object({
   entityId: optionalFilter,
   bankAccountId: optionalFilter,
+  bankAccountIds: z.array(z.string().trim().min(1)).optional(),
   status: z.enum(["PENDING", "IGNORED", "ALL"]).default("PENDING"),
   from: z.iso.date().optional(),
   to: z.iso.date().optional(),
@@ -32,6 +33,7 @@ export function bankTransactionsQueryOptions(search: BankTransactionsSearch) {
     page: search.page,
     legalEntityId: search.entityId,
     bankAccountId: search.bankAccountId,
+    bankAccountIds: search.bankAccountIds,
     status: search.status === "ALL" ? undefined : search.status,
     from: search.from,
     to: search.to,

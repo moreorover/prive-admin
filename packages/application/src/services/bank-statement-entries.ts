@@ -45,6 +45,7 @@ export async function listBankStatementEntries(input: {
   pageSize: number
   offset: number
   bankAccountId?: string
+  bankAccountIds?: string[]
   legalEntityId?: string
   status?: "PENDING" | "IGNORED"
   from?: string

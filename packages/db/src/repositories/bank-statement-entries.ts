@@ -79,6 +79,7 @@ export async function listBankStatementEntries(
     pageSize: number
     offset: number
     bankAccountId?: string
+    bankAccountIds?: string[]
     legalEntityId?: string
     status?: "PENDING" | "IGNORED"
     from?: string
@@ -87,7 +88,11 @@ export async function listBankStatementEntries(
   },
 ) {
   const conditions = []
-  if (filter.bankAccountId) conditions.push(eq(bankStatementEntry.bankAccountId, filter.bankAccountId))
+  if (filter.bankAccountIds?.length) {
+    conditions.push(inArray(bankStatementEntry.bankAccountId, filter.bankAccountIds))
+  } else if (filter.bankAccountId) {
+    conditions.push(eq(bankStatementEntry.bankAccountId, filter.bankAccountId))
+  }
   if (filter.status) conditions.push(eq(bankStatementEntry.status, filter.status))
   if (filter.legalEntityId) {
     conditions.push(
