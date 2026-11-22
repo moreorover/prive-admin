@@ -46,6 +46,9 @@ export async function createPersonnel(input: PersonnelCreateInput) {
 }
 
 export async function updatePersonnel(input: PersonnelUpdateInput) {
+  if (input.type === undefined && input.active === undefined && input.salonId === undefined) {
+    throw badRequest("Personnel update requires at least one change")
+  }
   await getPersonnel(input.customerId)
   await assertSalonExists(input.salonId)
 

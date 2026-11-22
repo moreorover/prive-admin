@@ -66,6 +66,9 @@ export async function createPersonnel(database: Db = db, input: PersonnelCreateI
 
 export async function updatePersonnel(database: Db = db, input: PersonnelUpdateInput) {
   const { customerId, ...changes } = input
+  if (changes.type === undefined && changes.active === undefined && changes.salonId === undefined) {
+    throw new TypeError("Personnel update requires at least one change")
+  }
   const [result] = await database.update(personnel).set(changes).where(eq(personnel.customerId, customerId)).returning()
   return result
 }

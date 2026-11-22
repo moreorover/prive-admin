@@ -125,6 +125,29 @@ describe("personnel repository", () => {
     expect((await listPersonnel(db(), { activeOnly: true, type: "master" })).totalCount).toBe(0)
   })
 
+  it.each([{ customerId: "anna" }, { customerId: "anna", type: undefined, active: undefined, salonId: undefined }])(
+    "rejects an empty effective patch without writing: %j",
+    async (input) => {
+      const before = await getPersonnel(db(), "anna")
+      const update = vi.spyOn(database, "update")
+      await expect(updatePersonnel(db(), input)).rejects.toThrow(TypeError)
+      expect(update).not.toHaveBeenCalled()
+      expect(await getPersonnel(db(), "anna")).toEqual(before)
+    },
+  )
+
+  it.each([
+    { active: false, salonId: undefined },
+    { active: undefined, salonId: null },
+  ])("preserves false and null as effective changes alongside undefined fields: %j", async (changes) => {
+    await updatePersonnel(db(), { customerId: "anna", salonId: "salon-1" })
+    expect(await updatePersonnel(db(), { customerId: "anna", type: undefined, ...changes })).toMatchObject({
+      type: "master",
+      active: changes.active === false ? false : true,
+      salonId: changes.salonId === null ? null : "salon-1",
+    })
+  })
+
   it("updates type and salon independently, clears salon explicitly, and reactivates", async () => {
     await updatePersonnel(db(), { customerId: "anna", salonId: "salon-1", active: false })
     expect(await updatePersonnel(db(), { customerId: "anna", type: "assistant" })).toMatchObject({

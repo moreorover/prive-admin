@@ -116,6 +116,34 @@ describe("personnel service", () => {
     expect(repository.getSalon).not.toHaveBeenCalled()
   })
 
+  it.each([
+    { customerId: "customer-1" },
+    { customerId: "customer-1", type: undefined, active: undefined, salonId: undefined },
+  ])("rejects an empty effective patch as BAD_REQUEST: %j", async (input) => {
+    repository.getPersonnel.mockResolvedValue({ ...profile, customer })
+    await expect(updatePersonnel(input)).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    expect(repository.updatePersonnel).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    { active: false, salonId: undefined },
+    { active: undefined, salonId: null },
+  ])("accepts false or null as a change alongside undefined fields: %j", async (changes) => {
+    repository.getPersonnel.mockResolvedValue({ ...profile, salonId: "salon-1", customer })
+    const expected = {
+      ...profile,
+      active: changes.active === false ? false : true,
+      salonId: changes.salonId === null ? null : "salon-1",
+    }
+    repository.updatePersonnel.mockResolvedValue(expected)
+    expect(await updatePersonnel({ customerId: "customer-1", type: undefined, ...changes })).toEqual(expected)
+    expect(repository.updatePersonnel).toHaveBeenCalledWith(undefined, {
+      customerId: "customer-1",
+      type: undefined,
+      ...changes,
+    })
+  })
+
   it("returns eligible personnel, optionally requiring a type", async () => {
     repository.getPersonnel.mockResolvedValue({ ...profile, customer })
     expect(await assertActivePersonnel("customer-1")).toMatchObject({ active: true, customer })
