@@ -110,6 +110,13 @@ function BankStatementImportFeedback({
   setupHref,
   importResult,
 }: Pick<BankTransactionImportProps, "preview" | "previewPending" | "error" | "setupHref" | "importResult">) {
+  const importDestination =
+    preview && normalizeIdentifier(preview.account.displayName) === normalizeIdentifier(preview.accountIban)
+      ? preview.accountIban
+      : preview
+        ? preview.account.displayName + " · " + preview.accountIban
+        : null
+
   return (
     <>
       {preview ? (
@@ -121,11 +128,7 @@ function BankStatementImportFeedback({
                   Import to
                 </Text>
                 <Text component="dd" size="sm" fw={500} m={0} style={{ overflowWrap: "anywhere" }}>
-                  {preview.account.displayName} ·{" "}
-                  <Text component="span" ff="monospace" size="sm">
-                    {preview.accountIban}
-                  </Text>{" "}
-                  · {preview.account.legalEntity.name}
+                  {importDestination} · {preview.account.legalEntity.name}
                 </Text>
               </div>
             </SimpleGrid>
@@ -176,4 +179,8 @@ function BankStatementImportFeedback({
       )}
     </>
   )
+}
+
+function normalizeIdentifier(value: string) {
+  return value.replace(/\s/g, "").toUpperCase()
 }

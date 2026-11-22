@@ -124,6 +124,22 @@ describe("workspace confirmation", () => {
     expect(html).toContain('data-with-border="true"')
   })
 
+  it("does not repeat the IBAN when it is also the account display name", () => {
+    const duplicateIbanPreview = {
+      ...preview,
+      account: { ...preview.account, displayName: preview.accountIban },
+    }
+    const html = renderToStaticMarkup(
+      createElement(
+        MantineProvider,
+        null,
+        createElement(BankTransactionImport, { ...props, opened: undefined, preview: duplicateIbanPreview }),
+      ),
+    )
+    expect(html.match(new RegExp(preview.accountIban, "g"))).toHaveLength(1)
+    expect(html).toContain("Prive LT")
+  })
+
   it("shows destination and row count before the explicit confirm action", () => {
     const html = renderToStaticMarkup(
       createElement(
