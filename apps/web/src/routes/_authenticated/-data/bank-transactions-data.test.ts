@@ -19,7 +19,7 @@ const accounts = [
 describe("bank transactions route data", () => {
   it("defaults to page one and pending across all accounts", () => {
     const search = bankTransactionsSearchSchema.parse({})
-    expect(search).toEqual({ status: "PENDING", page: 1 })
+    expect(search).toEqual({ page: 1 })
     expect(bankTransactionsQueryOptions(search).queryKey).toEqual([
       ["bankStatementEntries", "list"],
       { input: { page: 1, status: "PENDING" }, type: "query" },
@@ -30,7 +30,6 @@ describe("bank transactions route data", () => {
     const search = bankTransactionsSearchSchema.parse({
       entityId: "entity-1",
       bankAccountId: "account-1",
-      status: "IGNORED",
       from: "2026-10-01",
       to: "2026-11-22",
       q: "  invoice  ",
@@ -39,7 +38,6 @@ describe("bank transactions route data", () => {
     expect(search).toEqual({
       entityId: "entity-1",
       bankAccountId: "account-1",
-      status: "IGNORED",
       from: "2026-10-01",
       to: "2026-11-22",
       q: "  invoice  ",
@@ -51,7 +49,7 @@ describe("bank transactions route data", () => {
         input: {
           legalEntityId: "entity-1",
           bankAccountId: "account-1",
-          status: "IGNORED",
+          status: "PENDING",
           from: "2026-10-01",
           to: "2026-11-22",
           query: "invoice",
@@ -79,15 +77,7 @@ describe("bank transactions route data", () => {
     ])
   })
 
-  it("omits the backend status for all statuses", () => {
-    expect(bankTransactionsQueryOptions(bankTransactionsSearchSchema.parse({ status: "ALL" })).queryKey).toEqual([
-      ["bankStatementEntries", "list"],
-      { input: { page: 1 }, type: "query" },
-    ])
-  })
-
   it.each([
-    { status: "PROCESSED" },
     { page: 0 },
     { page: 1001 },
     { page: 1.5 },
@@ -105,19 +95,11 @@ describe("bank transactions route data", () => {
       page: 4,
       q: "rent",
     })
-    expect(updateBankTransactionsFilters(search, { status: "ALL" }, accounts)).toEqual({
-      entityId: "entity-1",
-      bankAccountId: "account-1",
-      page: 1,
-      q: "rent",
-      status: "ALL",
-    })
     expect(updateBankTransactionsFilters(search, { entityId: "entity-2" }, accounts)).toEqual({
       entityId: "entity-2",
       bankAccountId: undefined,
       page: 1,
       q: "rent",
-      status: "PENDING",
     })
     expect(updateBankTransactionsFilters(search, { entityId: undefined }, accounts).bankAccountId).toBe("account-1")
   })
@@ -128,7 +110,6 @@ describe("bank transactions route data", () => {
       entityId: "entity-2",
       bankAccountId: undefined,
       page: 1,
-      status: "PENDING",
     })
   })
 
