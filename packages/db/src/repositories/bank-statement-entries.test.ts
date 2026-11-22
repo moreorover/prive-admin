@@ -298,6 +298,30 @@ describe("bank statement entry listing", () => {
     },
   )
 
+  it("uses the entry id as a deterministic tie-breaker for search results", async () => {
+    await database.insert(schema.bankStatementEntry).values([
+      {
+        ...statementEntryValue("tie-1"),
+        id: "tie-1",
+        bankAccountId: "account-1",
+        date: "2026-11-20",
+        importedAt: new Date("2026-11-20T10:00:00.000Z"),
+        purpose: "Tie needle one",
+      },
+      {
+        ...statementEntryValue("tie-2"),
+        id: "tie-2",
+        bankAccountId: "account-1",
+        date: "2026-11-20",
+        importedAt: new Date("2026-11-20T10:00:00.000Z"),
+        purpose: "Tie needle two",
+      },
+    ])
+
+    const result = await listBankStatementEntries(database as never, { pageSize: 10, offset: 0, query: "needle" })
+    expect(result.items.map((row) => row.id)).toEqual(["tie-2", "tie-1"])
+  })
+
   it.each(["bankName", "iban"] as const)("matches accented source-account %s before paging", async (field) => {
     await database.insert(schema.bankAccount).values({
       id: "accent-account",

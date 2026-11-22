@@ -112,22 +112,21 @@ export async function listBankStatementEntries(
       .from(bankStatementEntry)
       .innerJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
       .where(combinedWhere)
-      .orderBy(desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt), desc(bankStatementEntry.id))
+      .orderBy(...bankStatementEntryOrderBy())
       .limit(filter.pageSize)
       .offset(filter.offset)
     const pageIds = pageRows.map(({ id }) => id)
-    const items = pageIds.length
-      ? await database.query.bankStatementEntry.findMany({
-          where: inArray(bankStatementEntry.id, pageIds),
-          with: { bankAccount: { with: { legalEntity: true } } },
-          orderBy: [desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt), desc(bankStatementEntry.id)],
-        })
-      : []
     const [countRow] = await database
       .select({ totalCount: count() })
       .from(bankStatementEntry)
       .innerJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
       .where(combinedWhere)
+    if (pageIds.length === 0) return { items: [], totalCount: countRow?.totalCount ?? 0 }
+    const items = await database.query.bankStatementEntry.findMany({
+      where: inArray(bankStatementEntry.id, pageIds),
+      with: { bankAccount: { with: { legalEntity: true } } },
+      orderBy: bankStatementEntryOrderBy(),
+    })
     return { items, totalCount: countRow?.totalCount ?? 0 }
   }
 
@@ -136,7 +135,7 @@ export async function listBankStatementEntries(
     with: {
       bankAccount: { with: { legalEntity: true } },
     },
-    orderBy: [desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt), desc(bankStatementEntry.id)],
+    orderBy: bankStatementEntryOrderBy(),
     limit: filter.pageSize,
     offset: filter.offset,
   })
@@ -173,6 +172,10 @@ export async function undoBankStatementEntry(database: Db = db, id: string) {
 export function bankStatementSearchPatterns(value: string) {
   const forms = [value.normalize("NFC"), value.normalize("NFD")]
   return [...new Set(forms.flatMap((form) => [form, form.toLowerCase(), form.toUpperCase()]))]
+}
+
+function bankStatementEntryOrderBy() {
+  return [desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt), desc(bankStatementEntry.id)]
 }
 
 function buildSearchCondition(query: string) {
