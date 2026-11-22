@@ -36,7 +36,7 @@ export function BankTransactionFilters({
   return (
     <>
       <Select
-        label="Account"
+        label="Bank account"
         searchable
         clearable
         data={[

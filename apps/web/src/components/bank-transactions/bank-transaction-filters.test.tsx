@@ -39,7 +39,7 @@ function change(control: Record<string, any>, value: string) {
 describe("BankTransactionFilters", () => {
   it("lists bank accounts with their legal entity context", () => {
     const { control } = controls()
-    const accountControl = control("Account")
+    const accountControl = control("Bank account")
     expect(accountControl.data).toEqual([
       { value: "", label: "All bank accounts" },
       {
@@ -57,16 +57,16 @@ describe("BankTransactionFilters", () => {
     expect(option.props.children[1].props.children).toBe("LT123")
     expect(accountControl.value).toBe("account-1")
     expect(
-      controls({ entityId: "entity-2", bankAccountId: "account-1", status: "PENDING", page: 2 }).control("Account")
+      controls({ entityId: "entity-2", bankAccountId: "account-1", status: "PENDING", page: 2 }).control("Bank account")
         .value,
     ).toBe("account-1")
   })
 
   it("emits account patches from the selector", () => {
     const { control, onChange } = controls()
-    control("Account").onChange("account-2")
+    control("Bank account").onChange("account-2")
     expect(onChange).toHaveBeenLastCalledWith({ entityId: undefined, bankAccountId: "account-2" })
-    control("Account").onChange("")
+    control("Bank account").onChange("")
     expect(onChange).toHaveBeenLastCalledWith({ entityId: undefined, bankAccountId: undefined })
   })
 
