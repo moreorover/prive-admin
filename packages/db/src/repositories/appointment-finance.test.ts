@@ -6,7 +6,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import type { Db } from "../index"
 
-import { appointmentFinanceRows, monthlyFinanceRows, personnelAllocationRows } from "./appointment-finance"
+import {
+  appointmentFinanceRows,
+  monthlyFinanceRows,
+  personnelAllocationRows,
+  sortPersonnelAllocationRows,
+} from "./appointment-finance"
 
 vi.mock("../client", () => ({ db: {} }))
 
@@ -152,5 +157,17 @@ describe("appointment finance SQL", () => {
       totalCount: 4,
       items: [],
     })
+  })
+
+  it("uses personnelId as a tie-breaker for same-name allocation groups", () => {
+    expect(
+      sortPersonnelAllocationRows([
+        { month: 2, personnelId: "personnel-b", personnelName: "Alex", currency: "EUR" },
+        { month: 2, personnelId: "personnel-a", personnelName: "Alex", currency: "EUR" },
+      ]),
+    ).toEqual([
+      { month: 2, personnelId: "personnel-a", personnelName: "Alex", currency: "EUR" },
+      { month: 2, personnelId: "personnel-b", personnelName: "Alex", currency: "EUR" },
+    ])
   })
 })
