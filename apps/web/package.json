@@ -45,6 +45,6 @@
     "postcss-simple-vars": "7.0.1",
     "typescript": "catalog:",
     "vite-plus": "catalog:",
-    "wrangler": "4.141.0"
+    "wrangler": "4.162.0"
   }
 }
