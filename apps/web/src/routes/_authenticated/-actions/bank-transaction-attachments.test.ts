@@ -105,35 +105,3 @@ describe("unified route attachment ownership", () => {
     client.clear()
   })
 })
-
-it("preserves lazy account-detail attachments and forwards export/upload ownership through the detail page", async () => {
-  const { Route: DetailRoute } = await import("../legal-entities/$legalEntityId/bank-accounts/$bankAccountId")
-  const { BankAccountPage } =
-    await import("../legal-entities/$legalEntityId/bank-accounts/-components/bank-account-id-page")
-  const client = new QueryClient()
-  vi.spyOn(DetailRoute, "useParams").mockReturnValue({ bankAccountId: "detail-account", legalEntityId: "entity-1" })
-  vi.spyOn(DetailRoute, "useNavigate").mockReturnValue(vi.fn())
-  const snapshots: Parameters<typeof BankAccountPage>[0][] = []
-  function Probe() {
-    const Component = DetailRoute.options.component as () => ReactElement<Parameters<typeof BankAccountPage>[0]>
-    snapshots.push(Component().props)
-    return null
-  }
-  renderToStaticMarkup(createElement(QueryClientProvider, { client }, createElement(Probe)))
-  const page = snapshots[0]!
-  const detail = BankAccountPage(page)
-  expect(detail.props.id).toBe("detail-account")
-  expect(detail.props.exportAction).toBe(page.exportAction)
-  expect(detail.props.onUploadAttachment).toBe(page.onUploadAttachment)
-  expect(detail.props.uploadingAttachmentEntryId).toBeNull()
-  const lists = client.getQueryCache().findAll({ queryKey: trpc.bankStatementAttachments.list.queryKey() })
-  expect(lists.map((query) => (query.options as QueryObserverOptions).enabled)).toEqual([false, false])
-  const show = vi.spyOn(notifications, "show")
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async () => Response.json({ error: "Detail upload failed" }, { status: 500 })),
-  )
-  await page.onUploadAttachment(new File(["x"], "receipt.txt"), "detail-entry")
-  expect(show).toHaveBeenCalledWith({ color: "red", message: "Detail upload failed" })
-  client.clear()
-})

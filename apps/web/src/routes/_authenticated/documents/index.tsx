@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
+import { useBankAttachmentExport } from "../-actions/bank-attachment-export-actions"
+import { bankTransactionsOptionsQueryOptions } from "../-data/bank-transactions-data"
 import { useDocumentActions } from "./-actions/document-actions"
 import { DocumentsPage } from "./-components/index-page"
 import { documentsQueryOptions, PAGE_SIZE, searchSchema } from "./-data/index-data"
@@ -13,7 +15,10 @@ export const Route = createFileRoute("/_authenticated/documents/")({
     status: search.status ?? "unassigned",
   }),
   loader: async ({ context, deps }) => {
-    const data = await context.queryClient.ensureQueryData(documentsQueryOptions(deps))
+    const [data] = await Promise.all([
+      context.queryClient.ensureQueryData(documentsQueryOptions(deps)),
+      context.queryClient.ensureQueryData(bankTransactionsOptionsQueryOptions(context.queryClient)),
+    ])
     const totalPages = Math.max(1, Math.ceil(data.totalCount / PAGE_SIZE))
     if (deps.page > totalPages) {
       throw redirect({
@@ -30,6 +35,8 @@ function RouteComponent() {
   const status = search.status ?? "unassigned"
   const page = search.page ?? 1
   const documentsQuery = useQuery(documentsQueryOptions({ status, page }))
+  const optionsQuery = useQuery(bankTransactionsOptionsQueryOptions(Route.useRouteContext().queryClient))
+  const exportAction = useBankAttachmentExport()
   const { upload, unassign, remove } = useDocumentActions()
 
   return (
@@ -37,6 +44,8 @@ function RouteComponent() {
       status={status}
       page={page}
       documentsQuery={documentsQuery}
+      exportAction={exportAction}
+      accounts={optionsQuery.data?.accounts ?? []}
       uploadDocument={upload}
       unassignPending={unassign.isPending}
       removePending={remove.isPending}

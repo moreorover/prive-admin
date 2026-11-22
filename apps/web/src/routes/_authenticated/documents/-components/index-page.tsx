@@ -20,11 +20,17 @@ import { Link } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { attachmentPreviewUrl } from "@/components/attachment-preview"
+import {
+  BankAttachmentExport,
+  type BankAttachmentExportProps,
+} from "@/components/bank-transactions/bank-attachment-export"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { ResourceToolbar } from "@/components/resource-toolbar"
 import { Section } from "@/components/section"
 import { type Currency, formatMinor } from "@/lib/currency"
+
+import type { BankTransactionsOptions } from "../../-data/bank-transactions-data"
 
 import { type DocumentStatus, PAGE_SIZE } from "../-data/index-data"
 
@@ -49,6 +55,8 @@ export function DocumentsPage({
   onRemove,
   onStatusChange,
   onPageChange,
+  exportAction,
+  accounts,
 }: {
   status: DocumentStatus
   page: number
@@ -60,6 +68,8 @@ export function DocumentsPage({
   onRemove: (id: string) => void
   onStatusChange: (status: DocumentStatus) => void
   onPageChange: (page: number) => void
+  exportAction: Pick<BankAttachmentExportProps, "pending" | "onExport">
+  accounts: BankTransactionsOptions["accounts"]
 }) {
   const [busy, setBusy] = useState(false)
   const [fileInputKey, setFileInputKey] = useState(0)
@@ -86,17 +96,20 @@ export function DocumentsPage({
         title="Documents"
         description="Uploaded bank statement documents and their assignment status."
         actions={
-          <FileInput
-            key={fileInputKey}
-            placeholder="Upload document"
-            disabled={busy}
-            value={null}
-            onChange={(file) => {
-              if (file) void upload(file)
-            }}
-            w={{ base: "100%", xs: 260 }}
-            size="sm"
-          />
+          <Group>
+            <BankAttachmentExport {...exportAction} accounts={accounts} />
+            <FileInput
+              key={fileInputKey}
+              placeholder="Upload document"
+              disabled={busy}
+              value={null}
+              onChange={(file) => {
+                if (file) void upload(file)
+              }}
+              w={{ base: "100%", xs: 260 }}
+              size="sm"
+            />
+          </Group>
         }
       />
 

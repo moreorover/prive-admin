@@ -85,7 +85,17 @@ export function BankAccountsTab({
                   </Anchor>
                 </Table.Td>
                 <Table.Td>
-                  <code>{a.iban}</code>
+                  <Anchor
+                    renderRoot={(props) => (
+                      <Link
+                        to="/bank-transactions"
+                        search={{ entityId: legalEntityId, bankAccountId: a.id, status: "PENDING", page: 1 }}
+                        {...props}
+                      />
+                    )}
+                  >
+                    <code>{a.iban}</code>
+                  </Anchor>
                 </Table.Td>
                 <Table.Td>{a.currency}</Table.Td>
                 <Table.Td>{a.bankName ?? "—"}</Table.Td>
