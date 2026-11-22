@@ -36,7 +36,8 @@ function change(control: Record<string, any>, value: string) {
 describe("BankTransactionFilters", () => {
   it("lists bank accounts with their legal entity context", () => {
     const { control } = controls()
-    expect(control("Account").data).toEqual([
+    const accountControl = control("Account")
+    expect(accountControl.data).toEqual([
       { value: "", label: "All bank accounts" },
       {
         group: "Bank accounts",
@@ -46,7 +47,12 @@ describe("BankTransactionFilters", () => {
         ],
       },
     ])
-    expect(control("Account").value).toBe("account-1")
+    const option = accountControl.renderOption({
+      option: { value: "account-1", label: "LT123 · Main · First" },
+    })
+    expect(option.props.children[0].props.children).toBe("First")
+    expect(option.props.children[1].props.children).toBe("LT123")
+    expect(accountControl.value).toBe("account-1")
     expect(
       controls({ entityId: "entity-2", bankAccountId: "account-1", status: "PENDING", page: 2 }).control("Account")
         .value,

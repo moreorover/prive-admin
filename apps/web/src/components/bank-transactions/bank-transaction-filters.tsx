@@ -1,4 +1,4 @@
-import { Select, TextInput } from "@mantine/core"
+import { Select, Stack, Text, TextInput } from "@mantine/core"
 import { IconSearch } from "@tabler/icons-react"
 
 import type {
@@ -22,6 +22,15 @@ export function BankTransactionFilters({
 }) {
   const entityNames = new Map(entities.map((entity) => [entity.id, entity.name]))
   const selectedValue = values.bankAccountId ?? ""
+  const accountDetails = new Map(
+    accounts.map((account) => [
+      account.id,
+      {
+        iban: account.iban,
+        legalEntityName: entityNames.get(account.legalEntityId) ?? "Unknown entity",
+      },
+    ]),
+  )
 
   return (
     <>
@@ -43,6 +52,19 @@ export function BankTransactionFilters({
             })),
           },
         ]}
+        renderOption={({ option }) => {
+          const details = accountDetails.get(option.value)
+          if (!details) return option.label
+
+          return (
+            <Stack gap={0}>
+              <Text size="sm">{details.legalEntityName}</Text>
+              <Text size="xs" c="dimmed">
+                {details.iban}
+              </Text>
+            </Stack>
+          )
+        }}
         value={selectedValue}
         onChange={(value) => {
           onChange({ entityId: undefined, bankAccountId: value || undefined })
