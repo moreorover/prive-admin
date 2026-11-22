@@ -48,8 +48,8 @@ describe("BankTransactionFilters", () => {
       {
         group: "Bank accounts",
         items: [
-          { value: "account:account-1", label: "First · Main · LT123" },
-          { value: "account:account-2", label: "Second · Reserve · GB456" },
+          { value: "account:account-1", label: "LT123 · Main · First" },
+          { value: "account:account-2", label: "GB456 · Reserve · Second" },
         ],
       },
     ])

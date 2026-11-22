@@ -2,6 +2,7 @@ import { ActionIcon, Card, Group, Menu, Pagination, Table, Text } from "@mantine
 import { IconDotsVertical } from "@tabler/icons-react"
 
 import { type AttachmentPreview } from "@/components/attachment-preview"
+import { formatBankAccountLabel } from "@/lib/bank-account-display"
 import { type Currency, formatMinor } from "@/lib/currency"
 
 import { AttachmentsCell, type AttachmentPendingState } from "./attachments-cell"
@@ -183,9 +184,11 @@ function StatementEntryRow({
     <Table.Tr>
       <Table.Td>{entry.bankAccount?.legalEntity?.name ?? "—"}</Table.Td>
       <Table.Td>
-        <Text size="sm">{entry.bankAccount?.displayName ?? "—"}</Text>
-        <Text size="xs" c="dimmed">
-          {entry.bankAccount?.iban}
+        <Text size="sm">
+          {formatBankAccountLabel({
+            displayName: entry.bankAccount?.displayName,
+            iban: entry.bankAccount?.iban,
+          }) || "—"}
         </Text>
       </Table.Td>
       <Table.Td style={{ whiteSpace: "nowrap" }}>

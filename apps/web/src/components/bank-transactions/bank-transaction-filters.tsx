@@ -7,6 +7,8 @@ import type {
   BankTransactionsSearch,
 } from "@/routes/_authenticated/-data/bank-transactions-data"
 
+import { formatBankAccountLabel } from "@/lib/bank-account-display"
+
 export function BankTransactionFilters({
   entities,
   accounts,
@@ -41,12 +43,11 @@ export function BankTransactionFilters({
             group: "Bank accounts",
             items: accounts.map((account) => ({
               value: "account:" + account.id,
-              label:
-                (entityNames.get(account.legalEntityId) ?? "Unknown entity") +
-                " · " +
-                account.displayName +
-                " · " +
-                account.iban,
+              label: formatBankAccountLabel({
+                iban: account.iban,
+                displayName: account.displayName,
+                legalEntityName: entityNames.get(account.legalEntityId) ?? "Unknown entity",
+              }),
             })),
           },
         ]}

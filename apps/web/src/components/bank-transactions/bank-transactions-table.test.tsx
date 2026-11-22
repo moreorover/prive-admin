@@ -90,6 +90,17 @@ describe("BankTransactionsTable", () => {
     expect(first[1]).toContain("USD")
   })
 
+  it("does not repeat an IBAN when the account display name is the IBAN", () => {
+    const duplicate = {
+      ...entries[0]!,
+      bankAccount: { displayName: "LT123", iban: "LT123", legalEntity: { name: "First company" } },
+    }
+    const html = markup({ ...props(), entries: [duplicate] })
+    const row = html.slice(html.indexOf("<tbody"), html.indexOf("</tbody>"))
+    expect(row.match(/LT123/g)).toHaveLength(1)
+    expect(row).toContain("First company")
+  })
+
   it("passes attachment data only to the opened row and routes each action with its entry ID", async () => {
     const input = props()
     const cells = rows(input).map((row) => elements(row).find((el) => el.type === AttachmentsCell)!.props)
