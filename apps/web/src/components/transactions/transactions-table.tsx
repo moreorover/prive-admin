@@ -9,7 +9,7 @@ import type { CompoundTableColumnComponent } from "@/components/compound-table-h
 
 import { CompoundTable } from "@/components/compound-table"
 import { ResourcePagination } from "@/components/resource-pagination"
-import { type Currency, formatMinor } from "@/lib/currency"
+import { formatTransactionAmount } from "@/lib/currency"
 
 import { MOVEMENT_TYPE_OPTIONS } from "./transaction-form-data"
 
@@ -19,7 +19,7 @@ export type TransactionRow = {
   name: string | null
   notes: string | null
   amount: number
-  currency: Currency
+  currency: string
   customerId: string | null
   appointmentId: string | null
   customer?: { id: string; name: string } | null
@@ -182,7 +182,7 @@ const MovementType = createColumn("movementType", "Movement type", () => {
 
 const Amount = createColumn("amount", "Amount", () => {
   const row = useTransactionRow()
-  return <Table.Td>{formatMinor(row.amount, row.currency)}</Table.Td>
+  return <Table.Td>{formatTransactionAmount(row.amount, row.currency)}</Table.Td>
 })
 
 export const TransactionsTable = Object.assign(TransactionsTableRoot, {

@@ -33,7 +33,7 @@ export async function createAppointment(input: {
   masterId: string
   salonId: string
 }) {
-  await assertActivePersonnel(input.masterId)
+  await assertActivePersonnel(input.masterId, { type: "master" })
   let result
   try {
     result = await insertAppointment(undefined, input)
@@ -42,7 +42,7 @@ export async function createAppointment(input: {
   }
 
   if (!result) {
-    throw unexpectedError("Failed to create appointment")
+    throw conflict("Master eligibility changed before the appointment was created")
   }
 
   return result
@@ -70,7 +70,7 @@ export async function linkPersonnelToAppointment(input: { appointmentId: string;
     throw unexpectedError("Failed to link personnel to appointment", error)
   }
   if (inserted.length !== input.personnelIds.length) {
-    throw conflict("Personnel already assigned to appointment")
+    throw conflict("Personnel eligibility or assignment changed. Refresh the appointment and try again.")
   }
 }
 
@@ -80,7 +80,7 @@ export async function updateAppointment(input: {
   masterId?: string
   startsAt?: string | Date
 }) {
-  if (input.masterId !== undefined) await assertActivePersonnel(input.masterId)
+  if (input.masterId !== undefined) await assertActivePersonnel(input.masterId, { type: "master" })
   let result
   try {
     result = await patchAppointment(undefined, input)
@@ -89,6 +89,8 @@ export async function updateAppointment(input: {
   }
 
   if (!result) {
+    if (input.masterId !== undefined && (await findAppointment(undefined, input.id)))
+      throw conflict("Master eligibility changed before the appointment was updated")
     throw notFound("Appointment not found")
   }
 

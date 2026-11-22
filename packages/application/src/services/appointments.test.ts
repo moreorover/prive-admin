@@ -33,16 +33,19 @@ describe("appointment service", () => {
   const profile = { customerId: "master", active: true, type: "master" }
 
   describe.each(["create", "update"] as const)("%s master eligibility", (operation) => {
-    it.each([undefined, { ...profile, active: false }])("rejects ineligible personnel: %j", async (personnel) => {
-      dbMock.getPersonnel.mockResolvedValue(personnel)
-      const result =
-        operation === "create"
-          ? createAppointment(input)
-          : updateAppointment({ id: "appointment-1", masterId: "master" })
-      await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
-      expect(dbMock.createAppointment).not.toHaveBeenCalled()
-      expect(dbMock.updateAppointment).not.toHaveBeenCalled()
-    })
+    it.each([undefined, { ...profile, active: false }, { ...profile, type: "assistant" }])(
+      "rejects ineligible personnel: %j",
+      async (personnel) => {
+        dbMock.getPersonnel.mockResolvedValue(personnel)
+        const result =
+          operation === "create"
+            ? createAppointment(input)
+            : updateAppointment({ id: "appointment-1", masterId: "master" })
+        await expect(result).rejects.toMatchObject({ code: "BAD_REQUEST" })
+        expect(dbMock.createAppointment).not.toHaveBeenCalled()
+        expect(dbMock.updateAppointment).not.toHaveBeenCalled()
+      },
+    )
   })
 
   it.each([undefined, { ...profile, active: false }])(

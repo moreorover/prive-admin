@@ -27,12 +27,14 @@ export type PersonnelUpdateInput = {
 }
 
 export async function listPersonnel(database: Db = db, filter: PersonnelListFilter = {}) {
-  const pattern = filter.search ? `%${filter.search.replace(/[\\%_]/g, "\\$&")}%` : undefined
   const where = and(
     filter.activeOnly ? eq(personnel.active, true) : undefined,
     filter.type ? eq(personnel.type, filter.type) : undefined,
-    pattern
-      ? or(sql`${customer.name} like ${pattern} escape '\\'`, sql`${customer.phoneNumber} like ${pattern} escape '\\'`)
+    filter.search
+      ? or(
+          sql`instr(lower(${customer.name}), lower(${filter.search})) > 0`,
+          sql`instr(lower(${customer.phoneNumber}), lower(${filter.search})) > 0`,
+        )
       : undefined,
   )
 

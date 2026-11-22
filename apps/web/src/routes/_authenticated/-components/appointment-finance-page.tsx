@@ -1,6 +1,6 @@
 import { Button, Card, Container, Group, NativeSelect, Pagination, Stack, Table, Text, Title } from "@mantine/core"
 
-import { CURRENCIES, formatMinor, type Currency } from "@/lib/currency"
+import { CURRENCIES, formatTransactionAmount, type Currency } from "@/lib/currency"
 
 import type { FinanceSearch, MonthlyFinance, PersonnelFinance } from "../-data/appointment-finance-data"
 
@@ -94,7 +94,7 @@ export function AppointmentFinancePage({ search, monthly, personnel, onSearch }:
                         )}
                       </Table.Td>
                       <Table.Td>{row.currency}</Table.Td>
-                      <Table.Td>{formatMinor(row.allocated, row.currency as Currency)}</Table.Td>
+                      <Table.Td>{formatTransactionAmount(row.allocated, row.currency)}</Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>

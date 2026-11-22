@@ -47,8 +47,7 @@ function renderAppointmentDetailPage(props: Partial<ComponentProps<typeof Appoin
     transactionsTotalCount: 0,
     transactionsTotalPages: 1,
     showTransactionsPagination: false,
-    totalsByCurrency: {},
-    currenciesPresent: [],
+    totalsByCurrency: new Map(),
     txDefaultCurrency: "EUR",
   } as never
   const defaultProps = {
@@ -169,4 +168,21 @@ describe("AppointmentDetailPage", () => {
     expect(getMasterCustomerQuerySearch("Master One", { value: "master-1", label: "Master One" })).toBe("")
     expect(getMasterCustomerQuerySearch("Other", { value: "master-1", label: "Master One" })).toBe("Other")
   })
+})
+
+it("displays the last cent of a safe integer exactly in the finance table", () => {
+  const amount = Number.MAX_SAFE_INTEGER - 1
+  const html = renderAppointmentDetailPage({
+    financeTotals: [
+      {
+        currency: "EUR",
+        received: amount,
+        adjustments: 0,
+        refunds: 0,
+        personnelAllocations: 0,
+        ownerRemainder: amount,
+      },
+    ],
+  })
+  expect(html).toContain("€90071992547409.90")
 })

@@ -15,7 +15,7 @@ describe("personnel repository", () => {
   const db = () => database as never
 
   beforeEach(async () => {
-    sqlite = new DatabaseSync(":memory:")
+    sqlite = new DatabaseSync(":memory:", { limits: { likePatternLength: 50 } })
     const migrations = new URL("../migrations/", import.meta.url)
     for (const file of readdirSync(migrations)
       .filter((file) => file.endsWith(".sql"))
@@ -93,6 +93,14 @@ describe("personnel repository", () => {
 
   it("treats LIKE wildcard and escape characters as literal search text", async () => {
     const result = await listPersonnel(db(), { search: "%_\\" })
+    expect(result.items.map((row) => row.customerId)).toEqual(["literal"])
+    expect(result.totalCount).toBe(1)
+  })
+
+  it("finds a literal 49-character substring under D1's LIKE limit", async () => {
+    const search = "%_".repeat(24) + "A"
+    sqlite.prepare("UPDATE customer SET name = ? WHERE id = 'literal'").run("Prefix" + search.toLowerCase() + "Suffix")
+    const result = await listPersonnel(db(), { search })
     expect(result.items.map((row) => row.customerId)).toEqual(["literal"])
     expect(result.totalCount).toBe(1)
   })

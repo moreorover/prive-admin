@@ -1,6 +1,6 @@
 import { Table, Text } from "@mantine/core"
 
-import { formatMinor, type Currency } from "@/lib/currency"
+import { formatTransactionAmount } from "@/lib/currency"
 
 import type { AppointmentTotals } from "../-data/appointment-finance-data"
 
@@ -33,7 +33,7 @@ export function FinanceTotalsTable({
               <Table.Td>{row.currency}</Table.Td>
               {(["received", "refunds", "adjustments", "personnelAllocations", "ownerRemainder"] as const).map(
                 (field) => (
-                  <Table.Td key={field}>{formatMinor(row[field], row.currency as Currency)}</Table.Td>
+                  <Table.Td key={field}>{formatTransactionAmount(row[field], row.currency)}</Table.Td>
                 ),
               )}
             </Table.Tr>

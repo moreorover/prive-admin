@@ -2,12 +2,13 @@ import {
   createTransaction,
   deleteTransaction,
   listTransactions,
+  resolveTransactionCurrency,
   updateTransaction,
 } from "@prive-admin-tanstack/application/services"
 import { z } from "zod"
 
 import { toTrpcError } from "../errors"
-import { protectedProcedure, router } from "../index"
+import { ownerProcedure, protectedProcedure, router } from "../index"
 import { getOffset, pagedResult, pageSchema } from "../pagination"
 
 const currencySchema = z.enum(["GBP", "EUR"])
@@ -73,6 +74,16 @@ export const transactionsRouter = router({
           amount: input.amount,
           currency: input.currency,
         })
+      } catch (error) {
+        throw toTrpcError(error)
+      }
+    }),
+
+  resolveCurrency: ownerProcedure
+    .input(z.object({ id: z.string().min(1), storedCurrency: z.string(), currency: currencySchema }))
+    .mutation(async ({ input }) => {
+      try {
+        return await resolveTransactionCurrency(input)
       } catch (error) {
         throw toTrpcError(error)
       }

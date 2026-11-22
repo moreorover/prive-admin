@@ -5,7 +5,13 @@ import { URL } from "node:url"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import * as schema from "../schema"
-import { getAppointment, linkPersonnelToAppointment, listAppointments, updateAppointment } from "./appointments"
+import {
+  createAppointment,
+  getAppointment,
+  linkPersonnelToAppointment,
+  listAppointments,
+  updateAppointment,
+} from "./appointments"
 
 vi.mock("../index", () => ({ db: {} }))
 
@@ -41,11 +47,11 @@ describe("appointment repository", () => {
 describe("appointment personnel persistence", () => {
   let sqlite: DatabaseSync
   let database: ReturnType<typeof drizzle<typeof schema>>
-  let interveneBeforeNextAssignment = false
+  let beforeWrite: (() => void) | undefined
   const db = () => database as never
 
   beforeEach(async () => {
-    sqlite = new DatabaseSync(":memory:")
+    sqlite = new DatabaseSync(":memory:", { limits: { compoundSelect: 5, variableNumber: 100 } })
     const migrations = new URL("../migrations/", import.meta.url)
     for (const file of readdirSync(migrations)
       .filter((file) => file.endsWith(".sql"))
@@ -55,11 +61,10 @@ describe("appointment personnel persistence", () => {
     sqlite.exec("PRAGMA foreign_keys = ON")
     database = drizzle(
       async (sql, params, method) => {
-        if (interveneBeforeNextAssignment && sql.toString().includes('insert into "appointment_personnel"')) {
-          interveneBeforeNextAssignment = false
-          sqlite
-            .prepare("insert into appointment_personnel (appointment_id, personnel_id) values (?, ?)")
-            .run("appointment-1", "alice")
+        if (beforeWrite && /^(insert|update)/i.test(sql)) {
+          const intervene = beforeWrite
+          beforeWrite = undefined
+          intervene()
         }
         const statement = sqlite.prepare(sql)
         if (method === "run") {
@@ -84,7 +89,9 @@ describe("appointment personnel persistence", () => {
     await database.insert(schema.salon).values({ id: "salon", name: "Salon" })
     await database.insert(schema.personnel).values([
       { customerId: "master", type: "master", active: false },
-      { customerId: "assistant", type: "assistant", active: false },
+      { customerId: "assistant", type: "assistant" },
+      { customerId: "alice", type: "assistant" },
+      { customerId: "bob", type: "assistant" },
     ])
     await database.insert(schema.appointment).values({
       id: "appointment-1",
@@ -98,6 +105,45 @@ describe("appointment personnel persistence", () => {
 
   afterEach(() => sqlite.close())
 
+  it("assigns six eligible people in one batch under D1 limits", async () => {
+    const ids = Array.from({ length: 6 }, (_, i) => "staff-" + i)
+    for (const id of ids) {
+      await database.insert(schema.customer).values({ id, name: id })
+      await database.insert(schema.personnel).values({ customerId: id, type: "assistant" })
+    }
+    expect(await linkPersonnelToAppointment(db(), { appointmentId: "appointment-1", personnelIds: ids })).toHaveLength(
+      6,
+    )
+  })
+
+  it("leaves a mixed batch untouched if one profile becomes inactive before insert", async () => {
+    beforeWrite = () => sqlite.exec("UPDATE personnel SET active=0 WHERE customer_id='bob'")
+    expect(
+      await linkPersonnelToAppointment(db(), { appointmentId: "appointment-1", personnelIds: ["alice", "bob"] }),
+    ).toEqual([])
+    expect((await getAppointment(db(), "appointment-1"))?.personnel).toEqual([])
+  })
+
+  it.each(["create", "update"])("checks the current master profile at %s time", async (operation) => {
+    sqlite.exec("UPDATE personnel SET type='master' WHERE customer_id='alice'")
+    beforeWrite = () => sqlite.exec("UPDATE personnel SET type='assistant' WHERE customer_id='alice'")
+    const result =
+      operation === "create"
+        ? await createAppointment(db(), {
+            name: "Cut",
+            masterId: "alice",
+            clientId: "client",
+            salonId: "salon",
+            startsAt: new Date(),
+          })
+        : await updateAppointment(db(), { id: "appointment-1", masterId: "alice", name: "Changed" })
+    expect(result).toBeUndefined()
+    expect(await listAppointments(db(), { pageSize: 10, offset: 0 })).toMatchObject({
+      totalCount: 1,
+      items: [{ name: "Historical cut", masterId: "master" }],
+    })
+  })
+
   it("safely repeats writes without duplicate links and returns only new assignments", async () => {
     const input = { appointmentId: "appointment-1", personnelIds: ["assistant", "assistant"] }
     expect(await linkPersonnelToAppointment(db(), input)).toHaveLength(1)
@@ -109,7 +155,8 @@ describe("appointment personnel persistence", () => {
   })
 
   it("rejects a mixed batch atomically when an assignment intervenes", async () => {
-    interveneBeforeNextAssignment = true
+    beforeWrite = () =>
+      sqlite.exec("INSERT INTO appointment_personnel (appointment_id, personnel_id) VALUES ('appointment-1','alice')")
 
     expect(
       await linkPersonnelToAppointment(db(), {
@@ -122,6 +169,7 @@ describe("appointment personnel persistence", () => {
 
   it("preserves appointment detail and list reads for inactive personnel", async () => {
     await linkPersonnelToAppointment(db(), { appointmentId: "appointment-1", personnelIds: ["assistant"] })
+    sqlite.exec("UPDATE personnel SET active = 0")
     expect(await getAppointment(db(), "appointment-1")).toMatchObject({
       master: { id: "master" },
       personnel: [{ personnelId: "assistant", personnel: { name: "Assistant" } }],
@@ -136,8 +184,8 @@ describe("appointment personnel persistence", () => {
     await expect(
       linkPersonnelToAppointment(db(), { appointmentId: "missing", personnelIds: ["assistant"] }),
     ).rejects.toThrow()
-    await expect(
-      linkPersonnelToAppointment(db(), { appointmentId: "appointment-1", personnelIds: ["missing"] }),
-    ).rejects.toThrow()
+    expect(
+      await linkPersonnelToAppointment(db(), { appointmentId: "appointment-1", personnelIds: ["missing"] }),
+    ).toEqual([])
   })
 })

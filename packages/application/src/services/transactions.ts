@@ -6,10 +6,12 @@ import {
   getAppointment as findAppointment,
   getTransaction as findTransaction,
   listTransactions as fetchTransactions,
+  resolveTransactionCurrency as patchCurrency,
   updateTransaction as patchTransaction,
 } from "@prive-admin-tanstack/db"
 
-import { badRequest, notFound, unexpectedError } from "../errors"
+import { badRequest, conflict, notFound, unexpectedError } from "../errors"
+import { assertActivePersonnel } from "./personnel"
 
 export async function listTransactions(input: {
   pageSize: number
@@ -31,22 +33,7 @@ export async function createTransaction(input: {
   currency: "GBP" | "EUR"
 }) {
   validateMovement(input)
-  const appointment = await findAppointment(undefined, input.appointmentId)
-  if (!appointment) {
-    throw notFound("Appointment not found")
-  }
-
-  if (input.movementType === "personnel_allocation") {
-    validateAllocationRecipient(appointment, input.customerId)
-  } else {
-    const allowedCustomerIds = new Set([
-      appointment.clientId,
-      ...appointment.personnel.map((personnel) => personnel.personnelId),
-    ])
-    if (!allowedCustomerIds.has(input.customerId)) {
-      throw badRequest("Customer is not the appointment client or assigned personnel")
-    }
-  }
+  await validateCounterparty(input.appointmentId, input.customerId, input.movementType)
 
   let result
   try {
@@ -56,7 +43,7 @@ export async function createTransaction(input: {
   }
 
   if (!result) {
-    throw unexpectedError("Failed to create transaction")
+    throw conflict("Appointment counterparty eligibility changed before the movement was recorded")
   }
 
   return result
@@ -71,16 +58,13 @@ export async function updateTransaction(input: {
   currency: "GBP" | "EUR"
 }) {
   validateMovement(input)
-  if (input.movementType === "personnel_allocation") {
-    const existing = await findTransaction(undefined, input.id)
-    if (!existing) throw notFound("Transaction not found")
-    if (!existing.appointmentId || !existing.customerId) {
-      throw badRequest("Personnel allocations require an appointment and recipient")
-    }
-    const appointment = await findAppointment(undefined, existing.appointmentId)
-    if (!appointment) throw notFound("Appointment not found")
-    validateAllocationRecipient(appointment, existing.customerId)
+  const existing = await findTransaction(undefined, input.id)
+  if (!existing) throw notFound("Transaction not found")
+  if (existing.currency !== "EUR" && existing.currency !== "GBP") {
+    throw badRequest("The owner must resolve the stored currency before editing this transaction")
   }
+  if (!existing.appointmentId || !existing.customerId) throw badRequest("An appointment and counterparty are required")
+  await validateCounterparty(existing.appointmentId, existing.customerId, input.movementType)
 
   let result
   try {
@@ -90,7 +74,7 @@ export async function updateTransaction(input: {
   }
 
   if (!result) {
-    throw notFound("Transaction not found")
+    throw conflict("Transaction currency or counterparty eligibility changed before the movement was updated")
   }
 
   return result
@@ -130,11 +114,33 @@ function validateMovement(input: { movementType: TransactionMovementType; amount
   }
 }
 
-function validateAllocationRecipient(
-  appointment: { masterId: string; personnel: { personnelId: string }[] },
-  customerId: string,
-) {
-  if (appointment.masterId !== customerId && !appointment.personnel.some((row) => row.personnelId === customerId)) {
-    throw badRequest("Personnel allocation recipient is not the appointment master or assigned personnel")
+async function validateCounterparty(appointmentId: string, customerId: string, movementType: TransactionMovementType) {
+  const appointment = await findAppointment(undefined, appointmentId)
+  if (!appointment) throw notFound("Appointment not found")
+  const supportsAppointment = appointment.personnel.some((row) => row.personnelId === customerId)
+  if (movementType === "personnel_allocation") {
+    if (!supportsAppointment && appointment.masterId !== customerId) {
+      throw badRequest("Personnel allocation recipient is not the appointment master or assigned personnel")
+    }
+    await assertActivePersonnel(customerId, supportsAppointment ? {} : { type: "master" })
+  } else if (!supportsAppointment && appointment.clientId !== customerId) {
+    throw badRequest("Customer is not the appointment client or assigned personnel")
   }
+}
+
+export async function resolveTransactionCurrency(input: {
+  id: string
+  storedCurrency: string
+  currency: "EUR" | "GBP"
+}) {
+  if (input.storedCurrency === "EUR" || input.storedCurrency === "GBP")
+    throw badRequest("This currency is already supported")
+  let result
+  try {
+    result = await patchCurrency(undefined, input)
+  } catch (error) {
+    throw unexpectedError("Failed to resolve transaction currency", error)
+  }
+  if (!result) throw conflict("The reviewed transaction or currency has changed")
+  return result
 }

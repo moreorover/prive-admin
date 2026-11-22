@@ -41,7 +41,10 @@ using any copy as a replacement for live data.
   and missing customer references are shown. Client IDs and transaction customer
   IDs alone never establish personnel status. No personnel profiles, roles,
   activation states, salon scopes, or financial allocations are created/changed.
-  An owner-reviewed mapping is future work; no such mapping is assumed here.
+  After reviewing a candidate, open the existing customer's detail page as an
+  administrator and choose **Register as master** or **Register as assistant**.
+  The profile is active immediately and uses the existing customer ID. Repeat
+  for each confirmed person, including a first master with no appointment history.
 
 ## Report and safeguards
 

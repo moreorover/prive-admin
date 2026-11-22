@@ -1,4 +1,7 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { readFileSync } from "node:fs"
+import { createElement } from "react"
+import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vite-plus/test"
 
 describe("appointment detail data", () => {
@@ -42,4 +45,59 @@ it("keeps calendar masters and detail personnel queries owned and gated by their
     /appointmentPersonnelOptionsQueryOptions\(debouncedPickPersonnelSearch\),\s*enabled: pickPersonnelOpen/,
   )
   expect(detail).not.toContain("trpc.customers.list")
+})
+
+it("uses the same active master query for customer-page appointment creation", async () => {
+  const { appointmentMasterOptionsQueryOptions } = await import("../../customers/$customerId/-data/appointments-data")
+  const options = appointmentMasterOptionsQueryOptions(" Lily ")
+  expect(options.queryKey).toEqual([
+    ["personnel", "list"],
+    { type: "query", input: { search: "Lily", page: 1, pageSize: 100, activeOnly: true, type: "master" } },
+  ])
+})
+
+it("retains stored currency codes on route rows and sums only like currencies, including zero balances", async () => {
+  const { useAppointmentDetailData, appointmentTransactionsQueryOptions } = await import("./appointment-detail-data")
+  const client = new QueryClient()
+  const base = {
+    name: null,
+    notes: null,
+    movementType: "legacy_unclassified" as const,
+    appointmentId: "a",
+    customerId: null,
+    customer: null,
+    appointment: null,
+    createdAt: "2026-11-23",
+  }
+  const rows = [
+    { ...base, id: "legacy", currency: "USD", amount: 2400 },
+    { ...base, id: "refund", currency: "GBP", amount: 0 },
+    { ...base, id: "eur1", currency: "EUR", amount: Number.MAX_SAFE_INTEGER },
+    { ...base, id: "eur2", currency: "EUR", amount: 2 },
+  ]
+  client.setQueryData(appointmentTransactionsQueryOptions("a", 1).queryKey, {
+    page: 1,
+    pageSize: 25,
+    totalCount: 4,
+    items: rows,
+  })
+  function ReadPage() {
+    const { txRows, totalsByCurrency } = useAppointmentDetailData({
+      appointmentId: "a",
+      transactionsPage: 1,
+      hairAssignedPage: 1,
+      availableHairOrdersEnabled: false,
+    })
+    expect(txRows).toEqual(rows)
+    expect(totalsByCurrency).toEqual(
+      new Map([
+        ["USD", 2400n],
+        ["GBP", 0n],
+        ["EUR", 9007199254740993n],
+      ]),
+    )
+    return null
+  }
+  renderToStaticMarkup(createElement(QueryClientProvider, { client }, createElement(ReadPage)))
+  client.clear()
 })

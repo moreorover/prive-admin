@@ -1,8 +1,9 @@
-import { Modal } from "@mantine/core"
+import { Button, Modal, NativeSelect, Stack, Text } from "@mantine/core"
+import { useState } from "react"
 
 import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
 import { MOVEMENT_TYPE_OPTIONS } from "@/components/transactions/transaction-form-data"
-import { CURRENCIES, type Currency } from "@/lib/currency"
+import { CURRENCY_OPTIONS, formatTransactionAmount, isCurrency, minorToDecimal, type Currency } from "@/lib/currency"
 
 type EditTransactionDialogProps = {
   open: boolean
@@ -13,8 +14,9 @@ type EditTransactionDialogProps = {
     name: string | null
     notes: string | null
     amount: number
-    currency: Currency | string
+    currency: string
   }
+  onResolveCurrency?: (input: { id: string; storedCurrency: string; currency: Currency }) => void
   loading?: boolean
   onUpdate: (values: EditTransactionSubmit) => void | Promise<void>
 }
@@ -27,12 +29,50 @@ export function EditTransactionDialog({
   open,
   onOpenChange,
   transaction,
+  onResolveCurrency,
   loading,
   onUpdate,
 }: EditTransactionDialogProps) {
-  const initialCurrency: Currency = (CURRENCIES as readonly string[]).includes(transaction.currency)
-    ? (transaction.currency as Currency)
-    : "EUR"
+  const [reviewedCurrency, setReviewedCurrency] = useState("")
+  if (!isCurrency(transaction.currency)) {
+    return (
+      <Modal opened={open} onClose={() => onOpenChange(false)} title="Resolve transaction currency">
+        <Stack>
+          <Text>
+            Stored amount: {formatTransactionAmount(transaction.amount, transaction.currency)}. The owner must verify
+            the currency against the original record before editing.
+          </Text>
+          {onResolveCurrency && (
+            <>
+              <NativeSelect
+                label="Verified currency"
+                data={[{ value: "", label: "Choose verified currency" }, ...CURRENCY_OPTIONS]}
+                value={reviewedCurrency}
+                onChange={(event) => setReviewedCurrency(event.currentTarget.value)}
+              />
+              <Text size="sm">
+                This corrects the currency label and keeps the recorded minor units and movement type.
+              </Text>
+              <Button
+                disabled={!isCurrency(reviewedCurrency)}
+                loading={loading}
+                onClick={() => {
+                  if (isCurrency(reviewedCurrency))
+                    onResolveCurrency({
+                      id: transaction.id,
+                      storedCurrency: transaction.currency,
+                      currency: reviewedCurrency,
+                    })
+                }}
+              >
+                Confirm currency correction
+              </Button>
+            </>
+          )}
+        </Stack>
+      </Modal>
+    )
+  }
 
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Transaction">
@@ -44,8 +84,8 @@ export function EditTransactionDialog({
               MOVEMENT_TYPE_OPTIONS.find((option) => option.value === transaction.movementType)?.value ?? "",
             name: transaction.name ?? "",
             notes: transaction.notes ?? "",
-            amountMajor: transaction.amount / 100,
-            currency: initialCurrency,
+            amountMajor: minorToDecimal(transaction.amount),
+            currency: transaction.currency,
           }}
           submitLabel="Save Changes"
           loading={loading}

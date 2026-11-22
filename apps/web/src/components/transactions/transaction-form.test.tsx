@@ -212,3 +212,36 @@ it.each(["received", "personnel_allocation", "refund", "adjustment"] as const)(
     })
   },
 )
+
+it("shows the stored currency and blocks ordinary editing until it is resolved", () => {
+  const html = renderToStaticMarkup(
+    <MantineProvider>
+      <EditTransactionDialog
+        open
+        onOpenChange={() => {}}
+        transaction={{ id: "legacy", name: null, notes: null, amount: 1234, currency: "USD" }}
+        onUpdate={() => {}}
+      />
+    </MantineProvider>,
+  )
+  expect(html).toContain("USD")
+  expect(html).not.toContain("Movement type")
+  expect(submissions).toHaveLength(0)
+})
+
+it("preserves the exact minor units when editing at the safe-integer boundary", () => {
+  const onUpdate = vi.fn<ComponentProps<typeof EditTransactionDialog>["onUpdate"]>()
+  const amount = Number.MAX_SAFE_INTEGER - 1
+  renderToStaticMarkup(
+    <MantineProvider>
+      <EditTransactionDialog
+        open
+        onOpenChange={() => {}}
+        transaction={{ id: "tx", name: null, notes: null, amount, currency: "GBP", movementType: "received" }}
+        onUpdate={onUpdate}
+      />
+    </MantineProvider>,
+  )
+  submissions[0]()
+  expect(onUpdate).toHaveBeenCalledWith(expect.objectContaining({ amount }))
+})

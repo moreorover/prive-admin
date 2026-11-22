@@ -20,13 +20,7 @@ export function appointmentsQueryOptions(customerId: string, page: number, searc
   })
 }
 
-export function appointmentMasterOptionsQueryOptions(search: string) {
-  return trpc.customers.list.queryOptions({
-    page: 1,
-    pageSize: APPOINTMENT_OPTION_PAGE_SIZE,
-    search: search.trim() || undefined,
-  })
-}
+export { appointmentMasterOptionsQueryOptions } from "../../../appointments/-data/appointment-detail-data"
 
 export function appointmentSalonOptionsQueryOptions() {
   return trpc.salons.list.queryOptions({ page: 1, pageSize: APPOINTMENT_OPTION_PAGE_SIZE })

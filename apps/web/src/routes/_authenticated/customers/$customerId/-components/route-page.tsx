@@ -8,7 +8,12 @@ import { ClientDate } from "@/components/client-date"
 import { PageHeader } from "@/components/page-header"
 import { CURRENCIES, formatMinor } from "@/lib/currency"
 
-type CustomerDetail = { id: string; name: string; phoneNumber: string | null }
+type CustomerDetail = {
+  id: string
+  name: string
+  phoneNumber: string | null
+  personnel: { type: "master" | "assistant"; active: boolean } | null
+}
 type CustomerSummary = {
   appointmentCount: number
   transactionSumsMinor: Record<(typeof CURRENCIES)[number], number>
@@ -24,6 +29,8 @@ export function CustomerDetailPage({
   customerId,
   customer,
   summary,
+  onCreatePersonnel,
+  createPersonnelPending,
   editOpen,
   updatePending,
   onEditOpenChange,
@@ -33,6 +40,8 @@ export function CustomerDetailPage({
   customerId: string
   customer: CustomerDetail | undefined
   summary: CustomerSummary | undefined
+  onCreatePersonnel?: (type: "master" | "assistant") => void
+  createPersonnelPending: boolean
   editOpen: boolean
   updatePending: boolean
   onEditOpenChange: (open: boolean) => void
@@ -81,6 +90,28 @@ export function CustomerDetailPage({
         }
       />
       <Stack>
+        {onCreatePersonnel && (
+          <Group>
+            {customer.personnel ? (
+              <Text>
+                Personnel profile · {customer.personnel.type} · {customer.personnel.active ? "Active" : "Inactive"}
+              </Text>
+            ) : (
+              <>
+                <Button variant="light" disabled={createPersonnelPending} onClick={() => onCreatePersonnel("master")}>
+                  Register as master
+                </Button>
+                <Button
+                  variant="light"
+                  disabled={createPersonnelPending}
+                  onClick={() => onCreatePersonnel("assistant")}
+                >
+                  Register as assistant
+                </Button>
+              </>
+            )}
+          </Group>
+        )}
         <SimpleGrid cols={{ base: 2, sm: 3, lg: 4 }}>
           <StatCard label="Appointments" value={String(summary.appointmentCount)} />
           <Card padding="md">

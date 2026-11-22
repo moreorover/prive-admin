@@ -1,18 +1,18 @@
 import { useQuery } from "@tanstack/react-query"
 
 import { type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-table"
-import { type TransactionRow } from "@/components/transactions/transactions-table"
-import { CURRENCIES, type Currency } from "@/lib/currency"
+import { isCurrency, type Currency } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
 export const APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE = 25
 export const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
 const APPOINTMENT_OPTION_PAGE_SIZE = 100
 
-const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
-  Currency,
-  number
->
+function transactionPageTotals(rows: { currency: string; amount: number }[]) {
+  const totals = new Map<string, bigint>()
+  for (const row of rows) totals.set(row.currency, (totals.get(row.currency) ?? 0n) + BigInt(row.amount))
+  return totals
+}
 
 export function appointmentDetailQueryOptions(appointmentId: string) {
   return trpc.appointments.get.queryOptions({ id: appointmentId })
@@ -93,21 +93,13 @@ export function useAppointmentDetailData({
   const hairAssignedTotalPages = Math.max(1, Math.ceil(hairAssignedTotalCount / APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE))
   const showHairAssignedPagination = hairAssignedTotalCount > APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE
 
-  const txList = transactionsData?.items ?? []
-  const txRows: TransactionRow[] = txList.map((t) => ({
-    ...t,
-    currency: (CURRENCIES as readonly string[]).includes(t.currency) ? (t.currency as Currency) : "EUR",
-  }))
+  const txRows = transactionsData?.items ?? []
   const transactionsTotalCount = transactionsData?.totalCount ?? 0
   const transactionsTotalPages = Math.max(1, Math.ceil(transactionsTotalCount / APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE))
   const showTransactionsPagination = transactionsTotalCount > APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE
-  const totalsByCurrency = { ...ZERO_TRANSACTION_TOTALS }
-  for (const t of txRows) totalsByCurrency[t.currency] += t.amount
-  const currenciesPresent = CURRENCIES.filter((currency) => totalsByCurrency[currency] !== 0)
+  const totalsByCurrency = transactionPageTotals(txRows)
   const txDefaultCurrency: Currency =
-    userSettings?.preferredCurrency && (CURRENCIES as readonly string[]).includes(userSettings.preferredCurrency)
-      ? (userSettings.preferredCurrency as Currency)
-      : "EUR"
+    userSettings && isCurrency(userSettings.preferredCurrency) ? userSettings.preferredCurrency : "EUR"
 
   return {
     appointment,
@@ -124,7 +116,6 @@ export function useAppointmentDetailData({
     transactionsTotalPages,
     showTransactionsPagination,
     totalsByCurrency,
-    currenciesPresent,
     txDefaultCurrency,
   }
 }

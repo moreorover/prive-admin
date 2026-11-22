@@ -1,4 +1,4 @@
-import { Button, Group, NativeSelect, NumberInput, Stack, Textarea, TextInput } from "@mantine/core"
+import { Button, Group, NativeSelect, Stack, Textarea, TextInput } from "@mantine/core"
 import { schemaResolver, useForm } from "@mantine/form"
 
 import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
@@ -9,7 +9,7 @@ export type TransactionFormValues = {
   movementType: string
   name: string
   notes: string
-  amountMajor: number
+  amountMajor: string | number
   currency: Currency
 }
 
@@ -46,13 +46,11 @@ export function TransactionForm({ initialValues, submitLabel, onSubmit, loading 
         <Group grow>
           <NativeSelect label="Currency" data={CURRENCY_OPTIONS} {...form.getInputProps("currency")} />
         </Group>
-        <NumberInput
+        <TextInput
           label="Amount"
           description="Received money is positive; refunds and personnel allocations are negative. Adjustments may use either sign."
-          prefix={currencySymbol(form.values.currency)}
-          decimalScale={2}
-          fixedDecimalScale
-          step={0.01}
+          leftSection={currencySymbol(form.values.currency)}
+          inputMode="decimal"
           {...form.getInputProps("amountMajor")}
         />
         <Group justify="flex-end">

@@ -12,6 +12,7 @@ vi.mock("../index", () => ({ db: {} }))
 describe("transaction persistence and migration compatibility", () => {
   let sqlite: DatabaseSync
   let database: ReturnType<typeof drizzle<typeof schema>>
+  let beforeWrite: (() => void) | undefined
   const db = () => database as never
 
   beforeEach(() => {
@@ -25,6 +26,7 @@ describe("transaction persistence and migration compatibility", () => {
     }
     sqlite.exec(`
       INSERT INTO customer (id, name) VALUES ('client', 'Client'), ('master', 'Master');
+      INSERT INTO personnel (id, customer_id, type) VALUES ('profile', 'master', 'master');
       INSERT INTO salon (id, name) VALUES ('salon', 'Salon');
       INSERT INTO appointment (id, name, starts_at, client_id, master_id, salon_id)
         VALUES ('appointment', 'Cut', 1, 'client', 'master', 'salon');
@@ -39,6 +41,11 @@ describe("transaction persistence and migration compatibility", () => {
     sqlite.exec("PRAGMA foreign_keys = ON")
     database = drizzle(
       async (sql, params, method) => {
+        if (beforeWrite && /^(insert|update)/i.test(sql)) {
+          const intervene = beforeWrite
+          beforeWrite = undefined
+          intervene()
+        }
         const statement = sqlite.prepare(sql)
         if (method === "run") {
           statement.run(...params)
@@ -85,6 +92,58 @@ describe("transaction persistence and migration compatibility", () => {
       ]),
     )
     expect(await getTransaction(db(), "legacy")).toMatchObject({ movementType: "legacy_unclassified", amount: -6000 })
+  })
+
+  describe.each(["create", "update"] as const)("%s allocation at the final write", (operation) => {
+    it.each(["deactivate master", "change master", "demote master", "unlink support", "deactivate support"])(
+      "rechecks eligibility after %s",
+      async (change) => {
+        if (change.endsWith("support")) {
+          sqlite.exec(
+            "UPDATE appointment SET master_id = 'client'; INSERT INTO appointment_personnel (appointment_id, personnel_id) VALUES ('appointment','master')",
+          )
+        }
+        beforeWrite = () => {
+          if (change.startsWith("deactivate")) sqlite.exec("UPDATE personnel SET active = 0")
+          if (change === "demote master") sqlite.exec("UPDATE personnel SET type = 'assistant'")
+          if (change === "change master") sqlite.exec("UPDATE appointment SET master_id = 'client'")
+          if (change === "unlink support") sqlite.exec("DELETE FROM appointment_personnel")
+        }
+        const input = { movementType: "personnel_allocation" as const, currency: "EUR" as const, amount: -10 }
+        const result =
+          operation === "create"
+            ? await createTransaction(db(), { ...input, appointmentId: "appointment", customerId: "master" })
+            : await updateTransaction(db(), { ...input, id: "legacy" })
+        expect(result).toBeUndefined()
+        expect((await listTransactions(db(), { pageSize: 10, offset: 0 })).totalCount).toBe(3)
+        expect(await getTransaction(db(), "legacy")).toMatchObject({
+          movementType: "legacy_unclassified",
+          amount: -6000,
+        })
+      },
+    )
+  })
+
+  it("blocks normal edits if the stored currency becomes unsupported before the write", async () => {
+    beforeWrite = () => sqlite.exec(`UPDATE "transaction" SET currency = 'USD' WHERE id = 'legacy-received'`)
+    expect(
+      await updateTransaction(db(), { id: "legacy-received", amount: 200, currency: "EUR", movementType: "received" }),
+    ).toBeUndefined()
+    expect(await getTransaction(db(), "legacy-received")).toMatchObject({
+      currency: "USD",
+      amount: 10000,
+      movementType: "legacy_unclassified",
+    })
+  })
+
+  it("resolves only the reviewed currency on the identified row, once", async () => {
+    sqlite.exec(`UPDATE "transaction" SET currency='USD' WHERE id='legacy'`)
+    const { resolveTransactionCurrency } = await import("./transactions")
+    const input = { id: "legacy", storedCurrency: "USD", currency: "GBP" as const }
+    const before = await getTransaction(db(), "legacy")
+    expect(await resolveTransactionCurrency(db(), { ...input, storedCurrency: "JPY" })).toBeUndefined()
+    expect(await resolveTransactionCurrency(db(), input)).toEqual({ ...before, currency: "GBP" })
+    expect(await resolveTransactionCurrency(db(), input)).toBeUndefined()
   })
 
   it("persists explicit movements and keeps EUR and GBP reads separate", async () => {

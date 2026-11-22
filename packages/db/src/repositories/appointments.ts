@@ -1,7 +1,9 @@
+import { createId } from "@paralleldrive/cuid2"
 import { and, count, eq, gte, lte, sql } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { appointment, personnelOnAppointments } from "../schema/appointment"
+import { personnel } from "../schema/personnel"
 
 export type AppointmentListFilter = {
   pageSize: number
@@ -54,16 +56,29 @@ export async function getAppointment(database: Db = db, id: string) {
   })
 }
 
+function eligibleMaster(masterId: string) {
+  return and(eq(personnel.customerId, masterId), eq(personnel.active, true), eq(personnel.type, "master"))
+}
+
 export async function createAppointment(database: Db = db, input: AppointmentInput) {
+  const now = Date.now()
   const [result] = await database
     .insert(appointment)
-    .values({
-      name: input.name,
-      startsAt: new Date(input.startsAt),
-      clientId: input.clientId,
-      masterId: input.masterId,
-      salonId: input.salonId,
-    })
+    .select(
+      database
+        .select({
+          id: sql`${createId()}`.as("id"),
+          name: sql`${input.name}`.as("name"),
+          startsAt: sql`${new Date(input.startsAt).getTime()}`.as("startsAt"),
+          clientId: sql`${input.clientId}`.as("clientId"),
+          masterId: personnel.customerId,
+          salonId: sql`${input.salonId}`.as("salonId"),
+          createdAt: sql`${now}`.as("createdAt"),
+          updatedAt: sql`${now}`.as("updatedAt"),
+        })
+        .from(personnel)
+        .where(eligibleMaster(input.masterId)),
+    )
     .returning()
   return result
 }
@@ -73,29 +88,20 @@ export async function linkPersonnelToAppointment(
   input: { appointmentId: string; personnelIds: string[] },
 ) {
   if (input.personnelIds.length === 0) return []
-  const requestedPersonnelValues = sql.join(
-    input.personnelIds.map((personnelId) => sql`SELECT ${personnelId} AS personnel_id`),
-    sql` UNION ALL `,
-  )
-  const requestedPersonnel = sql`
-    SELECT DISTINCT personnel_id
-    FROM (${requestedPersonnelValues}) AS requested_values
-  `
-  const existingAssignment = sql`
-    SELECT 1
-    FROM ${personnelOnAppointments} AS existing
-    WHERE existing.appointment_id = ${input.appointmentId}
-      AND existing.personnel_id IN (
-        SELECT personnel_id FROM (${requestedPersonnel}) AS requested_conflicts
-      )
-  `
-
+  // Bind the whole set once. The uncorrelated guard admits all requested IDs or none.
   return database
     .insert(personnelOnAppointments)
     .select(sql`
-      SELECT ${input.appointmentId}, requested.personnel_id, (cast(unixepoch('subsecond') * 1000 as integer))
-      FROM (${requestedPersonnel}) AS requested
-      WHERE NOT EXISTS (${existingAssignment})
+      WITH requested AS (SELECT DISTINCT value AS id FROM json_each(${JSON.stringify(input.personnelIds)}))
+      SELECT ${input.appointmentId}, id, cast(unixepoch('subsecond') * 1000 as integer)
+      FROM requested
+      WHERE NOT EXISTS (
+        SELECT 1 FROM requested AS r
+        LEFT JOIN personnel AS p ON p.customer_id = r.id AND p.active = 1
+        LEFT JOIN appointment_personnel AS assigned ON assigned.personnel_id = r.id
+          AND assigned.appointment_id = ${input.appointmentId}
+        WHERE p.id IS NULL OR assigned.personnel_id IS NOT NULL
+      )
     `)
     .returning()
 }
@@ -109,6 +115,17 @@ export async function updateAppointment(
   if (input.masterId !== undefined) values.masterId = input.masterId
   if (input.startsAt !== undefined) values.startsAt = new Date(input.startsAt)
 
-  const [result] = await database.update(appointment).set(values).where(eq(appointment.id, input.id)).returning()
+  const [result] = await database
+    .update(appointment)
+    .set(values)
+    .where(
+      and(
+        eq(appointment.id, input.id),
+        input.masterId === undefined
+          ? undefined
+          : sql`exists (select 1 from ${personnel} where ${eligibleMaster(input.masterId)})`,
+      ),
+    )
+    .returning()
   return result
 }

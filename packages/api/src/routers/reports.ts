@@ -4,23 +4,14 @@ import {
   getMonthlyAppointmentFinance,
   listPersonnelFinance,
 } from "@prive-admin-tanstack/application/services"
-import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 
-import { protectedProcedure, router } from "../index"
+import { ownerProcedure, protectedProcedure, router } from "../index"
 import { pageSchema } from "../pagination"
 
 const yearSchema = z.object({
   year: z.number().int().min(2000).max(3000),
   legalEntityId: z.string().optional(),
-})
-
-const ownerProcedure = protectedProcedure.use(({ ctx, next }) => {
-  const user = ctx.session.user
-  if (!("role" in user) || typeof user.role !== "string" || !user.role.split(",").includes("admin")) {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Administrator access required" })
-  }
-  return next()
 })
 
 const financePeriod = pageSchema.extend({ year: yearSchema.shape.year, currency: z.enum(["EUR", "GBP"]).optional() })

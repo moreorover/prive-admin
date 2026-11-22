@@ -23,3 +23,11 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
     },
   })
 })
+
+export const ownerProcedure = protectedProcedure.use(({ ctx, next }) => {
+  const user = ctx.session.user
+  if (!("role" in user) || typeof user.role !== "string" || !user.role.split(",").includes("admin")) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Administrator access required" })
+  }
+  return next()
+})

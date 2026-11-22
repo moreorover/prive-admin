@@ -20,3 +20,18 @@ export function useUpdateCustomerAction({ customerId, onUpdated }: { customerId:
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 }
+
+export function useCreatePersonnelAction() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    ...trpc.personnel.create.mutationOptions(),
+    onSuccess: async (person) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: trpc.customers.get.queryKey({ id: person.customerId }) }),
+        queryClient.invalidateQueries({ queryKey: trpc.personnel.list.queryKey() }),
+      ])
+      notifications.show({ color: "green", message: "Personnel profile created" })
+    },
+    onError: (error) => notifications.show({ color: "red", message: error.message }),
+  })
+}

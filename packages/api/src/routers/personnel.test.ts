@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import { personnelRouter } from "./personnel"
 
-const services = vi.hoisted(() => ({ listPersonnel: vi.fn() }))
+const services = vi.hoisted(() => ({ listPersonnel: vi.fn(), createPersonnel: vi.fn() }))
 vi.mock("@prive-admin-tanstack/application/services", () => services)
 const ctx = { session: { user: { id: "owner" } } } as never
 
@@ -53,4 +53,24 @@ describe("personnel list transport", () => {
       expect(services.listPersonnel).not.toHaveBeenCalled()
     },
   )
+})
+
+describe("personnel provisioning", () => {
+  const input = { customerId: "existing-customer", type: "master" as const }
+
+  it("lets the owner provision a reviewed customer through the application service", async () => {
+    services.createPersonnel.mockResolvedValue({ ...input, active: true })
+    const owner = personnelRouter.createCaller({ session: { user: { id: "owner", role: "admin" } } } as never)
+    expect(await owner.create(input)).toMatchObject({ ...input, active: true })
+    expect(services.createPersonnel).toHaveBeenCalledWith(input)
+  })
+
+  it.each([
+    [null, "UNAUTHORIZED"],
+    [{ user: { role: "user" } }, "FORBIDDEN"],
+  ])("rejects provisioning without an owner session", async (session, code) => {
+    services.createPersonnel.mockClear()
+    await expect(personnelRouter.createCaller({ session } as never).create(input)).rejects.toMatchObject({ code })
+    expect(services.createPersonnel).not.toHaveBeenCalled()
+  })
 })

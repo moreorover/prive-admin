@@ -16,7 +16,7 @@ import { CreateTransactionDialog } from "@/components/transactions/create-transa
 import { DeleteTransactionDialog } from "@/components/transactions/delete-transaction-dialog"
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
-import { formatMinor } from "@/lib/currency"
+import { formatTransactionAmount } from "@/lib/currency"
 import { formatPageRange } from "@/lib/resource-pagination"
 
 import type { AppointmentTotals } from "../../-data/appointment-finance-data"
@@ -63,6 +63,7 @@ export function AppointmentDetailPage({
   onDeleteHairAssigned,
   onCreateTransaction,
   onUpdateTransaction,
+  onResolveCurrency,
   onDeleteTransaction,
   onUpdateAppointment,
   onUpdateMaster,
@@ -98,6 +99,7 @@ export function AppointmentDetailPage({
   onUpdateHairAssigned: ComponentProps<typeof EditHairAssignedDialog>["onUpdate"]
   onDeleteHairAssigned: (id: string) => void
   onCreateTransaction: ComponentProps<typeof CreateTransactionDialog>["onCreate"]
+  onResolveCurrency?: ComponentProps<typeof EditTransactionDialog>["onResolveCurrency"]
   onUpdateTransaction: ComponentProps<typeof EditTransactionDialog>["onUpdate"]
   onDeleteTransaction: (id: string) => void
   onUpdateAppointment: (values: { id: string; name: string; startsAt: string }) => void
@@ -109,7 +111,7 @@ export function AppointmentDetailPage({
   const [editAppointmentOpen, setEditAppointmentOpen] = useState(false)
   const [createTxOpen, setCreateTxOpen] = useState(false)
   const [createTxCustomerId, setCreateTxCustomerId] = useState<string | null>(null)
-  const [editTx, setEditTx] = useState<TransactionRow | null>(null)
+  const [editTxId, setEditTxId] = useState<string | null>(null)
   const [deleteTx, setDeleteTx] = useState<TransactionRow | null>(null)
   const {
     appointment,
@@ -124,9 +126,9 @@ export function AppointmentDetailPage({
     transactionsTotalPages,
     showTransactionsPagination,
     totalsByCurrency,
-    currenciesPresent,
     txDefaultCurrency,
   } = detailData
+  const editTx = txRows.find((row) => row.id === editTxId)
   const pickPersonnelCustomers = useMemo(
     () => pickPersonnelCustomersData?.items ?? [],
     [pickPersonnelCustomersData?.items],
@@ -231,24 +233,16 @@ export function AppointmentDetailPage({
           ) : (
             <Group align="flex-start" gap="xl" wrap="wrap">
               <Stack gap="md">
-                {currenciesPresent.length === 0 ? (
-                  <Stack gap={2}>
+                {Array.from(totalsByCurrency, ([c, amount]) => (
+                  <Stack key={c} gap={2}>
+                    <Text size="xs" c="dimmed" tt="uppercase">
+                      {c}
+                    </Text>
                     <Text size="sm">
-                      Current page total: <b>{formatMinor(0, "EUR")}</b>
+                      Current page total: <b>{formatTransactionAmount(amount, c)}</b>
                     </Text>
                   </Stack>
-                ) : (
-                  currenciesPresent.map((c) => (
-                    <Stack key={c} gap={2}>
-                      <Text size="xs" c="dimmed" tt="uppercase">
-                        {c}
-                      </Text>
-                      <Text size="sm">
-                        Current page total: <b>{formatMinor(totalsByCurrency[c], c)}</b>
-                      </Text>
-                    </Stack>
-                  ))
-                )}
+                ))}
               </Stack>
             </Group>
           )}
@@ -283,7 +277,7 @@ export function AppointmentDetailPage({
                 <TransactionsTable.MovementType />
                 <TransactionsTable.Name />
                 <TransactionsTable.Amount />
-                <TransactionsTable.Actions onEdit={setEditTx} onDelete={setDeleteTx} />
+                <TransactionsTable.Actions onEdit={(row) => setEditTxId(row.id)} onDelete={setDeleteTx} />
                 {showTransactionsPagination ? (
                   <TransactionsTable.Pagination
                     page={transactionsPage}
@@ -382,19 +376,17 @@ export function AppointmentDetailPage({
             }}
           />
         )}
-        <PickPersonnelModal
-          open={pickPersonnelOpen}
-          onOpenChange={onPickPersonnelOpenChange}
-          search={pickPersonnelSearch}
-          personnel={availablePersonnel}
-          loading={linkPersonnelPending}
-          onSearchChange={onPickPersonnelSearchChange}
-          onConfirm={(personnelIds) => {
-            onLinkPersonnel({ appointmentId, personnelIds })
-            onPickPersonnelSearchChange("")
-            onPickPersonnelOpenChange(false)
-          }}
-        />
+        {pickPersonnelOpen && (
+          <PickPersonnelModal
+            open={pickPersonnelOpen}
+            onOpenChange={onPickPersonnelOpenChange}
+            search={pickPersonnelSearch}
+            personnel={availablePersonnel}
+            loading={linkPersonnelPending}
+            onSearchChange={onPickPersonnelSearchChange}
+            onConfirm={(personnelIds) => onLinkPersonnel({ appointmentId, personnelIds })}
+          />
+        )}
         {editAppointmentOpen && (
           <EditAppointmentModal
             key={`${appointmentId}-${appointment.master.id}`}
@@ -445,12 +437,14 @@ export function AppointmentDetailPage({
         {editTx && (
           <EditTransactionDialog
             open={!!editTx}
-            onOpenChange={(open) => !open && setEditTx(null)}
+            onOpenChange={(open) => !open && setEditTxId(null)}
+            key={editTx.id}
+            onResolveCurrency={onResolveCurrency}
             transaction={editTx}
             loading={updateTransactionPending}
             onUpdate={(values) => {
               onUpdateTransaction(values)
-              setEditTx(null)
+              setEditTxId(null)
             }}
           />
         )}
