@@ -27,7 +27,7 @@ jobs:
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1.21.1
         with:
-          node-version: "24"
+          node-version: "26"
           cache: true
 
       - name: Run Vite+ migration
