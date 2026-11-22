@@ -21,11 +21,7 @@ export function BankTransactionFilters({
   onChange: (filters: BankTransactionsFilters) => void
 }) {
   const entityNames = new Map(entities.map((entity) => [entity.id, entity.name]))
-  const selectedValue = values.bankAccountId
-    ? "account:" + values.bankAccountId
-    : values.entityId
-      ? "entity:" + values.entityId
-      : ""
+  const selectedValue = values.bankAccountId ?? ""
 
   return (
     <>
@@ -36,13 +32,9 @@ export function BankTransactionFilters({
         data={[
           { value: "", label: "All bank accounts" },
           {
-            group: "Legal entities",
-            items: entities.map((entity) => ({ value: "entity:" + entity.id, label: entity.name })),
-          },
-          {
             group: "Bank accounts",
             items: accounts.map((account) => ({
-              value: "account:" + account.id,
+              value: account.id,
               label: formatBankAccountLabel({
                 iban: account.iban,
                 displayName: account.displayName,
@@ -53,13 +45,7 @@ export function BankTransactionFilters({
         ]}
         value={selectedValue}
         onChange={(value) => {
-          if (!value) {
-            onChange({ entityId: undefined, bankAccountId: undefined })
-          } else if (value.startsWith("entity:")) {
-            onChange({ entityId: value.slice("entity:".length), bankAccountId: undefined })
-          } else if (value.startsWith("account:")) {
-            onChange({ entityId: undefined, bankAccountId: value.slice("account:".length) })
-          }
+          onChange({ entityId: undefined, bankAccountId: value || undefined })
         }}
       />
       <TextInput

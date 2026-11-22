@@ -34,37 +34,28 @@ function change(control: Record<string, any>, value: string) {
 }
 
 describe("BankTransactionFilters", () => {
-  it("merges legal entity and bank account options into one controlled selector", () => {
+  it("lists bank accounts with their legal entity context", () => {
     const { control } = controls()
     expect(control("Account").data).toEqual([
       { value: "", label: "All bank accounts" },
       {
-        group: "Legal entities",
-        items: [
-          { value: "entity:entity-1", label: "First" },
-          { value: "entity:entity-2", label: "Second" },
-        ],
-      },
-      {
         group: "Bank accounts",
         items: [
-          { value: "account:account-1", label: "LT123 · Main · First" },
-          { value: "account:account-2", label: "GB456 · Reserve · Second" },
+          { value: "account-1", label: "LT123 · Main · First" },
+          { value: "account-2", label: "GB456 · Reserve · Second" },
         ],
       },
     ])
-    expect(control("Account").value).toBe("account:account-1")
+    expect(control("Account").value).toBe("account-1")
     expect(
       controls({ entityId: "entity-2", bankAccountId: "account-1", status: "PENDING", page: 2 }).control("Account")
         .value,
-    ).toBe("account:account-1")
+    ).toBe("account-1")
   })
 
-  it("emits entity or account patches from the merged selector", () => {
+  it("emits account patches from the selector", () => {
     const { control, onChange } = controls()
-    control("Account").onChange("entity:entity-2")
-    expect(onChange).toHaveBeenLastCalledWith({ entityId: "entity-2", bankAccountId: undefined })
-    control("Account").onChange("account:account-2")
+    control("Account").onChange("account-2")
     expect(onChange).toHaveBeenLastCalledWith({ entityId: undefined, bankAccountId: "account-2" })
     control("Account").onChange("")
     expect(onChange).toHaveBeenLastCalledWith({ entityId: undefined, bankAccountId: undefined })
