@@ -27,6 +27,17 @@ const appointmentListSchema = pageSchema.extend({
   salonId: z.string().optional(),
 })
 
+const appointmentUpdateSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1, "Name is required").optional(),
+    startsAt: z.union([z.string(), z.date()]).optional(),
+    masterId: z.string().min(1, "Master is required").optional(),
+  })
+  .refine((input) => input.name !== undefined || input.startsAt !== undefined || input.masterId !== undefined, {
+    message: "At least one appointment field is required",
+  })
+
 export const appointmentsRouter = router({
   list: protectedProcedure.input(appointmentListSchema).query(async ({ input }) => {
     const result = await listAppointments({
@@ -72,13 +83,11 @@ export const appointmentsRouter = router({
       }
     }),
 
-  update: protectedProcedure
-    .input(z.object({ id: z.string().min(1), masterId: z.string().min(1) }))
-    .mutation(async ({ input }) => {
-      try {
-        return await updateAppointment(input)
-      } catch (error) {
-        throw toTrpcError(error)
-      }
-    }),
+  update: protectedProcedure.input(appointmentUpdateSchema).mutation(async ({ input }) => {
+    try {
+      return await updateAppointment(input)
+    } catch (error) {
+      throw toTrpcError(error)
+    }
+  }),
 })

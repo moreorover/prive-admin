@@ -7,6 +7,7 @@ import { trpc } from "@/utils/trpc"
 
 export const APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE = 25
 export const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
+const APPOINTMENT_OPTION_PAGE_SIZE = 100
 
 const ZERO_TRANSACTION_TOTALS = Object.fromEntries(CURRENCIES.map((currency) => [currency, 0])) as Record<
   Currency,
@@ -40,14 +41,24 @@ export function availableHairOrdersListQueryOptions() {
   })
 }
 
+export function appointmentMasterOptionsQueryOptions(search: string) {
+  return trpc.customers.list.queryOptions({
+    page: 1,
+    pageSize: APPOINTMENT_OPTION_PAGE_SIZE,
+    search: search.trim() || undefined,
+  })
+}
+
 export function useAppointmentDetailData({
   appointmentId,
   hairAssignedPage,
   transactionsPage,
+  availableHairOrdersEnabled,
 }: {
   appointmentId: string
   hairAssignedPage: number
   transactionsPage: number
+  availableHairOrdersEnabled: boolean
 }) {
   const appointmentQueryOptions = appointmentDetailQueryOptions(appointmentId)
   const availableHairOrdersQueryOptions = availableHairOrdersListQueryOptions()
@@ -55,9 +66,10 @@ export function useAppointmentDetailData({
   const transactionsQueryOptions = appointmentTransactionsQueryOptions(appointmentId, transactionsPage)
 
   const { data: appointment } = useQuery(appointmentQueryOptions)
-  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
-    availableHairOrdersQueryOptions,
-  )
+  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery({
+    ...availableHairOrdersQueryOptions,
+    enabled: availableHairOrdersEnabled,
+  })
   const { data: hairAssignedData } = useQuery(hairAssignedQueryOptions)
   const { data: transactionsData } = useQuery(transactionsQueryOptions)
   const { data: userSettings } = useQuery(trpc.userSettings.get.queryOptions())

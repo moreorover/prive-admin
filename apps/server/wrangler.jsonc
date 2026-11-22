@@ -20,7 +20,7 @@
     {
       "binding": "DB",
       "database_name": "prive-admin-dev",
-      "database_id": "596a4e0b-f8a7-4024-a8a2-263503c9309b",
+      "database_id": "551ac6ba-90c7-4656-bb31-f485b89edb72",
       "migrations_dir": "../../packages/db/src/migrations",
     },
   ],
@@ -33,18 +33,6 @@
   "env": {
     "dev": {
       "workers_dev": true,
-      "observability": {
-        "enabled": true,
-        "logs": {
-          "enabled": true,
-          "invocation_logs": true,
-          "head_sampling_rate": 1,
-        },
-        "traces": {
-          "enabled": true,
-          "head_sampling_rate": 1,
-        },
-      },
       "secrets": {
         "required": ["BETTER_AUTH_SECRET"],
       },
@@ -52,7 +40,7 @@
         {
           "binding": "DB",
           "database_name": "prive-admin-dev",
-          "database_id": "596a4e0b-f8a7-4024-a8a2-263503c9309b",
+          "database_id": "551ac6ba-90c7-4656-bb31-f485b89edb72",
           "migrations_dir": "../../packages/db/src/migrations",
         },
       ],
@@ -65,18 +53,6 @@
     },
     "prod": {
       "workers_dev": true,
-      "observability": {
-        "enabled": true,
-        "logs": {
-          "enabled": true,
-          "invocation_logs": true,
-          "head_sampling_rate": 1,
-        },
-        "traces": {
-          "enabled": true,
-          "head_sampling_rate": 0.1,
-        },
-      },
       "secrets": {
         "required": ["BETTER_AUTH_SECRET"],
       },

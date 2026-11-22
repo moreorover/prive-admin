@@ -1,0 +1,52 @@
+name: Vite+ Migrate
+
+on:
+  schedule:
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: vite-plus-migrate
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  migrate:
+    name: Migrate Vite+
+    runs-on: ubuntu-latest
+    env:
+      VITE_GIT_HOOKS: "0"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1.21.1
+        with:
+          node-version: "24"
+          cache: true
+
+      - name: Run Vite+ migration
+        run: vp migrate --no-interactive --no-hooks
+
+      - name: Update Lockfile
+        run: vp install --no-frozen-lockfile
+
+      - name: Create or Update Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/vite-plus-migrate
+          base: main
+          commit-message: "chore(deps): migrate Vite+ toolchain"
+          title: "chore(deps): migrate Vite+ toolchain"
+          body: |
+            Automated Vite+ migration followed by a lockfile update.
+
+            Run manually from the Actions tab or on the weekly schedule.
+          labels: dependencies
+          delete-branch: true

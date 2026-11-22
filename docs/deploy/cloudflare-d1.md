@@ -18,10 +18,11 @@
 
 ## One-Time Provisioning
 
-Wrangler needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in non-interactive environments. Runtime values
-are stored in 1Password. GitHub Actions loads 1Password values after the matching GitHub environment is approved.
-The server deploy passes plain Worker variables such as `BETTER_AUTH_URL`, `CORS_ORIGIN`, and `NODE_ENV` with
-`wrangler deploy --var`, while `BETTER_AUTH_SECRET` is uploaded as a Worker secret.
+Alchemy needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` in non-interactive environments. With
+`Cloudflare.state()`, Alchemy resolves its state-store credentials from Cloudflare Secrets Store during CI, so no
+separate Alchemy password or state token needs to be stored in 1Password. Runtime values are stored in 1Password.
+GitHub Actions loads 1Password values after the matching GitHub environment is approved. The Alchemy stack passes Worker
+variables such as `BETTER_AUTH_URL`, `CORS_ORIGIN`, `NODE_ENV`, and `VITE_SERVER_URL`.
 
 1. Create the remote D1 databases:
 
@@ -30,7 +31,7 @@ The server deploy passes plain Worker variables such as `BETTER_AUTH_URL`, `CORS
    pnpm --dir apps/server exec wrangler d1 create prive-admin-prod
    ```
 
-2. Copy the returned `database_id` values into `apps/server/wrangler.jsonc`.
+2. Keep the returned `database_id` values in `apps/server/wrangler.jsonc` for local Wrangler tooling.
 3. Create the remote R2 buckets:
 
    ```bash
@@ -49,30 +50,50 @@ The server deploy passes plain Worker variables such as `BETTER_AUTH_URL`, `CORS
    - `better-auth/BETTER_AUTH_URL`
    - `web/VITE_SERVER_URL`
 
-## First Deploy
+## First Alchemy Deploy
 
-1. Apply remote migrations:
+1. Adopt the existing dev and production Cloudflare resources into Alchemy state:
+
+   ```bash
+   vp run deploy:alchemy --stage dev --adopt --yes
+   vp run deploy:alchemy --stage prod --adopt --yes
+   ```
+
+2. After adoption, deploy through GitHub Actions.
+
+   CI deploys load runtime values from 1Password. Avoid local deploy shortcuts for normal releases so GitHub
+   environment approvals and build-before-deploy ordering are preserved.
+
+## Manual Migration Fallback
+
+Remote D1 migrations normally run through the Alchemy stack. If an operator needs to apply migrations manually while
+recovering a failed deployment, use Wrangler directly:
 
    ```bash
    pnpm --dir apps/server exec wrangler d1 migrations apply prive-admin-dev --remote --env dev
    pnpm --dir apps/server exec wrangler d1 migrations apply prive-admin-prod --remote --env prod
    ```
 
-2. Deploy server and web through GitHub Actions.
-
-   CI deploys load server runtime values from 1Password, pass `BETTER_AUTH_URL`, `CORS_ORIGIN`, and `NODE_ENV` as
-   plain Worker variables, and upload `BETTER_AUTH_SECRET` as a Worker secret. Avoid local deploy shortcuts for normal
-   releases so GitHub environment approvals and build-before-deploy ordering are preserved.
-
 ## GitHub Actions
 
 - Pull requests deploy to dev through `.github/workflows/cloudflare-dev-deploy.yml` after `cloudflare-dev`
   approval.
-- Pushes to `main` deploy to production through `.github/workflows/cloudflare-prod-deploy.yml` after
+- Pushes to `main` deploy to both dev through `.github/workflows/cloudflare-dev-deploy.yml` after
+  `cloudflare-dev` approval and production through `.github/workflows/cloudflare-prod-deploy.yml` after
   `cloudflare-prod` approval.
-- Production migrations run before the production Workers are deployed.
-- Server and web Worker logs and traces are enabled in Wrangler config. Dev samples all logs/traces; production
-  samples all logs and 10% of traces.
+- Pull requests also create isolated preview stages through `.github/workflows/cloudflare-alchemy-preview.yml`.
+- Stable dev and production deployments run through Alchemy, including D1 migrations and Worker deployments.
+
+## Deployment Ownership
+
+Alchemy owns Cloudflare app infrastructure for dev, production, and PR preview stages:
+
+- Server Worker code and bindings.
+- Web Worker code and static assets.
+- D1 databases and migrations.
+- R2 uploads buckets and Worker bindings.
+
+Wrangler remains local tooling for development, D1 copy operations, and manual migration fallback commands.
 
 ## Validation
 

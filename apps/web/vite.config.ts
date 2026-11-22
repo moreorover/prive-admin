@@ -8,7 +8,9 @@ export default defineConfig({
       target: "react",
       autoCodeSplitting: true,
     }),
-    viteReact(),
+    viteReact({
+      compiler: true,
+    }),
   ]),
   server: {
     host: "0.0.0.0",

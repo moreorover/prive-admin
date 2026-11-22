@@ -63,7 +63,7 @@ export function PickPersonnelModal({
                     <Table.Tr
                       key={c.id}
                       style={{ cursor: "pointer" }}
-                      bg={checked ? "var(--mantine-color-blue-light)" : undefined}
+                      bg={checked ? "var(--prive-selection)" : undefined}
                       onClick={() => toggle(c.id)}
                     >
                       <Table.Td>

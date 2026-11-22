@@ -14,6 +14,12 @@ const searchDebounceMs = 300
 
 export const Route = createFileRoute("/_authenticated/hair-orders/")({
   component: RouteComponent,
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(trpc.hairOrders.list.queryOptions({ page: 1, pageSize: hairOrdersPageSize })),
+      context.queryClient.ensureQueryData(trpc.customers.list.queryOptions(defaultCustomersListInput)),
+    ])
+  },
 })
 
 function RouteComponent() {

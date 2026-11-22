@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as TwoFactorRouteImport } from './routes/two-factor'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAppointmentsRouteRouteImport } from './routes/_authenticated/appointments/route'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedCashRouteImport } from './routes/_authenticated/cash'
@@ -22,6 +24,7 @@ import { Route as AuthenticatedHairOrdersRouteRouteImport } from './routes/_auth
 import { Route as AuthenticatedHairSalesRouteRouteImport } from './routes/_authenticated/hair-sales/route'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAppointmentsAppointmentIdRouteImport } from './routes/_authenticated/appointments/$appointmentId'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as AuthenticatedCustomersCustomerIdRouteRouteImport } from './routes/_authenticated/customers/$customerId/route'
@@ -34,6 +37,7 @@ import { Route as AuthenticatedLegalEntitiesIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedLegalEntitiesLegalEntityIdRouteRouteImport } from './routes/_authenticated/legal-entities/$legalEntityId/route'
 import { Route as AuthenticatedSalonsIndexRouteImport } from './routes/_authenticated/salons/index'
 import { Route as AuthenticatedSalonsSalonIdRouteImport } from './routes/_authenticated/salons/$salonId'
+import { Route as AuthenticatedSalonsNewRouteImport } from './routes/_authenticated/salons/new'
 import { Route as AuthenticatedCustomersCustomerIdIndexRouteImport } from './routes/_authenticated/customers/$customerId/index'
 import { Route as AuthenticatedCustomersCustomerIdAppointmentsRouteImport } from './routes/_authenticated/customers/$customerId/appointments'
 import { Route as AuthenticatedCustomersCustomerIdHairSalesRouteImport } from './routes/_authenticated/customers/$customerId/hair-sales'
@@ -59,6 +63,16 @@ const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
+} as any)
+const TwoFactorRoute = TwoFactorRouteImport.update({
+  id: '/two-factor',
+  path: '/two-factor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAppointmentsRouteRoute =
   AuthenticatedAppointmentsRouteRouteImport.update({
@@ -114,6 +128,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
 const AuthenticatedAppointmentsAppointmentIdRoute =
   AuthenticatedAppointmentsAppointmentIdRouteImport.update({
@@ -187,6 +206,11 @@ const AuthenticatedSalonsSalonIdRoute =
     path: '/salons/$salonId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSalonsNewRoute = AuthenticatedSalonsNewRouteImport.update({
+  id: '/salons/new',
+  path: '/salons/new',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCustomersCustomerIdIndexRoute =
   AuthenticatedCustomersCustomerIdIndexRouteImport.update({
     id: '/',
@@ -259,6 +283,8 @@ const AuthenticatedLegalEntitiesLegalEntityIdBankAccountsBankAccountIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/two-factor': typeof TwoFactorRoute
+  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/appointments': typeof AuthenticatedAppointmentsRouteRouteWithChildren
   '/customers': typeof AuthenticatedCustomersRouteRouteWithChildren
   '/documents': typeof AuthenticatedDocumentsRouteRouteWithChildren
@@ -271,10 +297,12 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteRouteWithChildren
   '/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/hair-sales/$hairSaleId': typeof AuthenticatedHairSalesHairSaleIdRoute
   '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
+  '/salons/new': typeof AuthenticatedSalonsNewRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
   '/documents/': typeof AuthenticatedDocumentsIndexRoute
   '/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
@@ -296,16 +324,20 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/two-factor': typeof TwoFactorRoute
+  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/appointments': typeof AuthenticatedAppointmentsRouteRouteWithChildren
   '/calendar': typeof AuthenticatedCalendarRoute
   '/cash': typeof AuthenticatedCashRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/hair-sales/$hairSaleId': typeof AuthenticatedHairSalesHairSaleIdRoute
   '/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
+  '/salons/new': typeof AuthenticatedSalonsNewRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
   '/documents': typeof AuthenticatedDocumentsIndexRoute
   '/hair-orders': typeof AuthenticatedHairOrdersIndexRoute
@@ -329,6 +361,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/login': typeof LoginRoute
+  '/two-factor': typeof TwoFactorRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/appointments': typeof AuthenticatedAppointmentsRouteRouteWithChildren
   '/_authenticated/customers': typeof AuthenticatedCustomersRouteRouteWithChildren
   '/_authenticated/documents': typeof AuthenticatedDocumentsRouteRouteWithChildren
@@ -341,10 +375,12 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/customers/$customerId': typeof AuthenticatedCustomersCustomerIdRouteRouteWithChildren
   '/_authenticated/legal-entities/$legalEntityId': typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/appointments/$appointmentId': typeof AuthenticatedAppointmentsAppointmentIdRoute
   '/_authenticated/hair-orders/$hairOrderId': typeof AuthenticatedHairOrdersHairOrderIdRoute
   '/_authenticated/hair-sales/$hairSaleId': typeof AuthenticatedHairSalesHairSaleIdRoute
   '/_authenticated/salons/$salonId': typeof AuthenticatedSalonsSalonIdRoute
+  '/_authenticated/salons/new': typeof AuthenticatedSalonsNewRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/documents/': typeof AuthenticatedDocumentsIndexRoute
   '/_authenticated/hair-orders/': typeof AuthenticatedHairOrdersIndexRoute
@@ -368,6 +404,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/two-factor'
+    | '/admin'
     | '/appointments'
     | '/customers'
     | '/documents'
@@ -380,10 +418,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/customers/$customerId'
     | '/legal-entities/$legalEntityId'
+    | '/admin/users'
     | '/appointments/$appointmentId'
     | '/hair-orders/$hairOrderId'
     | '/hair-sales/$hairSaleId'
     | '/salons/$salonId'
+    | '/salons/new'
     | '/customers/'
     | '/documents/'
     | '/hair-orders/'
@@ -405,16 +445,20 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/login'
+    | '/two-factor'
+    | '/admin'
     | '/appointments'
     | '/calendar'
     | '/cash'
     | '/dashboard'
     | '/profile'
     | '/settings'
+    | '/admin/users'
     | '/appointments/$appointmentId'
     | '/hair-orders/$hairOrderId'
     | '/hair-sales/$hairSaleId'
     | '/salons/$salonId'
+    | '/salons/new'
     | '/customers'
     | '/documents'
     | '/hair-orders'
@@ -437,6 +481,8 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/login'
+    | '/two-factor'
+    | '/_authenticated/admin'
     | '/_authenticated/appointments'
     | '/_authenticated/customers'
     | '/_authenticated/documents'
@@ -449,10 +495,12 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/customers/$customerId'
     | '/_authenticated/legal-entities/$legalEntityId'
+    | '/_authenticated/admin/users'
     | '/_authenticated/appointments/$appointmentId'
     | '/_authenticated/hair-orders/$hairOrderId'
     | '/_authenticated/hair-sales/$hairSaleId'
     | '/_authenticated/salons/$salonId'
+    | '/_authenticated/salons/new'
     | '/_authenticated/customers/'
     | '/_authenticated/documents/'
     | '/_authenticated/hair-orders/'
@@ -476,6 +524,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
+  TwoFactorRoute: typeof TwoFactorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -500,6 +549,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/two-factor': {
+      id: '/two-factor'
+      path: '/two-factor'
+      fullPath: '/two-factor'
+      preLoaderRoute: typeof TwoFactorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/appointments': {
       id: '/_authenticated/appointments'
@@ -570,6 +633,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/appointments/$appointmentId': {
       id: '/_authenticated/appointments/$appointmentId'
@@ -655,6 +725,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSalonsSalonIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/salons/new': {
+      id: '/_authenticated/salons/new'
+      path: '/salons/new'
+      fullPath: '/salons/new'
+      preLoaderRoute: typeof AuthenticatedSalonsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/customers/$customerId/': {
       id: '/_authenticated/customers/$customerId/'
       path: '/'
@@ -734,6 +811,20 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+}
+
+const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
+  {
+    AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+  }
+
+const AuthenticatedAdminRouteRouteWithChildren =
+  AuthenticatedAdminRouteRoute._addFileChildren(
+    AuthenticatedAdminRouteRouteChildren,
+  )
 
 interface AuthenticatedAppointmentsRouteRouteChildren {
   AuthenticatedAppointmentsAppointmentIdRoute: typeof AuthenticatedAppointmentsAppointmentIdRoute
@@ -873,6 +964,7 @@ const AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAppointmentsRouteRoute: typeof AuthenticatedAppointmentsRouteRouteWithChildren
   AuthenticatedCustomersRouteRoute: typeof AuthenticatedCustomersRouteRouteWithChildren
   AuthenticatedDocumentsRouteRoute: typeof AuthenticatedDocumentsRouteRouteWithChildren
@@ -885,11 +977,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedLegalEntitiesLegalEntityIdRouteRoute: typeof AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren
   AuthenticatedSalonsSalonIdRoute: typeof AuthenticatedSalonsSalonIdRoute
+  AuthenticatedSalonsNewRoute: typeof AuthenticatedSalonsNewRoute
   AuthenticatedLegalEntitiesIndexRoute: typeof AuthenticatedLegalEntitiesIndexRoute
   AuthenticatedSalonsIndexRoute: typeof AuthenticatedSalonsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAppointmentsRouteRoute:
     AuthenticatedAppointmentsRouteRouteWithChildren,
   AuthenticatedCustomersRouteRoute:
@@ -908,6 +1002,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLegalEntitiesLegalEntityIdRouteRoute:
     AuthenticatedLegalEntitiesLegalEntityIdRouteRouteWithChildren,
   AuthenticatedSalonsSalonIdRoute: AuthenticatedSalonsSalonIdRoute,
+  AuthenticatedSalonsNewRoute: AuthenticatedSalonsNewRoute,
   AuthenticatedLegalEntitiesIndexRoute: AuthenticatedLegalEntitiesIndexRoute,
   AuthenticatedSalonsIndexRoute: AuthenticatedSalonsIndexRoute,
 }
@@ -919,6 +1014,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LoginRoute: LoginRoute,
+  TwoFactorRoute: TwoFactorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

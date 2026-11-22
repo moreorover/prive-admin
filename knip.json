@@ -2,6 +2,9 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "tags": ["-lintignore"],
   "workspaces": {
+    ".": {
+      "entry": ["alchemy.run.ts"]
+    },
     "apps/web": {
       "entry": ["src/routes/**/*.{ts,tsx}!", "react-doctor.config.json"],
       "ignoreDependencies": ["@mantine/charts", "wrangler"],

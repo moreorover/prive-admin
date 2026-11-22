@@ -13,6 +13,12 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/overview")({
   component: RouteComponent,
   validateSearch: searchSchema,
+  loaderDeps: ({ search }) => ({ year: search.year ?? new Date().getFullYear() }),
+  loader: async ({ context, deps, params }) => {
+    await context.queryClient.ensureQueryData(
+      trpc.reports.bankAccountMonthlyBreakdown.queryOptions({ year: deps.year, legalEntityId: params.legalEntityId }),
+    )
+  },
 })
 
 function RouteComponent() {

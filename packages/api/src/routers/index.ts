@@ -1,4 +1,5 @@
 import { publicProcedure, router } from "../index"
+import { adminUsersRouter } from "./admin-users"
 import { appointmentsRouter } from "./appointments"
 import { bankAccountsRouter } from "./bank-accounts"
 import { bankStatementAttachmentsRouter } from "./bank-statement-attachments"
@@ -17,6 +18,7 @@ import { transactionsRouter } from "./transactions"
 import { userSettingsRouter } from "./user-settings"
 
 export const appRouter = router({
+  adminUsers: adminUsersRouter,
   appointments: appointmentsRouter,
   bankAccounts: bankAccountsRouter,
   bankStatementAttachments: bankStatementAttachmentsRouter,

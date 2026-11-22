@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vp run -r --parallel dev",
     "build": "vp run -r build",
+    "check:alchemy": "tsc --noEmit -p tsconfig.alchemy.json",
     "check-types": "vp run -r check-types",
+    "deploy:alchemy": "alchemy deploy",
+    "destroy:alchemy": "alchemy destroy",
     "dev:web": "vp run --filter web dev",
     "dev:server": "vp run --filter server dev",
     "db:push": "vp run --filter @prive-admin-tanstack/db db:push",
@@ -16,13 +19,20 @@
     "db:copy:prod-to-dev": "scripts/copy_d1_database.sh --source prod --target dev --credentials prod --yes",
     "db:copy:dev-to-local": "scripts/copy_d1_database.sh --source dev --target local --credentials dev --yes",
     "db:copy:prod-to-local": "scripts/copy_d1_database.sh --source prod --target local --credentials prod --yes",
+    "db:seed:preview": "scripts/seed_preview_d1_database.sh",
+    "plan:alchemy": "alchemy plan",
     "check": "vp lint && vp fmt --write",
     "prepare": "vp config"
   },
   "devDependencies": {
+    "@alchemy.run/cloudflare": "2.0.0-beta.87",
+    "@alchemy.run/github": "2.0.0-beta.87",
+    "@effect/platform-node": "4.1.5",
     "@prive-admin-tanstack/config": "workspace:*",
     "@types/node": "catalog:",
-    "knip": "^6.29.0",
+    "alchemy": "2.0.0-beta.87",
+    "effect": "4.1.5",
+    "knip": "6.38.0",
     "tsx": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
@@ -31,5 +41,5 @@
   "engines": {
     "node": ">=24.18.0"
   },
-  "packageManager": "pnpm@11.17.0"
+  "packageManager": "pnpm@12.7.0"
 }

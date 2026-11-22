@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react"
 
-import { Box, Button, Container, Group, LoadingOverlay, NativeSelect, Select, Table, TextInput } from "@mantine/core"
+import { Box, Button, Container, LoadingOverlay, NativeSelect, Select, Table, TextInput } from "@mantine/core"
 import { DateInput } from "@mantine/dates"
 import { IconPlus, IconSearch } from "@tabler/icons-react"
 import { useState } from "react"
@@ -11,6 +11,7 @@ import { CreateCashTransactionDialog } from "@/components/cash-transactions/crea
 import { DeleteCashTransactionDialog } from "@/components/cash-transactions/delete-cash-transaction-dialog"
 import { EditCashTransactionDialog } from "@/components/cash-transactions/edit-cash-transaction-dialog"
 import { PageHeader } from "@/components/page-header"
+import { ResourceToolbar } from "@/components/resource-toolbar"
 import { Section } from "@/components/section"
 import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 
@@ -96,8 +97,8 @@ export function CashPage({
         }
       />
 
-      <Section padding="lg">
-        <Group align="flex-end" mb="md" gap="sm" wrap="wrap">
+      <Section padding={0}>
+        <ResourceToolbar count={totalCount} countLabel={totalCount === 1 ? "transaction" : "transactions"}>
           <TextInput
             label="Search"
             placeholder="Description, notes, or customer"
@@ -170,7 +171,7 @@ export function CashPage({
             }}
             w={{ base: "100%", xs: 180 }}
           />
-        </Group>
+        </ResourceToolbar>
 
         <Box pos="relative">
           <LoadingOverlay visible={isFetching} />

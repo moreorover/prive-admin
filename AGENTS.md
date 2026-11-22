@@ -6,6 +6,17 @@ This project is using Vite+, a unified toolchain built on top of Vite, Rolldown,
 
 Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.dev/guide/.
 
+## Built-in Commands vs Scripts
+
+`vp <name>` runs a built-in command. `vp run <name>` runs a `package.json` script or a `vite.config.ts` task. Scripts cannot overwrite built-ins, so `vp dev` and `vp run dev` may do different things. Check `package.json` and `vite.config.ts` first, and run `vp run <name>` when the project defines a script or task with that name.
+
+## Tool Versions
+
+Run `vp toolchain` to show versions and relationships in the active Vite+
+release. Add a tool name to select part of the graph. For example, run
+`vp toolchain vite`. Use `--global` to ignore the local `vite-plus` package. Use
+`vp why <package>` to show the package-manager dependency graph.
+
 ## Review Checklist
 
 - [ ] Run `vp install` after pulling remote changes and before getting started.
@@ -32,6 +43,8 @@ Do not create REST/Hono adapters solely to satisfy this rule. Keep using tRPC fo
 Components must not initiate server reads or mutations. This applies to shared components and route-private `-components`.
 
 Route files and route/page owner modules own server state. Start read queries in TanStack Router loaders when data is needed for route rendering, and use `queryClient.ensureQueryData` or `prefetchQuery` for preload. Put reusable query option builders in route-local `-data` modules when helpful.
+
+Keep route prefetches and rendered queries identical. Define the query options once in a route owner or route-local `-data` module, use that same builder in both the loader and the component, and include every path or search value that changes the query in `loaderDeps`. Do not prefetch a default or stale variant and then render a different query key; that causes duplicate requests and fetch waterfalls on direct links or shared URLs. Leave interaction-only queries, such as dialog options, lazy and gated by their open state.
 
 Start mutations in route/page owners and pass explicit event handlers such as `onCreate`, `onUpdate`, `onDelete`, or `onSubmit` into child components. Pass data, loading state, and error-display state as props when components need to render pending or failure UI. Mutation side effects such as cache invalidation, navigation, notifications, route refreshes, and dialog close/reset behavior belong in the route/page owner.
 

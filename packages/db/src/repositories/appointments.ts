@@ -80,11 +80,15 @@ export async function linkPersonnelToAppointment(
   await database.insert(personnelOnAppointments).values(values)
 }
 
-export async function updateAppointment(database: Db = db, input: { id: string; masterId: string }) {
-  const [result] = await database
-    .update(appointment)
-    .set({ masterId: input.masterId })
-    .where(eq(appointment.id, input.id))
-    .returning()
+export async function updateAppointment(
+  database: Db = db,
+  input: { id: string; name?: string; masterId?: string; startsAt?: string | Date },
+) {
+  const values: Partial<Pick<AppointmentInput, "name" | "masterId">> & { startsAt?: Date } = {}
+  if (input.name !== undefined) values.name = input.name
+  if (input.masterId !== undefined) values.masterId = input.masterId
+  if (input.startsAt !== undefined) values.startsAt = new Date(input.startsAt)
+
+  const [result] = await database.update(appointment).set(values).where(eq(appointment.id, input.id)).returning()
   return result
 }

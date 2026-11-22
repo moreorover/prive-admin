@@ -4,11 +4,11 @@ import { MantineProvider } from "@mantine/core"
 import { ModalsProvider } from "@mantine/modals"
 import { Notifications } from "@mantine/notifications"
 
-import { theme } from "./theme"
+import { cssVariablesResolver, theme } from "./theme"
 
 export function UIProvider({ children }: { children: ReactNode }) {
   return (
-    <MantineProvider theme={theme} defaultColorScheme="auto">
+    <MantineProvider theme={theme} cssVariablesResolver={cssVariablesResolver} defaultColorScheme="auto">
       <ModalsProvider>
         <Notifications />
         {children}

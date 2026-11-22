@@ -1,21 +1,19 @@
-import {
-  ActionIcon,
-  Badge,
-  FileInput,
-  Group,
-  Popover,
-  Select,
-  Stack,
-  Text,
-  Tooltip,
-  UnstyledButton,
-} from "@mantine/core"
+import { ActionIcon, Anchor, Badge, FileInput, Group, Popover, Select, Stack, Text, Tooltip } from "@mantine/core"
 import { IconLinkOff, IconPaperclip, IconTrash } from "@tabler/icons-react"
+
+import { attachmentPreviewUrl } from "@/components/attachment-preview"
 
 type AttachmentOption = {
   id: string
   originalName: string
   contentType: string
+}
+
+export type AttachmentPendingState = {
+  assign: boolean
+  remove: boolean
+  unassign: boolean
+  upload: boolean
 }
 
 export function AttachmentsCell({
@@ -24,12 +22,8 @@ export function AttachmentsCell({
   attachments,
   attachmentsLoading,
   unassignedAttachments,
-  assignLoading,
-  removeLoading,
-  unassignLoading,
-  uploadLoading,
+  pending,
   onOpenChange,
-  onPreview,
   onAssign,
   onRemove,
   onUnassign,
@@ -40,12 +34,8 @@ export function AttachmentsCell({
   attachments: AttachmentOption[]
   attachmentsLoading: boolean
   unassignedAttachments: AttachmentOption[]
-  assignLoading: boolean
-  removeLoading: boolean
-  unassignLoading: boolean
-  uploadLoading: boolean
+  pending: AttachmentPendingState
   onOpenChange: (opened: boolean) => void
-  onPreview: (a: AttachmentOption) => void
   onAssign: (attachmentId: string) => void
   onRemove: (attachmentId: string) => void
   onUnassign: (attachmentId: string) => void
@@ -78,24 +68,26 @@ export function AttachmentsCell({
           )}
           {attachments.map((a) => (
             <Group key={a.id} justify="space-between" wrap="nowrap" gap="xs">
-              <UnstyledButton
+              <Anchor
+                href={attachmentPreviewUrl(a)}
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={() => {
                   onOpenChange(false)
-                  onPreview(a)
                 }}
-                style={{ textAlign: "left", flex: 1, minWidth: 0 }}
+                style={{ textAlign: "left", flex: 1, minWidth: 0, wordBreak: "break-all" }}
               >
-                <Text size="xs" td="underline" style={{ wordBreak: "break-all" }}>
+                <Text size="xs" td="underline">
                   {a.originalName}
                 </Text>
-              </UnstyledButton>
+              </Anchor>
               <Group gap={4} wrap="nowrap">
                 <Tooltip label="Unassign" withArrow>
                   <ActionIcon
                     size="sm"
                     variant="subtle"
                     onClick={() => onUnassign(a.id)}
-                    loading={unassignLoading}
+                    loading={pending.unassign}
                     aria-label="Unassign"
                   >
                     <IconLinkOff size={14} />
@@ -106,7 +98,7 @@ export function AttachmentsCell({
                   variant="subtle"
                   color="red"
                   onClick={() => onRemove(a.id)}
-                  loading={removeLoading}
+                  loading={pending.remove}
                   aria-label="Delete"
                 >
                   <IconTrash size={14} />
@@ -129,14 +121,14 @@ export function AttachmentsCell({
               onChange={(v) => {
                 if (v) onAssign(v)
               }}
-              disabled={assignLoading}
+              disabled={pending.assign}
               comboboxProps={{ withinPortal: false }}
             />
           )}
           <FileInput
             placeholder="Upload new"
             size="xs"
-            disabled={uploadLoading}
+            disabled={pending.upload}
             value={null}
             onChange={(f) => {
               if (f) onUpload(f)

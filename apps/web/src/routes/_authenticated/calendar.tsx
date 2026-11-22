@@ -19,11 +19,7 @@ const searchDebounceMs = 300
 export const Route = createFileRoute("/_authenticated/calendar")({
   component: RouteComponent,
   loader: async ({ context }) => {
-    await Promise.all([
-      context.queryClient.prefetchQuery(calendarAppointmentsQueryOptions(dayjs().format("YYYY-MM-DD"), "month")),
-      context.queryClient.prefetchQuery(appointmentCustomerOptionsQueryOptions("")),
-      context.queryClient.prefetchQuery(appointmentSalonOptionsQueryOptions()),
-    ])
+    await context.queryClient.prefetchQuery(calendarAppointmentsQueryOptions(dayjs().format("YYYY-MM-DD"), "month"))
   },
 })
 
@@ -31,15 +27,25 @@ function RouteComponent() {
   const navigate = Route.useNavigate()
   const [view, setView] = useState<ScheduleViewLevel>("month")
   const [date, setDate] = useState<string>(() => dayjs().format("YYYY-MM-DD"))
+  const [createOpen, setCreateOpen] = useState(false)
   const [clientSearch, setClientSearch] = useState("")
   const [masterSearch, setMasterSearch] = useState("")
   const [debouncedClientSearch] = useDebouncedValue(clientSearch, searchDebounceMs)
   const [debouncedMasterSearch] = useDebouncedValue(masterSearch, searchDebounceMs)
   const appointmentsQueryOptions = calendarAppointmentsQueryOptions(date, view)
   const appointmentsData = useQuery(appointmentsQueryOptions).data
-  const clientCustomersData = useQuery(appointmentCustomerOptionsQueryOptions(debouncedClientSearch)).data
-  const masterCustomersData = useQuery(appointmentCustomerOptionsQueryOptions(debouncedMasterSearch)).data
-  const salonsData = useQuery(appointmentSalonOptionsQueryOptions()).data
+  const clientCustomersData = useQuery({
+    ...appointmentCustomerOptionsQueryOptions(debouncedClientSearch),
+    enabled: createOpen,
+  }).data
+  const masterCustomersData = useQuery({
+    ...appointmentCustomerOptionsQueryOptions(debouncedMasterSearch),
+    enabled: createOpen,
+  }).data
+  const salonsData = useQuery({
+    ...appointmentSalonOptionsQueryOptions(),
+    enabled: createOpen,
+  }).data
   const createAppointment = useCreateAppointmentAction({
     invalidateKeys: [{ queryKey: appointmentsQueryOptions.queryKey }],
     onCreated: (created) => {
@@ -53,6 +59,7 @@ function RouteComponent() {
     <CalendarPage
       view={view}
       date={date}
+      createOpen={createOpen}
       clientSearch={clientSearch}
       masterSearch={masterSearch}
       appointmentsData={appointmentsData}
@@ -62,6 +69,7 @@ function RouteComponent() {
       createPending={createAppointment.isPending}
       onViewChange={setView}
       onDateChange={setDate}
+      onCreateOpenChange={setCreateOpen}
       onClientSearchChange={setClientSearch}
       onMasterSearchChange={setMasterSearch}
       onCreateAppointment={(values) => createAppointment.mutate(values)}

@@ -1,6 +1,7 @@
 import type { ComponentProps, ReactNode } from "react"
 
 import { MantineProvider } from "@mantine/core"
+import { theme } from "@prive-admin-tanstack/ui/theme"
 import { createElement, Fragment } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it } from "vite-plus/test"
@@ -28,7 +29,7 @@ function renderHairAssignedTable(children: ReactNode) {
   return renderToStaticMarkup(
     createElement(
       MantineProvider,
-      null,
+      { theme },
       createElement(
         LocaleProvider,
         { value: { locale: "en-GB", timeZone: "UTC" } },

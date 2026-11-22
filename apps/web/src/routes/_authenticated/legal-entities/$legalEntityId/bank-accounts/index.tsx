@@ -7,6 +7,9 @@ import { BankAccountsTab } from "./-components/index-page"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/$legalEntityId/bank-accounts/")({
   component: RouteComponent,
+  loader: async ({ context, params }) => {
+    await context.queryClient.ensureQueryData(trpc.legalEntities.get.queryOptions({ id: params.legalEntityId }))
+  },
 })
 
 function RouteComponent() {

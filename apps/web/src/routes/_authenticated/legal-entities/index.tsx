@@ -7,6 +7,14 @@ import { LegalEntitiesIndex } from "./-components/index-page"
 
 export const Route = createFileRoute("/_authenticated/legal-entities/")({
   component: RouteComponent,
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(trpc.legalEntities.list.queryOptions({ pageSize: 100 })),
+      context.queryClient.ensureQueryData(
+        trpc.bankStatementAttachments.list.queryOptions({ assignmentStatus: "unassigned" }),
+      ),
+    ])
+  },
 })
 
 function RouteComponent() {

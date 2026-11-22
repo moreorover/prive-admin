@@ -14,6 +14,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@better-auth/passkey": "catalog:",
     "@prive-admin-tanstack/db": "workspace:*",
     "@prive-admin-tanstack/env": "workspace:*",
     "better-auth": "catalog:"

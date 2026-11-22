@@ -17,6 +17,22 @@ const searchDebounceMs = 300
 
 export const Route = createFileRoute("/_authenticated/cash")({
   component: RouteComponent,
+  loader: async ({ context }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(
+        trpc.cashTransactions.list.queryOptions({
+          page: 1,
+          pageSize: CASH_TRANSACTIONS_PAGE_SIZE,
+          direction: "all",
+        }),
+      ),
+      context.queryClient.ensureQueryData(
+        trpc.customers.list.queryOptions({
+          ...defaultCashCustomersListInput,
+        }),
+      ),
+    ])
+  },
 })
 
 function RouteComponent() {

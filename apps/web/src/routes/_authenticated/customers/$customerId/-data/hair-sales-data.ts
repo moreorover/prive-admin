@@ -28,13 +28,24 @@ export function availableHairOrdersListQueryOptions() {
   })
 }
 
-export function useHairSalesData({ customerId, page, search }: { customerId: string; page: number; search: string }) {
+export function useHairSalesData({
+  customerId,
+  page,
+  search,
+  availableHairOrdersEnabled,
+}: {
+  customerId: string
+  page: number
+  search: string
+  availableHairOrdersEnabled: boolean
+}) {
   const queryOptions = hairSalesQueryOptions(customerId, page, search)
   const availableHairOrdersQueryOptions = availableHairOrdersListQueryOptions()
   const { data } = useQuery(queryOptions)
-  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery(
-    availableHairOrdersQueryOptions,
-  )
+  const { data: availableHairOrdersData, isLoading: availableHairOrdersLoading } = useQuery({
+    ...availableHairOrdersQueryOptions,
+    enabled: availableHairOrdersEnabled,
+  })
   const hairAssigned = (data?.items ?? []) as HairAssignedRow[]
   const totalCount = data?.totalCount ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / HAIR_SALES_PAGE_SIZE))

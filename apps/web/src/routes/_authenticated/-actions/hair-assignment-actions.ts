@@ -29,6 +29,8 @@ export function useHairAssignmentActions({
     for (const key of invalidateKeys) queryClient.invalidateQueries(key)
     queryClient.invalidateQueries({ queryKey: trpc.hairAssigned.list.queryKey() })
     queryClient.invalidateQueries({ queryKey: trpc.hairOrders.list.queryKey() })
+    queryClient.invalidateQueries({ queryKey: trpc.dashboard.hairAssignedStats.queryKey() })
+    queryClient.invalidateQueries({ queryKey: trpc.dashboard.hairAssignedThroughSaleStats.queryKey() })
     if (hairOrderId) {
       queryClient.invalidateQueries({ queryKey: trpc.hairOrders.get.queryOptions({ id: hairOrderId }).queryKey })
     }

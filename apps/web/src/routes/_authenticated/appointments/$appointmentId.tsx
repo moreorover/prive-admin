@@ -11,7 +11,7 @@ import { useAppointmentTransactionActions } from "./-actions/appointment-transac
 import { AppointmentDetailPage } from "./-components/appointment-detail-page"
 import {
   APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-  availableHairOrdersListQueryOptions,
+  appointmentMasterOptionsQueryOptions,
   useAppointmentDetailData,
 } from "./-data/appointment-detail-data"
 
@@ -38,7 +38,6 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
         }),
       ),
       context.queryClient.ensureQueryData(trpc.userSettings.get.queryOptions()),
-      context.queryClient.prefetchQuery(availableHairOrdersListQueryOptions()),
     ])
   },
 })
@@ -47,23 +46,30 @@ function RouteComponent() {
   const { appointmentId } = Route.useParams()
   const [transactionsPage, setTransactionsPage] = useState(1)
   const [hairAssignedPage, setHairAssignedPage] = useState(1)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [pickPersonnelOpen, setPickPersonnelOpen] = useState(false)
+  const [changeMasterOpen, setChangeMasterOpen] = useState(false)
   const [masterSearch, setMasterSearch] = useState("")
   const [pickPersonnelSearch, setPickPersonnelSearch] = useState("")
   const [debouncedMasterSearch] = useDebouncedValue(masterSearch, searchDebounceMs)
   const [debouncedPickPersonnelSearch] = useDebouncedValue(pickPersonnelSearch, searchDebounceMs)
-  const detailData = useAppointmentDetailData({ appointmentId, hairAssignedPage, transactionsPage })
-  const pickPersonnelCustomersData = useQuery(
-    trpc.customers.list.queryOptions({
+  const detailData = useAppointmentDetailData({
+    appointmentId,
+    hairAssignedPage,
+    transactionsPage,
+    availableHairOrdersEnabled: createOpen,
+  })
+  const pickPersonnelCustomersData = useQuery({
+    ...trpc.customers.list.queryOptions({
       ...defaultCustomersListInput,
       search: debouncedPickPersonnelSearch.trim() || undefined,
     }),
-  ).data
-  const masterCustomersData = useQuery(
-    trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
-      search: debouncedMasterSearch.trim() || undefined,
-    }),
-  ).data
+    enabled: pickPersonnelOpen,
+  }).data
+  const masterCustomersData = useQuery({
+    ...appointmentMasterOptionsQueryOptions(debouncedMasterSearch),
+    enabled: changeMasterOpen,
+  }).data
   const { createHairAssigned, updateHairAssigned, deleteHairAssigned } = useHairAssignmentActions({
     invalidateKeys: [
       { queryKey: detailData.appointmentQueryOptions.queryKey },
@@ -77,7 +83,7 @@ function RouteComponent() {
   const { createTransaction, updateTransaction, deleteTransaction } = useAppointmentTransactionActions({
     appointment: detailData.appointment,
   })
-  const { updateMaster, linkPersonnel } = useAppointmentPersonnelActions({ appointmentId })
+  const { updateAppointment, linkPersonnel } = useAppointmentPersonnelActions({ appointmentId })
 
   return (
     <AppointmentDetailPage
@@ -85,12 +91,17 @@ function RouteComponent() {
       detailData={detailData}
       transactionsPage={transactionsPage}
       hairAssignedPage={hairAssignedPage}
-      masterSearch={masterSearch}
+      createOpen={createOpen}
+      pickPersonnelOpen={pickPersonnelOpen}
+      changeMasterOpen={changeMasterOpen}
       pickPersonnelSearch={pickPersonnelSearch}
       pickPersonnelCustomersData={pickPersonnelCustomersData}
       masterCustomersData={masterCustomersData}
       onTransactionsPageChange={setTransactionsPage}
       onHairAssignedPageChange={setHairAssignedPage}
+      onCreateOpenChange={setCreateOpen}
+      onPickPersonnelOpenChange={setPickPersonnelOpen}
+      onChangeMasterOpenChange={setChangeMasterOpen}
       onMasterSearchChange={setMasterSearch}
       onPickPersonnelSearchChange={setPickPersonnelSearch}
       createHairAssignedPending={createHairAssigned.isPending}
@@ -99,7 +110,7 @@ function RouteComponent() {
       createTransactionPending={createTransaction.isPending}
       updateTransactionPending={updateTransaction.isPending}
       deleteTransactionPending={deleteTransaction.isPending}
-      updateMasterPending={updateMaster.isPending}
+      updateAppointmentPending={updateAppointment.isPending}
       linkPersonnelPending={linkPersonnel.isPending}
       onCreateHairAssigned={(values) => {
         createHairAssigned.mutate(values)
@@ -119,7 +130,8 @@ function RouteComponent() {
         deleteTransaction.mutate({ id })
         setTransactionsPage(1)
       }}
-      onUpdateMaster={(values) => updateMaster.mutate(values)}
+      onUpdateAppointment={(values) => updateAppointment.mutate(values)}
+      onUpdateMaster={(values) => updateAppointment.mutate(values)}
       onLinkPersonnel={(values) => linkPersonnel.mutate(values)}
     />
   )

@@ -3,6 +3,8 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["ESNext"],
+    "strict": true,
+    "allowJs": false,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,

@@ -24,6 +24,7 @@ type AppointmentData = {
 export function CalendarPage({
   view,
   date,
+  createOpen,
   clientSearch,
   masterSearch,
   appointmentsData,
@@ -33,6 +34,7 @@ export function CalendarPage({
   createPending,
   onViewChange,
   onDateChange,
+  onCreateOpenChange,
   onClientSearchChange,
   onMasterSearchChange,
   onCreateAppointment,
@@ -40,6 +42,7 @@ export function CalendarPage({
 }: {
   view: ScheduleViewLevel
   date: string
+  createOpen: boolean
   clientSearch: string
   masterSearch: string
   appointmentsData: AppointmentData | undefined
@@ -49,12 +52,12 @@ export function CalendarPage({
   createPending: boolean
   onViewChange: (view: ScheduleViewLevel) => void
   onDateChange: (date: string) => void
+  onCreateOpenChange: (open: boolean) => void
   onClientSearchChange: (search: string) => void
   onMasterSearchChange: (search: string) => void
   onCreateAppointment: ComponentProps<typeof CreateAppointmentDialog>["onCreate"]
   onOpenAppointment: (appointmentId: string) => void
 }) {
-  const [createOpen, setCreateOpen] = useState(false)
   const [defaultStartsAt, setDefaultStartsAt] = useState<string | null>(null)
   const clientOptions = (clientCustomersData?.items ?? []).map((customer) => ({
     value: customer.id,
@@ -69,10 +72,13 @@ export function CalendarPage({
   const appointmentTotalCount = appointmentsData?.totalCount ?? 0
   const hasHiddenAppointments = appointmentTotalCount > visibleAppointmentCount
 
-  const openCreate = useCallback((startsAt: string | null) => {
-    setDefaultStartsAt(startsAt)
-    setCreateOpen(true)
-  }, [])
+  const openCreate = useCallback(
+    (startsAt: string | null) => {
+      setDefaultStartsAt(startsAt)
+      onCreateOpenChange(true)
+    },
+    [onCreateOpenChange],
+  )
 
   const events = useMemo<ScheduleEventData[]>(() => {
     const appointments = appointmentsData?.items ?? []
@@ -131,12 +137,12 @@ export function CalendarPage({
         </Section>
         <CreateAppointmentDialog
           open={createOpen}
-          onOpenChange={setCreateOpen}
+          onOpenChange={onCreateOpenChange}
           defaultStartsAt={defaultStartsAt}
           loading={createPending}
           onCreate={(values) => {
             onCreateAppointment(values)
-            setCreateOpen(false)
+            onCreateOpenChange(false)
           }}
           clientOptions={clientOptions}
           masterOptions={masterOptions}

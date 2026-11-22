@@ -54,7 +54,12 @@ export async function linkPersonnelToAppointment(input: { appointmentId: string;
   }
 }
 
-export async function updateAppointment(input: { id: string; masterId: string }) {
+export async function updateAppointment(input: {
+  id: string
+  name?: string
+  masterId?: string
+  startsAt?: string | Date
+}) {
   let result
   try {
     result = await patchAppointment(undefined, input)

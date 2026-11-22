@@ -1,7 +1,7 @@
 import { createElement } from "react"
 import { describe, expect, it } from "vite-plus/test"
 
-import { getCompoundTableColumns, getCompoundTablePagination } from "./compound-table"
+import { getCompoundTableColumns, getCompoundTablePagination } from "./compound-table-helpers"
 
 describe("compound table helpers", () => {
   it("separates columns from pagination children", () => {

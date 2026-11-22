@@ -1,13 +1,45 @@
+import type { Auth, BetterAuthOptions, DBAdapter } from "better-auth"
+
+import { passkey } from "@better-auth/passkey"
 import { createDb } from "@prive-admin-tanstack/db/client"
 import * as schema from "@prive-admin-tanstack/db/schema/auth"
 import { env } from "@prive-admin-tanstack/env/server"
-import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { betterAuth } from "better-auth/minimal"
+import { admin } from "better-auth/plugins/admin"
+import { twoFactor } from "better-auth/plugins/two-factor"
 
-export function createAuth() {
+type AppAuthOptions = BetterAuthOptions & {
+  database: (options: BetterAuthOptions) => DBAdapter<BetterAuthOptions>
+  trustedOrigins: string[]
+  emailAndPassword: {
+    enabled: true
+    disableSignUp: true
+  }
+  session: {
+    cookieCache: {
+      enabled: true
+      maxAge: number
+    }
+  }
+  secret: string
+  baseURL: string
+  advanced: {
+    ipAddress: {
+      ipAddressHeaders: string[]
+    }
+  }
+  logger: {
+    level: "debug"
+  }
+}
+
+export type AppAuth = Auth<AppAuthOptions>
+
+export function createAuth(): AppAuth {
   const db = createDb()
 
-  return betterAuth({
+  const options: AppAuthOptions = {
     database: drizzleAdapter(db, {
       provider: "sqlite",
       schema: schema,
@@ -16,6 +48,21 @@ export function createAuth() {
     emailAndPassword: {
       enabled: true,
       disableSignUp: true,
+    },
+    plugins: [
+      admin(),
+      passkey({
+        rpName: "Privé",
+        rpID: new URL(env.CORS_ORIGIN).hostname,
+        origin: env.CORS_ORIGIN,
+      }),
+      twoFactor({ issuer: "Privé" }),
+    ],
+    session: {
+      cookieCache: {
+        enabled: true,
+        maxAge: 5 * 60,
+      },
     },
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
@@ -27,7 +74,9 @@ export function createAuth() {
     logger: {
       level: "debug",
     },
-  })
+  }
+
+  return betterAuth(options)
 }
 
 export const auth = createAuth()

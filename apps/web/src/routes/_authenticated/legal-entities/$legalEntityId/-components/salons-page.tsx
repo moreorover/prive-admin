@@ -15,11 +15,7 @@ export function SalonsTab({ salons }: { salons: ComponentProps<typeof SalonsTabl
         title="Salons"
         description="Locations associated with this legal entity."
         actions={
-          <Button
-            size="sm"
-            variant="default"
-            renderRoot={(props) => <Link to="/salons/$salonId" params={{ salonId: "new" }} {...props} />}
-          >
+          <Button size="sm" variant="default" renderRoot={(props) => <Link to="/salons/new" {...props} />}>
             New salon
           </Button>
         }

@@ -6,27 +6,21 @@ import { type HairAssignedRow } from "@/components/hair-assigned/hair-assigned-t
 import { useHairAssignmentActions } from "../-actions/hair-assignment-actions"
 import { useHairOrderDetailActions } from "./-actions/hair-order-actions"
 import { HairOrderDetailPage } from "./-components/hair-order-id-page"
-import {
-  availableHairOrdersListQueryOptions,
-  hairOrderDetailQueryOptions,
-  useHairOrderDetailData,
-} from "./-data/hair-order-detail-data"
+import { hairOrderDetailQueryOptions, useHairOrderDetailData } from "./-data/hair-order-detail-data"
 
 export const Route = createFileRoute("/_authenticated/hair-orders/$hairOrderId")({
   component: RouteComponent,
   loader: async ({ context, params }) => {
-    await Promise.all([
-      context.queryClient.ensureQueryData(hairOrderDetailQueryOptions(params.hairOrderId)),
-      context.queryClient.prefetchQuery(availableHairOrdersListQueryOptions()),
-    ])
+    await context.queryClient.ensureQueryData(hairOrderDetailQueryOptions(params.hairOrderId))
   },
 })
 
 function RouteComponent() {
   const { hairOrderId } = Route.useParams()
+  const [createOpen, setCreateOpen] = useState(false)
   const [editItem, setEditItem] = useState<HairAssignedRow | null>(null)
   const [deleteItem, setDeleteItem] = useState<HairAssignedRow | null>(null)
-  const detailData = useHairOrderDetailData(hairOrderId)
+  const detailData = useHairOrderDetailData(hairOrderId, createOpen)
   const relatedQueryKeys = [
     { queryKey: detailData.hairOrderQueryOptions.queryKey },
     ...detailData.assignedClientSummaryKeys,
@@ -44,6 +38,7 @@ function RouteComponent() {
   return (
     <HairOrderDetailPage
       detailData={detailData}
+      createOpen={createOpen}
       editItem={editItem}
       deleteItem={deleteItem}
       recalculatePending={recalculatePrices.isPending}
@@ -51,6 +46,7 @@ function RouteComponent() {
       createPending={createHairAssigned.isPending}
       updatePending={updateHairAssigned.isPending}
       deletePending={deleteHairAssigned.isPending}
+      onCreateOpenChange={setCreateOpen}
       onEditItemChange={setEditItem}
       onDeleteItemChange={setDeleteItem}
       onRecalculate={() => recalculatePrices.mutate({ hairOrderId })}

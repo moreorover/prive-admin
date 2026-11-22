@@ -7,6 +7,7 @@ import {
   IconReceipt,
   IconScissors,
   IconSettings,
+  IconShieldLock,
   IconUsers,
 } from "@tabler/icons-react"
 
@@ -18,6 +19,7 @@ export type AppNavItem = {
   shortLabel?: string
   icon: typeof IconUsers
   badgeKey?: AppNavBadgeKey
+  adminOnly?: boolean
 }
 
 export type AppNavGroup = {
@@ -51,7 +53,10 @@ export const appNavGroups: AppNavGroup[] = [
   },
   {
     label: "Account",
-    items: [{ to: "/settings", label: "Settings", icon: IconSettings }],
+    items: [
+      { to: "/settings", label: "Settings", icon: IconSettings },
+      { to: "/admin/users", label: "User administration", shortLabel: "Users", icon: IconShieldLock, adminOnly: true },
+    ],
   },
 ]
 
@@ -59,4 +64,10 @@ export const flatAppNavItems = appNavGroups.flatMap((group) => group.items)
 
 export function getActiveAppNavItem(pathname: string) {
   return flatAppNavItems.find((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
+}
+
+export function getVisibleAppNavGroups(isAdmin: boolean) {
+  return appNavGroups
+    .map((group) => ({ ...group, items: group.items.filter((item) => !item.adminOnly || isAdmin) }))
+    .filter((group) => group.items.length > 0)
 }

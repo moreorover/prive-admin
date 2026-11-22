@@ -8,6 +8,7 @@ import { useState } from "react"
 
 import { HairOrdersTable } from "@/components/hair-orders-table"
 import { PageHeader } from "@/components/page-header"
+import { ResourceToolbar } from "@/components/resource-toolbar"
 import { Section } from "@/components/section"
 import { type SelectOption, withPinnedOption } from "@/lib/resource-pagination"
 
@@ -145,12 +146,17 @@ export function HairOrdersPage({
           </Button>
         }
       />
-      <Section padding="lg">
+      <Section padding={0}>
+        <ResourceToolbar count={totalCount} countLabel={totalCount === 1 ? "hair order" : "hair orders"}>
+          <Text size="sm" c="dimmed">
+            Inbound stock
+          </Text>
+        </ResourceToolbar>
         <Table.ScrollContainer minWidth={760}>
           <HairOrdersTable hairOrders={hairOrders} isLoading={isLoading} />
         </Table.ScrollContainer>
         {showPagination && (
-          <Group justify="space-between" mt="md">
+          <Group justify="space-between" p="md">
             <Text size="sm" c="dimmed">
               {totalCount} hair order{totalCount === 1 ? "" : "s"} · Page {Math.min(page, totalPages)} of {totalPages}
             </Text>
