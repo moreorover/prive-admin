@@ -96,6 +96,21 @@ describe("appointment finance SQL", () => {
     expect(row?.received).toBe((maximum * 2n).toString())
   })
 
+  it("cancels repeated maximum-safe movements without SQLite sum overflow", async () => {
+    const maximum = Number.MAX_SAFE_INTEGER
+    const insert = sqlite.prepare(`INSERT INTO "transaction"
+      (id,appointment_id,customer_id,movement_type,amount,currency,created_at) VALUES (?,?,?,?,?,?,?)`)
+    for (let index = 0; index < 1025; index += 1) {
+      insert.run(`overflow-positive-${index}`, "a", "client", "adjustment", maximum, "EUR", Date.parse("2026-06-01"))
+    }
+    for (let index = 0; index < 1025; index += 1) {
+      insert.run(`overflow-negative-${index}`, "a", "client", "adjustment", -maximum, "EUR", Date.parse("2026-06-01"))
+    }
+
+    const row = (await appointmentFinanceRows(db, "a")).find((item) => item.currency === "EUR")
+    expect(row?.adjustments).toBe("0")
+  })
+
   it("groups on UTC transaction month, respecting year and currency filters", async () => {
     expect(await monthlyFinanceRows(db, { year: 2026, currency: "EUR" })).toEqual([
       {

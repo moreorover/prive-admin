@@ -9,7 +9,7 @@ import { trpc } from "@/utils/trpc"
 
 import { Route } from "../appointment-finance"
 import { Route as AppointmentRoute } from "../appointments/$appointmentId"
-import { appointmentFinanceQueryOptions, financeSearchSchema } from "./appointment-finance-data"
+import { appointmentFinanceQueryOptions, financeSearchSchema, getStaleFinanceSearch } from "./appointment-finance-data"
 
 describe("owner appointment finance route", () => {
   it("replaces stale monthly and personnel pages independently while preserving filters", async () => {
@@ -32,6 +32,20 @@ describe("owner appointment finance route", () => {
     ).rejects.toMatchObject({
       options: { to: "/appointment-finance", replace: true, search: { ...search, monthlyPage: 1, personnelPage: 1 } },
     })
+  })
+
+  it("clamps a cached page after an invalidated query refreshes to one page", () => {
+    const search = financeSearchSchema.parse({
+      year: 2025,
+      currency: "GBP",
+      personnelId: "p",
+      monthlyPage: 2,
+      personnelPage: 2,
+    })
+    const cached = getStaleFinanceSearch(search, { totalCount: 12, pageSize: 10 }, { totalCount: 12, pageSize: 10 })
+    expect(cached).toEqual(search)
+    const refreshed = getStaleFinanceSearch(search, { totalCount: 1, pageSize: 10 }, { totalCount: 1, pageSize: 10 })
+    expect(refreshed).toEqual({ ...search, monthlyPage: 1, personnelPage: 1 })
   })
   it("gates direct links and navigation by owner role", async () => {
     for (const isAdmin of [false, true]) {

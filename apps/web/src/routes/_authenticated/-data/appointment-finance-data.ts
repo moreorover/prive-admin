@@ -27,6 +27,8 @@ export type MonthlyFinance = Reports["monthlyAppointmentFinance"]["list"]
 export type PersonnelFinance = Reports["personnelFinance"]["list"]
 export type AppointmentTotals = Reports["appointmentFinance"]["get"]["totals"]
 
+type FinancePageResult = { totalCount: number; pageSize: number }
+
 export function appointmentFinanceQueryOptions(appointmentId: string, isAdmin: boolean) {
   return trpc.reports.appointmentFinance.get.queryOptions({ appointmentId }, { enabled: isAdmin })
 }
@@ -37,4 +39,14 @@ export function monthlyFinanceQueryOptions({ year, currency, monthlyPage }: Fina
 
 export function personnelFinanceQueryOptions({ year, currency, month, personnelId, personnelPage }: FinanceSearch) {
   return trpc.reports.personnelFinance.list.queryOptions({ year, currency, month, personnelId, page: personnelPage })
+}
+
+export function getStaleFinanceSearch(search: FinanceSearch, monthly: FinancePageResult, personnel: FinancePageResult) {
+  const monthlyLastPage = Math.max(1, Math.ceil(monthly.totalCount / monthly.pageSize))
+  const personnelLastPage = Math.max(1, Math.ceil(personnel.totalCount / personnel.pageSize))
+  return {
+    ...search,
+    monthlyPage: Math.min(search.monthlyPage, monthlyLastPage),
+    personnelPage: Math.min(search.personnelPage, personnelLastPage),
+  }
 }
