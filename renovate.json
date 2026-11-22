@@ -5,7 +5,12 @@
   "packageRules": [
     {
       "description": "Vite+ pins these versions together, update them with `vp migrate`",
-      "matchPackageNames": ["vite", "vitest", "vite-plus", "@voidzero-dev/vite-plus-core"],
+      "matchPackageNames": [
+        "vite",
+        "vitest",
+        "vite-plus",
+        "@voidzero-dev/vite-plus-core"
+      ],
       "enabled": false
     }
   ]
