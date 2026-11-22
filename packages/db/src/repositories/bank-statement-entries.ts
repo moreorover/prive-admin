@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, inArray, lte } from "drizzle-orm"
+import { and, count, desc, eq, gte, inArray, like, lte, or } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { bankAccount } from "../schema/bank-account"
@@ -105,39 +105,30 @@ export async function listBankStatementEntries(
   const where = conditions.length > 0 ? and(...conditions) : undefined
   const query = filter.query?.trim()
   if (query) {
-    // D1's SQLite lower() only folds ASCII. Match the searchable projection in
-    // JavaScript before counting/paging, then hydrate only the selected rows.
-    const candidates = await database
-      .select({
-        id: bankStatementEntry.id,
-        counterpartyName: bankStatementEntry.counterpartyName,
-        purpose: bankStatementEntry.purpose,
-        docNumber: bankStatementEntry.docNumber,
-        externalRef: bankStatementEntry.externalRef,
-        counterpartyIban: bankStatementEntry.counterpartyIban,
-        counterpartyBank: bankStatementEntry.counterpartyBank,
-        accountIban: bankAccount.iban,
-        accountBankName: bankAccount.bankName,
-      })
+    const searchWhere = buildSearchCondition(query)
+    const combinedWhere = where ? and(where, searchWhere) : searchWhere
+    const pageRows = await database
+      .select({ id: bankStatementEntry.id })
       .from(bankStatementEntry)
       .innerJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
-      .where(where)
-      .orderBy(desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt))
-    const normalizedQuery = normalizeSearchText(query)
-    const matchingIds = candidates.flatMap(({ id, ...text }) =>
-      Object.values(text).some((value) => value != null && normalizeSearchText(value).includes(normalizedQuery))
-        ? [id]
-        : [],
-    )
-    const pageIds = matchingIds.slice(filter.offset, filter.offset + filter.pageSize)
-    if (pageIds.length === 0) return { items: [], totalCount: matchingIds.length }
-
-    const items = await database.query.bankStatementEntry.findMany({
-      where: inArray(bankStatementEntry.id, pageIds),
-      with: { bankAccount: { with: { legalEntity: true } } },
-      orderBy: [desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt)],
-    })
-    return { items, totalCount: matchingIds.length }
+      .where(combinedWhere)
+      .orderBy(desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt), desc(bankStatementEntry.id))
+      .limit(filter.pageSize)
+      .offset(filter.offset)
+    const pageIds = pageRows.map(({ id }) => id)
+    const items = pageIds.length
+      ? await database.query.bankStatementEntry.findMany({
+          where: inArray(bankStatementEntry.id, pageIds),
+          with: { bankAccount: { with: { legalEntity: true } } },
+          orderBy: [desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt), desc(bankStatementEntry.id)],
+        })
+      : []
+    const [countRow] = await database
+      .select({ totalCount: count() })
+      .from(bankStatementEntry)
+      .innerJoin(bankAccount, eq(bankStatementEntry.bankAccountId, bankAccount.id))
+      .where(combinedWhere)
+    return { items, totalCount: countRow?.totalCount ?? 0 }
   }
 
   const items = await database.query.bankStatementEntry.findMany({
@@ -145,7 +136,7 @@ export async function listBankStatementEntries(
     with: {
       bankAccount: { with: { legalEntity: true } },
     },
-    orderBy: [desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt)],
+    orderBy: [desc(bankStatementEntry.date), desc(bankStatementEntry.importedAt), desc(bankStatementEntry.id)],
     limit: filter.pageSize,
     offset: filter.offset,
   })
@@ -179,6 +170,22 @@ export async function undoBankStatementEntry(database: Db = db, id: string) {
   return row
 }
 
-function normalizeSearchText(value: string) {
-  return value.normalize("NFC").toLowerCase().normalize("NFC")
+export function bankStatementSearchPatterns(value: string) {
+  const forms = [value.normalize("NFC"), value.normalize("NFD")]
+  return [...new Set(forms.flatMap((form) => [form, form.toLowerCase(), form.toUpperCase()]))]
+}
+
+function buildSearchCondition(query: string) {
+  const fields = [
+    bankStatementEntry.counterpartyName,
+    bankStatementEntry.purpose,
+    bankStatementEntry.docNumber,
+    bankStatementEntry.externalRef,
+    bankStatementEntry.counterpartyIban,
+    bankStatementEntry.counterpartyBank,
+    bankAccount.iban,
+    bankAccount.bankName,
+  ]
+  const patterns = bankStatementSearchPatterns(query).map((value) => `%${value.replace(/[\\%_]/g, "\\$&")}%`)
+  return or(...patterns.flatMap((pattern) => fields.map((field) => like(field, pattern))))!
 }

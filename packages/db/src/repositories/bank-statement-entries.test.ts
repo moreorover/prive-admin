@@ -8,6 +8,7 @@ import * as schema from "../schema"
 import {
   importBankStatementEntries,
   listBankStatementEntries,
+  bankStatementSearchPatterns,
   previewBankStatementEntries,
 } from "./bank-statement-entries"
 
@@ -144,6 +145,12 @@ describe("bank statement entry listing", () => {
   })
 
   afterEach(() => sqlite?.close())
+
+  it("builds Unicode search patterns for SQLite matching", () => {
+    expect(bankStatementSearchPatterns("Šiaulių")).toEqual(
+      expect.arrayContaining(["Šiaulių", "šiaulių", "ŠIAULIŲ", "Šiaulių", "šiaulių", "ŠIAULIŲ"]),
+    )
+  })
 
   it("previews the same conflict key as import, including repeated CSV references, without writing", async () => {
     const externalRefs = ["ref-start", "ref-end", "new", "new", "ref-start"]
