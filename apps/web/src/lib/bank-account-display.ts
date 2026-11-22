@@ -1,4 +1,4 @@
-export function normalizeBankAccountIdentifier(value: string) {
+function normalizeBankAccountIdentifier(value: string) {
   return value.replace(/\s/g, "").toUpperCase()
 }
 
