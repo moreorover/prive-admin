@@ -24,19 +24,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
-  background:
-    radial-gradient(
-      circle at 18% 8%,
-      color-mix(in srgb, var(--prive-page-glow-primary) 58%, transparent),
-      transparent 34rem
-    ),
-    radial-gradient(
-      circle at 92% 14%,
-      color-mix(in srgb, var(--prive-page-glow-secondary) 58%, transparent),
-      transparent 30rem
-    ),
-    var(--mantine-color-body);
-  background-attachment: fixed;
+  background: var(--mantine-color-body);
 }
 
 body,
@@ -68,7 +56,7 @@ a {
 }
 
 .prive-active:active {
-  transform: translateY(1px) scale(0.995);
+  transform: translateY(1px);
 }
 
 .prive-section {
@@ -119,7 +107,7 @@ a {
   background: var(--prive-surface);
   color: var(--mantine-color-text);
   border-color: var(--prive-border);
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--prive-surface-shadow) 52%, transparent);
+  box-shadow: var(--mantine-shadow-xs);
 }
 
 [class^="mantine-Button-root"],
@@ -169,10 +157,9 @@ a {
 [class*=" mantine-Input-label"] {
   margin-bottom: 0.35rem;
   color: var(--mantine-color-text);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 800;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
+  letter-spacing: 0.015em;
 }
 
 [class^="mantine-Table-table"],
@@ -188,9 +175,9 @@ a {
 [class^="mantine-Table-th"],
 [class*=" mantine-Table-th"] {
   color: var(--mantine-color-dimmed);
-  font-size: 0.72rem;
+  font-size: 0.6875rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -206,6 +193,5 @@ a {
   background: var(--prive-surface-raised);
   color: var(--mantine-color-text);
   border-color: var(--prive-border-strong);
-  box-shadow: 0 22px 70px var(--prive-surface-shadow);
-  backdrop-filter: blur(20px);
+  box-shadow: var(--mantine-shadow-sm);
 }
