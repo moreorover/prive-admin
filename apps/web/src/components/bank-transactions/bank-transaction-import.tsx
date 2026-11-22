@@ -1,4 +1,4 @@
-import { Alert, Anchor, Button, Card, FileInput, Group, Modal, Stack, Text } from "@mantine/core"
+import { Alert, Anchor, Button, Card, FileInput, Group, Modal, Paper, SimpleGrid, Stack, Text } from "@mantine/core"
 
 export type BankStatementImportResult = {
   accountIban: string
@@ -42,17 +42,31 @@ export function BankTransactionImport({
 }: BankTransactionImportProps) {
   const content = (
     <Stack>
-      <Text fw={500}>Upload bank statement (SEB or Swedbank CSV)</Text>
-      <Group align="end">
-        <FileInput
-          disabled={importPending}
-          label="Bank statement CSV"
-          placeholder="Pick a .csv file"
-          value={file}
-          onChange={onFileChange}
-          accept=".csv,text/csv"
-          w="100%"
-        />
+      <Text size="sm" c="dimmed">
+        Upload an SEB or Swedbank CSV, then review the destination account and entries before confirming the import.
+      </Text>
+      <FileInput
+        disabled={importPending}
+        label="Bank statement CSV"
+        placeholder="Pick a .csv file"
+        value={file}
+        onChange={onFileChange}
+        accept=".csv,text/csv"
+        w="100%"
+      />
+      <BankStatementImportFeedback
+        preview={preview}
+        previewPending={previewPending}
+        error={error}
+        setupHref={setupHref}
+        importResult={importResult}
+      />
+      <Group justify="flex-end" gap="xs" pt="xs">
+        {onCancel ? (
+          <Button variant="default" onClick={onCancel} disabled={importPending}>
+            {importResult ? "Close" : "Cancel"}
+          </Button>
+        ) : null}
         {opened !== undefined || onPreview ? (
           preview ? (
             <Button onClick={onImport} loading={importPending} disabled={!file || previewPending}>
@@ -68,19 +82,7 @@ export function BankTransactionImport({
             Import
           </Button>
         )}
-        {onCancel ? (
-          <Button variant="default" onClick={onCancel} disabled={importPending}>
-            {importResult ? "Close" : "Cancel"}
-          </Button>
-        ) : null}
       </Group>
-      <BankStatementImportFeedback
-        preview={preview}
-        previewPending={previewPending}
-        error={error}
-        setupHref={setupHref}
-        importResult={importResult}
-      />
     </Stack>
   )
   return opened !== undefined ? (
@@ -89,6 +91,7 @@ export function BankTransactionImport({
       onClose={onCancel ?? (() => {})}
       title="Import bank statement CSV"
       size="lg"
+      centered
       closeOnClickOutside={!importPending}
       closeOnEscape={!importPending}
       withCloseButton={!importPending}
@@ -110,17 +113,72 @@ function BankStatementImportFeedback({
   return (
     <>
       {preview ? (
-        <Alert title="Confirm destination account">
-          <Text>
-            IBAN <code>{preview.accountIban}</code>
-          </Text>
-          <Text>
-            {preview.account.displayName} · {preview.account.legalEntity.name}
-          </Text>
-          <Text>Total CSV rows: {preview.total}</Text>
-          <Text>New entries: {preview.inserted}</Text>
-          <Text>Duplicates ignored: {preview.skipped}</Text>
-        </Alert>
+        <Paper withBorder radius="md" p="md">
+          <Stack gap="sm">
+            <Text size="sm" fw={600}>
+              Confirm destination account
+            </Text>
+            <SimpleGrid component="dl" cols={{ base: 1, xs: 2 }} spacing="sm" m={0}>
+              <div>
+                <Text component="dt" size="xs" c="dimmed">
+                  Destination account
+                </Text>
+                <Text component="dd" size="sm" fw={500} m={0}>
+                  {preview.account.displayName}
+                </Text>
+              </div>
+              <div>
+                <Text component="dt" size="xs" c="dimmed">
+                  Legal entity
+                </Text>
+                <Text component="dd" size="sm" fw={500} m={0}>
+                  {preview.account.legalEntity.name}
+                </Text>
+              </div>
+              <div>
+                <Text component="dt" size="xs" c="dimmed">
+                  IBAN
+                </Text>
+                <Text component="dd" size="sm" ff="monospace" m={0} style={{ overflowWrap: "anywhere" }}>
+                  {preview.accountIban}
+                </Text>
+              </div>
+            </SimpleGrid>
+            <SimpleGrid
+              component="dl"
+              cols={3}
+              spacing="xs"
+              m={0}
+              pt="sm"
+              style={{ borderTop: "1px solid var(--mantine-color-default-border)" }}
+            >
+              <div>
+                <Text component="dt" size="xs" c="dimmed">
+                  Total CSV rows
+                </Text>
+                <Text component="dd" size="lg" fw={600} m={0}>
+                  {preview.total}
+                </Text>
+              </div>
+              <div>
+                <Text component="dt" size="xs" c="dimmed">
+                  New entries
+                </Text>
+                <Text component="dd" size="lg" fw={600} m={0}>
+                  {preview.inserted}
+                </Text>
+              </div>
+              <div>
+                <Text component="dt" size="xs" c="dimmed">
+                  Duplicates ignored
+                </Text>
+                <Text component="dd" size="lg" fw={600} m={0}>
+                  {preview.skipped}
+                </Text>
+              </div>
+            </SimpleGrid>
+          </Stack>
+        </Paper>
       ) : null}
       {previewPending ? <Text role="status">Reading and checking CSV…</Text> : null}
       {error ? <Alert color="red">{error}</Alert> : null}

@@ -1,4 +1,5 @@
-import { Button, FileInput, MantineProvider, Modal } from "@mantine/core"
+import { Button, FileInput, Group, MantineProvider, Modal, Stack } from "@mantine/core"
+import { Children } from "react"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vite-plus/test"
@@ -85,6 +86,42 @@ describe("workspace confirmation", () => {
     expect(elements(BankTransactionImport({ ...props, opened: false }))[0]!.props.opened).toBe(false)
   })
 
+  it("centers the modal and keeps a right-aligned footer below the full-width picker and feedback", () => {
+    const tree = BankTransactionImport({ ...props, preview })
+    expect(tree.props.centered).toBe(true)
+    const content = elements(tree).find((el) => el.type === Stack)!
+    const children = Children.toArray(content.props.children)
+    const footer = children.at(-1) as ReturnType<typeof BankTransactionImport>
+    expect(footer.type).toBe(Group)
+    expect(footer.props.justify).toBe("flex-end")
+    expect(elements(footer).some((el) => el.type === FileInput)).toBe(false)
+    expect(
+      elements(footer)
+        .filter((el) => el.type === Button)
+        .map((el) => el.props.children),
+    ).toEqual(["Cancel", "Confirm import"])
+    expect(children.findIndex((child) => elements(child).some((el) => el.type === FileInput))).toBeLessThan(
+      children.length - 1,
+    )
+    expect(elements(tree).find((el) => el.type === FileInput)!.props.w).toBe("100%")
+  })
+
+  it("labels each destination and count value in a bordered preview summary", () => {
+    const tree = BankTransactionImport({ ...props, preview })
+    const html = renderToStaticMarkup(createElement(MantineProvider, null, tree.props.children))
+    for (const [label, value] of [
+      ["Destination account", "Main account"],
+      ["Legal entity", "Prive LT"],
+      ["IBAN", "LT121000011101001000"],
+      ["Total CSV rows", "5"],
+      ["New entries", "3"],
+      ["Duplicates ignored", "2"],
+    ]) {
+      expect(html).toMatch(new RegExp(`<dt[^>]*>${label}</dt><dd[^>]*>${value}</dd>`))
+    }
+    expect(html).toContain('data-with-border="true"')
+  })
+
   it("shows destination and row count before the explicit confirm action", () => {
     const html = renderToStaticMarkup(
       createElement(
@@ -96,9 +133,6 @@ describe("workspace confirmation", () => {
     expect(html).toContain("LT121000011101001000")
     expect(html).toContain("Main account")
     expect(html).toContain("Prive LT")
-    expect(html).toContain("Total CSV rows: 5")
-    expect(html).toContain("New entries: 3")
-    expect(html).toContain("Duplicates ignored: 2")
     const confirm = elements(BankTransactionImport({ ...props, preview })).find(
       (el) => el.type === Button && el.props.children === "Confirm import",
     )!
@@ -128,7 +162,9 @@ describe("workspace confirmation", () => {
   it("locks file selection and confirmation while importing", () => {
     const controls = elements(BankTransactionImport({ ...props, preview, importPending: true }))
     expect(controls.find((el) => el.type === FileInput)!.props.disabled).toBe(true)
-    expect(controls.find((el) => el.type === Button)!.props.loading).toBe(true)
+    expect(controls.find((el) => el.type === Button && el.props.children === "Confirm import")!.props.loading).toBe(
+      true,
+    )
   })
 
   it("renders validation errors with a setup link and no confirmation", () => {
