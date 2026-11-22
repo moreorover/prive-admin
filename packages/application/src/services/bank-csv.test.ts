@@ -37,7 +37,11 @@ describe("bank CSV parser", () => {
   })
 })
 
-const database = vi.hoisted(() => ({ listBankAccounts: vi.fn(), importBankStatementEntries: vi.fn() }))
+const database = vi.hoisted(() => ({
+  listBankAccounts: vi.fn(),
+  importBankStatementEntries: vi.fn(),
+  previewBankStatementEntries: vi.fn(),
+}))
 vi.mock("@prive-admin-tanstack/db", () => database)
 
 const iban = "LT121000011101001000"
@@ -60,6 +64,7 @@ describe("validated statement CSV import", () => {
   beforeEach(() => {
     vi.resetAllMocks()
     database.listBankAccounts.mockResolvedValue([account])
+    database.previewBankStatementEntries.mockResolvedValue({ inserted: 1, skipped: 1 })
     database.importBankStatementEntries.mockResolvedValue([{ id: "entry-1" }])
   })
 
@@ -67,7 +72,13 @@ describe("validated statement CSV import", () => {
     expect(await previewBankStatementCsv({ csv: swedbank(" lt12 1000 0111 0100 1000 ") })).toEqual({
       accountIban: iban,
       total: 2,
+      inserted: 1,
+      skipped: 1,
       account: { id: "account-1", displayName: "Main account", legalEntity: { id: "entity-1", name: "Prive LT" } },
+    })
+    expect(database.previewBankStatementEntries).toHaveBeenCalledWith(undefined, {
+      bankAccountId: "account-1",
+      externalRefs: ["ref-1", "ref-2"],
     })
     expect(database.importBankStatementEntries).not.toHaveBeenCalled()
   })

@@ -6,6 +6,29 @@ import { bankStatementEntry } from "../schema/bank-statement-entry"
 
 const BANK_STATEMENT_ENTRY_IMPORT_CHUNK_SIZE = 5
 
+// One account parameter plus at most 90 references stays below D1's bind limit.
+export async function previewBankStatementEntries(
+  database: Db = db,
+  input: { bankAccountId: string; externalRefs: string[] },
+) {
+  const uniqueRefs = [...new Set(input.externalRefs)]
+  let existing = 0
+  for (let index = 0; index < uniqueRefs.length; index += 90) {
+    const [row] = await database
+      .select({ totalCount: count() })
+      .from(bankStatementEntry)
+      .where(
+        and(
+          eq(bankStatementEntry.bankAccountId, input.bankAccountId),
+          inArray(bankStatementEntry.externalRef, uniqueRefs.slice(index, index + 90)),
+        ),
+      )
+    existing += row?.totalCount ?? 0
+  }
+  const inserted = uniqueRefs.length - existing
+  return { inserted, skipped: input.externalRefs.length - inserted }
+}
+
 export async function importBankStatementEntries(
   database: Db = db,
   input: {

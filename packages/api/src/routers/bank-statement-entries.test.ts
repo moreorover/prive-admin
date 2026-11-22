@@ -106,6 +106,8 @@ describe("CSV transport", () => {
     const preview = {
       accountIban: "LT121000011101001000",
       total: 2,
+      inserted: 1,
+      skipped: 1,
       account: { id: "a", displayName: "Main", legalEntity: { id: "e", name: "Prive" } },
     }
     servicesMock.previewBankStatementCsv.mockResolvedValue(preview)

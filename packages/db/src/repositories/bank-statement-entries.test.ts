@@ -5,7 +5,11 @@ import { URL } from "node:url"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import * as schema from "../schema"
-import { importBankStatementEntries, listBankStatementEntries } from "./bank-statement-entries"
+import {
+  importBankStatementEntries,
+  listBankStatementEntries,
+  previewBankStatementEntries,
+} from "./bank-statement-entries"
 
 vi.mock("../index", () => ({ db: {} }))
 
@@ -140,6 +144,41 @@ describe("bank statement entry listing", () => {
   })
 
   afterEach(() => sqlite?.close())
+
+  it("previews the same conflict key as import, including repeated CSV references, without writing", async () => {
+    const externalRefs = ["ref-start", "ref-end", "new", "new", "ref-start"]
+    expect(await previewBankStatementEntries(database as never, { bankAccountId: "account-1", externalRefs })).toEqual({
+      inserted: 2,
+      skipped: 3,
+    })
+    expect((await listBankStatementEntries(database as never, { pageSize: 10, offset: 0 })).totalCount).toBe(6)
+    const inserted = await importBankStatementEntries(database as never, {
+      accountIban: "LT111",
+      values: externalRefs.map((ref) => ({ ...statementEntryValue(ref), bankAccountId: "account-1" })),
+    })
+    expect(inserted).toHaveLength(2)
+    expect(await previewBankStatementEntries(database as never, { bankAccountId: "account-1", externalRefs })).toEqual({
+      inserted: 0,
+      skipped: 5,
+    })
+  })
+
+  it("previews empty and large statements without exceeding D1's 100 parameter limit", async () => {
+    expect(
+      await previewBankStatementEntries(database as never, { bankAccountId: "account-1", externalRefs: [] }),
+    ).toEqual({ inserted: 0, skipped: 0 })
+    const externalRefs = Array.from({ length: 205 }, (_, index) => `new-${index}`)
+    const limited = drizzle(async (sql, params) => {
+      expect(params.length).toBeLessThanOrEqual(100)
+      const statement = sqlite.prepare(sql)
+      statement.setReturnArrays(true)
+      return { rows: statement.all(...params) as unknown as SQLOutputValue[][] }
+    })
+    expect(await previewBankStatementEntries(limited as never, { bankAccountId: "account-1", externalRefs })).toEqual({
+      inserted: 205,
+      skipped: 0,
+    })
+  })
 
   it("lists across accounts with relations, date/import ordering and a count independent of paging", async () => {
     const result = await listBankStatementEntries(database as never, { pageSize: 3, offset: 2 })

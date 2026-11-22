@@ -1,4 +1,4 @@
-import { Button, FileInput, MantineProvider } from "@mantine/core"
+import { Button, FileInput, MantineProvider, Modal } from "@mantine/core"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vite-plus/test"
@@ -52,9 +52,13 @@ describe("workspace confirmation", () => {
   const preview = {
     accountIban: "LT121000011101001000",
     total: 5,
+    inserted: 3,
+    skipped: 2,
     account: { id: "a", displayName: "Main account", legalEntity: { id: "e", name: "Prive LT" } },
   }
   const props = {
+    opened: true,
+    onCancel: vi.fn<() => void>(),
     file: new File(["csv"], "statement.csv"),
     onFileChange: vi.fn<(file: File | null) => void>(),
     onPreview: vi.fn<() => void>(),
@@ -66,28 +70,59 @@ describe("workspace confirmation", () => {
     error: null as string | null,
   }
 
-  it("offers only preview until an account has been validated", () => {
-    const controls = elements(BankTransactionImport(props))
-    const buttons = controls.filter((el) => el.type === Button)
-    expect(buttons.map((el) => el.props.children)).toEqual(["Preview CSV"])
-    buttons[0]!.props.onClick()
-    expect(props.onPreview).toHaveBeenCalledOnce()
+  it("opens a modal with selection and cancel but no preview or import action before validation", () => {
+    const tree = BankTransactionImport(props)
+    expect(tree.type).toBe(Modal)
+    expect(tree.props.opened).toBe(true)
+    tree.props.onClose()
+    expect(props.onCancel).toHaveBeenCalledOnce()
+    expect(
+      elements(tree)
+        .filter((el) => el.type === Button)
+        .map((el) => el.props.children),
+    ).toEqual(["Cancel"])
     expect(props.onImport).not.toHaveBeenCalled()
+    expect(elements(BankTransactionImport({ ...props, opened: false }))[0]!.props.opened).toBe(false)
   })
 
   it("shows destination and row count before the explicit confirm action", () => {
     const html = renderToStaticMarkup(
-      createElement(MantineProvider, null, createElement(BankTransactionImport, { ...props, preview })),
+      createElement(
+        MantineProvider,
+        null,
+        createElement(BankTransactionImport, { ...props, preview, opened: undefined }),
+      ),
     )
     expect(html).toContain("LT121000011101001000")
     expect(html).toContain("Main account")
     expect(html).toContain("Prive LT")
-    expect(html).toContain("5 rows")
+    expect(html).toContain("Total CSV rows: 5")
+    expect(html).toContain("New entries: 3")
+    expect(html).toContain("Duplicates ignored: 2")
     const confirm = elements(BankTransactionImport({ ...props, preview })).find(
       (el) => el.type === Button && el.props.children === "Confirm import",
     )!
     confirm.props.onClick()
     expect(props.onImport).toHaveBeenCalledOnce()
+  })
+
+  it("shows a success summary and closes the completed modal without another import", () => {
+    const onCancel = vi.fn<() => void>()
+    const onImport = vi.fn<() => void>()
+    const tree = BankTransactionImport({
+      ...props,
+      file: null,
+      onCancel,
+      onImport,
+      importResult: { accountIban: preview.accountIban, total: 5, inserted: 3, skipped: 2 },
+    })
+    const buttons = elements(tree).filter((el) => el.type === Button)
+    expect(buttons.map((el) => el.props.children)).toEqual(["Close"])
+    buttons[0]!.props.onClick()
+    expect(onCancel).toHaveBeenCalledOnce()
+    expect(onImport).not.toHaveBeenCalled()
+    const html = renderToStaticMarkup(createElement(MantineProvider, null, tree.props.children))
+    expect(html).toContain("imported 3 new entries, skipped 2 duplicates (total rows 5)")
   })
 
   it("locks file selection and confirmation while importing", () => {
@@ -103,6 +138,7 @@ describe("workspace confirmation", () => {
         null,
         createElement(BankTransactionImport, {
           ...props,
+          opened: undefined,
           error: "No bank account configured",
           setupHref: "/legal-entities",
         }),

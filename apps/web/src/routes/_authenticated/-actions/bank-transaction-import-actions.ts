@@ -41,10 +41,11 @@ export function useBankTransactionImport() {
     setState(current.current)
   }
 
-  const onFileChange = (file: File | null) => {
+  const onFileChange = async (file: File | null) => {
     if (current.current.importPending) return
     revision.current += 1
     update({ ...initialState, opened: current.current.opened, file })
+    if (file) await onPreview()
   }
 
   const onPreview = async () => {

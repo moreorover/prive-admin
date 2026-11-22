@@ -5,6 +5,7 @@ import {
   importBankStatementEntries as insertBankStatementEntries,
   listBankStatementEntries as fetchBankStatementEntries,
   listBankAccounts,
+  previewBankStatementEntries,
   undoBankStatementEntry as patchUndoBankStatementEntry,
 } from "@prive-admin-tanstack/db"
 
@@ -114,9 +115,14 @@ async function validateBankStatementCsv(input: { csv: string }) {
 
 export async function previewBankStatementCsv(input: { csv: string }) {
   const { parsed, accountIban, account } = await validateBankStatementCsv(input)
+  const counts = await previewBankStatementEntries(undefined, {
+    bankAccountId: account.id,
+    externalRefs: parsed.rows.map((row) => row.externalRef),
+  })
   return {
     accountIban,
     total: parsed.rows.length,
+    ...counts,
     account: {
       id: account.id,
       displayName: account.displayName,

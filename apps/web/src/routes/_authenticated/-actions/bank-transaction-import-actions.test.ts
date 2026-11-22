@@ -11,6 +11,8 @@ import { useBankTransactionImport } from "./bank-transaction-import-actions"
 const preview = {
   accountIban: "LT121000011101001000",
   total: 5,
+  inserted: 3,
+  skipped: 2,
   account: { id: "a", displayName: "Main", legalEntity: { id: "e", name: "Prive" } },
 }
 const result = { accountIban: preview.accountIban, total: 5, inserted: 3, skipped: 2 }
@@ -61,10 +63,8 @@ describe("route-owned CSV confirmation", () => {
     await actions.onImport()
     expect(calls).toEqual([])
     const file = new File(["original CSV"], "statement.csv")
-    actions.onFileChange(file)
-    await actions.onImport()
-    expect(calls).toEqual([])
-    await actions.onPreview()
+    actions.onOpen()
+    await actions.onFileChange(file)
     expect(calls).toEqual([{ procedure: "bankStatementEntries.previewCsv", input: { csv: "original CSV" } }])
     await actions.onImport()
     expect(calls[1]).toEqual({ procedure: "bankStatementEntries.importCsv", input: { csv: "original CSV" } })
@@ -93,17 +93,16 @@ describe("route-owned CSV confirmation", () => {
           finish = resolve
         }),
     )
-    actions.onFileChange(first)
-    const loading = actions.onPreview()
-    actions.onFileChange(new File(["second"], "second.csv"))
+    const loading = actions.onFileChange(first)
+    await actions.onFileChange(new File(["second"], "second.csv"))
     finish("first")
     await loading
+    expect(calls.map((call) => call.procedure)).toEqual(["bankStatementEntries.previewCsv"])
     await actions.onImport()
-    expect(calls).toEqual([])
-    await actions.onPreview()
+    expect(calls[1]).toEqual({ procedure: "bankStatementEntries.importCsv", input: { csv: "second" } })
     actions.onFileChange(null)
     await actions.onImport()
-    expect(calls.map((call) => call.procedure)).toEqual(["bankStatementEntries.previewCsv"])
+    expect(calls).toHaveLength(2)
     client.clear()
   })
 })
@@ -112,8 +111,7 @@ it("ignores duplicate confirmation clicks and cancellation while import is pendi
   const client = new QueryClient()
   const actions = renderHook(client, useBankTransactionImport)
   const calls = serve()
-  actions.onFileChange(new File(["csv"], "statement.csv"))
-  await actions.onPreview()
+  await actions.onFileChange(new File(["csv"], "statement.csv"))
   const importing = actions.onImport()
   actions.onFileChange(new File(["replacement"], "other.csv"))
   actions.onCancel()
@@ -138,8 +136,7 @@ it("blocks writes after a failed preview and after cancellation", async () => {
     ]),
   )
   vi.stubGlobal("fetch", failed)
-  actions.onFileChange(new File(["csv"], "statement.csv"))
-  await actions.onPreview()
+  await actions.onFileChange(new File(["csv"], "statement.csv"))
   await actions.onImport()
   expect(failed).toHaveBeenCalledOnce()
   const calls = serve()
@@ -158,8 +155,7 @@ it("requires a fresh preview after a failed import without invalidating lists", 
   const actions = renderHook(client, useBankTransactionImport)
   const show = vi.spyOn(notifications, "show")
   serve()
-  actions.onFileChange(new File(["csv"], "statement.csv"))
-  await actions.onPreview()
+  await actions.onFileChange(new File(["csv"], "statement.csv"))
   const failed = vi.fn<() => Promise<Response>>(async () =>
     Response.json([
       {
@@ -177,5 +173,33 @@ it("requires a fresh preview after a failed import without invalidating lists", 
   expect(failed).toHaveBeenCalledOnce()
   expect(client.getQueryState(list)?.isInvalidated).toBe(false)
   expect(show).toHaveBeenCalledWith({ color: "red", message: "Multiple bank accounts configured" })
+  client.clear()
+})
+
+it("cancels during file reading and requires a new selection after reopening", async () => {
+  const client = new QueryClient()
+  const calls = serve()
+  const actions = renderHook(client, useBankTransactionImport)
+  actions.onOpen()
+  let finish!: (csv: string) => void
+  const file = new File(["csv"], "statement.csv")
+  vi.spyOn(file, "text").mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve
+      }),
+  )
+  const selecting = actions.onFileChange(file)
+  actions.onCancel()
+  finish("csv")
+  await selecting
+  actions.onOpen()
+  await actions.onImport()
+  expect(calls).toEqual([])
+  await actions.onFileChange(new File(["fresh"], "fresh.csv"))
+  expect(calls).toEqual([{ procedure: "bankStatementEntries.previewCsv", input: { csv: "fresh" } }])
+  actions.onCancel()
+  await actions.onImport()
+  expect(calls).toHaveLength(1)
   client.clear()
 })
