@@ -21,7 +21,20 @@ describe("shared component server-state ownership", () => {
     expect(source).not.toContain("useQuery(")
     expect(source).not.toContain("useSuspenseQuery(")
     expect(source).not.toContain("useMutation(")
+
     expect(source).not.toMatch(/from ["']@tanstack\/react-query["']/)
     expect(source).not.toMatch(/from ["']@\/utils\/trpc["']/)
   })
+
+  it.each(componentFiles(join(componentsDir, "bank-transactions")))(
+    "keeps route hooks and action owners out of bank transaction component %s",
+    (path) => {
+      const source = readFileSync(path, "utf8")
+      expect(source).not.toMatch(/\b(useQueries|useNavigate|useSearch|useBankTransactionImport|use\w+Actions)\s*\(/)
+      expect(source).not.toMatch(/\bRoute\.use/)
+      expect(source).not.toMatch(/from ["'].*\/-actions\//)
+      expect(source).not.toMatch(/\bfetch\s*\(/)
+      expect(source).not.toMatch(/from ["'](@\/utils\/server-url|@mantine\/notifications)["']/)
+    },
+  )
 })

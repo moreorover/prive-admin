@@ -40,6 +40,16 @@ function emptyToNull(value: string | undefined | null): string | null {
   return trimmed.length === 0 ? null : trimmed
 }
 
+function transactionDate(value: string): string {
+  const date = value.trim()
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error(`Invalid transaction date: ${value}`)
+  const parsed = new Date(`${date}T00:00:00.000Z`)
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
+    throw new Error(`Invalid transaction date: ${value}`)
+  }
+  return date
+}
+
 function isSwedbankOwnAccountTransfer(cols: string[]): boolean {
   return (cols[4] ?? "").trim().toLowerCase() === "transfer between own accounts"
 }
@@ -69,7 +79,7 @@ function parseSebCsv(content: string): BankCsvParse {
     if (externalRef.length === 0) continue
     rows.push({
       docNumber: (cols[0] ?? "").trim(),
-      date: (cols[1] ?? "").trim(),
+      date: transactionDate(cols[1] ?? ""),
       currency: (cols[2] ?? "").trim(),
       amount: decimalToMinor(cols[3] ?? "0"),
       counterpartyName: emptyToNull(cols[4]),
@@ -122,7 +132,7 @@ function parseSwedbankCsv(content: string): BankCsvParse {
 
     rows.push({
       docNumber: (cols[11] ?? "").trim(),
-      date: (cols[2] ?? "").trim(),
+      date: transactionDate(cols[2] ?? ""),
       currency,
       amount,
       counterpartyName: emptyToNull(cols[3]),

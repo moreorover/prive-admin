@@ -2,6 +2,7 @@ import { notifications } from "@mantine/notifications"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { type Currency } from "@/lib/currency"
+import { bankTransactionsOptionsQueryOptions } from "@/routes/_authenticated/-data/bank-transactions-data"
 import { apiUrl } from "@/utils/server-url"
 import { trpc } from "@/utils/trpc"
 
@@ -154,6 +155,7 @@ export function useBankAccountActions({
           queryKey: trpc.legalEntities.get.queryOptions({ id: values.legalEntityId }).queryKey,
         }),
       ])
+      await queryClient.invalidateQueries({ queryKey: bankTransactionsOptionsQueryOptions(queryClient).queryKey })
       onUpdated?.(values)
     },
     onError: (err) => notifications.show({ color: "red", message: err.message }),
@@ -166,6 +168,7 @@ export function useBankAccountActions({
       await queryClient.invalidateQueries({
         queryKey: trpc.legalEntities.get.queryOptions({ id: values.legalEntityId }).queryKey,
       })
+      await queryClient.invalidateQueries({ queryKey: bankTransactionsOptionsQueryOptions(queryClient).queryKey })
       onCreated?.(values)
     },
     onError: (err) => notifications.show({ color: "red", message: err.message }),

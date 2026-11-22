@@ -3,6 +3,14 @@ import { describe, expect, it } from "vite-plus/test"
 import { appNavGroups, flatAppNavItems, getActiveAppNavItem, getVisibleAppNavGroups } from "./app-navigation"
 
 describe("app navigation", () => {
+  it("exposes bank transactions under Workspace and matches its active route", () => {
+    expect(appNavGroups.find((group) => group.label === "Workspace")?.items).toEqual(
+      expect.arrayContaining([expect.objectContaining({ to: "/bank-transactions", label: "Bank transactions" })]),
+    )
+    expect(getActiveAppNavItem("/bank-transactions")?.to).toBe("/bank-transactions")
+    expect(getActiveAppNavItem("/bank-transactions-other")).toBeUndefined()
+  })
+
   it("keeps settings as a visible account navigation item", () => {
     expect(appNavGroups.find((group) => group.label === "Account")?.items.map((item) => item.to)).toContain("/settings")
   })
