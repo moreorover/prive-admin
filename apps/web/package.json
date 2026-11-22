@@ -20,7 +20,7 @@
     "@mantine/schedule": "catalog:",
     "@prive-admin-tanstack/api": "workspace:*",
     "@prive-admin-tanstack/ui": "workspace:*",
-    "@tabler/icons-react": "3.48.0",
+    "@tabler/icons-react": "3.52.0",
     "@tanstack/react-query": "5.104.0",
     "@tanstack/react-router": "1.170.46",
     "@trpc/client": "catalog:",
