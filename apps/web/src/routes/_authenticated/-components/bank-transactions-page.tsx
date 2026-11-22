@@ -48,7 +48,7 @@ export function BankTransactionsPage({
   onPageChange: (page: number) => void
   onViewAllTransactions: () => void
 }) {
-  const totalCount = result?.totalCount
+  const totalCount = result?.totalCount ?? 0
 
   return (
     <Container size="xl">
@@ -61,7 +61,7 @@ export function BankTransactionsPage({
       {importAction?.opened ? <BankTransactionImport {...importAction} /> : null}
       <Section padding={0}>
         <Box component="section" aria-label="Transaction filters">
-          <ResourceToolbar count={totalCount} countLabel={totalCount === 1 ? "transaction" : "transactions"}>
+          <ResourceToolbar>
             <BankTransactionFilters
               entities={options.entities}
               accounts={options.accounts}
@@ -70,6 +70,12 @@ export function BankTransactionsPage({
             />
           </ResourceToolbar>
         </Box>
+        <Group justify="space-between" px="md" py="sm">
+          <Text fw={500}>Transactions</Text>
+          <Text size="sm" c="dimmed">
+            {totalCount} {totalCount === 1 ? "transaction" : "transactions"}
+          </Text>
+        </Group>
         <Box pos="relative" mih={120} aria-busy={isFetching}>
           <LoadingOverlay visible={isFetching} />
           {error ? (

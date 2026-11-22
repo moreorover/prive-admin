@@ -157,6 +157,7 @@ describe("BankTransactionsPage shell", () => {
       "Search",
       "View all transactions",
       "No pending transactions",
+      "Transactions",
     ]) {
       expect(markup).toContain(label)
     }
