@@ -90,6 +90,7 @@ export function BankTransactionsPage({
               entriesTotalCount={result.totalCount}
               entriesTotalPages={Math.max(1, Math.ceil(result.totalCount / result.pageSize))}
               showPagination={false}
+              radius={0}
               page={search.page}
               onPageChange={onPageChange}
             />

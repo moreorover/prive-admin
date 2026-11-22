@@ -1,4 +1,4 @@
-import { MantineProvider, Menu, Pagination, Table } from "@mantine/core"
+import { Card, MantineProvider, Menu, Pagination, Table } from "@mantine/core"
 import { createElement } from "react"
 import { renderToStaticMarkup } from "react-dom/server"
 import { describe, expect, it, vi } from "vite-plus/test"
@@ -88,6 +88,11 @@ describe("BankTransactionsTable", () => {
     expect(first[1]).toContain("GB456")
     expect(first[1]).toContain("50.00")
     expect(first[1]).toContain("USD")
+  })
+
+  it("supports a flush card when embedded in a section", () => {
+    const table = elements(BankTransactionsTable({ ...props(), radius: 0 })).find((el) => el.type === Card)
+    expect(table?.props.radius).toBe(0)
   })
 
   it("does not repeat an IBAN when the account display name is the IBAN", () => {

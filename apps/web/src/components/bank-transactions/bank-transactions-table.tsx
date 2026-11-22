@@ -28,6 +28,7 @@ export type BankTransactionsTableProps = {
   entriesTotalCount: number
   entriesTotalPages: number
   showPagination: boolean
+  radius?: string | number
   page: number
   attachmentCounts: Record<string, number> | undefined
   attachments: AttachmentPreview[]
@@ -55,6 +56,7 @@ export function BankTransactionsTable({
   entriesTotalCount,
   entriesTotalPages,
   showPagination,
+  radius,
   page,
   attachmentCounts,
   attachments,
@@ -77,7 +79,7 @@ export function BankTransactionsTable({
   onUndo,
 }: BankTransactionsTableProps) {
   return (
-    <Card withBorder>
+    <Card withBorder radius={radius}>
       <Table>
         <Table.Thead>
           <Table.Tr>
