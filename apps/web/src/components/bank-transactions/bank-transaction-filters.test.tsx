@@ -76,7 +76,18 @@ describe("BankTransactionFilters", () => {
     control("Bank account").onChange("entity:entity-2")
     expect(onChange).toHaveBeenLastCalledWith({ entityId: "entity-2", bankAccountId: undefined })
     control("Bank account").onChange("")
-    expect(onChange).toHaveBeenLastCalledWith({ entityId: undefined, bankAccountId: undefined })
+    expect(onChange).toHaveBeenLastCalledWith({ entityId: "entity-1", bankAccountId: undefined })
+  })
+
+  it("keeps an entity scope when clearing its account selection", () => {
+    const { control, onChange } = controls({
+      entityId: "entity-1",
+      bankAccountId: "account-1",
+      status: "PENDING",
+      page: 2,
+    })
+    control("Bank account").onChange("")
+    expect(onChange).toHaveBeenLastCalledWith({ entityId: "entity-1", bankAccountId: undefined })
   })
 
   it("removes the status control and emits date and search patches", () => {

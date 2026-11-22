@@ -74,7 +74,7 @@ export function BankTransactionFilters({
         value={selectedValue}
         onChange={(value) => {
           if (!value) {
-            onChange({ entityId: undefined, bankAccountId: undefined })
+            onChange({ entityId: values.entityId, bankAccountId: undefined })
             return
           }
           if (value.startsWith("entity:")) {
