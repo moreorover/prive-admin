@@ -1,73 +1,98 @@
+// @vitest-environment happy-dom
 import { MantineProvider } from "@mantine/core"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { renderToStaticMarkup } from "react-dom/server"
-import { describe, expect, it, vi } from "vite-plus/test"
-
-const useSuspenseQuery = vi.hoisted(() => vi.fn<(options: { queryKey: readonly unknown[] }) => { data: unknown }>())
-
-vi.mock("react", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("react")>()),
-  useEffect: (effect: () => void) => effect(),
-}))
-vi.mock("@tanstack/react-query", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@tanstack/react-query")>()),
-  useSuspenseQuery,
-}))
-vi.mock("../-components/appointment-finance-page", () => ({ AppointmentFinancePage: () => null }))
+import { createMemoryHistory, createRootRouteWithContext, createRouter, RouterProvider } from "@tanstack/react-router"
+import { createRoot } from "react-dom/client"
+import { expect, it, vi } from "vite-plus/test"
 
 import { Route } from "../appointment-finance"
 import {
+  financeSearchSchema,
   monthlyFinanceQueryOptions,
   personnelFinanceQueryOptions,
-  financeSearchSchema,
 } from "./appointment-finance-data"
 
-describe("mounted appointment finance route freshness", () => {
-  it("replaces both stale page parameters after invalidation refetches one-page results", async () => {
+it.each(["monthlyPage", "personnelPage"] as const)(
+  "replaces only %s after its mounted query refetches",
+  async (field) => {
+    const allocationFilter = field === "monthlyPage" ? { month: 9 } : { personnelId: "p" }
     const search = financeSearchSchema.parse({
       year: 2025,
       currency: "GBP",
-      month: 9,
-      personnelId: "p",
+      ...allocationFilter,
       monthlyPage: 2,
       personnelPage: 2,
     })
-    const navigate = vi.fn<(input: unknown) => Promise<void>>().mockResolvedValue(undefined)
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const history = createMemoryHistory({
+      initialEntries: [
+        `/appointment-finance?${new URLSearchParams(Object.entries(search).map(([key, value]) => [key, String(value)]))}`,
+      ],
+    })
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })
+    const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient; isAdmin: boolean }>()()
+    // Supply the file route's parent and path as the generated route tree does.
+    const report = Route.update({ getParentRoute: () => rootRoute, path: "/appointment-finance" } as never)
+    const router = createRouter({
+      routeTree: rootRoute.addChildren([report]),
+      history,
+      context: { queryClient: client, isAdmin: true },
+    })
+    const pageTwo = { page: 2, pageSize: 10, totalCount: 11 }
+    const monthRow = {
+      month: 11,
+      currency: "GBP",
+      received: 1000,
+      adjustments: 0,
+      refunds: 0,
+      personnelAllocations: 400,
+      ownerRemainder: 600,
+    }
+    const personRow = {
+      month: search.month ?? 11,
+      personnelId: "p",
+      personnelName: "Avery",
+      currency: "GBP",
+      allocated: 400,
+    }
     const monthly = monthlyFinanceQueryOptions(search)
     const personnel = personnelFinanceQueryOptions(search)
-    client.setQueryData(monthly.queryKey, { items: [], page: 2, pageSize: 10, totalCount: 12 })
-    client.setQueryData(personnel.queryKey, { items: [], page: 2, pageSize: 10, totalCount: 12 })
-    vi.spyOn(Route, "useSearch").mockReturnValue(search)
-    vi.spyOn(Route, "useNavigate").mockReturnValue(navigate)
-    useSuspenseQuery.mockImplementation((options: { queryKey: readonly unknown[] }) => ({
-      data: client.getQueryData(options.queryKey),
-    }))
-    const Component = Route.options.component!
-    renderToStaticMarkup(
-      <MantineProvider>
+    client.setQueryData(monthly.queryKey, { ...pageTwo, items: [monthRow] })
+    client.setQueryData(personnel.queryKey, { ...pageTwo, items: [personRow] })
+    const staleQuery = field === "monthlyPage" ? monthly : personnel
+    const firstPage = {
+      page: 1,
+      pageSize: 10,
+      totalCount: 1,
+      items: field === "monthlyPage" ? [monthRow] : [personRow],
+    }
+    const fetch = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(Response.json([{ result: { data: { ...pageTwo, totalCount: 1, items: [] } } }]))
+      .mockResolvedValueOnce(Response.json([{ result: { data: firstPage } }]))
+    const container = document.createElement("div")
+    const root = createRoot(container)
+    try {
+      await router.load()
+      root.render(
         <QueryClientProvider client={client}>
-          <Component />
-        </QueryClientProvider>
-      </MantineProvider>,
-    )
-    expect(navigate).not.toHaveBeenCalled()
+          <MantineProvider>
+            <RouterProvider router={router} />
+          </MantineProvider>
+        </QueryClientProvider>,
+      )
+      await vi.waitFor(() => expect(container.textContent).toContain("Avery"))
+      expect(router.state.location.search).toEqual(search)
+      expect(fetch).not.toHaveBeenCalled()
 
-    await client.invalidateQueries({ queryKey: monthly.queryKey, refetchType: "none" })
-    await client.invalidateQueries({ queryKey: personnel.queryKey, refetchType: "none" })
-    expect(client.getQueryState(monthly.queryKey)?.isInvalidated).toBe(true)
-    expect(client.getQueryState(personnel.queryKey)?.isInvalidated).toBe(true)
-    client.setQueryData(monthly.queryKey, { items: [], page: 1, pageSize: 10, totalCount: 1 })
-    client.setQueryData(personnel.queryKey, { items: [], page: 1, pageSize: 10, totalCount: 1 })
-    renderToStaticMarkup(
-      <MantineProvider>
-        <QueryClientProvider client={client}>
-          <Component />
-        </QueryClientProvider>
-      </MantineProvider>,
-    )
-    expect(navigate).toHaveBeenCalledWith({ search: { ...search, monthlyPage: 1, personnelPage: 1 }, replace: true })
-    vi.restoreAllMocks()
-    client.clear()
-  })
-})
+      await client.invalidateQueries({ queryKey: staleQuery.queryKey, exact: true })
+      await vi.waitFor(() => expect(router.state.location.search).toEqual({ ...search, [field]: 1 }))
+      await vi.waitFor(() => expect(router.state.status).toBe("idle"))
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(history.length).toBe(1)
+    } finally {
+      root.unmount()
+      fetch.mockRestore()
+      client.clear()
+    }
+  },
+)

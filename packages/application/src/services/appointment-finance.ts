@@ -58,9 +58,12 @@ export async function getAppointmentFinance(appointmentId: string) {
 }
 
 export async function getMonthlyAppointmentFinance({ page = 1, pageSize = 10, ...period }: FinancePeriod & Pagination) {
-  const rows = await monthlyFinanceRows(undefined, period)
-  const offset = (page - 1) * pageSize
-  return { items: rows.slice(offset, offset + pageSize).map(withRemainder), page, pageSize, totalCount: rows.length }
+  const { items, totalCount } = await monthlyFinanceRows(undefined, {
+    ...period,
+    pageSize,
+    offset: (page - 1) * pageSize,
+  })
+  return { items: items.map(withRemainder), page, pageSize, totalCount }
 }
 
 export async function listPersonnelFinance({

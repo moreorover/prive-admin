@@ -32,6 +32,7 @@
     "@types/node": "catalog:",
     "alchemy": "2.0.0-beta.87",
     "effect": "4.1.5",
+    "happy-dom": "catalog:",
     "knip": "6.45.1",
     "tsx": "catalog:",
     "typescript": "catalog:",

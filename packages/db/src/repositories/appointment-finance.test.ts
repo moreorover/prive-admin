@@ -6,18 +6,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import type { Db } from "../index"
 
-import {
-  appointmentFinanceRows,
-  monthlyFinanceRows,
-  personnelAllocationRows,
-  sortPersonnelAllocationRows,
-} from "./appointment-finance"
+import { appointmentFinanceRows, monthlyFinanceRows, personnelAllocationRows } from "./appointment-finance"
 
 vi.mock("../client", () => ({ db: {} }))
 
 describe("appointment finance SQL", () => {
   let sqlite: DatabaseSync
   let db: Db
+  let resultSizes: number[]
 
   beforeEach(() => {
     sqlite = new DatabaseSync(":memory:")
@@ -58,10 +54,12 @@ describe("appointment finance SQL", () => {
     row("b", "master", "personnel_allocation", -200, "EUR", "2026-03-01")
     row("b", "client", "received", 99999, "GBP", "2027-01-01")
     sqlite.exec("UPDATE personnel SET active = 0 WHERE customer_id = 'master'")
+    resultSizes = []
     db = drizzle(async (query, params, method) => {
       const statement = sqlite.prepare(query)
       statement.setReturnArrays(true)
       const rows = statement.all(...params) as unknown as SQLOutputValue[][]
+      resultSizes.push(rows.length)
       return { rows: method === "get" ? rows[0]! : rows }
     }) as unknown as Db
   })
@@ -117,20 +115,26 @@ describe("appointment finance SQL", () => {
   })
 
   it("groups on UTC transaction month, respecting year and currency filters", async () => {
-    expect(await monthlyFinanceRows(db, { year: 2026, currency: "EUR" })).toEqual([
-      {
-        month: 2,
-        currency: "EUR",
-        received: "10000",
-        refunds: "1500",
-        adjustments: "-100",
-        personnelAllocations: "7400",
-      },
-      { month: 3, currency: "EUR", received: "0", refunds: "0", adjustments: "0", personnelAllocations: "200" },
-    ])
-    expect(await monthlyFinanceRows(db, { year: 2026, currency: "GBP" })).toEqual([
-      { month: 2, currency: "GBP", received: "0", refunds: "0", adjustments: "0", personnelAllocations: "500" },
-    ])
+    expect(await monthlyFinanceRows(db, { year: 2026, currency: "EUR", pageSize: 10, offset: 0 })).toEqual({
+      totalCount: 2,
+      items: [
+        {
+          month: 2,
+          currency: "EUR",
+          received: "10000",
+          refunds: "1500",
+          adjustments: "-100",
+          personnelAllocations: "7400",
+        },
+        { month: 3, currency: "EUR", received: "0", refunds: "0", adjustments: "0", personnelAllocations: "200" },
+      ],
+    })
+    expect(await monthlyFinanceRows(db, { year: 2026, currency: "GBP", pageSize: 10, offset: 0 })).toEqual({
+      totalCount: 1,
+      items: [
+        { month: 2, currency: "GBP", received: "0", refunds: "0", adjustments: "0", personnelAllocations: "500" },
+      ],
+    })
   })
 
   it("pages grouped historical recipient allocations, including repeat allocations", async () => {
@@ -159,15 +163,58 @@ describe("appointment finance SQL", () => {
     })
   })
 
-  it("uses personnelId as a tie-breaker for same-name allocation groups", () => {
-    expect(
-      sortPersonnelAllocationRows([
-        { month: 2, personnelId: "personnel-b", personnelName: "Alex", currency: "EUR" },
-        { month: 2, personnelId: "personnel-a", personnelName: "Alex", currency: "EUR" },
-      ]),
-    ).toEqual([
-      { month: 2, personnelId: "personnel-a", personnelName: "Alex", currency: "EUR" },
-      { month: 2, personnelId: "personnel-b", personnelName: "Alex", currency: "EUR" },
+  it("pages by name, month, currency and finally personnelId", async () => {
+    // Allow identical display names in this fixture to exercise the final two sort keys.
+    sqlite.exec(`
+      DROP INDEX customer_name_unique;
+      UPDATE customer SET name = 'Alex' WHERE id IN ('master', 'assistant');
+      INSERT INTO "transaction" (id, appointment_id, customer_id, movement_type, amount, currency, created_at)
+        SELECT 'assistant-gbp', appointment_id, 'assistant', movement_type, -7, currency, created_at
+        FROM "transaction" WHERE customer_id = 'master' AND currency = 'GBP';
+      INSERT INTO "transaction" (id, appointment_id, customer_id, movement_type, amount, currency, created_at)
+        SELECT 'client-jan', appointment_id, 'client', movement_type, -3, 'EUR', 1767225600000
+        FROM "transaction" WHERE id = 'assistant-gbp';
+    `)
+    const items = []
+    for (let offset = 0; offset < 6; offset++) {
+      const page = await personnelAllocationRows(db, { year: 2026, offset, pageSize: 1 })
+      expect(page.totalCount).toBe(6)
+      items.push(...page.items.map(({ personnelId, month, currency }) => [personnelId, month, currency]))
+    }
+    expect(items).toEqual([
+      ["assistant", 2, "EUR"],
+      ["master", 2, "EUR"],
+      ["assistant", 2, "GBP"],
+      ["master", 2, "GBP"],
+      ["master", 3, "EUR"],
+      ["client", 1, "EUR"],
     ])
+  })
+
+  it("bounds database result sizes even when one group exceeds the SQLite integer sum range", async () => {
+    const maximum = Number.MAX_SAFE_INTEGER
+    const insert = sqlite.prepare(`INSERT INTO "transaction"
+      (id,appointment_id,customer_id,movement_type,amount,currency,created_at) VALUES (?, 'a','master',?,?, 'EUR',?)`)
+    for (let index = 0; index < 1025; index++) {
+      insert.run(`allocation-${index}`, "personnel_allocation", -maximum, Date.UTC(2026, 1))
+      insert.run(`positive-${index}`, "adjustment", maximum, Date.UTC(2026, 1))
+      insert.run(`negative-${index}`, "adjustment", -maximum, Date.UTC(2026, 1))
+    }
+    const page = { year: 2026, pageSize: 1, offset: 0 }
+    const allocated = 1025n * BigInt(maximum)
+    const personnel = await personnelAllocationRows(db, { ...page, personnelId: "master" })
+    expect(personnel).toMatchObject({ totalCount: 3, items: [{ allocated: String(allocated + 6400n) }] })
+    expect(Math.max(...resultSizes)).toBeLessThanOrEqual(1)
+    resultSizes = []
+    expect(await monthlyFinanceRows(db, page)).toMatchObject({
+      totalCount: 3,
+      items: [{ month: 2, currency: "EUR", adjustments: "-100", personnelAllocations: String(allocated + 7400n) }],
+    })
+    expect(Math.max(...resultSizes)).toBeLessThanOrEqual(1)
+    expect(await monthlyFinanceRows(db, { ...page, offset: 1 })).toMatchObject({
+      totalCount: 3,
+      items: [{ month: 2, currency: "GBP" }],
+    })
+    expect(await monthlyFinanceRows(db, { ...page, offset: 3 })).toEqual({ totalCount: 3, items: [] })
   })
 })

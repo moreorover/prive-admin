@@ -66,13 +66,14 @@ describe("owner finance reports", () => {
   })
 
   it("pages monthly totals with the standard default and retains month and currency", async () => {
-    repo.monthlyFinanceRows.mockResolvedValue(Array.from({ length: 12 }, (_, i) => ({ ...gbp, month: i + 1 })))
+    repo.monthlyFinanceRows.mockResolvedValue({ items: [11, 12].map((month) => ({ ...gbp, month })), totalCount: 12 })
     expect(await getMonthlyAppointmentFinance({ year: 2026, page: 2 })).toEqual({
       page: 2,
       pageSize: 10,
       totalCount: 12,
       items: [11, 12].map((month) => ({ ...gbp, month, ownerRemainder: -500 })),
     })
+    expect(repo.monthlyFinanceRows).toHaveBeenCalledWith(undefined, { year: 2026, offset: 10, pageSize: 10 })
   })
 
   it("exposes only allocations and pages by recipient, month and currency", async () => {
