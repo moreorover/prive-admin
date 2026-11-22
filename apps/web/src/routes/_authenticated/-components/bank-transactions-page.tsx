@@ -1,9 +1,5 @@
 import { Alert, Box, Button, Container, Group, LoadingOverlay, Stack, Text } from "@mantine/core"
 
-import {
-  BankAttachmentExport,
-  type BankAttachmentExportProps,
-} from "@/components/bank-transactions/bank-attachment-export"
 import { BankTransactionFilters } from "@/components/bank-transactions/bank-transaction-filters"
 import {
   BankTransactionImport,
@@ -26,14 +22,9 @@ import type {
   BankTransactionsSearch,
 } from "../-data/bank-transactions-data"
 
-function exportAccountsForEntity(accounts: BankTransactionsOptions["accounts"], entityId?: string) {
-  return entityId ? accounts.filter((account) => account.legalEntityId === entityId) : accounts
-}
-
 export function BankTransactionsPage({
   search,
   importAction,
-  exportAction,
   options,
   result,
   isFetching,
@@ -43,7 +34,6 @@ export function BankTransactionsPage({
   onPageChange,
   onViewAllTransactions,
 }: {
-  exportAction: Pick<BankAttachmentExportProps, "pending" | "onExport">
   importAction?: BankTransactionImportProps & { opened: boolean; onOpen: () => void }
   search: BankTransactionsSearch
   options: BankTransactionsOptions
@@ -64,17 +54,7 @@ export function BankTransactionsPage({
     <Container size="xl">
       <BreadcrumbItem label="Bank transactions" order={10} />
       <PageHeader
-        actions={
-          <Group>
-            <BankAttachmentExport
-              key={`${search.entityId ?? "all"}:${search.bankAccountId ?? "all"}`}
-              {...exportAction}
-              bankAccountId={search.bankAccountId}
-              accounts={exportAccountsForEntity(options.accounts, search.entityId)}
-            />
-            {importAction ? <Button onClick={importAction.onOpen}>Import CSV</Button> : null}
-          </Group>
-        }
+        actions={<Group>{importAction ? <Button onClick={importAction.onOpen}>Import CSV</Button> : null}</Group>}
         title="Bank transactions"
         description="Review bank transactions across legal entities and bank accounts."
       />
