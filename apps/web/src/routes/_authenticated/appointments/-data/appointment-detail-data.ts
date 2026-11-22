@@ -41,12 +41,26 @@ export function availableHairOrdersListQueryOptions() {
   })
 }
 
+export function appointmentPersonnelOptionsQueryOptions(search: string, type?: "master" | "assistant") {
+  return trpc.personnel.list.queryOptions(
+    {
+      page: 1,
+      pageSize: APPOINTMENT_OPTION_PAGE_SIZE,
+      search: search.trim() || undefined,
+      activeOnly: true,
+      ...(type ? { type } : {}),
+    },
+    {
+      select: (data) => ({
+        ...data,
+        items: data.items.map((person) => ({ id: person.customerId, name: person.customer.name })),
+      }),
+    },
+  )
+}
+
 export function appointmentMasterOptionsQueryOptions(search: string) {
-  return trpc.customers.list.queryOptions({
-    page: 1,
-    pageSize: APPOINTMENT_OPTION_PAGE_SIZE,
-    search: search.trim() || undefined,
-  })
+  return appointmentPersonnelOptionsQueryOptions(search, "master")
 }
 
 export function useAppointmentDetailData({

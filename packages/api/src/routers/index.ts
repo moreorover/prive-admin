@@ -11,6 +11,7 @@ import { hairAssignedRouter } from "./hair-assigned"
 import { hairOrdersRouter } from "./hair-orders"
 import { legalEntitiesRouter } from "./legal-entities"
 import { notesRouter } from "./notes"
+import { personnelRouter } from "./personnel"
 import { reportsRouter } from "./reports"
 import { salonsRouter } from "./salons"
 import { sessionRouter } from "./session"
@@ -31,6 +32,7 @@ export const appRouter = router({
   healthCheck: publicProcedure.query(() => "OK"),
   legalEntities: legalEntitiesRouter,
   notes: notesRouter,
+  personnel: personnelRouter,
   reports: reportsRouter,
   salons: salonsRouter,
   session: sessionRouter,

@@ -263,6 +263,7 @@ export function AppointmentDetailPage({
             return (
               <TransactionsTable items={txRows}>
                 <TransactionsTable.Customer />
+                <TransactionsTable.MovementType />
                 <TransactionsTable.Name />
                 <TransactionsTable.Amount />
                 <TransactionsTable.Actions onEdit={setEditTx} onDelete={setDeleteTx} />

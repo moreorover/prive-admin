@@ -8,6 +8,7 @@ type AppointmentTransactionCustomer = {
 }
 
 type AppointmentForTransactions = {
+  id: string
   client: AppointmentTransactionCustomer
   master: AppointmentTransactionCustomer
   personnel?: Array<{ personnelId: string }> | null
@@ -30,6 +31,7 @@ export function useAppointmentTransactionActions({
     queryClient.invalidateQueries({ queryKey: trpc.transactions.list.queryKey() })
     queryClient.invalidateQueries({ queryKey: trpc.dashboard.transactionStats.queryKey() })
     if (!appointment) return
+    queryClient.invalidateQueries({ queryKey: trpc.appointments.get.queryOptions({ id: appointment.id }).queryKey })
 
     const customerIds = new Set([
       appointment.client.id,

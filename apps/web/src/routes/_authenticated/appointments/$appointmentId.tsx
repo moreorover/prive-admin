@@ -10,33 +10,23 @@ import { useHairAssignmentActions } from "../-actions/hair-assignment-actions"
 import { useAppointmentTransactionActions } from "./-actions/appointment-transaction-actions"
 import { AppointmentDetailPage } from "./-components/appointment-detail-page"
 import {
-  APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
+  appointmentDetailQueryOptions,
+  appointmentHairAssignedQueryOptions,
+  appointmentTransactionsQueryOptions,
+  appointmentPersonnelOptionsQueryOptions,
   appointmentMasterOptionsQueryOptions,
   useAppointmentDetailData,
 } from "./-data/appointment-detail-data"
 
-const defaultCustomersListInput = { page: 1, pageSize: 100, search: undefined as string | undefined }
 const searchDebounceMs = 300
 
 export const Route = createFileRoute("/_authenticated/appointments/$appointmentId")({
   component: RouteComponent,
   loader: async ({ context, params }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(trpc.appointments.get.queryOptions({ id: params.appointmentId })),
-      context.queryClient.ensureQueryData(
-        trpc.hairAssigned.list.queryOptions({
-          page: 1,
-          pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-          appointmentId: params.appointmentId,
-        }),
-      ),
-      context.queryClient.ensureQueryData(
-        trpc.transactions.list.queryOptions({
-          page: 1,
-          pageSize: APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE,
-          appointmentId: params.appointmentId,
-        }),
-      ),
+      context.queryClient.ensureQueryData(appointmentDetailQueryOptions(params.appointmentId)),
+      context.queryClient.ensureQueryData(appointmentHairAssignedQueryOptions(params.appointmentId, 1)),
+      context.queryClient.ensureQueryData(appointmentTransactionsQueryOptions(params.appointmentId, 1)),
       context.queryClient.ensureQueryData(trpc.userSettings.get.queryOptions()),
     ])
   },
@@ -60,10 +50,7 @@ function RouteComponent() {
     availableHairOrdersEnabled: createOpen,
   })
   const pickPersonnelCustomersData = useQuery({
-    ...trpc.customers.list.queryOptions({
-      ...defaultCustomersListInput,
-      search: debouncedPickPersonnelSearch.trim() || undefined,
-    }),
+    ...appointmentPersonnelOptionsQueryOptions(debouncedPickPersonnelSearch),
     enabled: pickPersonnelOpen,
   }).data
   const masterCustomersData = useQuery({

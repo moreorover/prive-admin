@@ -36,6 +36,30 @@ function renderTransactionsTable(children: ReactNode) {
 }
 
 describe("transactions table compound columns", () => {
+  it("shows unresolved historical movements without reclassifying them", () => {
+    expect(renderTransactionsTable(createElement(TransactionsTable.MovementType))).toContain("Legacy / unclassified")
+  })
+
+  it.each([
+    ["received", "Received money"],
+    ["personnel_allocation", "Personnel allocation"],
+    ["refund", "Refund"],
+    ["adjustment", "Adjustment"],
+  ])("labels %s", (movementType, label) => {
+    const markup = renderToStaticMarkup(
+      createElement(
+        MantineProvider,
+        null,
+        createElement(
+          TransactionsTable,
+          { items: [{ ...transactionRows[0], movementType }] } as ComponentProps<typeof TransactionsTable>,
+          createElement(TransactionsTable.MovementType),
+        ),
+      ),
+    )
+    expect(markup).toContain(label)
+  })
+
   it("renders declared columns", () => {
     const markup = renderTransactionsTable(
       createElement(

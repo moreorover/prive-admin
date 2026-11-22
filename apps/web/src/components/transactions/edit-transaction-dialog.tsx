@@ -1,12 +1,14 @@
 import { Modal } from "@mantine/core"
 
 import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
+import { MOVEMENT_TYPE_OPTIONS } from "@/components/transactions/transaction-form-data"
 import { CURRENCIES, type Currency } from "@/lib/currency"
 
 type EditTransactionDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   transaction: {
+    movementType?: string
     id: string
     name: string | null
     notes: string | null
@@ -34,19 +36,24 @@ export function EditTransactionDialog({
 
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Transaction">
-      <TransactionForm
-        initialValues={{
-          name: transaction.name ?? "",
-          notes: transaction.notes ?? "",
-          amountMajor: transaction.amount / 100,
-          currency: initialCurrency,
-        }}
-        submitLabel="Save Changes"
-        loading={loading}
-        onSubmit={async (values) => {
-          await onUpdate({ ...values, id: transaction.id })
-        }}
-      />
+      {open && (
+        <TransactionForm
+          key={transaction.id}
+          initialValues={{
+            movementType:
+              MOVEMENT_TYPE_OPTIONS.find((option) => option.value === transaction.movementType)?.value ?? "",
+            name: transaction.name ?? "",
+            notes: transaction.notes ?? "",
+            amountMajor: transaction.amount / 100,
+            currency: initialCurrency,
+          }}
+          submitLabel="Save Changes"
+          loading={loading}
+          onSubmit={async (values) => {
+            await onUpdate({ ...values, id: transaction.id })
+          }}
+        />
+      )}
     </Modal>
   )
 }

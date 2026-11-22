@@ -1,21 +1,19 @@
 import { Button, Group, NativeSelect, NumberInput, Stack, Textarea, TextInput } from "@mantine/core"
-import { useForm } from "@mantine/form"
+import { schemaResolver, useForm } from "@mantine/form"
 
 import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
 
+import { MOVEMENT_TYPE_OPTIONS, transactionFormSchema, type TransactionFormSubmit } from "./transaction-form-data"
+
 export type TransactionFormValues = {
+  movementType: string
   name: string
   notes: string
   amountMajor: number
   currency: Currency
 }
 
-export type TransactionFormSubmit = {
-  name: string | null
-  notes: string | null
-  amount: number
-  currency: Currency
-}
+export type { TransactionFormSubmit } from "./transaction-form-data"
 
 type TransactionFormProps = {
   initialValues: TransactionFormValues
@@ -27,23 +25,22 @@ type TransactionFormProps = {
 export function TransactionForm({ initialValues, submitLabel, onSubmit, loading }: TransactionFormProps) {
   const form = useForm<TransactionFormValues>({
     initialValues,
-    validate: {
-      amountMajor: (value) => (Number.isFinite(value) ? null : "Amount is required"),
-    },
+    validate: schemaResolver(transactionFormSchema, { sync: true }),
   })
 
   return (
     <form
       onSubmit={form.onSubmit(async (values) => {
-        await onSubmit({
-          name: values.name.trim() || null,
-          notes: values.notes.trim() || null,
-          amount: Math.round(values.amountMajor * 100),
-          currency: values.currency,
-        })
+        await onSubmit(transactionFormSchema.parse(values))
       })}
     >
       <Stack>
+        <NativeSelect
+          label="Movement type"
+          required
+          data={[{ value: "", label: "Choose movement type" }, ...MOVEMENT_TYPE_OPTIONS]}
+          {...form.getInputProps("movementType")}
+        />
         <TextInput label="Name" placeholder="Transaction name" {...form.getInputProps("name")} />
         <Textarea label="Notes" placeholder="Notes (optional)" autosize minRows={2} {...form.getInputProps("notes")} />
         <Group grow>
@@ -51,6 +48,7 @@ export function TransactionForm({ initialValues, submitLabel, onSubmit, loading 
         </Group>
         <NumberInput
           label="Amount"
+          description="Received money is positive; refunds and personnel allocations are negative. Adjustments may use either sign."
           prefix={currencySymbol(form.values.currency)}
           decimalScale={2}
           fixedDecimalScale

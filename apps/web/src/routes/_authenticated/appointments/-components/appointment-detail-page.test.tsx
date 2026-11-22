@@ -105,6 +105,16 @@ function renderAppointmentDetailPage(props: Partial<ComponentProps<typeof Appoin
 }
 
 describe("AppointmentDetailPage", () => {
+  it.each(["appointment-detail-page.tsx", "pick-personnel-modal.tsx", "appointment-edit-modals.tsx"])(
+    "keeps server state in the route owner for %s",
+    (file) => {
+      const source = readFileSync(new URL(file, import.meta.url), "utf8")
+      expect(source).not.toMatch(/\b(useQuery|useQueries|useSuspenseQuery|useMutation|use\w+Actions)\s*\(/)
+      expect(source).not.toMatch(/from ["'](@\/utils\/trpc|@tanstack\/react-query)["']/)
+      expect(source).not.toMatch(/from ["'].*\/-actions\//)
+    },
+  )
+
   it("clears master search before opening the change master dialog", () => {
     const source = readFileSync(new URL("./appointment-detail-page.tsx", import.meta.url), "utf8")
 
