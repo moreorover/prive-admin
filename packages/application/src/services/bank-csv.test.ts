@@ -4,6 +4,15 @@ import { parseBankCsv } from "./bank-csv"
 import { previewBankStatementCsv, importBankStatementCsv } from "./bank-statement-entries"
 
 describe("bank CSV parser", () => {
+  it.each(["2026-2-01", "2026-02-30", "not-a-date"])("rejects invalid transaction date %j", (date) => {
+    const csv = [
+      '"Sąskaitos Nr.","","Data","Gavėjas","Paaiškinimai","Suma","Valiuta","D/K","Įrašo Nr.","Kodas","Įmokos kodas","Dok. Nr.","Kliento kodas mokėtojo IS","Kliento kodas","Pradinis mokėtojas","Galutinis gavėjas",',
+      `"LT307300010202470914","20","${date}","Jelena Pavliukovičienė","Plaukai","130.00","EUR","K","2026073102381611","MK","","","",`,
+    ].join("\n")
+
+    expect(() => parseBankCsv(csv)).toThrow("Invalid transaction date")
+  })
+
   it("detects localized Swedbank CSV exports by account header", () => {
     const csv = [
       '"Sąskaitos Nr.","","Data","Gavėjas","Paaiškinimai","Suma","Valiuta","D/K","Įrašo Nr.","Kodas","Įmokos kodas","Dok. Nr.","Kliento kodas mokėtojo IS","Kliento kodas","Pradinis mokėtojas","Galutinis gavėjas",',
