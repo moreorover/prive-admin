@@ -43,9 +43,16 @@ describe("BankTransactionFilters", () => {
     expect(accountControl.data).toEqual([
       { value: "", label: "All bank accounts" },
       {
-        group: "Bank accounts",
+        group: "First",
         items: [
+          { value: "entity:entity-1", label: "All bank accounts" },
           { value: "account-1", label: "LT123 · Main · First" },
+        ],
+      },
+      {
+        group: "Second",
+        items: [
+          { value: "entity:entity-2", label: "All bank accounts" },
           { value: "account-2", label: "GB456 · Reserve · Second" },
         ],
       },
@@ -65,7 +72,9 @@ describe("BankTransactionFilters", () => {
   it("emits account patches from the selector", () => {
     const { control, onChange } = controls()
     control("Bank account").onChange("account-2")
-    expect(onChange).toHaveBeenLastCalledWith({ entityId: undefined, bankAccountId: "account-2" })
+    expect(onChange).toHaveBeenLastCalledWith({ entityId: "entity-2", bankAccountId: "account-2" })
+    control("Bank account").onChange("entity:entity-2")
+    expect(onChange).toHaveBeenLastCalledWith({ entityId: "entity-2", bankAccountId: undefined })
     control("Bank account").onChange("")
     expect(onChange).toHaveBeenLastCalledWith({ entityId: undefined, bankAccountId: undefined })
   })

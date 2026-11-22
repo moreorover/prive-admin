@@ -22,7 +22,7 @@ export function BankTransactionFilters({
   onChange: (filters: BankTransactionsFilters) => void
 }) {
   const entityNames = new Map(entities.map((entity) => [entity.id, entity.name]))
-  const selectedValue = values.bankAccountId ?? ""
+  const selectedValue = values.bankAccountId ?? (values.entityId ? `entity:${values.entityId}` : "")
   const accountDetails = new Map(
     accounts.map((account) => [
       account.id,
@@ -41,17 +41,22 @@ export function BankTransactionFilters({
         clearable
         data={[
           { value: "", label: "All bank accounts" },
-          {
-            group: "Bank accounts",
-            items: accounts.map((account) => ({
-              value: account.id,
-              label: formatBankAccountLabel({
-                iban: account.iban,
-                displayName: account.displayName,
-                legalEntityName: entityNames.get(account.legalEntityId) ?? "Unknown entity",
-              }),
-            })),
-          },
+          ...entities.map((entity) => ({
+            group: entity.name,
+            items: [
+              { value: `entity:${entity.id}`, label: "All bank accounts" },
+              ...accounts
+                .filter((account) => account.legalEntityId === entity.id)
+                .map((account) => ({
+                  value: account.id,
+                  label: formatBankAccountLabel({
+                    iban: account.iban,
+                    displayName: account.displayName,
+                    legalEntityName: entity.name,
+                  }),
+                })),
+            ],
+          })),
         ]}
         renderOption={({ option }) => {
           const details = accountDetails.get(option.value)
@@ -68,7 +73,16 @@ export function BankTransactionFilters({
         }}
         value={selectedValue}
         onChange={(value) => {
-          onChange({ entityId: undefined, bankAccountId: value || undefined })
+          if (!value) {
+            onChange({ entityId: undefined, bankAccountId: undefined })
+            return
+          }
+          if (value.startsWith("entity:")) {
+            onChange({ entityId: value.slice("entity:".length), bankAccountId: undefined })
+            return
+          }
+          const account = accounts.find((candidate) => candidate.id === value)
+          onChange({ entityId: account?.legalEntityId, bankAccountId: value })
         }}
       />
       <DateInput
