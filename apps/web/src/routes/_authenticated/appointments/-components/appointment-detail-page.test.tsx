@@ -105,6 +105,24 @@ function renderAppointmentDetailPage(props: Partial<ComponentProps<typeof Appoin
 }
 
 describe("AppointmentDetailPage", () => {
+  it("shows owner totals from all classified movements regardless of the visible transaction page", () => {
+    const html = renderAppointmentDetailPage({
+      financeTotals: [
+        {
+          currency: "EUR",
+          received: 10000,
+          refunds: 0,
+          adjustments: 0,
+          personnelAllocations: 7000,
+          ownerRemainder: 3000,
+        },
+      ],
+    })
+    expect(html).toContain("Owner remainder")
+    expect(html).toContain("€30.00")
+    expect(renderAppointmentDetailPage()).not.toContain("Owner remainder")
+  })
+
   it.each(["appointment-detail-page.tsx", "pick-personnel-modal.tsx", "appointment-edit-modals.tsx"])(
     "keeps server state in the route owner for %s",
     (file) => {

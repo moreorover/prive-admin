@@ -19,7 +19,10 @@ import { TransactionsTable, type TransactionRow } from "@/components/transaction
 import { formatMinor } from "@/lib/currency"
 import { formatPageRange } from "@/lib/resource-pagination"
 
+import type { AppointmentTotals } from "../../-data/appointment-finance-data"
+
 import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, useAppointmentDetailData } from "../-data/appointment-detail-data"
+import { FinanceTotalsTable } from "../../-components/finance-totals-table"
 import { ChangeMasterModal, EditAppointmentModal } from "./appointment-edit-modals"
 import { AppointmentNotesCard } from "./appointment-notes-card"
 import { AppointmentPeopleSection } from "./appointment-people-section"
@@ -30,6 +33,7 @@ type CustomersData = { items: { id: string; name: string }[] }
 
 export function AppointmentDetailPage({
   appointmentId,
+  financeTotals,
   detailData,
   transactionsPage,
   hairAssignedPage,
@@ -65,6 +69,7 @@ export function AppointmentDetailPage({
   onLinkPersonnel,
 }: {
   appointmentId: string
+  financeTotals?: AppointmentTotals
   detailData: AppointmentDetailData
   transactionsPage: number
   hairAssignedPage: number
@@ -197,6 +202,18 @@ export function AppointmentDetailPage({
           onPickPersonnel={() => onPickPersonnelOpenChange(true)}
           onCreateTransaction={openCreateTx}
         />
+
+        {financeTotals && (
+          <Card withBorder>
+            <Stack>
+              <Title order={5}>Appointment finance</Title>
+              <Text size="sm" c="dimmed">
+                All classified movements for this appointment. Unclassified movements are excluded.
+              </Text>
+              <FinanceTotalsTable rows={financeTotals} />
+            </Stack>
+          </Card>
+        )}
 
         <Card withBorder>
           <Group justify="space-between" mb="sm">

@@ -1,3 +1,4 @@
+export * from "./appointment-finance"
 export * from "./appointments"
 export * from "./admin-users"
 export * from "./bank-statement-attachments"

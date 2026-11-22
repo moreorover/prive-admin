@@ -7,6 +7,7 @@ import { trpc } from "@/utils/trpc"
 
 import { useAppointmentPersonnelActions } from "../-actions/appointment-actions"
 import { useHairAssignmentActions } from "../-actions/hair-assignment-actions"
+import { appointmentFinanceQueryOptions } from "../-data/appointment-finance-data"
 import { useAppointmentTransactionActions } from "./-actions/appointment-transaction-actions"
 import { AppointmentDetailPage } from "./-components/appointment-detail-page"
 import {
@@ -24,6 +25,8 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
   component: RouteComponent,
   loader: async ({ context, params }) => {
     await Promise.all([
+      context.isAdmin &&
+        context.queryClient.ensureQueryData(appointmentFinanceQueryOptions(params.appointmentId, context.isAdmin)),
       context.queryClient.ensureQueryData(appointmentDetailQueryOptions(params.appointmentId)),
       context.queryClient.ensureQueryData(appointmentHairAssignedQueryOptions(params.appointmentId, 1)),
       context.queryClient.ensureQueryData(appointmentTransactionsQueryOptions(params.appointmentId, 1)),
@@ -34,6 +37,8 @@ export const Route = createFileRoute("/_authenticated/appointments/$appointmentI
 
 function RouteComponent() {
   const { appointmentId } = Route.useParams()
+  const { isAdmin } = Route.useRouteContext()
+  const finance = useQuery(appointmentFinanceQueryOptions(appointmentId, isAdmin))
   const [transactionsPage, setTransactionsPage] = useState(1)
   const [hairAssignedPage, setHairAssignedPage] = useState(1)
   const [createOpen, setCreateOpen] = useState(false)
@@ -74,6 +79,7 @@ function RouteComponent() {
 
   return (
     <AppointmentDetailPage
+      financeTotals={isAdmin ? finance.data?.totals : undefined}
       appointmentId={appointmentId}
       detailData={detailData}
       transactionsPage={transactionsPage}
