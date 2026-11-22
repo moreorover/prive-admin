@@ -24,6 +24,47 @@ describe("owner finance reports", () => {
     })
   })
 
+  it("computes cancellation remainders with exact integer arithmetic", async () => {
+    const maximum = Number.MAX_SAFE_INTEGER
+    repo.appointmentFinanceRows.mockResolvedValue([
+      {
+        currency: "EUR",
+        received: String(maximum),
+        refunds: "0",
+        adjustments: "2",
+        personnelAllocations: String(maximum),
+      },
+    ])
+
+    expect(await getAppointmentFinance("a")).toEqual({
+      appointmentId: "a",
+      totals: [
+        {
+          currency: "EUR",
+          received: maximum,
+          refunds: 0,
+          adjustments: 2,
+          personnelAllocations: maximum,
+          ownerRemainder: 2,
+        },
+      ],
+    })
+  })
+
+  it("rejects aggregate values outside the API number range", async () => {
+    repo.appointmentFinanceRows.mockResolvedValue([
+      {
+        currency: "EUR",
+        received: String(BigInt(Number.MAX_SAFE_INTEGER) + 1n),
+        refunds: "0",
+        adjustments: "0",
+        personnelAllocations: "0",
+      },
+    ])
+
+    await expect(getAppointmentFinance("a")).rejects.toMatchObject({ message: expect.stringContaining("safe integer") })
+  })
+
   it("pages monthly totals with the standard default and retains month and currency", async () => {
     repo.monthlyFinanceRows.mockResolvedValue(Array.from({ length: 12 }, (_, i) => ({ ...gbp, month: i + 1 })))
     expect(await getMonthlyAppointmentFinance({ year: 2026, page: 2 })).toEqual({

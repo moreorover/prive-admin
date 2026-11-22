@@ -64,25 +64,59 @@ describe("appointment finance SQL", () => {
 
   it("aggregates only classified movements for the selected appointment, per currency", async () => {
     expect(await appointmentFinanceRows(db, "a")).toEqual([
-      { currency: "EUR", received: 10000, refunds: 0, adjustments: 0, personnelAllocations: 7000 },
-      { currency: "GBP", received: 0, refunds: 0, adjustments: 0, personnelAllocations: 500 },
+      { currency: "EUR", received: "10000", refunds: "0", adjustments: "0", personnelAllocations: "7000" },
+      { currency: "GBP", received: "0", refunds: "0", adjustments: "0", personnelAllocations: "500" },
     ])
+  })
+
+  it("preserves aggregate integers through the database boundary", async () => {
+    const maximum = Number.MAX_SAFE_INTEGER
+    const insert = sqlite.prepare(`INSERT INTO "transaction"
+      (id,appointment_id,customer_id,movement_type,amount,currency,created_at) VALUES (?,?,?,?,?,?,?)`)
+    insert.run("exact-received", "a", "client", "received", maximum, "EUR", Date.parse("2026-04-01"))
+    insert.run("exact-adjustment", "a", "client", "adjustment", 2, "EUR", Date.parse("2026-04-01"))
+    insert.run("exact-allocation", "a", "master", "personnel_allocation", -maximum, "EUR", Date.parse("2026-04-01"))
+
+    const rows = await appointmentFinanceRows(db, "a")
+    expect(rows.find((row) => row.currency === "EUR")).toMatchObject({
+      received: String(BigInt(maximum) + 10000n),
+      adjustments: "2",
+      personnelAllocations: String(BigInt(maximum) + 7000n),
+    })
+  })
+
+  it("returns aggregate values as exact text when a category exceeds the safe range", async () => {
+    const maximum = BigInt(Number.MAX_SAFE_INTEGER)
+    const insert = sqlite.prepare(`INSERT INTO "transaction"
+      (id,appointment_id,customer_id,movement_type,amount,currency,created_at) VALUES (?,?,?,?,?,?,?)`)
+    insert.run("large-received-1", "a", "client", "received", Number(maximum), "GBP", Date.parse("2026-05-01"))
+    insert.run("large-received-2", "a", "client", "received", Number(maximum), "GBP", Date.parse("2026-05-01"))
+
+    const row = (await appointmentFinanceRows(db, "a")).find((item) => item.currency === "GBP")
+    expect(row?.received).toBe((maximum * 2n).toString())
   })
 
   it("groups on UTC transaction month, respecting year and currency filters", async () => {
     expect(await monthlyFinanceRows(db, { year: 2026, currency: "EUR" })).toEqual([
-      { month: 2, currency: "EUR", received: 10000, refunds: 1500, adjustments: -100, personnelAllocations: 7400 },
-      { month: 3, currency: "EUR", received: 0, refunds: 0, adjustments: 0, personnelAllocations: 200 },
+      {
+        month: 2,
+        currency: "EUR",
+        received: "10000",
+        refunds: "1500",
+        adjustments: "-100",
+        personnelAllocations: "7400",
+      },
+      { month: 3, currency: "EUR", received: "0", refunds: "0", adjustments: "0", personnelAllocations: "200" },
     ])
     expect(await monthlyFinanceRows(db, { year: 2026, currency: "GBP" })).toEqual([
-      { month: 2, currency: "GBP", received: 0, refunds: 0, adjustments: 0, personnelAllocations: 500 },
+      { month: 2, currency: "GBP", received: "0", refunds: "0", adjustments: "0", personnelAllocations: "500" },
     ])
   })
 
   it("pages grouped historical recipient allocations, including repeat allocations", async () => {
     expect(await personnelAllocationRows(db, { year: 2026, month: 2, pageSize: 1, offset: 1 })).toEqual({
       totalCount: 3,
-      items: [{ month: 2, personnelId: "master", personnelName: "Master", currency: "EUR", allocated: 6400 }],
+      items: [{ month: 2, personnelId: "master", personnelName: "Master", currency: "EUR", allocated: "6400" }],
     })
     expect(
       await personnelAllocationRows(db, {
@@ -95,8 +129,8 @@ describe("appointment finance SQL", () => {
     ).toEqual({
       totalCount: 2,
       items: [
-        { month: 2, personnelId: "master", personnelName: "Master", currency: "EUR", allocated: 6400 },
-        { month: 3, personnelId: "master", personnelName: "Master", currency: "EUR", allocated: 200 },
+        { month: 2, personnelId: "master", personnelName: "Master", currency: "EUR", allocated: "6400" },
+        { month: 3, personnelId: "master", personnelName: "Master", currency: "EUR", allocated: "200" },
       ],
     })
     expect(await personnelAllocationRows(db, { year: 2026, pageSize: 10, offset: 10 })).toEqual({

@@ -12,6 +12,27 @@ import { Route as AppointmentRoute } from "../appointments/$appointmentId"
 import { appointmentFinanceQueryOptions, financeSearchSchema } from "./appointment-finance-data"
 
 describe("owner appointment finance route", () => {
+  it("replaces stale monthly and personnel pages independently while preserving filters", async () => {
+    const search = financeSearchSchema.parse({
+      year: 2025,
+      currency: "GBP",
+      month: 9,
+      personnelId: "p",
+      monthlyPage: 2,
+      personnelPage: 2,
+    })
+    const ensureQueryData = vi
+      .fn<() => Promise<{ items: never[]; page: number; pageSize: number; totalCount: number }>>()
+      .mockResolvedValueOnce({ items: [], page: 2, pageSize: 10, totalCount: 1 })
+      .mockResolvedValueOnce({ items: [], page: 2, pageSize: 10, totalCount: 1 })
+    const loader = Route.options.loader
+    if (typeof loader !== "function") throw new Error("Missing loader")
+    await expect(
+      loader({ deps: search, context: { queryClient: { ensureQueryData } } } as never),
+    ).rejects.toMatchObject({
+      options: { to: "/appointment-finance", replace: true, search: { ...search, monthlyPage: 1, personnelPage: 1 } },
+    })
+  })
   it("gates direct links and navigation by owner role", async () => {
     for (const isAdmin of [false, true]) {
       expect(

@@ -15,10 +15,20 @@ export const Route = createFileRoute("/_authenticated/appointment-finance")({
   },
   loaderDeps: ({ search }) => search,
   loader: async ({ context, deps }) => {
-    await Promise.all([
+    const [monthly, personnel] = await Promise.all([
       context.queryClient.ensureQueryData(monthlyFinanceQueryOptions(deps)),
       context.queryClient.ensureQueryData(personnelFinanceQueryOptions(deps)),
     ])
+    const monthlyPage = Math.max(1, Math.ceil(monthly.totalCount / monthly.pageSize))
+    const personnelPage = Math.max(1, Math.ceil(personnel.totalCount / personnel.pageSize))
+    const nextSearch = {
+      ...deps,
+      monthlyPage: Math.min(deps.monthlyPage, monthlyPage),
+      personnelPage: Math.min(deps.personnelPage, personnelPage),
+    }
+    if (nextSearch.monthlyPage !== deps.monthlyPage || nextSearch.personnelPage !== deps.personnelPage) {
+      throw redirect({ to: "/appointment-finance", search: nextSearch, replace: true })
+    }
   },
   component: RouteComponent,
 })

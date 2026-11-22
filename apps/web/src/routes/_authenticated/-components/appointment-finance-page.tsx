@@ -71,7 +71,9 @@ export function AppointmentFinancePage({ search, monthly, personnel, onSearch }:
                 </Button>
               )}
             </Group>
-            {personnel.items.length ? (
+            {personnel.totalCount === 0 ? (
+              <Text c="dimmed">No personnel allocations for this selection.</Text>
+            ) : personnel.items.length ? (
               <Table>
                 <FinanceTableHead columns={["Month", "Personnel", "Currency", "Allocated"]} />
                 <Table.Tbody>
@@ -98,7 +100,7 @@ export function AppointmentFinancePage({ search, monthly, personnel, onSearch }:
                 </Table.Tbody>
               </Table>
             ) : (
-              <Text c="dimmed">No personnel allocations for this selection.</Text>
+              <Text c="dimmed">No personnel allocations on this page.</Text>
             )}
             {personnel.totalCount > personnel.pageSize && (
               <Pagination

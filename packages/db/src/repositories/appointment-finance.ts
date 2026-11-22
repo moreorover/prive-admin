@@ -11,15 +11,15 @@ const transactionMonth = sql<number>`cast(strftime('%m', ${movement.createdAt} /
 const classified = inArray(movement.movementType, transactionMovementTypes)
 
 function movementSum(type: TransactionMovementType) {
-  return sql<number>`coalesce(sum(${movement.amount}) filter (where ${movement.movementType} = ${type}), 0)`
+  return sql<string>`cast(coalesce(sum(${movement.amount}) filter (where ${movement.movementType} = ${type}), 0) as text)`
 }
 
 const totals = {
   currency: movement.currency,
   received: movementSum("received"),
-  refunds: sql<number>`-${movementSum("refund")}`,
+  refunds: sql<string>`cast(-coalesce(sum(${movement.amount}) filter (where ${movement.movementType} = 'refund'), 0) as text)`,
   adjustments: movementSum("adjustment"),
-  personnelAllocations: sql<number>`-${movementSum("personnel_allocation")}`,
+  personnelAllocations: sql<string>`cast(-coalesce(sum(${movement.amount}) filter (where ${movement.movementType} = 'personnel_allocation'), 0) as text)`,
 }
 
 function periodFilter({ year, month, currency }: FinancePeriod & { month?: number }) {
@@ -61,7 +61,7 @@ export async function personnelAllocationRows(
       personnelId: movement.customerId,
       personnelName: customer.name,
       currency: movement.currency,
-      allocated: sql<number>`-sum(${movement.amount})`.as("allocated"),
+      allocated: sql<string>`cast(-sum(${movement.amount}) as text)`.as("allocated"),
     })
     .from(movement)
     .leftJoin(customer, eq(customer.id, movement.customerId))
