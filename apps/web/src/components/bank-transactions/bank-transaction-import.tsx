@@ -115,32 +115,17 @@ function BankStatementImportFeedback({
       {preview ? (
         <Paper withBorder radius="md" p="md">
           <Stack gap="sm">
-            <Text size="sm" fw={600}>
-              Confirm destination account
-            </Text>
-            <SimpleGrid component="dl" cols={{ base: 1, xs: 2 }} spacing="sm" m={0}>
+            <SimpleGrid component="dl" cols={1} spacing="sm" m={0}>
               <div>
                 <Text component="dt" size="xs" c="dimmed">
-                  Destination account
+                  Import to
                 </Text>
-                <Text component="dd" size="sm" fw={500} m={0}>
-                  {preview.account.displayName}
-                </Text>
-              </div>
-              <div>
-                <Text component="dt" size="xs" c="dimmed">
-                  Legal entity
-                </Text>
-                <Text component="dd" size="sm" fw={500} m={0}>
-                  {preview.account.legalEntity.name}
-                </Text>
-              </div>
-              <div>
-                <Text component="dt" size="xs" c="dimmed">
-                  IBAN
-                </Text>
-                <Text component="dd" size="sm" ff="monospace" m={0} style={{ overflowWrap: "anywhere" }}>
-                  {preview.accountIban}
+                <Text component="dd" size="sm" fw={500} m={0} style={{ overflowWrap: "anywhere" }}>
+                  {preview.account.displayName} ·{" "}
+                  <Text component="span" ff="monospace" size="sm">
+                    {preview.accountIban}
+                  </Text>{" "}
+                  · {preview.account.legalEntity.name}
                 </Text>
               </div>
             </SimpleGrid>

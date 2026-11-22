@@ -106,19 +106,21 @@ describe("workspace confirmation", () => {
     expect(elements(tree).find((el) => el.type === FileInput)!.props.w).toBe("100%")
   })
 
-  it("labels each destination and count value in a bordered preview summary", () => {
+  it("combines account name, IBAN, and entity into one import destination", () => {
     const tree = BankTransactionImport({ ...props, preview })
     const html = renderToStaticMarkup(createElement(MantineProvider, null, tree.props.children))
     for (const [label, value] of [
-      ["Destination account", "Main account"],
-      ["Legal entity", "Prive LT"],
-      ["IBAN", "LT121000011101001000"],
       ["Total CSV rows", "5"],
       ["New entries", "3"],
       ["Duplicates ignored", "2"],
     ]) {
       expect(html).toMatch(new RegExp(`<dt[^>]*>${label}</dt><dd[^>]*>${value}</dd>`))
     }
+    expect(html).toMatch(/<dt[^>]*>Import to<\/dt><dd[^>]*>Main account/)
+    expect(html).toContain("LT121000011101001000")
+    expect(html).toContain("Prive LT")
+    expect(html).not.toMatch(/<dt[^>]*>Destination account<\/dt>/)
+    expect(html).not.toMatch(/<dt[^>]*>IBAN<\/dt>/)
     expect(html).toContain('data-with-border="true"')
   })
 
