@@ -25,7 +25,7 @@
   "dependencies": {
     "@paralleldrive/cuid2": "3.3.0",
     "@prive-admin-tanstack/env": "workspace:*",
-    "drizzle-orm": "0.45.2"
+    "drizzle-orm": "0.45.4"
   },
   "devDependencies": {
     "@prive-admin-tanstack/config": "workspace:*",
