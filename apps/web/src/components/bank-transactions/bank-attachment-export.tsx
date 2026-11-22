@@ -5,7 +5,7 @@ import { useState } from "react"
 
 import { formatBankAccountLabel } from "@/lib/bank-account-display"
 
-type ExportAccount = { id: string; displayName: string; iban: string }
+export type ExportAccount = { id: string; displayName: string; iban: string; legalEntityName?: string | null }
 export type BankAttachmentExportProps = {
   accounts?: ExportAccount[]
   bankAccountId?: string
@@ -49,8 +49,25 @@ export function BankAttachmentExportForm({
           placeholder="Select an account"
           data={accounts.map((account) => ({
             value: account.id,
-            label: formatBankAccountLabel({ displayName: account.displayName, iban: account.iban }),
+            label: formatBankAccountLabel({
+              displayName: account.displayName,
+              iban: account.iban,
+              legalEntityName: account.legalEntityName,
+            }),
           }))}
+          renderOption={({ option }) => {
+            const account = accounts.find((item) => item.id === option.value)
+            if (!account?.legalEntityName) return option.label
+
+            return (
+              <Stack gap={0}>
+                <Text size="sm">{account.legalEntityName}</Text>
+                <Text size="xs" c="dimmed">
+                  {account.iban}
+                </Text>
+              </Stack>
+            )
+          }}
           value={bankAccountId}
           onChange={onAccountChange}
           disabled={pending}

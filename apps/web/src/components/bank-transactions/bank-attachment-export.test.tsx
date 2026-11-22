@@ -7,8 +7,8 @@ import { elements } from "./test-elements"
 
 const month = new Date(2026, 10, 1)
 const accounts = [
-  { id: "a", displayName: "Main", iban: "LT123" },
-  { id: "b", displayName: "Reserve", iban: "LT456" },
+  { id: "a", displayName: "Main", iban: "LT123", legalEntityName: "First" },
+  { id: "b", displayName: "Reserve", iban: "LT456", legalEntityName: "Second" },
 ]
 function props() {
   return {
@@ -29,9 +29,14 @@ describe("account-scoped attachment export picker", () => {
     const controls = elements(BankAttachmentExportForm(input))
     const select = controls.find((el) => el.type === Select)!
     expect(select.props.data).toEqual([
-      { value: "a", label: "LT123 · Main" },
-      { value: "b", label: "LT456 · Reserve" },
+      { value: "a", label: "LT123 · Main · First" },
+      { value: "b", label: "LT456 · Reserve · Second" },
     ])
+    const option = select.props.renderOption({
+      option: { value: "a", label: "LT123 · Main · First" },
+    })
+    expect(option.props.children[0].props.children).toBe("First")
+    expect(option.props.children[1].props.children).toBe("LT123")
     const button = controls.find((el) => el.type === Button)!
     expect(button.props.disabled).toBe(true)
     button.props.onClick()
@@ -44,9 +49,12 @@ describe("account-scoped attachment export picker", () => {
   })
 
   it("does not repeat an IBAN when the account display name is the IBAN", () => {
-    const input = { ...props(), accounts: [{ id: "a", displayName: "LT123", iban: "LT123" }] }
+    const input = {
+      ...props(),
+      accounts: [{ id: "a", displayName: "LT123", iban: "LT123", legalEntityName: "First" }],
+    }
     const select = elements(BankAttachmentExportForm(input)).find((el) => el.type === Select)!
-    expect(select.props.data).toEqual([{ value: "a", label: "LT123" }])
+    expect(select.props.data).toEqual([{ value: "a", label: "LT123 · First" }])
   })
 
   it("reuses the filtered or detail account and passes the chosen month to the owner", () => {

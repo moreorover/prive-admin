@@ -23,14 +23,13 @@ import { attachmentPreviewUrl } from "@/components/attachment-preview"
 import {
   BankAttachmentExport,
   type BankAttachmentExportProps,
+  type ExportAccount,
 } from "@/components/bank-transactions/bank-attachment-export"
 import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { PageHeader } from "@/components/page-header"
 import { ResourceToolbar } from "@/components/resource-toolbar"
 import { Section } from "@/components/section"
 import { type Currency, formatMinor } from "@/lib/currency"
-
-import type { BankTransactionsOptions } from "../../-data/bank-transactions-data"
 
 import { type DocumentStatus, PAGE_SIZE } from "../-data/index-data"
 
@@ -69,7 +68,7 @@ export function DocumentsPage({
   onStatusChange: (status: DocumentStatus) => void
   onPageChange: (page: number) => void
   exportAction: Pick<BankAttachmentExportProps, "pending" | "onExport">
-  accounts: BankTransactionsOptions["accounts"]
+  accounts: ExportAccount[]
 }) {
   const [busy, setBusy] = useState(false)
   const [fileInputKey, setFileInputKey] = useState(0)

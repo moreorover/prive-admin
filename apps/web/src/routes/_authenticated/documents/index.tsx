@@ -38,6 +38,11 @@ function RouteComponent() {
   const optionsQuery = useQuery(bankTransactionsOptionsQueryOptions(Route.useRouteContext().queryClient))
   const exportAction = useBankAttachmentExport()
   const { upload, unassign, remove } = useDocumentActions()
+  const exportAccounts =
+    optionsQuery.data?.accounts.map((account) => ({
+      ...account,
+      legalEntityName: optionsQuery.data?.entities.find((entity) => entity.id === account.legalEntityId)?.name,
+    })) ?? []
 
   return (
     <DocumentsPage
@@ -45,7 +50,7 @@ function RouteComponent() {
       page={page}
       documentsQuery={documentsQuery}
       exportAction={exportAction}
-      accounts={optionsQuery.data?.accounts ?? []}
+      accounts={exportAccounts}
       uploadDocument={upload}
       unassignPending={unassign.isPending}
       removePending={remove.isPending}
