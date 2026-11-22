@@ -12,7 +12,6 @@ import {
   bankTransactionsQueryOptions,
   bankTransactionsSearchSchema,
   normalizeBankTransactionsAccount,
-  normalizeBankTransactionsSearch,
   updateBankTransactionsFilters,
 } from "./-data/bank-transactions-data"
 import {
@@ -26,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/bank-transactions")({
   loaderDeps: ({ search }) => search,
   loader: async ({ context, deps }) => {
     const options = await context.queryClient.fetchQuery(bankTransactionsOptionsQueryOptions(context.queryClient))
-    const normalized = normalizeBankTransactionsSearch(normalizeBankTransactionsAccount(deps, options.accounts))
+    const normalized = normalizeBankTransactionsAccount(deps, options.accounts)
     if (normalized !== deps) {
       throw redirect({ to: "/bank-transactions", search: normalized, replace: true })
     }
@@ -110,7 +109,6 @@ function RouteComponent() {
         setOpenAttachmentEntryId(null)
         return navigate({ search: (current) => ({ ...current, page }) })
       }}
-      onViewAllTransactions={() => navigate({ search: (current) => ({ ...current, status: "ALL", page: 1 }) })}
     />
   )
 }

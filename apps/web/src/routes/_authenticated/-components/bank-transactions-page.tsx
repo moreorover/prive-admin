@@ -32,7 +32,6 @@ export function BankTransactionsPage({
   review,
   onFiltersChange,
   onPageChange,
-  onViewAllTransactions,
 }: {
   importAction?: BankTransactionImportProps & { opened: boolean; onOpen: () => void }
   search: BankTransactionsSearch
@@ -46,10 +45,8 @@ export function BankTransactionsPage({
   >
   onFiltersChange: (filters: BankTransactionsFilters) => void
   onPageChange: (page: number) => void
-  onViewAllTransactions: () => void
 }) {
   const totalCount = result?.totalCount ?? 0
-  const status = search.status ?? "PENDING"
 
   return (
     <Container size="xl">
@@ -96,9 +93,7 @@ export function BankTransactionsPage({
               onPageChange={onPageChange}
             />
           ) : null}
-          {!error && result?.items.length === 0 ? (
-            <BankTransactionsEmptyState status={status} onViewAllTransactions={onViewAllTransactions} />
-          ) : null}
+          {!error && result?.items.length === 0 ? <BankTransactionsEmptyState /> : null}
         </Box>
         {result && result.totalCount > result.pageSize ? (
           <ResourcePagination
@@ -115,24 +110,13 @@ export function BankTransactionsPage({
   )
 }
 
-function BankTransactionsEmptyState({
-  status,
-  onViewAllTransactions,
-}: {
-  status: BankTransactionsSearch["status"]
-  onViewAllTransactions: () => void
-}) {
+function BankTransactionsEmptyState() {
   return (
     <Stack align="center" gap="sm" p="xl">
-      <Text fw={500}>{status === "PENDING" ? "No pending transactions" : "No transactions found"}</Text>
+      <Text fw={500}>No transactions found</Text>
       <Text c="dimmed" size="sm">
         Try changing the filters to see more transactions.
       </Text>
-      {status === "PENDING" ? (
-        <Button variant="light" onClick={onViewAllTransactions}>
-          View all transactions
-        </Button>
-      ) : null}
     </Stack>
   )
 }

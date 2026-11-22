@@ -12,7 +12,7 @@ import { Route } from "../bank-transactions"
 
 function owner() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  vi.spyOn(Route, "useSearch").mockReturnValue({ status: "PENDING", page: 1 })
+  vi.spyOn(Route, "useSearch").mockReturnValue({ page: 1 })
   vi.spyOn(Route, "useNavigate").mockReturnValue(vi.fn())
   vi.spyOn(Route, "useRouteContext").mockReturnValue({ queryClient: client } as ReturnType<
     typeof Route.useRouteContext

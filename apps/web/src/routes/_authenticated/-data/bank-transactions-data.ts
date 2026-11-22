@@ -12,7 +12,6 @@ export const bankTransactionsSearchSchema = z.object({
   entityId: optionalFilter,
   bankAccountId: optionalFilter,
   bankAccountIds: z.array(z.string().trim().min(1)).optional(),
-  status: z.enum(["PENDING", "IGNORED", "ALL"]).optional(),
   from: z.iso.date().optional(),
   to: z.iso.date().optional(),
   q: z.string().max(120).optional(),
@@ -34,7 +33,7 @@ export function bankTransactionsQueryOptions(search: BankTransactionsSearch) {
     legalEntityId: search.entityId,
     bankAccountId: search.bankAccountId,
     bankAccountIds: search.bankAccountIds,
-    status: search.status === "ALL" ? undefined : (search.status ?? "PENDING"),
+    status: "PENDING",
     from: search.from,
     to: search.to,
     query: search.q?.trim() || undefined,
@@ -53,10 +52,6 @@ export function normalizeBankTransactionsAccount(
     return { ...search, bankAccountId: undefined, page: 1 }
   }
   return search
-}
-
-export function normalizeBankTransactionsSearch(search: BankTransactionsSearch): BankTransactionsSearch {
-  return search.status === "PENDING" ? { ...search, status: undefined } : search
 }
 
 export function updateBankTransactionsFilters(
