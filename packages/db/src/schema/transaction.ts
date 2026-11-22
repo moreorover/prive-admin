@@ -6,12 +6,19 @@ import { createdAt } from "./columns"
 import { customer } from "./customer"
 import { order } from "./order"
 
+export const transactionMovementTypes = ["received", "personnel_allocation", "refund", "adjustment"] as const
+export type TransactionMovementType = (typeof transactionMovementTypes)[number]
+
+// Compatibility only: historical movements remain unclassified until explicitly reviewed.
+const storedMovementTypes = [...transactionMovementTypes, "legacy_unclassified"] as const
+
 export const transaction = sqliteTable(
   "transaction",
   {
     id: text("id").primaryKey().$defaultFn(createId),
     name: text("name"),
     notes: text("notes"),
+    movementType: text("movement_type", { enum: storedMovementTypes }).notNull().default("legacy_unclassified"),
     amount: integer("amount").notNull(),
     currency: text("currency").notNull(),
     createdAt: createdAt(),

@@ -15,6 +15,7 @@ const currencySchema = z.enum(["GBP", "EUR"])
 const transactionFieldsSchema = z.object({
   name: z.string().nullish(),
   notes: z.string().nullish(),
+  movementType: z.enum(["received", "personnel_allocation", "refund", "adjustment"]),
   amount: z.number().int(),
   currency: currencySchema,
 })
@@ -51,6 +52,7 @@ export const transactionsRouter = router({
           customerId: input.customerId,
           name: input.name ?? null,
           notes: input.notes ?? null,
+          movementType: input.movementType,
           amount: input.amount,
           currency: input.currency,
         })
@@ -67,6 +69,7 @@ export const transactionsRouter = router({
           id: input.id,
           name: input.name ?? null,
           notes: input.notes ?? null,
+          movementType: input.movementType,
           amount: input.amount,
           currency: input.currency,
         })

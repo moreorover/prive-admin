@@ -3,7 +3,7 @@ import { and, count, desc, eq } from "drizzle-orm"
 import { db, type Db } from "../index"
 import { appointment } from "../schema/appointment"
 import { customer } from "../schema/customer"
-import { transaction } from "../schema/transaction"
+import { transaction, type TransactionMovementType } from "../schema/transaction"
 
 export async function listTransactions(
   database: Db = db,
@@ -27,6 +27,7 @@ export async function listTransactions(
       name: transaction.name,
       notes: transaction.notes,
       amount: transaction.amount,
+      movementType: transaction.movementType,
       currency: transaction.currency,
       createdAt: transaction.createdAt,
       customerId: transaction.customerId,
@@ -53,6 +54,7 @@ export async function createTransaction(
     customerId: string
     name?: string | null
     notes?: string | null
+    movementType: TransactionMovementType
     amount: number
     currency: "GBP" | "EUR"
   },
@@ -67,6 +69,7 @@ export async function updateTransaction(
     id: string
     name?: string | null
     notes?: string | null
+    movementType: TransactionMovementType
     amount: number
     currency: "GBP" | "EUR"
   },
@@ -77,6 +80,7 @@ export async function updateTransaction(
       name: input.name ?? null,
       notes: input.notes ?? null,
       amount: input.amount,
+      movementType: input.movementType,
       currency: input.currency,
     })
     .where(eq(transaction.id, input.id))
@@ -87,4 +91,8 @@ export async function updateTransaction(
 export async function deleteTransaction(database: Db = db, id: string) {
   const [row] = await database.delete(transaction).where(eq(transaction.id, id)).returning()
   return row
+}
+
+export async function getTransaction(database: Db = db, id: string) {
+  return database.query.transaction.findFirst({ where: eq(transaction.id, id) })
 }
