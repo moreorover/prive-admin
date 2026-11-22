@@ -1,4 +1,4 @@
-import { NativeSelect, TextInput } from "@mantine/core"
+import { Select, TextInput } from "@mantine/core"
 import { IconSearch } from "@tabler/icons-react"
 
 import type {
@@ -9,7 +9,7 @@ import type {
 
 export function BankTransactionFilters({
   entities,
-  accounts: allAccounts,
+  accounts,
   values,
   onChange,
 }: {
@@ -18,51 +18,48 @@ export function BankTransactionFilters({
   values: BankTransactionsSearch
   onChange: (filters: BankTransactionsFilters) => void
 }) {
-  const accounts = allAccounts.filter((account) => !values.entityId || account.legalEntityId === values.entityId)
+  const entityNames = new Map(entities.map((entity) => [entity.id, entity.name]))
+  const selectedValue = values.bankAccountId
+    ? "account:" + values.bankAccountId
+    : values.entityId
+      ? "entity:" + values.entityId
+      : ""
+
   return (
     <>
-      <NativeSelect
-        label="Legal entity"
-        data={[
-          { value: "", label: "All legal entities" },
-          ...entities.map((entity) => ({ value: entity.id, label: entity.name })),
-        ]}
-        value={values.entityId ?? ""}
-        onChange={(event) => {
-          const entityId = event.currentTarget.value || undefined
-          const invalidAccount =
-            values.bankAccountId &&
-            entityId &&
-            !allAccounts.some((account) => account.id === values.bankAccountId && account.legalEntityId === entityId)
-          onChange(invalidAccount ? { entityId, bankAccountId: undefined } : { entityId })
-        }}
-      />
-      <NativeSelect
-        label="Bank account"
+      <Select
+        label="Account"
+        searchable
+        clearable
         data={[
           { value: "", label: "All bank accounts" },
-          ...accounts.map((account) => ({
-            value: account.id,
-            label: `${account.displayName} · ${account.iban}`,
-          })),
+          {
+            group: "Legal entities",
+            items: entities.map((entity) => ({ value: "entity:" + entity.id, label: entity.name })),
+          },
+          {
+            group: "Bank accounts",
+            items: accounts.map((account) => ({
+              value: "account:" + account.id,
+              label:
+                (entityNames.get(account.legalEntityId) ?? "Unknown entity") +
+                " · " +
+                account.displayName +
+                " · " +
+                account.iban,
+            })),
+          },
         ]}
-        value={accounts.some((account) => account.id === values.bankAccountId) ? values.bankAccountId : ""}
-        onChange={(event) => {
-          const bankAccountId = event.currentTarget.value
-          onChange({
-            bankAccountId: accounts.some((account) => account.id === bankAccountId) ? bankAccountId : undefined,
-          })
+        value={selectedValue}
+        onChange={(value) => {
+          if (!value) {
+            onChange({ entityId: undefined, bankAccountId: undefined })
+          } else if (value.startsWith("entity:")) {
+            onChange({ entityId: value.slice("entity:".length), bankAccountId: undefined })
+          } else if (value.startsWith("account:")) {
+            onChange({ entityId: undefined, bankAccountId: value.slice("account:".length) })
+          }
         }}
-      />
-      <NativeSelect
-        label="Status"
-        data={[
-          { value: "PENDING", label: "Pending" },
-          { value: "IGNORED", label: "Ignored" },
-          { value: "ALL", label: "All statuses" },
-        ]}
-        value={values.status}
-        onChange={(event) => onChange({ status: event.currentTarget.value as BankTransactionsSearch["status"] })}
       />
       <TextInput
         label="From"

@@ -152,9 +152,7 @@ describe("BankTransactionsPage shell", () => {
     const markup = renderPage()
     for (const label of [
       "Bank transactions",
-      "Legal entity",
-      "Bank account",
-      "Status",
+      "Account",
       "From",
       "To",
       "Search",
@@ -163,6 +161,9 @@ describe("BankTransactionsPage shell", () => {
     ]) {
       expect(markup).toContain(label)
     }
+    expect(markup).not.toContain("Legal entity")
+    expect(markup).not.toContain("Bank account")
+    expect(markup).not.toContain("Status")
     expect(markup).toContain("0 transactions")
   })
 
