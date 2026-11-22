@@ -541,8 +541,8 @@ importers:
   packages/env:
     devDependencies:
       '@cloudflare/workers-types':
-        specifier: 5.20260926.1
-        version: 5.20260926.1
+        specifier: 5.20261121.1
+        version: 5.20261121.1
       '@prive-admin-tanstack/config':
         specifier: workspace:*
         version: link:../config
@@ -1027,6 +1027,9 @@ packages:
 
   '@cloudflare/workers-types@5.20261120.1':
     resolution: {integrity: sha512-bpaDXQ1oYqWhLCAqV5fO0pPB2tduDEEFyIMedZVi0NqzW/7T8DlJ8hUe3DqoDG1RQ8X7zTbK555Qr9yAyyUhmQ==}
+
+  '@cloudflare/workers-types@5.20261121.1':
+    resolution: {integrity: sha512-eLzyhm8/Qn+yshOObNIVsV8YJyWR9BOBCnnuqmrqY5uhsVDlLMdCmOQ34oC3eoVLkav94Dc7MWcfC+FuaxdNjA==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -6845,9 +6848,12 @@ snapshots:
   '@cloudflare/workers-types@5.20260816.1':
     optional: true
 
-  '@cloudflare/workers-types@5.20260926.1': {}
+  '@cloudflare/workers-types@5.20260926.1':
+    optional: true
 
   '@cloudflare/workers-types@5.20261120.1': {}
+
+  '@cloudflare/workers-types@5.20261121.1': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
