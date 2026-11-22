@@ -1,4 +1,5 @@
 import { Select, Stack, Text, TextInput } from "@mantine/core"
+import { DateInput } from "@mantine/dates"
 import { IconSearch } from "@tabler/icons-react"
 
 import type {
@@ -70,17 +71,19 @@ export function BankTransactionFilters({
           onChange({ entityId: undefined, bankAccountId: value || undefined })
         }}
       />
-      <TextInput
+      <DateInput
         label="From"
-        type="date"
-        value={values.from ?? ""}
-        onChange={(event) => onChange({ from: event.currentTarget.value || undefined })}
+        valueFormat="DD MMM YYYY"
+        clearable
+        value={values.from ?? null}
+        onChange={(value) => onChange({ from: value ?? undefined })}
       />
-      <TextInput
+      <DateInput
         label="To"
-        type="date"
-        value={values.to ?? ""}
-        onChange={(event) => onChange({ to: event.currentTarget.value || undefined })}
+        valueFormat="DD MMM YYYY"
+        clearable
+        value={values.to ?? null}
+        onChange={(value) => onChange({ to: value ?? undefined })}
       />
       <TextInput
         label="Search"

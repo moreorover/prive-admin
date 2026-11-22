@@ -1,4 +1,5 @@
 import { NativeSelect, Select, TextInput } from "@mantine/core"
+import { DateInput } from "@mantine/dates"
 import { describe, expect, it, vi } from "vite-plus/test"
 
 import { BankTransactionFilters } from "./bank-transaction-filters"
@@ -17,7 +18,9 @@ function controls(values = { entityId: "entity-1", bankAccountId: "account-1", s
   const tree = elements(BankTransactionFilters({ entities, accounts, values, onChange }))
   const findControl = (label: string) => {
     const found = tree.find(
-      (el) => (el.type === NativeSelect || el.type === Select || el.type === TextInput) && el.props.label === label,
+      (el) =>
+        (el.type === DateInput || el.type === NativeSelect || el.type === Select || el.type === TextInput) &&
+        el.props.label === label,
     )
     if (!found) return undefined
     return found.props
@@ -70,8 +73,8 @@ describe("BankTransactionFilters", () => {
   it("removes the status control and emits date and search patches", () => {
     const { control, findControl, onChange } = controls()
     expect(findControl("Status")).toBeUndefined()
-    change(control("From"), "2026-11-01")
-    change(control("To"), "")
+    control("From").onChange("2026-11-01")
+    control("To").onChange(null)
     change(control("Search"), "invoice")
     expect(onChange.mock.calls).toEqual([[{ from: "2026-11-01" }], [{ to: undefined }], [{ q: "invoice" }]])
   })
