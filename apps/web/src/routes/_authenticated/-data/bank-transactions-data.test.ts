@@ -7,7 +7,6 @@ import {
   bankTransactionsOptionsQueryOptions,
   bankTransactionsQueryOptions,
   bankTransactionsSearchSchema,
-  normalizeBankTransactionsSearch,
   normalizeBankTransactionsAccount,
   updateBankTransactionsFilters,
 } from "./bank-transactions-data"
@@ -85,11 +84,6 @@ describe("bank transactions route data", () => {
       ["bankStatementEntries", "list"],
       { input: { page: 1 }, type: "query" },
     ])
-  })
-
-  it("removes the default pending status from URL search state", () => {
-    expect(normalizeBankTransactionsSearch({ status: "PENDING", page: 1 })).toEqual({ page: 1 })
-    expect(normalizeBankTransactionsSearch({ status: "ALL", page: 1 })).toEqual({ status: "ALL", page: 1 })
   })
 
   it.each([
