@@ -1,4 +1,4 @@
-import { and, count, eq, gte, lte } from "drizzle-orm"
+import { and, count, eq, gte, lte, sql } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { appointment, personnelOnAppointments } from "../schema/appointment"
@@ -73,14 +73,30 @@ export async function linkPersonnelToAppointment(
   input: { appointmentId: string; personnelIds: string[] },
 ) {
   if (input.personnelIds.length === 0) return []
-  const values = input.personnelIds.map((personnelId) => ({
-    appointmentId: input.appointmentId,
-    personnelId,
-  }))
+  const requestedPersonnelValues = sql.join(
+    input.personnelIds.map((personnelId) => sql`SELECT ${personnelId} AS personnel_id`),
+    sql` UNION ALL `,
+  )
+  const requestedPersonnel = sql`
+    SELECT DISTINCT personnel_id
+    FROM (${requestedPersonnelValues}) AS requested_values
+  `
+  const existingAssignment = sql`
+    SELECT 1
+    FROM ${personnelOnAppointments} AS existing
+    WHERE existing.appointment_id = ${input.appointmentId}
+      AND existing.personnel_id IN (
+        SELECT personnel_id FROM (${requestedPersonnel}) AS requested_conflicts
+      )
+  `
+
   return database
     .insert(personnelOnAppointments)
-    .values(values)
-    .onConflictDoNothing({ target: [personnelOnAppointments.personnelId, personnelOnAppointments.appointmentId] })
+    .select(sql`
+      SELECT ${input.appointmentId}, requested.personnel_id, (cast(unixepoch('subsecond') * 1000 as integer))
+      FROM (${requestedPersonnel}) AS requested
+      WHERE NOT EXISTS (${existingAssignment})
+    `)
     .returning()
 }
 

@@ -41,6 +41,7 @@ describe("appointment repository", () => {
 describe("appointment personnel persistence", () => {
   let sqlite: DatabaseSync
   let database: ReturnType<typeof drizzle<typeof schema>>
+  let interveneBeforeNextAssignment = false
   const db = () => database as never
 
   beforeEach(async () => {
@@ -54,6 +55,12 @@ describe("appointment personnel persistence", () => {
     sqlite.exec("PRAGMA foreign_keys = ON")
     database = drizzle(
       async (sql, params, method) => {
+        if (interveneBeforeNextAssignment && sql.toString().includes('insert into "appointment_personnel"')) {
+          interveneBeforeNextAssignment = false
+          sqlite
+            .prepare("insert into appointment_personnel (appointment_id, personnel_id) values (?, ?)")
+            .run("appointment-1", "alice")
+        }
         const statement = sqlite.prepare(sql)
         if (method === "run") {
           statement.run(...params)
@@ -71,6 +78,8 @@ describe("appointment personnel persistence", () => {
       { id: "master", name: "Master" },
       { id: "assistant", name: "Assistant" },
       { id: "other", name: "Other" },
+      { id: "alice", name: "Alice" },
+      { id: "bob", name: "Bob" },
     ])
     await database.insert(schema.salon).values({ id: "salon", name: "Salon" })
     await database.insert(schema.personnel).values([
@@ -93,11 +102,22 @@ describe("appointment personnel persistence", () => {
     const input = { appointmentId: "appointment-1", personnelIds: ["assistant", "assistant"] }
     expect(await linkPersonnelToAppointment(db(), input)).toHaveLength(1)
     expect(await linkPersonnelToAppointment(db(), input)).toEqual([])
-    expect(await linkPersonnelToAppointment(db(), { ...input, personnelIds: ["assistant", "other"] })).toHaveLength(1)
+    expect(await linkPersonnelToAppointment(db(), { ...input, personnelIds: ["assistant", "other"] })).toEqual([])
     expect((await getAppointment(db(), "appointment-1"))?.personnel.map((row) => row.personnelId).sort()).toEqual([
       "assistant",
-      "other",
     ])
+  })
+
+  it("rejects a mixed batch atomically when an assignment intervenes", async () => {
+    interveneBeforeNextAssignment = true
+
+    expect(
+      await linkPersonnelToAppointment(db(), {
+        appointmentId: "appointment-1",
+        personnelIds: ["alice", "bob"],
+      }),
+    ).toEqual([])
+    expect((await getAppointment(db(), "appointment-1"))?.personnel.map((row) => row.personnelId)).toEqual(["alice"])
   })
 
   it("preserves appointment detail and list reads for inactive personnel", async () => {
