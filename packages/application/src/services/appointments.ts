@@ -6,7 +6,8 @@ import {
   updateAppointment as patchAppointment,
 } from "@prive-admin-tanstack/db"
 
-import { notFound, unexpectedError } from "../errors"
+import { badRequest, conflict, notFound, unexpectedError } from "../errors"
+import { assertActivePersonnel } from "./personnel"
 
 export async function listAppointments(input: {
   pageSize: number
@@ -32,6 +33,7 @@ export async function createAppointment(input: {
   masterId: string
   salonId: string
 }) {
+  await assertActivePersonnel(input.masterId)
   let result
   try {
     result = await insertAppointment(undefined, input)
@@ -47,10 +49,28 @@ export async function createAppointment(input: {
 }
 
 export async function linkPersonnelToAppointment(input: { appointmentId: string; personnelIds: string[] }) {
+  if (input.personnelIds.length === 0) return
+  if (new Set(input.personnelIds).size !== input.personnelIds.length) {
+    throw badRequest("Personnel IDs must be unique")
+  }
+
+  const appointment = await getAppointment(input.appointmentId)
+  for (const personnelId of input.personnelIds) {
+    await assertActivePersonnel(personnelId)
+  }
+  const assignedIds = new Set(appointment.personnel.map((link) => link.personnelId))
+  if (input.personnelIds.some((id) => assignedIds.has(id))) {
+    throw conflict("Personnel already assigned to appointment")
+  }
+
+  let inserted
   try {
-    return await insertAppointmentPersonnel(undefined, input)
+    inserted = await insertAppointmentPersonnel(undefined, input)
   } catch (error) {
     throw unexpectedError("Failed to link personnel to appointment", error)
+  }
+  if (inserted.length !== input.personnelIds.length) {
+    throw conflict("Personnel already assigned to appointment")
   }
 }
 
@@ -60,6 +80,7 @@ export async function updateAppointment(input: {
   masterId?: string
   startsAt?: string | Date
 }) {
+  if (input.masterId !== undefined) await assertActivePersonnel(input.masterId)
   let result
   try {
     result = await patchAppointment(undefined, input)

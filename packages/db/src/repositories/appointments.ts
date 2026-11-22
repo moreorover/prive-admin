@@ -72,12 +72,16 @@ export async function linkPersonnelToAppointment(
   database: Db = db,
   input: { appointmentId: string; personnelIds: string[] },
 ) {
-  if (input.personnelIds.length === 0) return
+  if (input.personnelIds.length === 0) return []
   const values = input.personnelIds.map((personnelId) => ({
     appointmentId: input.appointmentId,
     personnelId,
   }))
-  await database.insert(personnelOnAppointments).values(values)
+  return database
+    .insert(personnelOnAppointments)
+    .values(values)
+    .onConflictDoNothing({ target: [personnelOnAppointments.personnelId, personnelOnAppointments.appointmentId] })
+    .returning()
 }
 
 export async function updateAppointment(
