@@ -5,17 +5,19 @@ import { URL } from "node:url"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import * as schema from "../schema"
-import { createPersonnel, getPersonnel, listPersonnel, updatePersonnel } from "./personnel"
+import { createPersonnel, getPersonnel, listPersonnel, listPersonnelByCustomerIds, updatePersonnel } from "./personnel"
 
 vi.mock("../index", () => ({ db: {} }))
 
 describe("personnel repository", () => {
   let sqlite: DatabaseSync
   let database: ReturnType<typeof drizzle<typeof schema>>
+  let batchLookupCount = 0
   const db = () => database as never
 
   beforeEach(async () => {
     sqlite = new DatabaseSync(":memory:", { limits: { likePatternLength: 50 } })
+    batchLookupCount = 0
     const migrations = new URL("../migrations/", import.meta.url)
     for (const file of readdirSync(migrations)
       .filter((file) => file.endsWith(".sql"))
@@ -25,6 +27,7 @@ describe("personnel repository", () => {
     sqlite.exec("PRAGMA foreign_keys = ON")
     database = drizzle(
       async (sql, params, method) => {
+        if (sql.includes("json_each") && sql.includes("personnel")) batchLookupCount++
         const statement = sqlite.prepare(sql)
         if (method === "run") {
           statement.run(...params)
@@ -108,6 +111,14 @@ describe("personnel repository", () => {
   it("gets profiles by customer ID with customer details, including inactive profiles", async () => {
     expect(await getPersonnel(db(), "cara")).toMatchObject({ active: false, customer: { id: "cara", name: "Cara" } })
     expect(await getPersonnel(db(), "client")).toBeUndefined()
+  })
+
+  it("loads a large active-personnel batch with one set-based query", async () => {
+    const customerIds = Array.from({ length: 49 }, (_, index) => (index % 2 === 0 ? "anna" : "bella"))
+    const result = await listPersonnelByCustomerIds(db(), customerIds)
+
+    expect(result.map((profile) => profile.customerId)).toEqual(["anna", "bella"])
+    expect(batchLookupCount).toBe(1)
   })
 
   it("adds personnel capability to an existing customer without replacing their identity", async () => {

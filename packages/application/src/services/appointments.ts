@@ -7,7 +7,7 @@ import {
 } from "@prive-admin-tanstack/db"
 
 import { badRequest, conflict, notFound, unexpectedError } from "../errors"
-import { assertActivePersonnel } from "./personnel"
+import { assertActivePersonnel, assertActivePersonnelBatch } from "./personnel"
 
 export async function listAppointments(input: {
   pageSize: number
@@ -55,9 +55,7 @@ export async function linkPersonnelToAppointment(input: { appointmentId: string;
   }
 
   const appointment = await getAppointment(input.appointmentId)
-  for (const personnelId of input.personnelIds) {
-    await assertActivePersonnel(personnelId)
-  }
+  await assertActivePersonnelBatch(input.personnelIds)
   const assignedIds = new Set(appointment.personnel.map((link) => link.personnelId))
   if (input.personnelIds.some((id) => assignedIds.has(id))) {
     throw conflict("Personnel already assigned to appointment")

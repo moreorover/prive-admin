@@ -11,6 +11,7 @@ import {
   getPersonnel as findPersonnel,
   getSalon,
   listPersonnel as fetchPersonnel,
+  listPersonnelByCustomerIds as fetchPersonnelByCustomerIds,
   updatePersonnel as patchPersonnel,
 } from "@prive-admin-tanstack/db"
 
@@ -68,4 +69,12 @@ export async function assertActivePersonnel(customerId: string, options: { type?
   if (!result.active) throw badRequest("Personnel profile is inactive")
   if (options.type && result.type !== options.type) throw badRequest(`Personnel must be a ${options.type}`)
   return result
+}
+
+export async function assertActivePersonnelBatch(customerIds: string[]) {
+  const profiles = await fetchPersonnelByCustomerIds(undefined, customerIds)
+  const eligibleIds = new Set(profiles.map((profile) => profile.customerId))
+  const ineligibleId = customerIds.find((customerId) => !eligibleIds.has(customerId))
+  if (ineligibleId) throw badRequest("Customer does not have an active personnel profile")
+  return profiles
 }

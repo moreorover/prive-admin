@@ -15,6 +15,7 @@ const dbMock = vi.hoisted(() => ({
   getAppointment: vi.fn(),
   listAppointments: vi.fn(),
   linkPersonnelToAppointment: vi.fn(),
+  listPersonnelByCustomerIds: vi.fn(),
   getPersonnel: vi.fn(),
 }))
 
@@ -27,6 +28,7 @@ describe("appointment service", () => {
     dbMock.updateAppointment.mockResolvedValue({ id: "appointment-1" })
     dbMock.getAppointment.mockResolvedValue({ id: "appointment-1", personnel: [] })
     dbMock.linkPersonnelToAppointment.mockResolvedValue([{ personnelId: "assistant" }])
+    dbMock.listPersonnelByCustomerIds.mockResolvedValue([])
   })
 
   const input = { name: "Cut", startsAt: "2026-11-22", clientId: "client", masterId: "master", salonId: "salon" }
@@ -50,9 +52,11 @@ describe("appointment service", () => {
 
   it.each([undefined, { ...profile, active: false }])(
     "rejects ineligible supporting personnel before writing any links: %j",
-    async (personnel) => {
-      dbMock.getPersonnel.mockImplementation(async (_db, id) =>
-        id === "assistant" ? { ...profile, customerId: id, type: "assistant" } : personnel,
+    async () => {
+      dbMock.listPersonnelByCustomerIds.mockImplementation(async (_db: unknown, ids: string[]) =>
+        ids
+          .filter((id: string) => id === "assistant")
+          .map((customerId: string) => ({ ...profile, customerId, type: "assistant" })),
       )
       await expect(
         linkPersonnelToAppointment({ appointmentId: "appointment-1", personnelIds: ["assistant", "ineligible"] }),
@@ -70,11 +74,28 @@ describe("appointment service", () => {
   })
 
   it("links active supporting personnel", async () => {
-    dbMock.getPersonnel.mockResolvedValue({ ...profile, customerId: "assistant", type: "assistant" })
+    dbMock.listPersonnelByCustomerIds.mockResolvedValue([{ ...profile, customerId: "assistant", type: "assistant" }])
     await linkPersonnelToAppointment({ appointmentId: "appointment-1", personnelIds: ["assistant"] })
     expect(dbMock.linkPersonnelToAppointment).toHaveBeenCalledWith(undefined, {
       appointmentId: "appointment-1",
       personnelIds: ["assistant"],
+    })
+  })
+
+  it("validates a large supporting-personnel batch with one personnel lookup", async () => {
+    const personnelIds = Array.from({ length: 49 }, (_, index) => `assistant-${index}`)
+    dbMock.listPersonnelByCustomerIds.mockResolvedValue(
+      personnelIds.map((customerId) => ({ customerId, active: true, type: "assistant" })),
+    )
+    dbMock.linkPersonnelToAppointment.mockResolvedValue(personnelIds.map((personnelId) => ({ personnelId })))
+
+    await linkPersonnelToAppointment({ appointmentId: "appointment-1", personnelIds })
+
+    expect(dbMock.listPersonnelByCustomerIds).toHaveBeenCalledTimes(1)
+    expect(dbMock.getPersonnel).not.toHaveBeenCalled()
+    expect(dbMock.linkPersonnelToAppointment).toHaveBeenCalledWith(undefined, {
+      appointmentId: "appointment-1",
+      personnelIds,
     })
   })
 
@@ -87,7 +108,10 @@ describe("appointment service", () => {
   })
 
   it("rejects already assigned personnel without writing a mixed batch", async () => {
-    dbMock.getPersonnel.mockResolvedValue(profile)
+    dbMock.listPersonnelByCustomerIds.mockResolvedValue([
+      { ...profile, customerId: "new", type: "assistant" },
+      { ...profile, customerId: "assistant", type: "assistant" },
+    ])
     dbMock.getAppointment.mockResolvedValue({ id: "appointment-1", personnel: [{ personnelId: "assistant" }] })
     await expect(
       linkPersonnelToAppointment({ appointmentId: "appointment-1", personnelIds: ["new", "assistant"] }),
@@ -105,7 +129,7 @@ describe("appointment service", () => {
   })
 
   it("translates a concurrent duplicate insert into a domain conflict", async () => {
-    dbMock.getPersonnel.mockResolvedValue(profile)
+    dbMock.listPersonnelByCustomerIds.mockResolvedValue([{ ...profile, customerId: "assistant", type: "assistant" }])
     dbMock.linkPersonnelToAppointment.mockResolvedValue([])
     await expect(
       linkPersonnelToAppointment({ appointmentId: "appointment-1", personnelIds: ["assistant"] }),
@@ -149,7 +173,7 @@ describe("appointment service", () => {
 
   it("maps duplicate assignment errors through the API", async () => {
     const caller = appointmentsRouter.createCaller({ session: { user: { id: "user-1" } } } as never)
-    dbMock.getPersonnel.mockResolvedValue(profile)
+    dbMock.listPersonnelByCustomerIds.mockResolvedValue([{ ...profile, customerId: "assistant", type: "assistant" }])
     dbMock.getAppointment.mockResolvedValue({ id: "appointment-1", personnel: [{ personnelId: "assistant" }] })
     await expect(
       caller.linkPersonnel({ appointmentId: "appointment-1", personnelIds: ["assistant"] }),

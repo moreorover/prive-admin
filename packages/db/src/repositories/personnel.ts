@@ -61,6 +61,19 @@ export async function getPersonnel(database: Db = db, customerId: string) {
   })
 }
 
+export async function listPersonnelByCustomerIds(database: Db = db, customerIds: string[]) {
+  if (customerIds.length === 0) return []
+  return database
+    .select({ customerId: personnel.customerId, active: personnel.active, type: personnel.type })
+    .from(personnel)
+    .where(
+      and(
+        eq(personnel.active, true),
+        sql`${personnel.customerId} IN (SELECT value FROM json_each(${JSON.stringify(customerIds)}))`,
+      ),
+    )
+}
+
 export async function createPersonnel(database: Db = db, input: PersonnelCreateInput) {
   const [result] = await database.insert(personnel).values(input).returning()
   return result
