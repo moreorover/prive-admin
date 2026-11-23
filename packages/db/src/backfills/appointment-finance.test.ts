@@ -105,6 +105,25 @@ describe("appointment finance compatibility backfill", () => {
     ])
   })
 
+  it("keeps the deployment backfill SQL idempotent", () => {
+    const backfillSql = readFileSync(new URL("./appointment-finance.sql", import.meta.url), "utf8")
+    db.exec(backfillSql)
+    expect(db.prepare("SELECT count(*) AS count FROM personnel").get()).toEqual({ count: 2 })
+    expect(
+      db
+        .prepare(
+          'SELECT movement_type, count(*) AS count FROM "transaction" GROUP BY movement_type ORDER BY movement_type',
+        )
+        .all(),
+    ).toEqual([
+      { movement_type: "legacy_unclassified", count: 2 },
+      { movement_type: "personnel_allocation", count: 1 },
+      { movement_type: "received", count: 2 },
+      { movement_type: "unrecognized", count: 1 },
+    ])
+    expect(() => db.exec(backfillSql)).not.toThrow()
+  })
+
   it("uses exact integers beyond SQLite SUM and JavaScript safe ranges", () => {
     const insert = db.prepare('INSERT INTO "transaction" (id,amount,currency) VALUES (?,?,?)')
     insert.run("big1", 9223372036854775807n, "BIG")

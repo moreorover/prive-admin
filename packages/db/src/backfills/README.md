@@ -20,31 +20,34 @@ using any copy as a replacement for live data.
 
 ## Compatibility decisions
 
-- Migration 0007 already supplies `legacy_unclassified` for all historical rows.
-  On a normally migrated database this tool is a verification-only no-op, even
-  with `--apply`. An absent movement column is an error: run migrations normally,
-  rather than executing the ALTER outside the migration journal.
+- Migration 0007 supplies `legacy_unclassified` for all historical rows. The
+  explicit `appointment-finance.sql` backfill is used by preview seeding and
+  this tool. Normal schema migrations do not infer historical financial meaning.
+  An absent movement column is an error: run migrations normally, rather than
+  executing the ALTER outside the migration journal.
 - For a drifted schema that permits NULL/empty movement types, apply changes
-  only those values to `legacy_unclassified`. It never assigns `received`,
-  `personnel_allocation`, `refund`, or `adjustment`. Existing explicit types,
-  unknown nonempty values, signs, currencies, timestamps, amounts, IDs, customer,
-  order and appointment references remain intact. Unknown values are reported
-  for review, including whitespace-only values; they are not normalized.
+  first repairs those values to `legacy_unclassified`, then classifies only
+  unambiguous appointment-linked rows as `received` or `personnel_allocation`.
+  Existing explicit types, unknown nonempty values, signs, currencies,
+  timestamps, amounts, IDs, customer, order and appointment references remain
+  intact. Unknown values are reported for review, including whitespace-only
+  values; they are not normalized.
 - Every row is included, including transactions without an appointment/customer,
   zero/negative amounts, unknown currencies, and historical inactive personnel.
   Amounts must be SQLite integers in minor units. Other storage types fail
   verification rather than being coerced. Currency strings remain distinct.
 - `appointment.master_id` and `appointment_personnel.personnel_id` reference
-  customers in the current schema. Only these explicit references are reported
-  as personnel candidates. Repeated references are deduplicated by customer and
-  role; customers with both roles retain both for review. Existing profile IDs
-  and missing customer references are shown. Client IDs and transaction customer
-  IDs alone never establish personnel status. No personnel profiles, roles,
-  activation states, salon scopes, or financial allocations are created/changed.
-  After reviewing a candidate, open the existing customer's detail page as an
-  administrator and choose **Register as master** or **Register as assistant**.
-  The profile is active immediately and uses the existing customer ID. Repeat
-  for each confirmed person, including a first master with no appointment history.
+  customers in the current schema. Missing personnel profiles are created from
+  those explicit assignments, with master taking precedence when a customer is
+  assigned in both roles. Existing profile IDs, types, activation states, and
+  salon scopes are preserved. Client IDs and transaction customer IDs alone
+  never establish personnel status.
+- Only a positive transaction from the appointment client is classified as
+  `received`, and only a negative transaction for the appointment master or an
+  assigned assistant is classified as `personnel_allocation`. Ambiguous,
+  incorrectly signed, unlinked, and zero-value rows remain
+  `legacy_unclassified` for review. Existing explicit and unknown movement types
+  are preserved.
 
 ## Report and safeguards
 
