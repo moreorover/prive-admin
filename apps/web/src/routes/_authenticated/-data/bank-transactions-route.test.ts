@@ -13,7 +13,6 @@ import {
 const search = bankTransactionsSearchSchema.parse({
   entityId: "entity-1",
   bankAccountId: "account-1",
-  status: "IGNORED",
   from: "2026-10-01",
   to: "2026-11-22",
   q: "invoice",
@@ -53,7 +52,7 @@ describe("bank transactions route owner", () => {
           input: {
             legalEntityId: "entity-1",
             bankAccountId: "account-1",
-            status: "IGNORED",
+            status: "PENDING",
             from: "2026-10-01",
             to: "2026-11-22",
             query: "invoice",
