@@ -35,7 +35,6 @@ describe("appointment finance compatibility backfill", () => {
   afterEach(() => db.close())
 
   it("reports exact currency totals and preserves every row and ID on dry-run, apply and rerun", () => {
-    const before = db.prepare('SELECT * FROM "transaction" ORDER BY id').all()
     const dry = backfillAppointmentFinance(db)
     expect(dry.before).toEqual([
       { currency: "EUR", count: 3, amount: "4300" },
@@ -47,23 +46,63 @@ describe("appointment finance compatibility backfill", () => {
       mode: "dry-run",
       changes: 0,
       pending: 0,
+      classifiedChanges: 0,
+      personnelCreated: 0,
       legacyCount: 4,
       unknownMovementTypes: ["unrecognized"],
       idsPreserved: true,
     })
     expect(dry.personnelCandidates).toEqual([
-      { customerId: "helper", roles: ["supporting"], customerExists: true, profileId: "p" },
+      { customerId: "helper", roles: ["assistant"], customerExists: true, profileId: "p" },
       { customerId: "master", roles: ["master"], customerExists: true, profileId: null },
     ])
     expect(backfillAppointmentFinance(db, { apply: true })).toMatchObject({
       mode: "apply",
-      changes: 0,
+      changes: 2,
+      classifiedChanges: 2,
+      personnelCreated: 1,
       idsPreserved: true,
     })
     expect(backfillAppointmentFinance(db, { apply: true }).changes).toBe(0)
-    expect(db.prepare('SELECT * FROM "transaction" ORDER BY id').all()).toEqual(before)
-    expect(db.prepare("SELECT id,active FROM personnel").all()).toEqual([{ id: "p", active: 0 }])
+    expect(db.prepare('SELECT id,movement_type FROM "transaction" ORDER BY id').all()).toEqual([
+      { id: "old-client", movement_type: "received" },
+      { id: "old-master", movement_type: "personnel_allocation" },
+      { id: "received", movement_type: "received" },
+      { id: "unknown", movement_type: "unrecognized" },
+      { id: "unlinked", movement_type: "legacy_unclassified" },
+      { id: "zero", movement_type: "legacy_unclassified" },
+    ])
+    expect(db.prepare("SELECT customer_id,type,active FROM personnel ORDER BY customer_id").all()).toEqual([
+      { customer_id: "helper", type: "assistant", active: 0 },
+      { customer_id: "master", type: "master", active: 1 },
+    ])
     console.info("Task 7 fixture dry-run:", JSON.stringify(dry))
+  })
+
+  it("does not classify ambiguous, wrongly signed, or unlinked legacy movements", () => {
+    db.exec(`
+      INSERT INTO customer (id,name) VALUES ('ambiguous','Ambiguous');
+      UPDATE appointment SET client_id = 'ambiguous' WHERE id = 'a';
+      INSERT INTO appointment_personnel (appointment_id,personnel_id) VALUES ('a','ambiguous');
+      INSERT INTO "transaction" (id,amount,currency,customer_id,appointment_id) VALUES
+        ('ambiguous-money',100,'EUR','ambiguous','a'),
+        ('wrong-sign-received',-100,'EUR','ambiguous','a'),
+        ('wrong-sign-allocation',100,'EUR','master','a'),
+        ('unlinked-person',-100,'EUR','master',NULL);
+    `)
+    backfillAppointmentFinance(db, { apply: true })
+    expect(
+      db
+        .prepare('SELECT id,movement_type FROM "transaction" WHERE id LIKE ? ORDER BY id')
+        .all("%money%")
+        .concat(db.prepare('SELECT id,movement_type FROM "transaction" WHERE id LIKE ? ORDER BY id').all("wrong%"))
+        .concat(db.prepare('SELECT id,movement_type FROM "transaction" WHERE id = ?').all("unlinked-person")),
+    ).toEqual([
+      { id: "ambiguous-money", movement_type: "legacy_unclassified" },
+      { id: "wrong-sign-allocation", movement_type: "legacy_unclassified" },
+      { id: "wrong-sign-received", movement_type: "legacy_unclassified" },
+      { id: "unlinked-person", movement_type: "legacy_unclassified" },
+    ])
   })
 
   it("uses exact integers beyond SQLite SUM and JavaScript safe ranges", () => {
@@ -88,11 +127,10 @@ describe("appointment finance compatibility backfill", () => {
     expect(backfillAppointmentFinance(db)).toMatchObject({ pending: 2, changes: 0, legacyCount: 4 })
     expect(db.prepare('SELECT * FROM "transaction" ORDER BY id').all()).toEqual(before)
     const applied = backfillAppointmentFinance(db, { apply: true })
-    expect(applied).toMatchObject({ pending: 2, changes: 2, idsPreserved: true })
-    expect(applied.before).toEqual(applied.after)
+    expect(applied).toMatchObject({ pending: 2, changes: 4, classifiedChanges: 2, idsPreserved: true })
     expect(
       db.prepare("SELECT movement_type FROM \"transaction\" WHERE id IN ('old-master','old-client')").all(),
-    ).toEqual([{ movement_type: "legacy_unclassified" }, { movement_type: "legacy_unclassified" }])
+    ).toEqual([{ movement_type: "received" }, { movement_type: "personnel_allocation" }])
     expect(backfillAppointmentFinance(db, { apply: true }).changes).toBe(0)
   })
 
@@ -124,7 +162,12 @@ describe("appointment finance compatibility backfill", () => {
     expect(db.prepare('SELECT * FROM "transaction" ORDER BY id').all()).toEqual(
       before.map((row) => ({ ...row, movement_type: "legacy_unclassified" })),
     )
-    expect(backfillAppointmentFinance(db, { apply: true })).toMatchObject({ pending: 0, changes: 0, legacyCount: 6 })
+    expect(backfillAppointmentFinance(db, { apply: true })).toMatchObject({
+      pending: 0,
+      changes: 2,
+      classifiedChanges: 2,
+      legacyCount: 4,
+    })
   })
 
   it("runs the CLI read-only by default, applies explicitly, and rejects invalid arguments", () => {
@@ -145,7 +188,7 @@ describe("appointment finance compatibility backfill", () => {
       expect(readFileSync(file)).toEqual(before)
       const apply = cli(file, "--apply")
       expect(apply.status, apply.stderr).toBe(0)
-      expect(JSON.parse(apply.stdout)).toMatchObject({ mode: "apply", pending: 6, changes: 6 })
+      expect(JSON.parse(apply.stdout)).toMatchObject({ mode: "apply", pending: 6, changes: 8, classifiedChanges: 2 })
       const rerun = cli(file, "--apply")
       expect(rerun.status, rerun.stderr).toBe(0)
       expect(JSON.parse(rerun.stdout)).toMatchObject({ pending: 0, changes: 0 })
