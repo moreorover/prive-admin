@@ -11,6 +11,19 @@ on:
       - ready_for_review
       - closed
   workflow_dispatch:
+    inputs:
+      operation:
+        description: Preview operation
+        required: true
+        default: deploy
+        type: choice
+        options:
+          - deploy
+          - destroy
+      preview_number:
+        description: Pull request number for the preview stack
+        required: false
+        type: string
 
 concurrency:
   group: cloudflare-alchemy-preview-${{ github.event.pull_request.number || github.ref }}
@@ -19,7 +32,7 @@ concurrency:
 jobs:
   deploy:
     name: Deploy Preview
-    if: github.event_name != 'pull_request' || (github.event.action != 'closed' && github.event.pull_request.draft == false)
+    if: github.event_name != 'pull_request' || (github.event.action != 'closed' && github.event.pull_request.draft == false && inputs.operation != 'destroy')
     runs-on: ubuntu-latest
     environment:
       name: cloudflare-preview
@@ -80,7 +93,7 @@ jobs:
 
   cleanup:
     name: Destroy Preview
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    if: (github.event_name == 'pull_request' && github.event.action == 'closed') || (github.event_name == 'workflow_dispatch' && inputs.operation == 'destroy')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -114,7 +127,7 @@ jobs:
 
       - name: Set Preview URLs
         run: |
-          stage="pr-${{ github.event.pull_request.number }}"
+          stage="pr-${{ github.event.pull_request.number || inputs.preview_number }}"
           web_url="https://prive-admin-web-${stage}.${CLOUDFLARE_WORKERS_SUBDOMAIN}.workers.dev"
           server_url="https://prive-admin-server-${stage}.${CLOUDFLARE_WORKERS_SUBDOMAIN}.workers.dev"
           {
