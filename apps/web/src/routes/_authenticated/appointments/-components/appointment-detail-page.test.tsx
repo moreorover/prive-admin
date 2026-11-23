@@ -104,20 +104,16 @@ function renderAppointmentDetailPage(props: Partial<ComponentProps<typeof Appoin
 }
 
 describe("AppointmentDetailPage", () => {
-  it("shows owner totals from all classified movements regardless of the visible transaction page", () => {
+  it("shows signed appointment totals regardless of the visible transaction page", () => {
     const html = renderAppointmentDetailPage({
       financeTotals: [
         {
           currency: "EUR",
-          received: 10000,
-          refunds: 0,
-          adjustments: 0,
-          personnelAllocations: 7000,
-          ownerRemainder: 3000,
+          total: 3000,
         },
       ],
     })
-    expect(html).toContain("Owner remainder")
+    expect(html).toContain("Net total")
     expect(html).toContain("€30.00")
     expect(renderAppointmentDetailPage()).not.toContain("Owner remainder")
   })
@@ -176,11 +172,7 @@ it("displays the last cent of a safe integer exactly in the finance table", () =
     financeTotals: [
       {
         currency: "EUR",
-        received: amount,
-        adjustments: 0,
-        refunds: 0,
-        personnelAllocations: 0,
-        ownerRemainder: amount,
+        total: amount,
       },
     ],
   })

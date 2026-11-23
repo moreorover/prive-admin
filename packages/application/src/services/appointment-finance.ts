@@ -26,35 +26,20 @@ function toSafeNumber(value: string | number | bigint, label: string) {
   return Number(integer)
 }
 
-type NumericTotals = {
-  received: number
-  refunds: number
-  adjustments: number
-  personnelAllocations: number
-  ownerRemainder: number
-}
+type NumericTotals = { total: number }
 
-function withRemainder<T extends Awaited<ReturnType<typeof appointmentFinanceRows>>[number]>(
+function withTotal<T extends Awaited<ReturnType<typeof appointmentFinanceRows>>[number]>(
   row: T,
 ): Omit<T, keyof NumericTotals> & NumericTotals {
-  const received = BigInt(row.received)
-  const refunds = BigInt(row.refunds)
-  const adjustments = BigInt(row.adjustments)
-  const personnelAllocations = BigInt(row.personnelAllocations)
-  const ownerRemainder = received - refunds + adjustments - personnelAllocations
   return {
     ...row,
-    received: toSafeNumber(received, "received"),
-    refunds: toSafeNumber(refunds, "refunds"),
-    adjustments: toSafeNumber(adjustments, "adjustments"),
-    personnelAllocations: toSafeNumber(personnelAllocations, "personnel allocations"),
-    ownerRemainder: toSafeNumber(ownerRemainder, "owner remainder"),
+    total: toSafeNumber(BigInt(row.total), "appointment finance total"),
   } as Omit<T, keyof NumericTotals> & NumericTotals
 }
 
 export async function getAppointmentFinance(appointmentId: string) {
   const rows = await appointmentFinanceRows(undefined, appointmentId)
-  return { appointmentId, totals: rows.map(withRemainder) }
+  return { appointmentId, totals: rows.map(withTotal) }
 }
 
 export async function getMonthlyAppointmentFinance({ page = 1, pageSize = 10, ...period }: FinancePeriod & Pagination) {
@@ -63,7 +48,7 @@ export async function getMonthlyAppointmentFinance({ page = 1, pageSize = 10, ..
     pageSize,
     offset: (page - 1) * pageSize,
   })
-  return { items: items.map(withRemainder), page, pageSize, totalCount }
+  return { items: items.map(withTotal), page, pageSize, totalCount }
 }
 
 export async function listPersonnelFinance({
@@ -73,7 +58,7 @@ export async function listPersonnelFinance({
 }: PersonnelFinanceFilter & Pagination) {
   const result = await personnelAllocationRows(undefined, { ...filter, pageSize, offset: (page - 1) * pageSize })
   return {
-    items: result.items.map((item) => ({ ...item, allocated: toSafeNumber(item.allocated, "personnel allocations") })),
+    items: result.items.map((item) => ({ ...item, amount: toSafeNumber(item.amount, "personnel finance amount") })),
     totalCount: result.totalCount,
     page,
     pageSize,

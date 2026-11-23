@@ -41,18 +41,14 @@ it.each(["monthlyPage", "personnelPage"] as const)(
     const monthRow = {
       month: 11,
       currency: "GBP",
-      received: 1000,
-      adjustments: 0,
-      refunds: 0,
-      personnelAllocations: 400,
-      ownerRemainder: 600,
+      total: 600,
     }
     const personRow = {
       month: search.month ?? 11,
       personnelId: "p",
       personnelName: "Avery",
       currency: "GBP",
-      allocated: 400,
+      amount: 400,
     }
     const monthly = monthlyFinanceQueryOptions(search)
     const personnel = personnelFinanceQueryOptions(search)

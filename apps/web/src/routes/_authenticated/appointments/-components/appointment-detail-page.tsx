@@ -210,7 +210,7 @@ export function AppointmentDetailPage({
             <Stack>
               <Title order={5}>Appointment finance</Title>
               <Text size="sm" c="dimmed">
-                All classified movements for this appointment. Unclassified movements are excluded.
+                All signed transactions recorded for this appointment.
               </Text>
               <FinanceTotalsTable rows={financeTotals} />
             </Stack>
@@ -274,7 +274,6 @@ export function AppointmentDetailPage({
             return (
               <TransactionsTable items={txRows}>
                 <TransactionsTable.Customer />
-                <TransactionsTable.MovementType />
                 <TransactionsTable.Name />
                 <TransactionsTable.Amount />
                 <TransactionsTable.Actions onEdit={(row) => setEditTxId(row.id)} onDelete={setDeleteTx} />

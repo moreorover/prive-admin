@@ -13,7 +13,6 @@ vi.mock("../client", () => ({ db: {} }))
 describe("appointment finance SQL", () => {
   let sqlite: DatabaseSync
   let db: Db
-  let resultSizes: number[]
 
   beforeEach(() => {
     sqlite = new DatabaseSync(":memory:")
@@ -29,192 +28,71 @@ describe("appointment finance SQL", () => {
       INSERT INTO salon (id, name) VALUES ('s','Salon');
       INSERT INTO appointment (id,name,starts_at,client_id,master_id,salon_id)
         VALUES ('a','Cut',1,'client','master','s'), ('b','Style',1,'client','master','s');
+      INSERT INTO appointment_personnel (appointment_id, personnel_id) VALUES ('a','assistant');
     `)
-    const insert = sqlite.prepare(`INSERT INTO "transaction"
-      (id,appointment_id,customer_id,movement_type,amount,currency,created_at) VALUES (?,?,?,?,?,?,?)`)
-    let id = 0
-    const row = (
-      appointment: string | null,
-      person: string,
-      type: string,
-      amount: number,
-      currency = "EUR",
-      date = "2026-02-01",
-    ) => insert.run(String(++id), appointment, person, type, amount, currency, Date.parse(date))
-    row("a", "client", "received", 10000)
-    row("a", "master", "personnel_allocation", -6000)
-    row("a", "assistant", "personnel_allocation", -1000)
-    row("a", "master", "legacy_unclassified", -99999)
-    row(null, "master", "personnel_allocation", -88888)
-    row("b", "client", "refund", -1500)
-    row("b", "client", "adjustment", 200)
-    row("b", "client", "adjustment", -300)
-    row("a", "master", "personnel_allocation", -500, "GBP")
-    row("b", "master", "personnel_allocation", -400, "EUR", "2026-02-28T23:59:59.999Z")
-    row("b", "master", "personnel_allocation", -200, "EUR", "2026-03-01")
-    row("b", "client", "received", 99999, "GBP", "2027-01-01")
-    sqlite.exec("UPDATE personnel SET active = 0 WHERE customer_id = 'master'")
-    resultSizes = []
+    const insert = sqlite.prepare(
+      `INSERT INTO "transaction" (id,appointment_id,customer_id,amount,currency,created_at) VALUES (?,?,?,?,?,?)`,
+    )
+    insert.run("a-client", "a", "client", 10000, "EUR", Date.parse("2026-02-01"))
+    insert.run("a-master", "a", "master", -6000, "EUR", Date.parse("2026-02-01"))
+    insert.run("a-assistant", "a", "assistant", -1000, "EUR", Date.parse("2026-02-01"))
+    insert.run("a-gbp", "a", "master", -500, "GBP", Date.parse("2026-02-01"))
+    insert.run("b-client", "b", "client", -1500, "EUR", Date.parse("2026-02-28T23:59:59.999Z"))
+    insert.run("b-master", "b", "master", -400, "EUR", Date.parse("2026-02-28T23:59:59.999Z"))
+    insert.run("b-march", "b", "master", -200, "EUR", Date.parse("2026-03-01"))
+    insert.run("unlinked", null, "master", -99999, "EUR", Date.parse("2026-02-01"))
     db = drizzle(async (query, params, method) => {
       const statement = sqlite.prepare(query)
       statement.setReturnArrays(true)
       const rows = statement.all(...params) as unknown as SQLOutputValue[][]
-      resultSizes.push(rows.length)
       return { rows: method === "get" ? rows[0]! : rows }
     }) as unknown as Db
   })
   afterEach(() => sqlite.close())
 
-  it("aggregates only classified movements for the selected appointment, per currency", async () => {
+  it("sums all signed appointment transactions per currency", async () => {
     expect(await appointmentFinanceRows(db, "a")).toEqual([
-      { currency: "EUR", received: "10000", refunds: "0", adjustments: "0", personnelAllocations: "7000" },
-      { currency: "GBP", received: "0", refunds: "0", adjustments: "0", personnelAllocations: "500" },
+      { currency: "EUR", total: "3000" },
+      { currency: "GBP", total: "-500" },
     ])
   })
 
-  it("preserves aggregate integers through the database boundary", async () => {
+  it("preserves exact signed sums beyond the JavaScript safe range", async () => {
     const maximum = Number.MAX_SAFE_INTEGER
-    const insert = sqlite.prepare(`INSERT INTO "transaction"
-      (id,appointment_id,customer_id,movement_type,amount,currency,created_at) VALUES (?,?,?,?,?,?,?)`)
-    insert.run("exact-received", "a", "client", "received", maximum, "EUR", Date.parse("2026-04-01"))
-    insert.run("exact-adjustment", "a", "client", "adjustment", 2, "EUR", Date.parse("2026-04-01"))
-    insert.run("exact-allocation", "a", "master", "personnel_allocation", -maximum, "EUR", Date.parse("2026-04-01"))
-
-    const rows = await appointmentFinanceRows(db, "a")
-    expect(rows.find((row) => row.currency === "EUR")).toMatchObject({
-      received: String(BigInt(maximum) + 10000n),
-      adjustments: "2",
-      personnelAllocations: String(BigInt(maximum) + 7000n),
-    })
-  })
-
-  it("returns aggregate values as exact text when a category exceeds the safe range", async () => {
-    const maximum = BigInt(Number.MAX_SAFE_INTEGER)
-    const insert = sqlite.prepare(`INSERT INTO "transaction"
-      (id,appointment_id,customer_id,movement_type,amount,currency,created_at) VALUES (?,?,?,?,?,?,?)`)
-    insert.run("large-received-1", "a", "client", "received", Number(maximum), "GBP", Date.parse("2026-05-01"))
-    insert.run("large-received-2", "a", "client", "received", Number(maximum), "GBP", Date.parse("2026-05-01"))
-
+    sqlite
+      .prepare(
+        'INSERT INTO "transaction" (id,appointment_id,customer_id,amount,currency,created_at) VALUES (?,?,?,?,?,?)',
+      )
+      .run("large", "a", "client", maximum, "GBP", Date.parse("2026-04-01"))
     const row = (await appointmentFinanceRows(db, "a")).find((item) => item.currency === "GBP")
-    expect(row?.received).toBe((maximum * 2n).toString())
+    expect(row?.total).toBe((BigInt(maximum) - 500n).toString())
   })
 
-  it("cancels repeated maximum-safe movements without SQLite sum overflow", async () => {
-    const maximum = Number.MAX_SAFE_INTEGER
-    const insert = sqlite.prepare(`INSERT INTO "transaction"
-      (id,appointment_id,customer_id,movement_type,amount,currency,created_at) VALUES (?,?,?,?,?,?,?)`)
-    for (let index = 0; index < 1025; index += 1) {
-      insert.run(`overflow-positive-${index}`, "a", "client", "adjustment", maximum, "EUR", Date.parse("2026-06-01"))
-    }
-    for (let index = 0; index < 1025; index += 1) {
-      insert.run(`overflow-negative-${index}`, "a", "client", "adjustment", -maximum, "EUR", Date.parse("2026-06-01"))
-    }
-
-    const row = (await appointmentFinanceRows(db, "a")).find((item) => item.currency === "EUR")
-    expect(row?.adjustments).toBe("0")
-  })
-
-  it("groups on UTC transaction month, respecting year and currency filters", async () => {
+  it("groups monthly signed totals and personnel transactions by assigned customer", async () => {
     expect(await monthlyFinanceRows(db, { year: 2026, currency: "EUR", pageSize: 10, offset: 0 })).toEqual({
       totalCount: 2,
       items: [
-        {
-          month: 2,
-          currency: "EUR",
-          received: "10000",
-          refunds: "1500",
-          adjustments: "-100",
-          personnelAllocations: "7400",
-        },
-        { month: 3, currency: "EUR", received: "0", refunds: "0", adjustments: "0", personnelAllocations: "200" },
+        { month: 2, currency: "EUR", total: "1100" },
+        { month: 3, currency: "EUR", total: "-200" },
       ],
     })
-    expect(await monthlyFinanceRows(db, { year: 2026, currency: "GBP", pageSize: 10, offset: 0 })).toEqual({
-      totalCount: 1,
+    expect(await personnelAllocationRows(db, { year: 2026, pageSize: 10, offset: 0 })).toEqual({
+      totalCount: 4,
       items: [
-        { month: 2, currency: "GBP", received: "0", refunds: "0", adjustments: "0", personnelAllocations: "500" },
+        { month: 2, personnelId: "assistant", personnelName: "Assistant", currency: "EUR", amount: "-1000" },
+        { month: 2, personnelId: "master", personnelName: "Master", currency: "EUR", amount: "-6400" },
+        { month: 2, personnelId: "master", personnelName: "Master", currency: "GBP", amount: "-500" },
+        { month: 3, personnelId: "master", personnelName: "Master", currency: "EUR", amount: "-200" },
       ],
     })
   })
 
-  it("pages grouped historical recipient allocations, including repeat allocations", async () => {
-    expect(await personnelAllocationRows(db, { year: 2026, month: 2, pageSize: 1, offset: 1 })).toEqual({
-      totalCount: 3,
-      items: [{ month: 2, personnelId: "master", personnelName: "Master", currency: "EUR", allocated: "6400" }],
-    })
+  it("supports personnel filters and bounded pagination", async () => {
     expect(
-      await personnelAllocationRows(db, {
-        year: 2026,
-        personnelId: "master",
-        currency: "EUR",
-        pageSize: 10,
-        offset: 0,
-      }),
+      await personnelAllocationRows(db, { year: 2026, personnelId: "master", currency: "EUR", pageSize: 1, offset: 1 }),
     ).toEqual({
       totalCount: 2,
-      items: [
-        { month: 2, personnelId: "master", personnelName: "Master", currency: "EUR", allocated: "6400" },
-        { month: 3, personnelId: "master", personnelName: "Master", currency: "EUR", allocated: "200" },
-      ],
+      items: [{ month: 3, personnelId: "master", personnelName: "Master", currency: "EUR", amount: "-200" }],
     })
-    expect(await personnelAllocationRows(db, { year: 2026, pageSize: 10, offset: 10 })).toEqual({
-      totalCount: 4,
-      items: [],
-    })
-  })
-
-  it("pages by name, month, currency and finally personnelId", async () => {
-    // Allow identical display names in this fixture to exercise the final two sort keys.
-    sqlite.exec(`
-      DROP INDEX customer_name_unique;
-      UPDATE customer SET name = 'Alex' WHERE id IN ('master', 'assistant');
-      INSERT INTO "transaction" (id, appointment_id, customer_id, movement_type, amount, currency, created_at)
-        SELECT 'assistant-gbp', appointment_id, 'assistant', movement_type, -7, currency, created_at
-        FROM "transaction" WHERE customer_id = 'master' AND currency = 'GBP';
-      INSERT INTO "transaction" (id, appointment_id, customer_id, movement_type, amount, currency, created_at)
-        SELECT 'client-jan', appointment_id, 'client', movement_type, -3, 'EUR', 1767225600000
-        FROM "transaction" WHERE id = 'assistant-gbp';
-    `)
-    const items = []
-    for (let offset = 0; offset < 6; offset++) {
-      const page = await personnelAllocationRows(db, { year: 2026, offset, pageSize: 1 })
-      expect(page.totalCount).toBe(6)
-      items.push(...page.items.map(({ personnelId, month, currency }) => [personnelId, month, currency]))
-    }
-    expect(items).toEqual([
-      ["assistant", 2, "EUR"],
-      ["master", 2, "EUR"],
-      ["assistant", 2, "GBP"],
-      ["master", 2, "GBP"],
-      ["master", 3, "EUR"],
-      ["client", 1, "EUR"],
-    ])
-  })
-
-  it("bounds database result sizes even when one group exceeds the SQLite integer sum range", async () => {
-    const maximum = Number.MAX_SAFE_INTEGER
-    const insert = sqlite.prepare(`INSERT INTO "transaction"
-      (id,appointment_id,customer_id,movement_type,amount,currency,created_at) VALUES (?, 'a','master',?,?, 'EUR',?)`)
-    for (let index = 0; index < 1025; index++) {
-      insert.run(`allocation-${index}`, "personnel_allocation", -maximum, Date.UTC(2026, 1))
-      insert.run(`positive-${index}`, "adjustment", maximum, Date.UTC(2026, 1))
-      insert.run(`negative-${index}`, "adjustment", -maximum, Date.UTC(2026, 1))
-    }
-    const page = { year: 2026, pageSize: 1, offset: 0 }
-    const allocated = 1025n * BigInt(maximum)
-    const personnel = await personnelAllocationRows(db, { ...page, personnelId: "master" })
-    expect(personnel).toMatchObject({ totalCount: 3, items: [{ allocated: String(allocated + 6400n) }] })
-    expect(Math.max(...resultSizes)).toBeLessThanOrEqual(1)
-    resultSizes = []
-    expect(await monthlyFinanceRows(db, page)).toMatchObject({
-      totalCount: 3,
-      items: [{ month: 2, currency: "EUR", adjustments: "-100", personnelAllocations: String(allocated + 7400n) }],
-    })
-    expect(Math.max(...resultSizes)).toBeLessThanOrEqual(1)
-    expect(await monthlyFinanceRows(db, { ...page, offset: 1 })).toMatchObject({
-      totalCount: 3,
-      items: [{ month: 2, currency: "GBP" }],
-    })
-    expect(await monthlyFinanceRows(db, { ...page, offset: 3 })).toEqual({ totalCount: 3, items: [] })
   })
 })

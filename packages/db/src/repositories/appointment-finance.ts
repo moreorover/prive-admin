@@ -1,14 +1,14 @@
-import { and, eq, gte, inArray, isNotNull, lt, sql, type SQL } from "drizzle-orm"
+import { and, eq, exists, gte, isNotNull, lt, or, sql, type SQL } from "drizzle-orm"
 
 import { db, type Db } from "../client"
+import { appointment, personnelOnAppointments } from "../schema/appointment"
 import { customer } from "../schema/customer"
-import { transaction as movement, transactionMovementTypes } from "../schema/transaction"
+import { transaction as movement } from "../schema/transaction"
 
 export type FinancePeriod = { year: number; currency?: string }
 export type PersonnelFinanceFilter = FinancePeriod & { month?: number; personnelId?: string }
 
 const transactionMonth = sql<number>`cast(strftime('%m', ${movement.createdAt} / 1000, 'unixepoch') as integer)`
-const classified = inArray(movement.movementType, transactionMovementTypes)
 type Page = { pageSize: number; offset: number }
 
 function periodFilter({ year, month, currency }: FinancePeriod & { month?: number }) {
@@ -34,23 +34,13 @@ function exactSum(amount: SQL, alias: string) {
     .as(alias)
 }
 
-function categoryTotal(type: (typeof transactionMovementTypes)[number], outflow = false) {
-  const amount = outflow ? sql`-${movement.amount}` : sql`${movement.amount}`
-  return exactSum(sql`case when ${movement.movementType} = ${type} then ${amount} else 0 end`, type)
-}
-
-const totals = {
-  received: categoryTotal("received"),
-  refunds: categoryTotal("refund", true),
-  adjustments: categoryTotal("adjustment"),
-  personnelAllocations: categoryTotal("personnel_allocation", true),
-}
+const totals = { total: exactSum(sql`${movement.amount}`, "total") }
 
 export function appointmentFinanceRows(database: Db = db, appointmentId: string) {
   return database
     .select({ currency: movement.currency, ...totals })
     .from(movement)
-    .where(and(eq(movement.appointmentId, appointmentId), classified))
+    .where(eq(movement.appointmentId, appointmentId))
     .groupBy(movement.currency)
     .orderBy(movement.currency)
 }
@@ -83,7 +73,7 @@ export async function monthlyFinanceRows(database: Db = db, input: FinancePeriod
       ...pageColumns(sql`${transactionMonth}, ${movement.currency}`),
     })
     .from(movement)
-    .where(and(periodFilter(input), classified))
+    .where(periodFilter(input))
     .groupBy(transactionMonth, movement.currency)
     .as("monthly_groups")
   const rows = await database
@@ -101,15 +91,29 @@ export async function personnelAllocationRows(database: Db = db, input: Personne
       personnelId: movement.customerId,
       personnelName: customer.name,
       currency: movement.currency,
-      allocated: exactSum(sql`-${movement.amount}`, "allocated"),
+      amount: exactSum(sql`${movement.amount}`, "amount"),
       ...pageColumns(sql`${customer.name}, ${transactionMonth}, ${movement.currency}, ${movement.customerId}`),
     })
     .from(movement)
+    .innerJoin(appointment, eq(appointment.id, movement.appointmentId))
     .leftJoin(customer, eq(customer.id, movement.customerId))
     .where(
       and(
         periodFilter(input),
-        eq(movement.movementType, "personnel_allocation"),
+        or(
+          eq(movement.customerId, appointment.masterId),
+          exists(
+            database
+              .select({ appointmentId: personnelOnAppointments.appointmentId })
+              .from(personnelOnAppointments)
+              .where(
+                and(
+                  eq(personnelOnAppointments.appointmentId, appointment.id),
+                  eq(personnelOnAppointments.personnelId, movement.customerId),
+                ),
+              ),
+          ),
+        ),
         input.personnelId ? eq(movement.customerId, input.personnelId) : undefined,
       ),
     )

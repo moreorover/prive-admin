@@ -66,34 +66,30 @@ it("provisions the first master on a migrated database and reports the appointme
   const received = await transactions.create({
     appointmentId,
     customerId: "client",
-    movementType: "received",
     currency: "EUR",
     amount: 10000,
   })
   await transactions.create({
     appointmentId,
     customerId: "master",
-    movementType: "personnel_allocation",
     currency: "EUR",
     amount: -6000,
   })
   await transactions.create({
     appointmentId,
     customerId: "assistant",
-    movementType: "personnel_allocation",
     currency: "EUR",
     amount: -1000,
   })
   await transactions.create({
     appointmentId,
     customerId: "client",
-    movementType: "received",
     currency: "GBP",
     amount: 2000,
   })
   const totals = [
-    { currency: "EUR", received: 10000, personnelAllocations: 7000, ownerRemainder: 3000 },
-    { currency: "GBP", received: 2000, personnelAllocations: 0, ownerRemainder: 2000 },
+    { currency: "EUR", total: 3000 },
+    { currency: "GBP", total: 2000 },
   ]
   expect((await reports.appointmentFinance.get({ appointmentId })).totals).toMatchObject(totals)
   expect(

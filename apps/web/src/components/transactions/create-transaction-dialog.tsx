@@ -33,7 +33,6 @@ export function CreateTransactionDialog({
       {open && (
         <TransactionForm
           initialValues={{
-            movementType: "",
             name: "",
             notes: "",
             amountMajor: 0,

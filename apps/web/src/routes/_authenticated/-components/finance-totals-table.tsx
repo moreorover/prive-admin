@@ -11,31 +11,17 @@ export function FinanceTotalsTable({
   rows: (AppointmentTotals[number] & { month?: number })[]
   monthly?: boolean
 }) {
-  if (!rows.length) return <Text c="dimmed">No classified appointment movements for this selection.</Text>
+  if (!rows.length) return <Text c="dimmed">No appointment transactions for this selection.</Text>
   return (
     <Table.ScrollContainer minWidth={680}>
       <Table>
-        <FinanceTableHead
-          columns={[
-            ...(monthly ? ["Month"] : []),
-            "Currency",
-            "Received",
-            "Refunds",
-            "Adjustments",
-            "Personnel allocations",
-            "Owner remainder",
-          ]}
-        />
+        <FinanceTableHead columns={[...(monthly ? ["Month"] : []), "Currency", "Net total"]} />
         <Table.Tbody>
           {rows.map((row) => (
             <Table.Tr key={`${row.month ?? ""}-${row.currency}`}>
               {monthly && <Table.Td>{row.month}</Table.Td>}
               <Table.Td>{row.currency}</Table.Td>
-              {(["received", "refunds", "adjustments", "personnelAllocations", "ownerRemainder"] as const).map(
-                (field) => (
-                  <Table.Td key={field}>{formatTransactionAmount(row[field], row.currency)}</Table.Td>
-                ),
-              )}
+              <Table.Td>{formatTransactionAmount(row.total, row.currency)}</Table.Td>
             </Table.Tr>
           ))}
         </Table.Tbody>

@@ -11,10 +11,7 @@ import { CompoundTable } from "@/components/compound-table"
 import { ResourcePagination } from "@/components/resource-pagination"
 import { formatTransactionAmount } from "@/lib/currency"
 
-import { MOVEMENT_TYPE_OPTIONS } from "./transaction-form-data"
-
 export type TransactionRow = {
-  movementType?: "received" | "personnel_allocation" | "refund" | "adjustment" | "legacy_unclassified"
   id: string
   name: string | null
   notes: string | null
@@ -54,7 +51,6 @@ type TransactionPaginationComponent = ((props: TransactionPaginationProps) => Re
 
 type TransactionsTableComponent = ((props: TransactionsTableRootProps) => ReactElement) & {
   Customer: TransactionColumnComponent
-  MovementType: TransactionColumnComponent
   Name: TransactionColumnComponent
   Amount: TransactionColumnComponent
   Actions: TransactionColumnComponent<TransactionActionsProps>
@@ -171,15 +167,6 @@ const Name = createColumn("name", "Name", () => {
   return <Table.Td>{row.name ?? <Text c="dimmed">—</Text>}</Table.Td>
 })
 
-const MovementType = createColumn("movementType", "Movement type", () => {
-  const row = useTransactionRow()
-  return (
-    <Table.Td>
-      {MOVEMENT_TYPE_OPTIONS.find((option) => option.value === row.movementType)?.label ?? "Legacy / unclassified"}
-    </Table.Td>
-  )
-})
-
 const Amount = createColumn("amount", "Amount", () => {
   const row = useTransactionRow()
   return <Table.Td>{formatTransactionAmount(row.amount, row.currency)}</Table.Td>
@@ -187,7 +174,6 @@ const Amount = createColumn("amount", "Amount", () => {
 
 export const TransactionsTable = Object.assign(TransactionsTableRoot, {
   Customer,
-  MovementType,
   Name,
   Amount,
   Actions: createActionsColumn(),

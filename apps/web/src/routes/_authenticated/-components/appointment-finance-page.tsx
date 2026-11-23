@@ -19,7 +19,7 @@ export function AppointmentFinancePage({ search, monthly, personnel, onSearch }:
     <Container size="xl">
       <Stack>
         <Title order={2}>Appointment finance</Title>
-        <Text c="dimmed">Totals use the UTC transaction creation date. Unclassified movements are excluded.</Text>
+        <Text c="dimmed">Totals use signed transactions created in the selected UTC period.</Text>
         <Group align="end">
           <Button variant="default" disabled={search.year <= 2000} onClick={() => changeYear(search.year - 1)}>
             Previous year
@@ -75,7 +75,7 @@ export function AppointmentFinancePage({ search, monthly, personnel, onSearch }:
               <Text c="dimmed">No personnel allocations for this selection.</Text>
             ) : personnel.items.length ? (
               <Table>
-                <FinanceTableHead columns={["Month", "Personnel", "Currency", "Allocated"]} />
+                <FinanceTableHead columns={["Month", "Personnel", "Currency", "Amount"]} />
                 <Table.Tbody>
                   {personnel.items.map((row) => (
                     <Table.Tr key={JSON.stringify([row.month, row.personnelId, row.currency])}>
@@ -94,7 +94,7 @@ export function AppointmentFinancePage({ search, monthly, personnel, onSearch }:
                         )}
                       </Table.Td>
                       <Table.Td>{row.currency}</Table.Td>
-                      <Table.Td>{formatTransactionAmount(row.allocated, row.currency)}</Table.Td>
+                      <Table.Td>{formatTransactionAmount(row.amount, row.currency)}</Table.Td>
                     </Table.Tr>
                   ))}
                 </Table.Tbody>

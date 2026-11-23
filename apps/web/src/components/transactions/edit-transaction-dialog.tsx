@@ -2,14 +2,12 @@ import { Button, Modal, NativeSelect, Stack, Text } from "@mantine/core"
 import { useState } from "react"
 
 import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
-import { MOVEMENT_TYPE_OPTIONS } from "@/components/transactions/transaction-form-data"
 import { CURRENCY_OPTIONS, formatTransactionAmount, isCurrency, minorToDecimal, type Currency } from "@/lib/currency"
 
 type EditTransactionDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   transaction: {
-    movementType?: string
     id: string
     name: string | null
     notes: string | null
@@ -50,9 +48,7 @@ export function EditTransactionDialog({
                 value={reviewedCurrency}
                 onChange={(event) => setReviewedCurrency(event.currentTarget.value)}
               />
-              <Text size="sm">
-                This corrects the currency label and keeps the recorded minor units and movement type.
-              </Text>
+              <Text size="sm">This corrects the currency label and keeps the recorded minor units.</Text>
               <Button
                 disabled={!isCurrency(reviewedCurrency)}
                 loading={loading}
@@ -80,8 +76,6 @@ export function EditTransactionDialog({
         <TransactionForm
           key={transaction.id}
           initialValues={{
-            movementType:
-              MOVEMENT_TYPE_OPTIONS.find((option) => option.value === transaction.movementType)?.value ?? "",
             name: transaction.name ?? "",
             notes: transaction.notes ?? "",
             amountMajor: minorToDecimal(transaction.amount),

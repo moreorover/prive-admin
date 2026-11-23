@@ -107,11 +107,7 @@ describe("owner appointment finance route", () => {
         {
           month: 9,
           currency: "GBP",
-          received: 10000,
-          refunds: 900,
-          adjustments: -100,
-          personnelAllocations: 7000,
-          ownerRemainder: 2000,
+          total: 2000,
         },
       ],
       page: 2,
@@ -119,7 +115,7 @@ describe("owner appointment finance route", () => {
       totalCount: 12,
     })
     client.setQueryData(personnel.queryKey, {
-      items: [{ month: 9, personnelId: "p", personnelName: "Avery", currency: "GBP", allocated: 6000 }],
+      items: [{ month: 9, personnelId: "p", personnelName: "Avery", currency: "GBP", amount: 6000 }],
       page: 3,
       pageSize: 10,
       totalCount: 23,

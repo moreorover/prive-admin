@@ -62,7 +62,6 @@ it("retains stored currency codes on route rows and sums only like currencies, i
   const base = {
     name: null,
     notes: null,
-    movementType: "legacy_unclassified" as const,
     appointmentId: "a",
     customerId: null,
     customer: null,

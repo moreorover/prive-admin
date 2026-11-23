@@ -9,7 +9,6 @@ SOURCE_D1_DB="${SOURCE_D1_DB:-prive-admin-prod}"
 CLOUDFLARE_CREDENTIALS_ENV="${CLOUDFLARE_CREDENTIALS_ENV:-dev}"
 MARKER_TABLE="_preview_seed_state"
 MARKER_KEY="prod_copy_completed"
-FINANCE_BACKFILL_SQL="$ROOT_DIR/packages/db/src/backfills/appointment-finance.sql"
 
 usage() {
   cat <<EOF
@@ -170,9 +169,4 @@ echo "Seeding preview D1 database '$PREVIEW_D1_DB' from '$SOURCE_D1_DB'..."
   --yes
 
 write_seed_marker
-echo "Backfilling appointment finance data in '$PREVIEW_D1_DB'..."
-wrangler d1 execute "$PREVIEW_D1_DB" \
-  --remote \
-  --yes \
-  --file "$FINANCE_BACKFILL_SQL"
 echo "Preview D1 database '$PREVIEW_D1_DB' seed marker written."
