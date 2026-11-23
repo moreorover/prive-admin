@@ -146,3 +146,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NO_TRACK: "1"
           PR_NUMBER: ${{ github.event.pull_request.number }}
+
+      - name: Delete Preview Database
+        if: always()
+        run: vp exec wrangler d1 delete prive-admin-pr-${{ github.event.pull_request.number || inputs.preview_number }} --skip-confirmation || true
