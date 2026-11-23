@@ -32,7 +32,7 @@ concurrency:
 jobs:
   deploy:
     name: Deploy Preview
-    if: github.event_name != 'pull_request' || (github.event.action != 'closed' && github.event.pull_request.draft == false && inputs.operation != 'destroy')
+    if: (github.event_name != 'workflow_dispatch' || inputs.operation == 'deploy') && (github.event_name != 'pull_request' || (github.event.action != 'closed' && github.event.pull_request.draft == false))
     runs-on: ubuntu-latest
     environment:
       name: cloudflare-preview
