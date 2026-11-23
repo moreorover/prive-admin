@@ -81,7 +81,7 @@ const entry = {
 }
 function pageProps() {
   return {
-    search: { status: "PENDING" as const, page: 1 },
+    search: { page: 1 },
     options: { entities: [], accounts: [] },
     result: { items: [], totalCount: 0, page: 1, pageSize: 10 },
     isFetching: false,
@@ -89,7 +89,6 @@ function pageProps() {
     review: reviewProps(),
     onFiltersChange: () => {},
     onPageChange: vi.fn<(page: number) => void>(),
-    onViewAllTransactions: () => {},
   }
 }
 function renderPage(overrides: Partial<Parameters<typeof BankTransactionsPage>[0]> = {}) {
@@ -127,7 +126,7 @@ describe("BankTransactionsPage shell", () => {
       "Page 1 of 3",
     ])
       expect(html).toContain(label)
-    expect(html).not.toContain("No pending transactions")
+    expect(html).not.toContain("No transactions found")
     expect(html.match(/<tbody/g)).toHaveLength(1)
   })
 
@@ -147,7 +146,7 @@ describe("BankTransactionsPage shell", () => {
     expect(table!.props.showPagination).toBe(false)
   })
 
-  it("renders the header, all filter controls and pending empty-state action", () => {
+  it("renders the header and all filter controls", () => {
     const markup = renderPage()
     for (const label of [
       "Bank transactions",
@@ -155,8 +154,7 @@ describe("BankTransactionsPage shell", () => {
       "From",
       "To",
       "Search",
-      "View all transactions",
-      "No pending transactions",
+      "No transactions found",
       "Transactions",
     ]) {
       expect(markup).toContain(label)
@@ -166,25 +164,19 @@ describe("BankTransactionsPage shell", () => {
     expect(markup).toContain("0 transactions")
   })
 
-  it("shows a generic empty state without the pending action for all statuses", () => {
-    const markup = renderPage({ search: { status: "ALL", page: 1 } })
-    expect(markup).toContain("No transactions found")
-    expect(markup).not.toContain("View all transactions")
-  })
-
   it("distinguishes failures and loading from a successful empty result", () => {
     expect(renderPage({ result: undefined, error: "Unable to load transactions" })).toContain(
       "Unable to load transactions",
     )
     expect(renderPage({ result: undefined, error: "Unable to load transactions" })).not.toContain(
-      "No pending transactions",
+      "No transactions found",
     )
-    expect(renderPage({ result: undefined, isFetching: true })).not.toContain("No pending transactions")
+    expect(renderPage({ result: undefined, isFetching: true })).not.toContain("No transactions found")
   })
 
   it("narrows bank account options to the selected entity", () => {
     const markup = renderPage({
-      search: { entityId: "entity-1", bankAccountId: "account-1", status: "PENDING", page: 1 },
+      search: { entityId: "entity-1", bankAccountId: "account-1", page: 1 },
       options: {
         entities: [
           { id: "entity-1", name: "First entity" },
@@ -227,7 +219,7 @@ it("opens the workspace import card from the header using owner callbacks", () =
 it("does not offer attachment export on the transactions screen", () => {
   const input = {
     ...pageProps(),
-    search: { status: "PENDING" as const, page: 1, entityId: "e" },
+    search: { page: 1, entityId: "e" },
     options: {
       entities: [],
       accounts: [
