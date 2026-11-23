@@ -149,4 +149,4 @@ jobs:
 
       - name: Delete Preview Database
         if: always()
-        run: vp exec wrangler d1 delete prive-admin-pr-${{ github.event.pull_request.number || inputs.preview_number }} --skip-confirmation || true
+        run: cd apps/server && vp exec wrangler d1 delete prive-admin-pr-${{ github.event.pull_request.number || inputs.preview_number }} --skip-confirmation || true
