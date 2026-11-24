@@ -44,7 +44,10 @@ describe("transaction service and API", () => {
   })
 
   it("rejects a transaction for an unrelated customer", async () => {
-    await expect(createTransaction({ ...base, customerId: "unrelated" })).rejects.toMatchObject({ code: "BAD_REQUEST" })
+    await expect(createTransaction({ ...base, customerId: "unrelated" })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Customer is not the appointment client, master, or assigned personnel",
+    })
     expect(dbMock.createTransaction).not.toHaveBeenCalled()
   })
 

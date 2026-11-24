@@ -36,7 +36,7 @@ export async function createTransaction(input: {
     ...appointment.personnel.map((personnel) => personnel.personnelId),
   ])
   if (!allowedCustomerIds.has(input.customerId)) {
-    throw badRequest("Customer is not the appointment client or assigned personnel")
+    throw badRequest("Customer is not the appointment client, master, or assigned personnel")
   }
   let result
   try {
