@@ -11,6 +11,7 @@ import { hairAssigned, hairOrder } from "./hair"
 import { legalEntity } from "./legal-entity"
 import { note } from "./note"
 import { order, orderItem } from "./order"
+import { personnel } from "./personnel"
 import { product, productVariant } from "./product"
 import { salon } from "./salon"
 import { transaction } from "./transaction"
@@ -36,7 +37,8 @@ export const accountRelations = relations(account, ({ one }) => ({
 }))
 
 // Customer relations
-export const customerRelations = relations(customer, ({ many }) => ({
+export const customerRelations = relations(customer, ({ one, many }) => ({
+  personnel: one(personnel),
   orders: many(order),
   transactions: many(transaction),
   appointmentsAsCustomer: many(appointment, { relationName: "appointmentClient" }),
@@ -46,6 +48,11 @@ export const customerRelations = relations(customer, ({ many }) => ({
   hairAssigned: many(hairAssigned),
   notes: many(note),
   cashTransactions: many(cashTransaction),
+}))
+
+// Personnel relations
+export const personnelRelations = relations(personnel, ({ one }) => ({
+  customer: one(customer, { fields: [personnel.customerId], references: [customer.id] }),
 }))
 
 // Product relations

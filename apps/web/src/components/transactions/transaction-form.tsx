@@ -1,21 +1,11 @@
 import { Button, Group, NativeSelect, NumberInput, Stack, Textarea, TextInput } from "@mantine/core"
-import { useForm } from "@mantine/form"
+import { schemaResolver, useForm } from "@mantine/form"
 
-import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
+import { CURRENCY_OPTIONS, currencySymbol } from "@/lib/currency"
 
-export type TransactionFormValues = {
-  name: string
-  notes: string
-  amountMajor: number
-  currency: Currency
-}
+import { transactionFormSchema, type TransactionFormSubmit, type TransactionFormValues } from "./transaction-form-data"
 
-export type TransactionFormSubmit = {
-  name: string | null
-  notes: string | null
-  amount: number
-  currency: Currency
-}
+export type { TransactionFormSubmit } from "./transaction-form-data"
 
 type TransactionFormProps = {
   initialValues: TransactionFormValues
@@ -27,20 +17,13 @@ type TransactionFormProps = {
 export function TransactionForm({ initialValues, submitLabel, onSubmit, loading }: TransactionFormProps) {
   const form = useForm<TransactionFormValues>({
     initialValues,
-    validate: {
-      amountMajor: (value) => (Number.isFinite(value) ? null : "Amount is required"),
-    },
+    validate: schemaResolver(transactionFormSchema, { sync: true }),
   })
 
   return (
     <form
       onSubmit={form.onSubmit(async (values) => {
-        await onSubmit({
-          name: values.name.trim() || null,
-          notes: values.notes.trim() || null,
-          amount: Math.round(values.amountMajor * 100),
-          currency: values.currency,
-        })
+        await onSubmit(transactionFormSchema.parse(values))
       })}
     >
       <Stack>
@@ -51,10 +34,12 @@ export function TransactionForm({ initialValues, submitLabel, onSubmit, loading 
         </Group>
         <NumberInput
           label="Amount"
+          description="Use a positive amount for money received and a negative amount for money paid out."
           prefix={currencySymbol(form.values.currency)}
           decimalScale={2}
           fixedDecimalScale
           step={0.01}
+          allowNegative
           {...form.getInputProps("amountMajor")}
         />
         <Group justify="flex-end">

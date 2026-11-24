@@ -9,7 +9,7 @@ import type { CompoundTableColumnComponent } from "@/components/compound-table-h
 
 import { CompoundTable } from "@/components/compound-table"
 import { ResourcePagination } from "@/components/resource-pagination"
-import { type Currency, formatMinor } from "@/lib/currency"
+import { formatMinor, type Currency } from "@/lib/currency"
 
 export type TransactionRow = {
   id: string

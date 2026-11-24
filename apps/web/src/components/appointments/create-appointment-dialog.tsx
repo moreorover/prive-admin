@@ -57,22 +57,20 @@ export function CreateAppointmentDialog({
 }: CreateAppointmentDialogProps) {
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="New Appointment">
-      {open && (
-        <CreateAppointmentForm
-          defaultClientId={defaultClientId}
-          defaultStartsAt={defaultStartsAt}
-          loading={loading}
-          onCreate={onCreate}
-          clientOptions={clientOptions}
-          masterOptions={masterOptions}
-          salonOptions={salonOptions}
-          clientSearch={clientSearch}
-          masterSearch={masterSearch}
-          onClientSearchChange={onClientSearchChange}
-          onMasterSearchChange={onMasterSearchChange}
-          onClose={() => onOpenChange(false)}
-        />
-      )}
+      <CreateAppointmentForm
+        defaultClientId={defaultClientId}
+        defaultStartsAt={defaultStartsAt}
+        loading={loading}
+        onCreate={onCreate}
+        clientOptions={clientOptions}
+        masterOptions={masterOptions}
+        salonOptions={salonOptions}
+        clientSearch={clientSearch}
+        masterSearch={masterSearch}
+        onClientSearchChange={onClientSearchChange}
+        onMasterSearchChange={onMasterSearchChange}
+        onClose={() => onOpenChange(false)}
+      />
     </Modal>
   )
 }

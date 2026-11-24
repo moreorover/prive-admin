@@ -74,7 +74,7 @@ export const appointmentsRouter = router({
   }),
 
   linkPersonnel: protectedProcedure
-    .input(z.object({ appointmentId: z.string(), personnelIds: z.array(z.string()) }))
+    .input(z.object({ appointmentId: z.string().min(1), personnelIds: z.array(z.string().min(1)) }))
     .mutation(async ({ input }) => {
       try {
         return await linkPersonnelToAppointment(input)

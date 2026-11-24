@@ -13,6 +13,7 @@ import {
   appointmentSalonOptionsQueryOptions,
   calendarAppointmentsQueryOptions,
 } from "./-data/calendar-data"
+import { appointmentMasterOptionsQueryOptions } from "./appointments/-data/appointment-detail-data"
 
 const searchDebounceMs = 300
 
@@ -39,7 +40,7 @@ function RouteComponent() {
     enabled: createOpen,
   }).data
   const masterCustomersData = useQuery({
-    ...appointmentCustomerOptionsQueryOptions(debouncedMasterSearch),
+    ...appointmentMasterOptionsQueryOptions(debouncedMasterSearch),
     enabled: createOpen,
   }).data
   const salonsData = useQuery({

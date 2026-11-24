@@ -8,6 +8,7 @@ type AppointmentTransactionCustomer = {
 }
 
 type AppointmentForTransactions = {
+  id: string
   client: AppointmentTransactionCustomer
   master: AppointmentTransactionCustomer
   personnel?: Array<{ personnelId: string }> | null
@@ -29,7 +30,13 @@ export function useAppointmentTransactionActions({
   const invalidateTransactionQueries = () => {
     queryClient.invalidateQueries({ queryKey: trpc.transactions.list.queryKey() })
     queryClient.invalidateQueries({ queryKey: trpc.dashboard.transactionStats.queryKey() })
+    queryClient.invalidateQueries({ queryKey: trpc.reports.monthlyAppointmentFinance.list.queryKey() })
+    queryClient.invalidateQueries({ queryKey: trpc.reports.personnelFinance.list.queryKey() })
     if (!appointment) return
+    queryClient.invalidateQueries({
+      queryKey: trpc.reports.appointmentFinance.get.queryKey({ appointmentId: appointment.id }),
+    })
+    queryClient.invalidateQueries({ queryKey: trpc.appointments.get.queryOptions({ id: appointment.id }).queryKey })
 
     const customerIds = new Set([
       appointment.client.id,

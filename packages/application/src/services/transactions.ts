@@ -2,11 +2,12 @@ import {
   createTransaction as insertTransaction,
   deleteTransaction as removeTransaction,
   getAppointment as findAppointment,
+  getTransaction as findTransaction,
   listTransactions as fetchTransactions,
   updateTransaction as patchTransaction,
 } from "@prive-admin-tanstack/db"
 
-import { badRequest, notFound, unexpectedError } from "../errors"
+import { badRequest, conflict, notFound, unexpectedError } from "../errors"
 
 export async function listTransactions(input: {
   pageSize: number
@@ -27,10 +28,7 @@ export async function createTransaction(input: {
   currency: "GBP" | "EUR"
 }) {
   const appointment = await findAppointment(undefined, input.appointmentId)
-  if (!appointment) {
-    throw notFound("Appointment not found")
-  }
-
+  if (!appointment) throw notFound("Appointment not found")
   const allowedCustomerIds = new Set<string>([
     appointment.clientId,
     appointment.masterId,
@@ -39,7 +37,6 @@ export async function createTransaction(input: {
   if (!allowedCustomerIds.has(input.customerId)) {
     throw badRequest("Customer is not the appointment client, master, or assigned personnel")
   }
-
   let result
   try {
     result = await insertTransaction(undefined, input)
@@ -48,7 +45,7 @@ export async function createTransaction(input: {
   }
 
   if (!result) {
-    throw unexpectedError("Failed to create transaction")
+    throw conflict("Appointment counterparty eligibility changed before the movement was recorded")
   }
 
   return result
@@ -61,6 +58,11 @@ export async function updateTransaction(input: {
   amount: number
   currency: "GBP" | "EUR"
 }) {
+  const existing = await findTransaction(undefined, input.id)
+  if (!existing) throw notFound("Transaction not found")
+  if (existing.currency !== "EUR" && existing.currency !== "GBP") {
+    throw badRequest("The owner must resolve the stored currency before editing this transaction")
+  }
   let result
   try {
     result = await patchTransaction(undefined, input)
@@ -69,7 +71,7 @@ export async function updateTransaction(input: {
   }
 
   if (!result) {
-    throw notFound("Transaction not found")
+    throw conflict("Transaction currency or counterparty eligibility changed before the movement was updated")
   }
 
   return result

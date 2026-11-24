@@ -6,7 +6,8 @@ import {
   updateAppointment as patchAppointment,
 } from "@prive-admin-tanstack/db"
 
-import { notFound, unexpectedError } from "../errors"
+import { badRequest, conflict, notFound, unexpectedError } from "../errors"
+import { assertActivePersonnel, assertActivePersonnelBatch } from "./personnel"
 
 export async function listAppointments(input: {
   pageSize: number
@@ -32,6 +33,7 @@ export async function createAppointment(input: {
   masterId: string
   salonId: string
 }) {
+  await assertActivePersonnel(input.masterId, { type: "master" })
   let result
   try {
     result = await insertAppointment(undefined, input)
@@ -40,17 +42,33 @@ export async function createAppointment(input: {
   }
 
   if (!result) {
-    throw unexpectedError("Failed to create appointment")
+    throw conflict("Master eligibility changed before the appointment was created")
   }
 
   return result
 }
 
 export async function linkPersonnelToAppointment(input: { appointmentId: string; personnelIds: string[] }) {
+  if (input.personnelIds.length === 0) return
+  if (new Set(input.personnelIds).size !== input.personnelIds.length) {
+    throw badRequest("Personnel IDs must be unique")
+  }
+
+  const appointment = await getAppointment(input.appointmentId)
+  await assertActivePersonnelBatch(input.personnelIds)
+  const assignedIds = new Set(appointment.personnel.map((link) => link.personnelId))
+  if (input.personnelIds.some((id) => assignedIds.has(id))) {
+    throw conflict("Personnel already assigned to appointment")
+  }
+
+  let inserted
   try {
-    return await insertAppointmentPersonnel(undefined, input)
+    inserted = await insertAppointmentPersonnel(undefined, input)
   } catch (error) {
     throw unexpectedError("Failed to link personnel to appointment", error)
+  }
+  if (inserted.length !== input.personnelIds.length) {
+    throw conflict("Personnel eligibility or assignment changed. Refresh the appointment and try again.")
   }
 }
 
@@ -60,6 +78,7 @@ export async function updateAppointment(input: {
   masterId?: string
   startsAt?: string | Date
 }) {
+  if (input.masterId !== undefined) await assertActivePersonnel(input.masterId, { type: "master" })
   let result
   try {
     result = await patchAppointment(undefined, input)
@@ -68,6 +87,8 @@ export async function updateAppointment(input: {
   }
 
   if (!result) {
+    if (input.masterId !== undefined && (await findAppointment(undefined, input.id)))
+      throw conflict("Master eligibility changed before the appointment was updated")
     throw notFound("Appointment not found")
   }
 

@@ -38,6 +38,13 @@ export const appNavGroups: AppNavGroup[] = [
       { to: "/hair-orders", label: "Hair orders", shortLabel: "Orders", icon: IconScissors },
       { to: "/hair-sales", label: "Hair sales", shortLabel: "Sales", icon: IconReceipt },
       { to: "/cash", label: "Cash", icon: IconCash },
+      {
+        to: "/appointment-finance",
+        label: "Appointment finance",
+        shortLabel: "Finance",
+        icon: IconCash,
+        adminOnly: true,
+      },
       { to: "/bank-transactions", label: "Bank transactions", icon: IconBuildingBank },
     ],
   },

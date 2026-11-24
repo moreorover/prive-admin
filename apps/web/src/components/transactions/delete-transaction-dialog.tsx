@@ -1,6 +1,6 @@
 import { Button, Group, Modal, Stack, Text } from "@mantine/core"
 
-import { type Currency, formatMinor } from "@/lib/currency"
+import { formatMinor, type Currency } from "@/lib/currency"
 
 type DeleteTransactionDialogProps = {
   open: boolean

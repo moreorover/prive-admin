@@ -19,7 +19,10 @@ import { TransactionsTable, type TransactionRow } from "@/components/transaction
 import { formatMinor } from "@/lib/currency"
 import { formatPageRange } from "@/lib/resource-pagination"
 
+import type { AppointmentTotals } from "../../-data/appointment-finance-data"
+
 import { APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE, useAppointmentDetailData } from "../-data/appointment-detail-data"
+import { FinanceTotalsTable } from "../../-components/finance-totals-table"
 import { ChangeMasterModal, EditAppointmentModal } from "./appointment-edit-modals"
 import { AppointmentNotesCard } from "./appointment-notes-card"
 import { AppointmentPeopleSection } from "./appointment-people-section"
@@ -30,6 +33,7 @@ type CustomersData = { items: { id: string; name: string }[] }
 
 export function AppointmentDetailPage({
   appointmentId,
+  financeTotals,
   detailData,
   transactionsPage,
   hairAssignedPage,
@@ -65,6 +69,7 @@ export function AppointmentDetailPage({
   onLinkPersonnel,
 }: {
   appointmentId: string
+  financeTotals?: AppointmentTotals
   detailData: AppointmentDetailData
   transactionsPage: number
   hairAssignedPage: number
@@ -104,7 +109,7 @@ export function AppointmentDetailPage({
   const [editAppointmentOpen, setEditAppointmentOpen] = useState(false)
   const [createTxOpen, setCreateTxOpen] = useState(false)
   const [createTxCustomerId, setCreateTxCustomerId] = useState<string | null>(null)
-  const [editTx, setEditTx] = useState<TransactionRow | null>(null)
+  const [editTxId, setEditTxId] = useState<string | null>(null)
   const [deleteTx, setDeleteTx] = useState<TransactionRow | null>(null)
   const {
     appointment,
@@ -119,9 +124,9 @@ export function AppointmentDetailPage({
     transactionsTotalPages,
     showTransactionsPagination,
     totalsByCurrency,
-    currenciesPresent,
     txDefaultCurrency,
   } = detailData
+  const editTx = txRows.find((row) => row.id === editTxId)
   const pickPersonnelCustomers = useMemo(
     () => pickPersonnelCustomersData?.items ?? [],
     [pickPersonnelCustomersData?.items],
@@ -198,6 +203,18 @@ export function AppointmentDetailPage({
           onCreateTransaction={openCreateTx}
         />
 
+        {financeTotals && (
+          <Card withBorder>
+            <Stack>
+              <Title order={5}>Appointment finance</Title>
+              <Text size="sm" c="dimmed">
+                All signed transactions recorded for this appointment.
+              </Text>
+              <FinanceTotalsTable rows={financeTotals} />
+            </Stack>
+          </Card>
+        )}
+
         <Card withBorder>
           <Group justify="space-between" mb="sm">
             <Title order={5}>
@@ -214,24 +231,16 @@ export function AppointmentDetailPage({
           ) : (
             <Group align="flex-start" gap="xl" wrap="wrap">
               <Stack gap="md">
-                {currenciesPresent.length === 0 ? (
-                  <Stack gap={2}>
+                {Array.from(totalsByCurrency, ([c, amount]) => (
+                  <Stack key={c} gap={2}>
+                    <Text size="xs" c="dimmed" tt="uppercase">
+                      {c}
+                    </Text>
                     <Text size="sm">
-                      Current page total: <b>{formatMinor(0, "EUR")}</b>
+                      Current page total: <b>{formatMinor(amount, c)}</b>
                     </Text>
                   </Stack>
-                ) : (
-                  currenciesPresent.map((c) => (
-                    <Stack key={c} gap={2}>
-                      <Text size="xs" c="dimmed" tt="uppercase">
-                        {c}
-                      </Text>
-                      <Text size="sm">
-                        Current page total: <b>{formatMinor(totalsByCurrency[c], c)}</b>
-                      </Text>
-                    </Stack>
-                  ))
-                )}
+                ))}
               </Stack>
             </Group>
           )}
@@ -265,7 +274,7 @@ export function AppointmentDetailPage({
                 <TransactionsTable.Customer />
                 <TransactionsTable.Name />
                 <TransactionsTable.Amount />
-                <TransactionsTable.Actions onEdit={setEditTx} onDelete={setDeleteTx} />
+                <TransactionsTable.Actions onEdit={(row) => setEditTxId(row.id)} onDelete={setDeleteTx} />
                 {showTransactionsPagination ? (
                   <TransactionsTable.Pagination
                     page={transactionsPage}
@@ -364,19 +373,17 @@ export function AppointmentDetailPage({
             }}
           />
         )}
-        <PickPersonnelModal
-          open={pickPersonnelOpen}
-          onOpenChange={onPickPersonnelOpenChange}
-          search={pickPersonnelSearch}
-          personnel={availablePersonnel}
-          loading={linkPersonnelPending}
-          onSearchChange={onPickPersonnelSearchChange}
-          onConfirm={(personnelIds) => {
-            onLinkPersonnel({ appointmentId, personnelIds })
-            onPickPersonnelSearchChange("")
-            onPickPersonnelOpenChange(false)
-          }}
-        />
+        {pickPersonnelOpen && (
+          <PickPersonnelModal
+            open={pickPersonnelOpen}
+            onOpenChange={onPickPersonnelOpenChange}
+            search={pickPersonnelSearch}
+            personnel={availablePersonnel}
+            loading={linkPersonnelPending}
+            onSearchChange={onPickPersonnelSearchChange}
+            onConfirm={(personnelIds) => onLinkPersonnel({ appointmentId, personnelIds })}
+          />
+        )}
         {editAppointmentOpen && (
           <EditAppointmentModal
             key={`${appointmentId}-${appointment.master.id}`}
@@ -427,12 +434,13 @@ export function AppointmentDetailPage({
         {editTx && (
           <EditTransactionDialog
             open={!!editTx}
-            onOpenChange={(open) => !open && setEditTx(null)}
+            onOpenChange={(open) => !open && setEditTxId(null)}
+            key={editTx.id}
             transaction={editTx}
             loading={updateTransactionPending}
             onUpdate={(values) => {
               onUpdateTransaction(values)
-              setEditTx(null)
+              setEditTxId(null)
             }}
           />
         )}

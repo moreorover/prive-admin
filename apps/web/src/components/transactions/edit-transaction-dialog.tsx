@@ -1,7 +1,7 @@
 import { Modal } from "@mantine/core"
 
 import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
-import { CURRENCIES, type Currency } from "@/lib/currency"
+import { type Currency } from "@/lib/currency"
 
 type EditTransactionDialogProps = {
   open: boolean
@@ -11,7 +11,7 @@ type EditTransactionDialogProps = {
     name: string | null
     notes: string | null
     amount: number
-    currency: Currency | string
+    currency: Currency
   }
   loading?: boolean
   onUpdate: (values: EditTransactionSubmit) => void | Promise<void>
@@ -28,18 +28,15 @@ export function EditTransactionDialog({
   loading,
   onUpdate,
 }: EditTransactionDialogProps) {
-  const initialCurrency: Currency = (CURRENCIES as readonly string[]).includes(transaction.currency)
-    ? (transaction.currency as Currency)
-    : "EUR"
-
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Transaction">
       <TransactionForm
+        key={transaction.id}
         initialValues={{
           name: transaction.name ?? "",
           notes: transaction.notes ?? "",
           amountMajor: transaction.amount / 100,
-          currency: initialCurrency,
+          currency: transaction.currency,
         }}
         submitLabel="Save Changes"
         loading={loading}

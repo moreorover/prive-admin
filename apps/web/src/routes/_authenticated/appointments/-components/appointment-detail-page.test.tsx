@@ -47,8 +47,7 @@ function renderAppointmentDetailPage(props: Partial<ComponentProps<typeof Appoin
     transactionsTotalCount: 0,
     transactionsTotalPages: 1,
     showTransactionsPagination: false,
-    totalsByCurrency: {},
-    currenciesPresent: [],
+    totalsByCurrency: new Map(),
     txDefaultCurrency: "EUR",
   } as never
   const defaultProps = {
@@ -105,6 +104,30 @@ function renderAppointmentDetailPage(props: Partial<ComponentProps<typeof Appoin
 }
 
 describe("AppointmentDetailPage", () => {
+  it("shows signed appointment totals regardless of the visible transaction page", () => {
+    const html = renderAppointmentDetailPage({
+      financeTotals: [
+        {
+          currency: "EUR",
+          total: 3000,
+        },
+      ],
+    })
+    expect(html).toContain("Net total")
+    expect(html).toContain("€30.00")
+    expect(renderAppointmentDetailPage()).not.toContain("Owner remainder")
+  })
+
+  it.each(["appointment-detail-page.tsx", "pick-personnel-modal.tsx", "appointment-edit-modals.tsx"])(
+    "keeps server state in the route owner for %s",
+    (file) => {
+      const source = readFileSync(new URL(file, import.meta.url), "utf8")
+      expect(source).not.toMatch(/\b(useQuery|useQueries|useSuspenseQuery|useMutation|use\w+Actions)\s*\(/)
+      expect(source).not.toMatch(/from ["'](@\/utils\/trpc|@tanstack\/react-query)["']/)
+      expect(source).not.toMatch(/from ["'].*\/-actions\//)
+    },
+  )
+
   it("clears master search before opening the change master dialog", () => {
     const source = readFileSync(new URL("./appointment-detail-page.tsx", import.meta.url), "utf8")
 
@@ -141,4 +164,17 @@ describe("AppointmentDetailPage", () => {
     expect(getMasterCustomerQuerySearch("Master One", { value: "master-1", label: "Master One" })).toBe("")
     expect(getMasterCustomerQuerySearch("Other", { value: "master-1", label: "Master One" })).toBe("Other")
   })
+})
+
+it("displays the last cent of a safe integer exactly in the finance table", () => {
+  const amount = Number.MAX_SAFE_INTEGER - 1
+  const html = renderAppointmentDetailPage({
+    financeTotals: [
+      {
+        currency: "EUR",
+        total: amount,
+      },
+    ],
+  })
+  expect(html).toContain("€90071992547409.90")
 })

@@ -43,7 +43,10 @@ export async function listCustomers(database: Db = db, filter: CustomerListFilte
 }
 
 export async function getCustomer(database: Db = db, id: string) {
-  return database.query.customer.findFirst({ where: eq(customer.id, id) })
+  return database.query.customer.findFirst({
+    where: eq(customer.id, id),
+    with: { personnel: { columns: { type: true, active: true } } },
+  })
 }
 
 export async function getCustomerSummary(database: Db = db, id: string) {

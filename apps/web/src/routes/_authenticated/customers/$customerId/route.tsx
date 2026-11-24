@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import { trpc } from "@/utils/trpc"
 
-import { useUpdateCustomerAction } from "./-actions/customer-detail-actions"
+import { useCreatePersonnelAction, useUpdateCustomerAction } from "./-actions/customer-detail-actions"
 import { CustomerDetailPage } from "./-components/route-page"
 
 export const Route = createFileRoute("/_authenticated/customers/$customerId")({
@@ -19,6 +19,8 @@ export const Route = createFileRoute("/_authenticated/customers/$customerId")({
 
 function RouteComponent() {
   const { customerId } = Route.useParams()
+  const { isAdmin } = Route.useRouteContext()
+  const createPersonnel = useCreatePersonnelAction()
   const navigate = Route.useNavigate()
   const customer = useQuery(trpc.customers.get.queryOptions({ id: customerId })).data
   const summary = useQuery(trpc.customers.summary.queryOptions({ id: customerId })).data
@@ -30,6 +32,8 @@ function RouteComponent() {
       customerId={customerId}
       customer={customer}
       summary={summary}
+      onCreatePersonnel={isAdmin ? (type) => createPersonnel.mutate({ customerId, type }) : undefined}
+      createPersonnelPending={createPersonnel.isPending}
       editOpen={editOpen}
       updatePending={updateCustomer.isPending}
       onEditOpenChange={setEditOpen}
