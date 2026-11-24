@@ -1,5 +1,6 @@
 import { Badge, Button, Card, Container, Group, Pagination, SimpleGrid, Stack, Table, Text, Title } from "@mantine/core"
 import { DatePickerInput } from "@mantine/dates"
+import { useState } from "react"
 
 import { formatTransactionAmount } from "@/lib/currency"
 
@@ -17,6 +18,33 @@ type Props = {
 
 function roleLabel(type: string) {
   return type === "master" ? "Master" : "Assistant"
+}
+
+type DateRangeValue = [string | null, string | null]
+
+function FinancePeriodPicker({
+  from,
+  to,
+  onChange,
+}: {
+  from: string
+  to: string
+  onChange: (range: DateRangeValue) => void
+}) {
+  const [draftRange, setDraftRange] = useState<DateRangeValue>(() => [from, to])
+
+  return (
+    <DatePickerInput
+      type="range"
+      label="Period"
+      value={draftRange}
+      valueFormat="DD MMM YYYY"
+      onChange={(value) => {
+        setDraftRange(value)
+        onChange(value)
+      }}
+    />
+  )
 }
 
 export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
@@ -43,11 +71,10 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
 
         <Card withBorder radius="md" padding="md">
           <Group grow align="end">
-            <DatePickerInput
-              type="range"
-              label="Period"
-              value={[search.from, search.to]}
-              valueFormat="DD MMM YYYY"
+            <FinancePeriodPicker
+              key={`${search.from}:${search.to}`}
+              from={search.from}
+              to={search.to}
               onChange={(value) => {
                 const nextPeriod = financeRangeFromDatePickerValue(value)
                 if (nextPeriod) changePeriod(nextPeriod)
