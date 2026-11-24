@@ -14,7 +14,7 @@ export const currencySymbol = (currency: Currency): string => SYMBOLS[currency]
 
 export const isCurrency = (value: string): value is Currency => value === "GBP" || value === "EUR"
 
-export function minorToDecimal(minor: number | bigint): string {
+function minorToDecimal(minor: number | bigint): string {
   const units = BigInt(minor)
   const digits = (units < 0n ? -units : units).toString().padStart(3, "0")
   return `${units < 0n ? "-" : ""}${digits.slice(0, -2)}.${digits.slice(-2)}`
