@@ -1,5 +1,7 @@
 import { Badge, Button, Card, Container, Group, Pagination, SimpleGrid, Stack, Table, Text, Title } from "@mantine/core"
 import { DatePickerInput } from "@mantine/dates"
+import { useMediaQuery } from "@mantine/hooks"
+import dayjs from "dayjs"
 import { useState } from "react"
 
 import { formatTransactionAmount } from "@/lib/currency"
@@ -32,6 +34,7 @@ function FinancePeriodPicker({
   onChange: (range: DateRangeValue) => void
 }) {
   const [draftRange, setDraftRange] = useState<DateRangeValue>(() => [from, to])
+  const isDesktop = useMediaQuery("(min-width: 48em)", false)
 
   return (
     <DatePickerInput
@@ -39,6 +42,30 @@ function FinancePeriodPicker({
       label="Period"
       value={draftRange}
       valueFormat="DD MMM YYYY"
+      numberOfColumns={isDesktop ? 2 : 1}
+      presets={[
+        {
+          label: "Last week",
+          value: [
+            dayjs().subtract(1, "week").startOf("week").format("YYYY-MM-DD"),
+            dayjs().subtract(1, "week").endOf("week").format("YYYY-MM-DD"),
+          ],
+        },
+        {
+          label: "Last two weeks",
+          value: [
+            dayjs().subtract(2, "week").startOf("week").format("YYYY-MM-DD"),
+            dayjs().subtract(1, "week").endOf("week").format("YYYY-MM-DD"),
+          ],
+        },
+        {
+          label: "Last month",
+          value: [
+            dayjs().subtract(1, "month").startOf("month").format("YYYY-MM-DD"),
+            dayjs().subtract(1, "month").endOf("month").format("YYYY-MM-DD"),
+          ],
+        },
+      ]}
       onChange={(value) => {
         setDraftRange(value)
         onChange(value)
