@@ -1,114 +1,192 @@
-import { Button, Card, Container, Group, NativeSelect, Pagination, Stack, Table, Text, Title } from "@mantine/core"
+import {
+  Badge,
+  Button,
+  Card,
+  Container,
+  Group,
+  NativeSelect,
+  Pagination,
+  SimpleGrid,
+  Stack,
+  Table,
+  Text,
+  Title,
+} from "@mantine/core"
 
 import { CURRENCIES, formatTransactionAmount, type Currency } from "@/lib/currency"
 
-import type { FinanceSearch, MonthlyFinance, PersonnelFinance } from "../-data/appointment-finance-data"
-
-import { FinanceTableHead, FinanceTotalsTable } from "./finance-totals-table"
+import type { FinanceSearch, PersonnelFinance } from "../-data/appointment-finance-data"
 
 type Props = {
   search: FinanceSearch
-  monthly: MonthlyFinance
   personnel: PersonnelFinance
   onSearch: (changes: Partial<FinanceSearch>) => void
 }
 
-export function AppointmentFinancePage({ search, monthly, personnel, onSearch }: Props) {
-  const changeYear = (year: number) => onSearch({ year, monthlyPage: 1, personnelPage: 1 })
+const MONTHS = Array.from({ length: 12 }, (_, index) => ({
+  value: String(index + 1),
+  label: new Date(Date.UTC(2026, index, 1)).toLocaleString("en", { month: "long", timeZone: "UTC" }),
+}))
+
+function roleLabel(type: string) {
+  return type === "master" ? "Master" : "Assistant"
+}
+
+export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
+  const changePeriod = (changes: Partial<FinanceSearch>) => onSearch({ ...changes, personnelPage: 1 })
+  const monthLabel = MONTHS.find((month) => month.value === String(search.month))?.label ?? "Selected month"
+  const totals = personnel.items.reduce<Record<string, { paid: number; credits: number }>>((result, row) => {
+    const current = result[row.currency] ?? { paid: 0, credits: 0 }
+    current.paid += row.paid
+    current.credits += row.credits
+    result[row.currency] = current
+    return result
+  }, {})
+
   return (
     <Container size="xl">
-      <Stack>
-        <Title order={2}>Appointment finance</Title>
-        <Text c="dimmed">Totals use signed transactions created in the selected UTC period.</Text>
-        <Group align="end">
-          <Button variant="default" disabled={search.year <= 2000} onClick={() => changeYear(search.year - 1)}>
-            Previous year
-          </Button>
-          <Text fw={600}>{search.year}</Text>
-          <Button variant="default" disabled={search.year >= 3000} onClick={() => changeYear(search.year + 1)}>
-            Next year
-          </Button>
-          <NativeSelect
-            label="Currency"
-            value={search.currency ?? ""}
-            data={[{ value: "", label: "All currencies" }, ...CURRENCIES]}
-            onChange={(e) =>
-              onSearch({
-                currency: (e.currentTarget.value || undefined) as Currency | undefined,
-                monthlyPage: 1,
-                personnelPage: 1,
-              })
-            }
-          />
+      <Stack gap="xl">
+        <Group justify="space-between" align="end">
+          <div>
+            <Text size="xs" fw={700} tt="uppercase" c="dimmed" lts="0.08em">
+              Owner finance
+            </Text>
+            <Title order={2}>Personnel payouts</Title>
+            <Text c="dimmed">What was paid to each master and assistant during a selected month.</Text>
+          </div>
+          <Group align="end">
+            <Button
+              variant="default"
+              disabled={search.year <= 2000}
+              onClick={() => changePeriod({ year: search.year - 1 })}
+            >
+              Previous year
+            </Button>
+            <Text fw={700} pb={7} aria-label="Selected year">
+              {search.year}
+            </Text>
+            <Button
+              variant="default"
+              disabled={search.year >= 3000}
+              onClick={() => changePeriod({ year: search.year + 1 })}
+            >
+              Next year
+            </Button>
+          </Group>
         </Group>
-        <Card withBorder>
-          <Stack>
-            <Title order={3}>Monthly totals</Title>
-            <FinanceTotalsTable rows={monthly.items} monthly />
-            {monthly.totalCount > monthly.pageSize && (
-              <Pagination
-                aria-label="Monthly totals pages"
-                value={monthly.page}
-                total={Math.ceil(monthly.totalCount / monthly.pageSize)}
-                onChange={(monthlyPage) => onSearch({ monthlyPage })}
-              />
+
+        <Card withBorder radius="md" padding="md">
+          <Group grow align="end">
+            <NativeSelect
+              label="Month"
+              value={String(search.month)}
+              data={MONTHS}
+              onChange={(event) => changePeriod({ month: Number(event.currentTarget.value) })}
+            />
+            <NativeSelect
+              label="Currency"
+              value={search.currency ?? ""}
+              data={[{ value: "", label: "All currencies" }, ...CURRENCIES]}
+              onChange={(event) =>
+                changePeriod({ currency: (event.currentTarget.value || undefined) as Currency | undefined })
+              }
+            />
+            {search.personnelId ? (
+              <Button variant="subtle" onClick={() => changePeriod({ personnelId: undefined })}>
+                Show everyone
+              </Button>
+            ) : (
+              <Text size="sm" c="dimmed" pb={8}>
+                {personnel.totalCount} personnel with transactions
+              </Text>
             )}
-          </Stack>
+          </Group>
         </Card>
-        <Card withBorder>
-          <Stack>
-            <Title order={3}>Personnel allocations</Title>
-            <Group align="end">
-              <NativeSelect
-                label="Allocation month"
-                value={search.month ?? ""}
-                data={[{ value: "", label: "All months" }, ...Array.from({ length: 12 }, (_, i) => String(i + 1))]}
-                onChange={(e) => onSearch({ month: Number(e.currentTarget.value) || undefined, personnelPage: 1 })}
-              />
-              {search.personnelId && (
-                <Button variant="default" onClick={() => onSearch({ personnelId: undefined, personnelPage: 1 })}>
-                  Show all personnel
-                </Button>
-              )}
+
+        {personnel.totalCount > 0 && (
+          <SimpleGrid cols={{ base: 1, sm: Math.min(Object.keys(totals).length, 3) || 1 }}>
+            {Object.entries(totals).map(([currency, total]) => (
+              <Card key={currency} withBorder radius="md">
+                <Text size="sm" c="dimmed">
+                  {monthLabel} · {currency}
+                </Text>
+                <Title order={3}>{formatTransactionAmount(total.paid, currency)}</Title>
+                <Text size="sm">Paid to personnel</Text>
+                {total.credits > 0 && (
+                  <Text size="sm" c="orange">
+                    +{formatTransactionAmount(total.credits, currency)} credits / adjustments
+                  </Text>
+                )}
+              </Card>
+            ))}
+          </SimpleGrid>
+        )}
+
+        <Card withBorder radius="md" padding={0}>
+          <Stack gap={0}>
+            <Group justify="space-between" p="md">
+              <div>
+                <Title order={3}>{monthLabel} payouts</Title>
+                <Text size="sm" c="dimmed">
+                  Paid amounts are calculated from negative personnel transactions. Credits remain separate.
+                </Text>
+              </div>
             </Group>
-            {personnel.totalCount === 0 ? (
-              <Text c="dimmed">No personnel allocations for this selection.</Text>
-            ) : personnel.items.length ? (
-              <Table>
-                <FinanceTableHead columns={["Month", "Personnel", "Currency", "Amount"]} />
-                <Table.Tbody>
-                  {personnel.items.map((row) => (
-                    <Table.Tr key={JSON.stringify([row.month, row.personnelId, row.currency])}>
-                      <Table.Td>{row.month}</Table.Td>
-                      <Table.Td>
-                        {row.personnelId ? (
+            {personnel.items.length ? (
+              <Table.ScrollContainer minWidth={760}>
+                <Table highlightOnHover>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>Personnel</Table.Th>
+                      <Table.Th>Role</Table.Th>
+                      <Table.Th>Appointments</Table.Th>
+                      <Table.Th>Paid</Table.Th>
+                      <Table.Th>Credits / adjustments</Table.Th>
+                      <Table.Th>Currency</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {personnel.items.map((row) => (
+                      <Table.Tr key={JSON.stringify([row.personnelId, row.currency, row.month])}>
+                        <Table.Td>
                           <Button
                             variant="subtle"
                             size="compact-sm"
-                            onClick={() => onSearch({ personnelId: row.personnelId ?? undefined, personnelPage: 1 })}
+                            onClick={() => changePeriod({ personnelId: row.personnelId ?? undefined })}
                           >
-                            {row.personnelName}
+                            {row.personnelName ?? "Unknown personnel"}
                           </Button>
-                        ) : (
-                          "Unknown recipient"
-                        )}
-                      </Table.Td>
-                      <Table.Td>{row.currency}</Table.Td>
-                      <Table.Td>{formatTransactionAmount(row.amount, row.currency)}</Table.Td>
-                    </Table.Tr>
-                  ))}
-                </Table.Tbody>
-              </Table>
+                        </Table.Td>
+                        <Table.Td>
+                          <Badge variant="light" color={row.personnelType === "master" ? "indigo" : "teal"}>
+                            {roleLabel(row.personnelType)}
+                          </Badge>
+                        </Table.Td>
+                        <Table.Td>{row.appointmentCount}</Table.Td>
+                        <Table.Td fw={700}>{formatTransactionAmount(row.paid, row.currency)}</Table.Td>
+                        <Table.Td c={row.credits ? "orange" : "dimmed"}>
+                          {row.credits ? "+" + formatTransactionAmount(row.credits, row.currency) : "—"}
+                        </Table.Td>
+                        <Table.Td>{row.currency}</Table.Td>
+                      </Table.Tr>
+                    ))}
+                  </Table.Tbody>
+                </Table>
+              </Table.ScrollContainer>
             ) : (
-              <Text c="dimmed">No personnel allocations on this page.</Text>
+              <Text c="dimmed" p="xl">
+                No personnel payouts or credits recorded for {monthLabel.toLowerCase()} {search.year}.
+              </Text>
             )}
             {personnel.totalCount > personnel.pageSize && (
-              <Pagination
-                aria-label="Personnel allocation pages"
-                value={personnel.page}
-                total={Math.ceil(personnel.totalCount / personnel.pageSize)}
-                onChange={(personnelPage) => onSearch({ personnelPage })}
-              />
+              <Group justify="center" p="md">
+                <Pagination
+                  aria-label="Personnel payout pages"
+                  value={personnel.page}
+                  total={Math.ceil(personnel.totalCount / personnel.pageSize)}
+                  onChange={(personnelPage) => onSearch({ personnelPage })}
+                />
+              </Group>
             )}
           </Stack>
         </Card>

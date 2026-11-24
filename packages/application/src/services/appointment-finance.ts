@@ -58,7 +58,12 @@ export async function listPersonnelFinance({
 }: PersonnelFinanceFilter & Pagination) {
   const result = await personnelAllocationRows(undefined, { ...filter, pageSize, offset: (page - 1) * pageSize })
   return {
-    items: result.items.map((item) => ({ ...item, amount: toSafeNumber(item.amount, "personnel finance amount") })),
+    items: result.items.map((item) => ({
+      ...item,
+      appointmentCount: toSafeNumber(item.appointmentCount, "personnel appointment count"),
+      paid: toSafeNumber(item.paid, "personnel paid amount"),
+      credits: toSafeNumber(item.credits, "personnel credits amount"),
+    })),
     totalCount: result.totalCount,
     page,
     pageSize,

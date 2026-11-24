@@ -36,6 +36,7 @@ describe("appointment finance SQL", () => {
     insert.run("a-client", "a", "client", 10000, "EUR", Date.parse("2026-02-01"))
     insert.run("a-master", "a", "master", -6000, "EUR", Date.parse("2026-02-01"))
     insert.run("a-assistant", "a", "assistant", -1000, "EUR", Date.parse("2026-02-01"))
+    insert.run("a-master-credit", "a", "master", 500, "EUR", Date.parse("2026-02-02"))
     insert.run("a-gbp", "a", "master", -500, "GBP", Date.parse("2026-02-01"))
     insert.run("b-client", "b", "client", -1500, "EUR", Date.parse("2026-02-28T23:59:59.999Z"))
     insert.run("b-master", "b", "master", -400, "EUR", Date.parse("2026-02-28T23:59:59.999Z"))
@@ -52,7 +53,7 @@ describe("appointment finance SQL", () => {
 
   it("sums all signed appointment transactions per currency", async () => {
     expect(await appointmentFinanceRows(db, "a")).toEqual([
-      { currency: "EUR", total: "3000" },
+      { currency: "EUR", total: "3500" },
       { currency: "GBP", total: "-500" },
     ])
   })
@@ -68,31 +69,75 @@ describe("appointment finance SQL", () => {
     expect(row?.total).toBe((BigInt(maximum) - 500n).toString())
   })
 
-  it("groups monthly signed totals and personnel transactions by assigned customer", async () => {
+  it("groups monthly totals and personnel payouts by role, currency, and appointment", async () => {
     expect(await monthlyFinanceRows(db, { year: 2026, currency: "EUR", pageSize: 10, offset: 0 })).toEqual({
       totalCount: 2,
       items: [
-        { month: 2, currency: "EUR", total: "1100" },
+        { month: 2, currency: "EUR", total: "1600" },
         { month: 3, currency: "EUR", total: "-200" },
       ],
     })
-    expect(await personnelAllocationRows(db, { year: 2026, pageSize: 10, offset: 0 })).toEqual({
-      totalCount: 4,
+    expect(await personnelAllocationRows(db, { year: 2026, month: 2, pageSize: 10, offset: 0 })).toEqual({
+      totalCount: 3,
       items: [
-        { month: 2, personnelId: "assistant", personnelName: "Assistant", currency: "EUR", amount: "-1000" },
-        { month: 2, personnelId: "master", personnelName: "Master", currency: "EUR", amount: "-6400" },
-        { month: 2, personnelId: "master", personnelName: "Master", currency: "GBP", amount: "-500" },
-        { month: 3, personnelId: "master", personnelName: "Master", currency: "EUR", amount: "-200" },
+        {
+          month: 2,
+          personnelId: "assistant",
+          personnelName: "Assistant",
+          personnelType: "assistant",
+          currency: "EUR",
+          appointmentCount: 1,
+          paid: "1000",
+          credits: "0",
+        },
+        {
+          month: 2,
+          personnelId: "master",
+          personnelName: "Master",
+          personnelType: "master",
+          currency: "EUR",
+          appointmentCount: 2,
+          paid: "6400",
+          credits: "500",
+        },
+        {
+          month: 2,
+          personnelId: "master",
+          personnelName: "Master",
+          personnelType: "master",
+          currency: "GBP",
+          appointmentCount: 1,
+          paid: "500",
+          credits: "0",
+        },
       ],
     })
   })
 
   it("supports personnel filters and bounded pagination", async () => {
     expect(
-      await personnelAllocationRows(db, { year: 2026, personnelId: "master", currency: "EUR", pageSize: 1, offset: 1 }),
+      await personnelAllocationRows(db, {
+        year: 2026,
+        month: 2,
+        personnelId: "master",
+        currency: "EUR",
+        pageSize: 1,
+        offset: 0,
+      }),
     ).toEqual({
-      totalCount: 2,
-      items: [{ month: 3, personnelId: "master", personnelName: "Master", currency: "EUR", amount: "-200" }],
+      totalCount: 1,
+      items: [
+        {
+          month: 2,
+          personnelId: "master",
+          personnelName: "Master",
+          personnelType: "master",
+          currency: "EUR",
+          appointmentCount: 2,
+          paid: "6400",
+          credits: "500",
+        },
+      ],
     })
   })
 })

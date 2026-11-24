@@ -3,6 +3,7 @@ import { and, eq, exists, gte, isNotNull, lt, or, sql, type SQL } from "drizzle-
 import { db, type Db } from "../client"
 import { appointment, personnelOnAppointments } from "../schema/appointment"
 import { customer } from "../schema/customer"
+import { personnel } from "../schema/personnel"
 import { transaction as movement } from "../schema/transaction"
 
 export type FinancePeriod = { year: number; currency?: string }
@@ -90,13 +91,17 @@ export async function personnelAllocationRows(database: Db = db, input: Personne
       month: transactionMonth.as("month"),
       personnelId: movement.customerId,
       personnelName: customer.name,
+      personnelType: personnel.type,
       currency: movement.currency,
-      amount: exactSum(sql`${movement.amount}`, "amount"),
+      appointmentCount: sql<number>`count(distinct ${appointment.id})`.as("appointmentCount"),
+      paid: exactSum(sql`case when ${movement.amount} < 0 then -${movement.amount} else 0 end`, "paid"),
+      credits: exactSum(sql`case when ${movement.amount} > 0 then ${movement.amount} else 0 end`, "credits"),
       ...pageColumns(sql`${customer.name}, ${transactionMonth}, ${movement.currency}, ${movement.customerId}`),
     })
     .from(movement)
     .innerJoin(appointment, eq(appointment.id, movement.appointmentId))
     .leftJoin(customer, eq(customer.id, movement.customerId))
+    .innerJoin(personnel, eq(personnel.customerId, movement.customerId))
     .where(
       and(
         periodFilter(input),
@@ -117,7 +122,7 @@ export async function personnelAllocationRows(database: Db = db, input: Personne
         input.personnelId ? eq(movement.customerId, input.personnelId) : undefined,
       ),
     )
-    .groupBy(customer.name, transactionMonth, movement.currency, movement.customerId)
+    .groupBy(customer.name, personnel.type, transactionMonth, movement.currency, movement.customerId)
     .as("personnel_groups")
   const rows = await database
     .select()

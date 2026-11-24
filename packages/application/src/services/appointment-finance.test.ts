@@ -36,13 +36,35 @@ describe("owner finance reports", () => {
     expect(repo.monthlyFinanceRows).toHaveBeenCalledWith(undefined, { year: 2026, offset: 10, pageSize: 10 })
   })
 
-  it("returns signed personnel totals with filters", async () => {
+  it("returns monthly personnel payouts with role, appointment count, and credits", async () => {
     repo.personnelAllocationRows.mockResolvedValue({
-      items: [{ personnelId: "master", personnelName: "Master", month: 2, currency: "EUR", amount: "-6400" }],
+      items: [
+        {
+          personnelId: "master",
+          personnelName: "Master",
+          personnelType: "master",
+          month: 2,
+          currency: "EUR",
+          appointmentCount: 2,
+          paid: "6400",
+          credits: "500",
+        },
+      ],
       totalCount: 1,
     })
     expect(await listPersonnelFinance({ year: 2026, page: 1, personnelId: "master" })).toEqual({
-      items: [{ personnelId: "master", personnelName: "Master", month: 2, currency: "EUR", amount: -6400 }],
+      items: [
+        {
+          personnelId: "master",
+          personnelName: "Master",
+          personnelType: "master",
+          month: 2,
+          currency: "EUR",
+          appointmentCount: 2,
+          paid: 6400,
+          credits: 500,
+        },
+      ],
       totalCount: 1,
       page: 1,
       pageSize: 10,
