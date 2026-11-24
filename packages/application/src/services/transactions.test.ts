@@ -10,7 +10,6 @@ const dbMock = vi.hoisted(() => ({
   listTransactions: vi.fn(),
   getTransaction: vi.fn(),
   getAppointment: vi.fn(),
-  resolveTransactionCurrency: vi.fn(),
 }))
 vi.mock("@prive-admin-tanstack/db", () => dbMock)
 
@@ -71,13 +70,5 @@ describe("transaction service and API", () => {
       amount: -100,
       currency: "GBP",
     })
-  })
-
-  it("requires an owner and an unsupported stored currency to resolve a row", async () => {
-    const input = { id: "tx", storedCurrency: "USD", currency: "GBP" as const }
-    const owner = transactionsRouter.createCaller({ session: { user: { role: "admin" } } } as never)
-    await expect(caller().resolveCurrency(input)).rejects.toMatchObject({ code: "FORBIDDEN" })
-    dbMock.resolveTransactionCurrency.mockResolvedValue({ id: "tx", currency: "GBP" })
-    await expect(owner.resolveCurrency(input)).resolves.toMatchObject({ id: "tx", currency: "GBP" })
   })
 })

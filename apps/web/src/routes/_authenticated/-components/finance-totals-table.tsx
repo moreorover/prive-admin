@@ -1,6 +1,6 @@
 import { Table, Text } from "@mantine/core"
 
-import { formatTransactionAmount } from "@/lib/currency"
+import { formatMinor } from "@/lib/currency"
 
 import type { AppointmentTotals } from "../-data/appointment-finance-data"
 
@@ -21,7 +21,7 @@ export function FinanceTotalsTable({
             <Table.Tr key={`${row.month ?? ""}-${row.currency}`}>
               {monthly && <Table.Td>{row.month}</Table.Td>}
               <Table.Td>{row.currency}</Table.Td>
-              <Table.Td>{formatTransactionAmount(row.total, row.currency)}</Table.Td>
+              <Table.Td>{formatMinor(row.total, row.currency)}</Table.Td>
             </Table.Tr>
           ))}
         </Table.Tbody>

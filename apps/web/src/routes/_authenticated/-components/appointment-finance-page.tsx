@@ -4,7 +4,7 @@ import { useMediaQuery } from "@mantine/hooks"
 import dayjs from "dayjs"
 import { useState } from "react"
 
-import { formatTransactionAmount } from "@/lib/currency"
+import { formatMinor, type Currency } from "@/lib/currency"
 
 import {
   financeRangeFromDatePickerValue,
@@ -77,13 +77,7 @@ function FinancePeriodPicker({
 export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
   const changePeriod = (changes: Partial<FinanceSearch>) => onSearch({ ...changes, personnelPage: 1 })
   const periodLabel = `${search.from} – ${search.to}`
-  const totals = personnel.items.reduce<Record<string, { paid: number; credits: number }>>((result, row) => {
-    const current = result[row.currency] ?? { paid: 0, credits: 0 }
-    current.paid += row.paid
-    current.credits += row.credits
-    result[row.currency] = current
-    return result
-  }, {})
+  const currencies = Array.from(new Set(personnel.items.map((row) => row.currency)))
 
   return (
     <Container size="xl">
@@ -114,21 +108,30 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
         </Card>
 
         {personnel.totalCount > 0 && (
-          <SimpleGrid cols={{ base: 1, sm: Math.min(Object.keys(totals).length, 3) || 1 }}>
-            {Object.entries(totals).map(([currency, total]) => (
-              <Card key={currency} withBorder radius="md">
-                <Text size="sm" c="dimmed">
-                  {periodLabel} · {currency}
-                </Text>
-                <Title order={3}>{formatTransactionAmount(total.paid, currency)}</Title>
-                <Text size="sm">Paid to personnel</Text>
-                {total.credits > 0 && (
-                  <Text size="sm" c="orange">
-                    +{formatTransactionAmount(total.credits, currency)} credits / adjustments
+          <SimpleGrid cols={{ base: 1, sm: Math.min(currencies.length, 3) || 1 }}>
+            {currencies.map((currency) => {
+              const total = personnel.items.reduce(
+                (result, row) =>
+                  row.currency === currency
+                    ? { paid: result.paid + row.paid, credits: result.credits + row.credits }
+                    : result,
+                { paid: 0, credits: 0 },
+              )
+              return (
+                <Card key={currency} withBorder radius="md">
+                  <Text size="sm" c="dimmed">
+                    {periodLabel} · {currency}
                   </Text>
-                )}
-              </Card>
-            ))}
+                  <Title order={3}>{formatMinor(total.paid, currency as Currency)}</Title>
+                  <Text size="sm">Paid to personnel</Text>
+                  {total.credits > 0 && (
+                    <Text size="sm" c="orange">
+                      +{formatMinor(total.credits, currency as Currency)} credits / adjustments
+                    </Text>
+                  )}
+                </Card>
+              )
+            })}
           </SimpleGrid>
         )}
 
@@ -165,9 +168,9 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
                           </Badge>
                         </Table.Td>
                         <Table.Td>{row.appointmentCount}</Table.Td>
-                        <Table.Td fw={700}>{formatTransactionAmount(row.paid, row.currency)}</Table.Td>
+                        <Table.Td fw={700}>{formatMinor(row.paid, row.currency)}</Table.Td>
                         <Table.Td c={row.credits ? "orange" : "dimmed"}>
-                          {row.credits ? "+" + formatTransactionAmount(row.credits, row.currency) : "—"}
+                          {row.credits ? "+" + formatMinor(row.credits, row.currency) : "—"}
                         </Table.Td>
                         <Table.Td>{row.currency}</Table.Td>
                       </Table.Tr>

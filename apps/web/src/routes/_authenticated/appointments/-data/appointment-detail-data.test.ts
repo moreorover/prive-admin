@@ -56,7 +56,7 @@ it("uses the same active master query for customer-page appointment creation", a
   ])
 })
 
-it("retains stored currency codes on route rows and sums only like currencies, including zero balances", async () => {
+it("retains currency codes on route rows and sums only like currencies, including zero balances", async () => {
   const { useAppointmentDetailData, appointmentTransactionsQueryOptions } = await import("./appointment-detail-data")
   const client = new QueryClient()
   const base = {
@@ -69,10 +69,10 @@ it("retains stored currency codes on route rows and sums only like currencies, i
     createdAt: "2026-11-23",
   }
   const rows = [
-    { ...base, id: "legacy", currency: "USD", amount: 2400 },
-    { ...base, id: "refund", currency: "GBP", amount: 0 },
-    { ...base, id: "eur1", currency: "EUR", amount: Number.MAX_SAFE_INTEGER },
-    { ...base, id: "eur2", currency: "EUR", amount: 2 },
+    { ...base, id: "gbp1", currency: "GBP" as const, amount: 2400 },
+    { ...base, id: "refund", currency: "GBP" as const, amount: 0 },
+    { ...base, id: "eur1", currency: "EUR" as const, amount: Number.MAX_SAFE_INTEGER },
+    { ...base, id: "eur2", currency: "EUR" as const, amount: 2 },
   ]
   client.setQueryData(appointmentTransactionsQueryOptions("a", 1).queryKey, {
     page: 1,
@@ -90,8 +90,7 @@ it("retains stored currency codes on route rows and sums only like currencies, i
     expect(txRows).toEqual(rows)
     expect(totalsByCurrency).toEqual(
       new Map([
-        ["USD", 2400n],
-        ["GBP", 0n],
+        ["GBP", 2400n],
         ["EUR", 9007199254740993n],
       ]),
     )

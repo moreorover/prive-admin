@@ -9,14 +9,14 @@ import type { CompoundTableColumnComponent } from "@/components/compound-table-h
 
 import { CompoundTable } from "@/components/compound-table"
 import { ResourcePagination } from "@/components/resource-pagination"
-import { formatTransactionAmount } from "@/lib/currency"
+import { formatMinor, type Currency } from "@/lib/currency"
 
 export type TransactionRow = {
   id: string
   name: string | null
   notes: string | null
   amount: number
-  currency: string
+  currency: Currency
   customerId: string | null
   appointmentId: string | null
   customer?: { id: string; name: string } | null
@@ -169,7 +169,7 @@ const Name = createColumn("name", "Name", () => {
 
 const Amount = createColumn("amount", "Amount", () => {
   const row = useTransactionRow()
-  return <Table.Td>{formatTransactionAmount(row.amount, row.currency)}</Table.Td>
+  return <Table.Td>{formatMinor(row.amount, row.currency)}</Table.Td>
 })
 
 export const TransactionsTable = Object.assign(TransactionsTableRoot, {

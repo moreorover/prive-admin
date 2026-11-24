@@ -1,9 +1,9 @@
-import { and, count, desc, eq, inArray, notInArray } from "drizzle-orm"
+import { and, count, desc, eq, inArray } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { appointment } from "../schema/appointment"
 import { customer } from "../schema/customer"
-import { transaction } from "../schema/transaction"
+import { transaction, type TransactionCurrency } from "../schema/transaction"
 
 export async function listTransactions(
   database: Db = db,
@@ -12,7 +12,7 @@ export async function listTransactions(
     offset: number
     appointmentId?: string
     customerId?: string
-    currency?: "GBP" | "EUR"
+    currency?: TransactionCurrency
   },
 ) {
   const clauses = []
@@ -54,7 +54,7 @@ export async function createTransaction(
     name?: string | null
     notes?: string | null
     amount: number
-    currency: "GBP" | "EUR"
+    currency: TransactionCurrency
   },
 ) {
   const [row] = await database.insert(transaction).values(input).returning()
@@ -68,7 +68,7 @@ export async function updateTransaction(
     name?: string | null
     notes?: string | null
     amount: number
-    currency: "GBP" | "EUR"
+    currency: TransactionCurrency
   },
 ) {
   const [row] = await database
@@ -91,22 +91,4 @@ export async function deleteTransaction(database: Db = db, id: string) {
 
 export async function getTransaction(database: Db = db, id: string) {
   return database.query.transaction.findFirst({ where: eq(transaction.id, id) })
-}
-
-export async function resolveTransactionCurrency(
-  database: Db = db,
-  input: { id: string; storedCurrency: string; currency: "EUR" | "GBP" },
-) {
-  const [row] = await database
-    .update(transaction)
-    .set({ currency: input.currency })
-    .where(
-      and(
-        eq(transaction.id, input.id),
-        eq(transaction.currency, input.storedCurrency),
-        notInArray(transaction.currency, ["EUR", "GBP"]),
-      ),
-    )
-    .returning()
-  return row
 }

@@ -6,6 +6,8 @@ import { createdAt } from "./columns"
 import { customer } from "./customer"
 import { order } from "./order"
 
+export type TransactionCurrency = "GBP" | "EUR"
+
 export const transaction = sqliteTable(
   "transaction",
   {
@@ -13,7 +15,7 @@ export const transaction = sqliteTable(
     name: text("name"),
     notes: text("notes"),
     amount: integer("amount").notNull(),
-    currency: text("currency").notNull(),
+    currency: text("currency").notNull().$type<TransactionCurrency>(),
     createdAt: createdAt(),
     customerId: text("customer_id").references(() => customer.id, { onDelete: "set null" }),
     orderId: text("order_id").references(() => order.id, { onDelete: "set null" }),

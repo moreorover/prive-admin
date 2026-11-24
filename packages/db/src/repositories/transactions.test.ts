@@ -91,17 +91,4 @@ describe("transaction persistence", () => {
     expect(eur.items.map((row) => row.amount)).toEqual([10000])
     expect(pounds.items.map((row) => row.amount)).toEqual([20000])
   })
-
-  it("resolves only an unsupported stored currency on the identified row", async () => {
-    sqlite.exec(`UPDATE "transaction" SET currency='USD' WHERE id='transaction'`)
-    const { resolveTransactionCurrency } = await import("./transactions")
-    expect(
-      await resolveTransactionCurrency(db(), { id: "transaction", storedCurrency: "EUR", currency: "GBP" }),
-    ).toBeUndefined()
-    expect(
-      await resolveTransactionCurrency(db(), { id: "transaction", storedCurrency: "USD", currency: "GBP" }),
-    ).toMatchObject({
-      currency: "GBP",
-    })
-  })
 })

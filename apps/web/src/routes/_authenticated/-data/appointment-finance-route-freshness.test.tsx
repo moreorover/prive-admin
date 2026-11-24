@@ -33,7 +33,7 @@ it("replaces personnelPage after its mounted query refetches", async () => {
     personnelId: "p",
     personnelName: "Avery",
     personnelType: "assistant" as const,
-    currency: "GBP",
+    currency: "GBP" as const,
     appointmentCount: 1,
     paid: 400,
     credits: 0,

@@ -26,10 +26,6 @@ export function formatMinor(minor: number | bigint, currency: Currency): string 
   return `${SYMBOLS[currency] ?? ""}${decimal}`
 }
 
-export function formatTransactionAmount(minor: number | bigint, currency: string): string {
-  return isCurrency(currency) ? formatMinor(minor, currency) : `${minor} minor units (${currency || "empty currency"})`
-}
-
 export const CURRENCY_OPTIONS: { value: Currency; label: string }[] = [
   { value: "GBP", label: "£ GBP" },
   { value: "EUR", label: "€ EUR" },

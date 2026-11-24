@@ -8,8 +8,8 @@ export const APPOINTMENT_DETAIL_RESOURCE_PAGE_SIZE = 25
 export const AVAILABLE_HAIR_ORDERS_PAGE_SIZE = 100
 const APPOINTMENT_OPTION_PAGE_SIZE = 100
 
-function transactionPageTotals(rows: { currency: string; amount: number }[]) {
-  const totals = new Map<string, bigint>()
+function transactionPageTotals(rows: { currency: Currency; amount: number }[]) {
+  const totals = new Map<Currency, bigint>()
   for (const row of rows) totals.set(row.currency, (totals.get(row.currency) ?? 0n) + BigInt(row.amount))
   return totals
 }

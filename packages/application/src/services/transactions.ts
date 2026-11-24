@@ -4,7 +4,6 @@ import {
   getAppointment as findAppointment,
   getTransaction as findTransaction,
   listTransactions as fetchTransactions,
-  resolveTransactionCurrency as patchCurrency,
   updateTransaction as patchTransaction,
 } from "@prive-admin-tanstack/db"
 
@@ -90,22 +89,5 @@ export async function deleteTransaction(id: string) {
     throw notFound("Transaction not found")
   }
 
-  return result
-}
-
-export async function resolveTransactionCurrency(input: {
-  id: string
-  storedCurrency: string
-  currency: "EUR" | "GBP"
-}) {
-  if (input.storedCurrency === "EUR" || input.storedCurrency === "GBP")
-    throw badRequest("This currency is already supported")
-  let result
-  try {
-    result = await patchCurrency(undefined, input)
-  } catch (error) {
-    throw unexpectedError("Failed to resolve transaction currency", error)
-  }
-  if (!result) throw conflict("The reviewed transaction or currency has changed")
   return result
 }

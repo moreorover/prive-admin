@@ -16,7 +16,7 @@ import { CreateTransactionDialog } from "@/components/transactions/create-transa
 import { DeleteTransactionDialog } from "@/components/transactions/delete-transaction-dialog"
 import { EditTransactionDialog } from "@/components/transactions/edit-transaction-dialog"
 import { TransactionsTable, type TransactionRow } from "@/components/transactions/transactions-table"
-import { formatTransactionAmount } from "@/lib/currency"
+import { formatMinor } from "@/lib/currency"
 import { formatPageRange } from "@/lib/resource-pagination"
 
 import type { AppointmentTotals } from "../../-data/appointment-finance-data"
@@ -63,7 +63,6 @@ export function AppointmentDetailPage({
   onDeleteHairAssigned,
   onCreateTransaction,
   onUpdateTransaction,
-  onResolveCurrency,
   onDeleteTransaction,
   onUpdateAppointment,
   onUpdateMaster,
@@ -99,7 +98,6 @@ export function AppointmentDetailPage({
   onUpdateHairAssigned: ComponentProps<typeof EditHairAssignedDialog>["onUpdate"]
   onDeleteHairAssigned: (id: string) => void
   onCreateTransaction: ComponentProps<typeof CreateTransactionDialog>["onCreate"]
-  onResolveCurrency?: ComponentProps<typeof EditTransactionDialog>["onResolveCurrency"]
   onUpdateTransaction: ComponentProps<typeof EditTransactionDialog>["onUpdate"]
   onDeleteTransaction: (id: string) => void
   onUpdateAppointment: (values: { id: string; name: string; startsAt: string }) => void
@@ -239,7 +237,7 @@ export function AppointmentDetailPage({
                       {c}
                     </Text>
                     <Text size="sm">
-                      Current page total: <b>{formatTransactionAmount(amount, c)}</b>
+                      Current page total: <b>{formatMinor(amount, c)}</b>
                     </Text>
                   </Stack>
                 ))}
@@ -438,7 +436,6 @@ export function AppointmentDetailPage({
             open={!!editTx}
             onOpenChange={(open) => !open && setEditTxId(null)}
             key={editTx.id}
-            onResolveCurrency={onResolveCurrency}
             transaction={editTx}
             loading={updateTransactionPending}
             onUpdate={(values) => {

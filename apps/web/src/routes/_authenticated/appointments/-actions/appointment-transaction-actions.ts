@@ -78,14 +78,5 @@ export function useAppointmentTransactionActions({
     onError: (error) => notifications.show({ color: "red", message: error.message }),
   })
 
-  const resolveCurrency = useMutation({
-    ...trpc.transactions.resolveCurrency.mutationOptions(),
-    onSuccess: () => {
-      invalidateTransactionQueries()
-      notifications.show({ color: "green", message: "Transaction currency corrected" })
-    },
-    onError: (error) => notifications.show({ color: "red", message: error.message }),
-  })
-
-  return { createTransaction, updateTransaction, deleteTransaction, resolveCurrency }
+  return { createTransaction, updateTransaction, deleteTransaction }
 }

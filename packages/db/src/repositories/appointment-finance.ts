@@ -1,13 +1,15 @@
 import { and, eq, exists, gte, isNotNull, lt, or, sql, type SQL } from "drizzle-orm"
 
+import type { TransactionCurrency } from "../schema/transaction"
+
 import { db, type Db } from "../client"
 import { appointment, personnelOnAppointments } from "../schema/appointment"
 import { customer } from "../schema/customer"
 import { personnel } from "../schema/personnel"
 import { transaction as movement } from "../schema/transaction"
 
-export type FinancePeriod = { year: number; currency?: string }
-export type PersonnelFinanceFilter = { from: string; to: string; currency?: string }
+export type FinancePeriod = { year: number; currency?: TransactionCurrency }
+export type PersonnelFinanceFilter = { from: string; to: string; currency?: TransactionCurrency }
 
 const transactionMonth = sql<number>`cast(strftime('%m', ${movement.createdAt} / 1000, 'unixepoch') as integer)`
 type Page = { pageSize: number; offset: number }

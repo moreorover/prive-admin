@@ -72,11 +72,9 @@ function RouteComponent() {
     selectedEditItem: null,
     selectedDeleteItem: null,
   })
-  const { createTransaction, updateTransaction, deleteTransaction, resolveCurrency } = useAppointmentTransactionActions(
-    {
-      appointment: detailData.appointment,
-    },
-  )
+  const { createTransaction, updateTransaction, deleteTransaction } = useAppointmentTransactionActions({
+    appointment: detailData.appointment,
+  })
   const { updateAppointment, linkPersonnel } = useAppointmentPersonnelActions({
     appointmentId,
     onPersonnelLinked: () => {
@@ -109,8 +107,7 @@ function RouteComponent() {
       updateHairAssignedPending={updateHairAssigned.isPending}
       deleteHairAssignedPending={deleteHairAssigned.isPending}
       createTransactionPending={createTransaction.isPending}
-      updateTransactionPending={updateTransaction.isPending || resolveCurrency.isPending}
-      onResolveCurrency={isAdmin ? (values) => resolveCurrency.mutate(values) : undefined}
+      updateTransactionPending={updateTransaction.isPending}
       deleteTransactionPending={deleteTransaction.isPending}
       updateAppointmentPending={updateAppointment.isPending}
       linkPersonnelPending={linkPersonnel.isPending}
