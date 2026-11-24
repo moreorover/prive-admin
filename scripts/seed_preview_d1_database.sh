@@ -153,10 +153,19 @@ write_seed_marker() {
     --command "CREATE TABLE IF NOT EXISTS $MARKER_TABLE (key TEXT PRIMARY KEY, value TEXT NOT NULL, copied_at TEXT NOT NULL); INSERT OR REPLACE INTO $MARKER_TABLE (key, value, copied_at) VALUES ('$MARKER_KEY', '1', '$copied_at');"
 }
 
+apply_preview_data_backfills() {
+  echo "Applying preview data backfills..."
+  wrangler d1 execute "$PREVIEW_D1_DB" \
+    --file "$ROOT_DIR/packages/db/src/migrations/0008_historical_personnel_backfill.sql" \
+    --remote \
+    --yes
+}
+
 load_cloudflare_credentials
 
 if preview_seeded; then
   echo "Preview D1 database '$PREVIEW_D1_DB' was already seeded from '$SOURCE_D1_DB'; skipping copy."
+  apply_preview_data_backfills
   exit 0
 fi
 
@@ -168,5 +177,6 @@ echo "Seeding preview D1 database '$PREVIEW_D1_DB' from '$SOURCE_D1_DB'..."
   --preserve-schema \
   --yes
 
+apply_preview_data_backfills
 write_seed_marker
 echo "Preview D1 database '$PREVIEW_D1_DB' seed marker written."
