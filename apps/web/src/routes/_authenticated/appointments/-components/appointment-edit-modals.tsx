@@ -27,15 +27,13 @@ export function EditAppointmentModal({
 }: EditAppointmentModalProps) {
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit appointment">
-      {open && (
-        <EditAppointmentForm
-          currentName={currentName}
-          currentStartsAt={currentStartsAt}
-          loading={loading}
-          onClose={() => onOpenChange(false)}
-          onSubmit={onSubmit}
-        />
-      )}
+      <EditAppointmentForm
+        currentName={currentName}
+        currentStartsAt={currentStartsAt}
+        loading={loading}
+        onClose={() => onOpenChange(false)}
+        onSubmit={onSubmit}
+      />
     </Modal>
   )
 }
@@ -128,17 +126,15 @@ export function ChangeMasterModal({
 }: ChangeMasterModalProps) {
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Change master">
-      {open && (
-        <ChangeMasterForm
-          currentMasterId={currentMasterId}
-          masterOptions={masterOptions}
-          currentMasterOption={currentMasterOption}
-          loading={loading}
-          onMasterSearchChange={onMasterSearchChange}
-          onClose={() => onOpenChange(false)}
-          onSubmit={onSubmit}
-        />
-      )}
+      <ChangeMasterForm
+        currentMasterId={currentMasterId}
+        masterOptions={masterOptions}
+        currentMasterOption={currentMasterOption}
+        loading={loading}
+        onMasterSearchChange={onMasterSearchChange}
+        onClose={() => onOpenChange(false)}
+        onSubmit={onSubmit}
+      />
     </Modal>
   )
 }

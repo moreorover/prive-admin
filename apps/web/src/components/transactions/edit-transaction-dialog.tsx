@@ -72,22 +72,20 @@ export function EditTransactionDialog({
 
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="Edit Transaction">
-      {open && (
-        <TransactionForm
-          key={transaction.id}
-          initialValues={{
-            name: transaction.name ?? "",
-            notes: transaction.notes ?? "",
-            amountMajor: minorToDecimal(transaction.amount),
-            currency: transaction.currency,
-          }}
-          submitLabel="Save Changes"
-          loading={loading}
-          onSubmit={async (values) => {
-            await onUpdate({ ...values, id: transaction.id })
-          }}
-        />
-      )}
+      <TransactionForm
+        key={transaction.id}
+        initialValues={{
+          name: transaction.name ?? "",
+          notes: transaction.notes ?? "",
+          amountMajor: minorToDecimal(transaction.amount),
+          currency: transaction.currency,
+        }}
+        submitLabel="Save Changes"
+        loading={loading}
+        onSubmit={async (values) => {
+          await onUpdate({ ...values, id: transaction.id })
+        }}
+      />
     </Modal>
   )
 }

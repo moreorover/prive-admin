@@ -30,21 +30,19 @@ export function CreateTransactionDialog({
 }: CreateTransactionDialogProps) {
   return (
     <Modal opened={open} onClose={() => onOpenChange(false)} title="New Transaction">
-      {open && (
-        <TransactionForm
-          initialValues={{
-            name: "",
-            notes: "",
-            amountMajor: 0,
-            currency: defaultCurrency,
-          }}
-          submitLabel="Create"
-          loading={loading}
-          onSubmit={async (values) => {
-            await onCreate({ ...values, appointmentId, customerId })
-          }}
-        />
-      )}
+      <TransactionForm
+        initialValues={{
+          name: "",
+          notes: "",
+          amountMajor: 0,
+          currency: defaultCurrency,
+        }}
+        submitLabel="Create"
+        loading={loading}
+        onSubmit={async (values) => {
+          await onCreate({ ...values, appointmentId, customerId })
+        }}
+      />
     </Modal>
   )
 }
