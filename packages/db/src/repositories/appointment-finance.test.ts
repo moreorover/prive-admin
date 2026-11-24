@@ -77,7 +77,9 @@ describe("appointment finance SQL", () => {
         { month: 3, currency: "EUR", total: "-200" },
       ],
     })
-    expect(await personnelAllocationRows(db, { year: 2026, month: 2, pageSize: 10, offset: 0 })).toEqual({
+    expect(
+      await personnelAllocationRows(db, { from: "2026-02-01", to: "2026-02-28", pageSize: 10, offset: 0 }),
+    ).toEqual({
       totalCount: 3,
       items: [
         {
@@ -117,8 +119,8 @@ describe("appointment finance SQL", () => {
   it("supports personnel filters and bounded pagination", async () => {
     expect(
       await personnelAllocationRows(db, {
-        year: 2026,
-        month: 2,
+        from: "2026-02-01",
+        to: "2026-02-28",
         personnelId: "master",
         currency: "EUR",
         pageSize: 1,

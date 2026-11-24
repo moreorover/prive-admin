@@ -38,7 +38,7 @@ describe("appointment transaction actions", () => {
         appointmentTransactionsQueryOptions("appointment-1", 2).queryKey,
         trpc.reports.appointmentFinance.get.queryOptions({ appointmentId: "appointment-1" }).queryKey,
         trpc.reports.monthlyAppointmentFinance.list.queryOptions({ year: 2026 }).queryKey,
-        trpc.reports.personnelFinance.list.queryOptions({ year: 2026, month: 2, page: 2 }).queryKey,
+        trpc.reports.personnelFinance.list.queryOptions({ from: "2026-02-01", to: "2026-02-28", page: 2 }).queryKey,
         trpc.dashboard.transactionStats.queryOptions({ year: 2026 }).queryKey,
         ...["client-1", "master-1", "personnel-1"].map((id) => trpc.customers.summary.queryOptions({ id }).queryKey),
       ]

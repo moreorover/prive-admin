@@ -11,21 +11,24 @@ import { Route } from "../appointment-finance"
 import { Route as AppointmentRoute } from "../appointments/$appointmentId"
 import {
   appointmentFinanceQueryOptions,
-  financePeriodFromMonthPickerValue,
+  financeRangeFromDatePickerValue,
   financeSearchSchema,
   getStaleFinanceSearch,
 } from "./appointment-finance-data"
 
 describe("owner appointment finance route", () => {
-  it("converts a Mantine month picker date into a finance period", () => {
-    expect(financePeriodFromMonthPickerValue("2026-11-01")).toEqual({ year: 2026, month: 11 })
-    expect(financePeriodFromMonthPickerValue(null)).toBeUndefined()
+  it("converts a Mantine date range into a finance period", () => {
+    expect(financeRangeFromDatePickerValue(["2026-11-01", "2026-11-30"])).toEqual({
+      from: "2026-11-01",
+      to: "2026-11-30",
+    })
+    expect(financeRangeFromDatePickerValue(["2026-11-01", null])).toBeUndefined()
   })
 
   it("replaces a stale personnel page while preserving filters", async () => {
     const search = financeSearchSchema.parse({
-      year: 2025,
-      month: 9,
+      from: "2025-09-01",
+      to: "2025-09-30",
       personnelId: "p",
       personnelPage: 2,
     })
@@ -43,7 +46,8 @@ describe("owner appointment finance route", () => {
 
   it("clamps a cached page after an invalidated query refreshes to one page", () => {
     const search = financeSearchSchema.parse({
-      year: 2025,
+      from: "2025-09-01",
+      to: "2025-09-30",
       personnelId: "p",
       personnelPage: 2,
     })
@@ -89,8 +93,8 @@ describe("owner appointment finance route", () => {
 
   it("preloads and renders the same filtered pages from a shared URL", async () => {
     const search = financeSearchSchema.parse({
-      year: 2025,
-      month: 9,
+      from: "2025-09-01",
+      to: "2025-09-30",
       personnelId: "p",
       personnelPage: 1,
     })
@@ -98,8 +102,8 @@ describe("owner appointment finance route", () => {
     expect(deps).toEqual(search)
     const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
     const personnel = trpc.reports.personnelFinance.list.queryOptions({
-      year: 2025,
-      month: 9,
+      from: "2025-09-01",
+      to: "2025-09-30",
       personnelId: "p",
       page: 1,
       pageSize: 100,

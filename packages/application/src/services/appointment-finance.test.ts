@@ -52,7 +52,9 @@ describe("owner finance reports", () => {
       ],
       totalCount: 1,
     })
-    expect(await listPersonnelFinance({ year: 2026, page: 1, personnelId: "master" })).toEqual({
+    expect(
+      await listPersonnelFinance({ from: "2026-02-01", to: "2026-02-28", page: 1, personnelId: "master" }),
+    ).toEqual({
       items: [
         {
           personnelId: "master",

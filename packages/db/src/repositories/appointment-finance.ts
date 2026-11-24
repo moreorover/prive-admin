@@ -7,7 +7,7 @@ import { personnel } from "../schema/personnel"
 import { transaction as movement } from "../schema/transaction"
 
 export type FinancePeriod = { year: number; currency?: string }
-export type PersonnelFinanceFilter = FinancePeriod & { month?: number; personnelId?: string }
+export type PersonnelFinanceFilter = { from: string; to: string; currency?: string; personnelId?: string }
 
 const transactionMonth = sql<number>`cast(strftime('%m', ${movement.createdAt} / 1000, 'unixepoch') as integer)`
 type Page = { pageSize: number; offset: number }
@@ -15,6 +15,18 @@ type Page = { pageSize: number; offset: number }
 function periodFilter({ year, month, currency }: FinancePeriod & { month?: number }) {
   const start = new Date(Date.UTC(year, (month ?? 1) - 1, 1))
   const end = new Date(Date.UTC(year, month ?? 12, 1))
+  return and(
+    isNotNull(movement.appointmentId),
+    gte(movement.createdAt, start),
+    lt(movement.createdAt, end),
+    currency ? eq(movement.currency, currency) : undefined,
+  )
+}
+
+function dateRangeFilter({ from, to, currency }: PersonnelFinanceFilter) {
+  const start = new Date(`${from}T00:00:00.000Z`)
+  const end = new Date(`${to}T00:00:00.000Z`)
+  end.setUTCDate(end.getUTCDate() + 1)
   return and(
     isNotNull(movement.appointmentId),
     gte(movement.createdAt, start),
@@ -104,7 +116,7 @@ export async function personnelAllocationRows(database: Db = db, input: Personne
     .innerJoin(personnel, eq(personnel.customerId, movement.customerId))
     .where(
       and(
-        periodFilter(input),
+        dateRangeFilter(input),
         or(
           eq(movement.customerId, appointment.masterId),
           exists(

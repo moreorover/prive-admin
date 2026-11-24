@@ -1,10 +1,10 @@
 import { Badge, Button, Card, Container, Group, Pagination, SimpleGrid, Stack, Table, Text, Title } from "@mantine/core"
-import { MonthPickerInput } from "@mantine/dates"
+import { DatePickerInput } from "@mantine/dates"
 
 import { formatTransactionAmount } from "@/lib/currency"
 
 import {
-  financePeriodFromMonthPickerValue,
+  financeRangeFromDatePickerValue,
   type FinanceSearch,
   type PersonnelFinance,
 } from "../-data/appointment-finance-data"
@@ -21,8 +21,7 @@ function roleLabel(type: string) {
 
 export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
   const changePeriod = (changes: Partial<FinanceSearch>) => onSearch({ ...changes, personnelPage: 1 })
-  const selectedMonth = new Date(Date.UTC(search.year, search.month - 1, 1))
-  const monthLabel = selectedMonth.toLocaleString("en", { month: "long", timeZone: "UTC" })
+  const periodLabel = `${search.from} – ${search.to}`
   const totals = personnel.items.reduce<Record<string, { paid: number; credits: number }>>((result, row) => {
     const current = result[row.currency] ?? { paid: 0, credits: 0 }
     current.paid += row.paid
@@ -39,17 +38,18 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
             Owner finance
           </Text>
           <Title order={2}>Personnel payouts</Title>
-          <Text c="dimmed">What was paid to each master and assistant during a selected month.</Text>
+          <Text c="dimmed">What was paid to each master and assistant during a selected period.</Text>
         </div>
 
         <Card withBorder radius="md" padding="md">
           <Group grow align="end">
-            <MonthPickerInput
+            <DatePickerInput
+              type="range"
               label="Period"
-              value={selectedMonth}
-              valueFormat="MMMM YYYY"
+              value={[search.from, search.to]}
+              valueFormat="DD MMM YYYY"
               onChange={(value) => {
-                const nextPeriod = financePeriodFromMonthPickerValue(value)
+                const nextPeriod = financeRangeFromDatePickerValue(value)
                 if (nextPeriod) changePeriod(nextPeriod)
               }}
             />
@@ -70,7 +70,7 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
             {Object.entries(totals).map(([currency, total]) => (
               <Card key={currency} withBorder radius="md">
                 <Text size="sm" c="dimmed">
-                  {monthLabel} · {currency}
+                  {periodLabel} · {currency}
                 </Text>
                 <Title order={3}>{formatTransactionAmount(total.paid, currency)}</Title>
                 <Text size="sm">Paid to personnel</Text>
@@ -88,7 +88,7 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
           <Stack gap={0}>
             <Group justify="space-between" p="md">
               <div>
-                <Title order={3}>{monthLabel} payouts</Title>
+                <Title order={3}>{periodLabel} payouts</Title>
                 <Text size="sm" c="dimmed">
                   Paid amounts are calculated from negative personnel transactions. Credits remain separate.
                 </Text>
@@ -99,6 +99,7 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
                 <Table highlightOnHover>
                   <Table.Thead>
                     <Table.Tr>
+                      <Table.Th>Month</Table.Th>
                       <Table.Th>Personnel</Table.Th>
                       <Table.Th>Role</Table.Th>
                       <Table.Th>Appointments</Table.Th>
@@ -110,6 +111,7 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
                   <Table.Tbody>
                     {personnel.items.map((row) => (
                       <Table.Tr key={JSON.stringify([row.personnelId, row.currency, row.month])}>
+                        <Table.Td>{row.month}</Table.Td>
                         <Table.Td>
                           <Button
                             variant="subtle"
@@ -137,7 +139,7 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
               </Table.ScrollContainer>
             ) : (
               <Text c="dimmed" p="xl">
-                No personnel payouts or credits recorded for {monthLabel.toLowerCase()} {search.year}.
+                No personnel payouts or credits recorded for {periodLabel}.
               </Text>
             )}
             {personnel.totalCount > personnel.pageSize && (
