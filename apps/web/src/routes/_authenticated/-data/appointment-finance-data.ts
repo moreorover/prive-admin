@@ -22,7 +22,6 @@ export const financeSearchSchema = z
   .object({
     from: dateKey.default(() => currentMonthRange().from),
     to: dateKey.default(() => currentMonthRange().to),
-    personnelId: z.string().min(1).optional(),
     personnelPage: page,
   })
   .refine(({ from, to }) => from <= to, { message: "The finance range must be ascending" })
@@ -43,11 +42,10 @@ export function appointmentFinanceQueryOptions(appointmentId: string, isAdmin: b
   return trpc.reports.appointmentFinance.get.queryOptions({ appointmentId }, { enabled: isAdmin })
 }
 
-export function personnelFinanceQueryOptions({ from, to, personnelId, personnelPage }: FinanceSearch) {
+export function personnelFinanceQueryOptions({ from, to, personnelPage }: FinanceSearch) {
   return trpc.reports.personnelFinance.list.queryOptions({
     from,
     to,
-    personnelId,
     page: personnelPage,
     pageSize: 100,
   })

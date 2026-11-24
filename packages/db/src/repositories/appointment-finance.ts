@@ -7,7 +7,7 @@ import { personnel } from "../schema/personnel"
 import { transaction as movement } from "../schema/transaction"
 
 export type FinancePeriod = { year: number; currency?: string }
-export type PersonnelFinanceFilter = { from: string; to: string; currency?: string; personnelId?: string }
+export type PersonnelFinanceFilter = { from: string; to: string; currency?: string }
 
 const transactionMonth = sql<number>`cast(strftime('%m', ${movement.createdAt} / 1000, 'unixepoch') as integer)`
 type Page = { pageSize: number; offset: number }
@@ -100,7 +100,6 @@ export async function monthlyFinanceRows(database: Db = db, input: FinancePeriod
 export async function personnelAllocationRows(database: Db = db, input: PersonnelFinanceFilter & Page) {
   const groups = database
     .select({
-      month: transactionMonth.as("month"),
       personnelId: movement.customerId,
       personnelName: customer.name,
       personnelType: personnel.type,
@@ -108,7 +107,7 @@ export async function personnelAllocationRows(database: Db = db, input: Personne
       appointmentCount: sql<number>`count(distinct ${appointment.id})`.as("appointmentCount"),
       paid: exactSum(sql`case when ${movement.amount} < 0 then -${movement.amount} else 0 end`, "paid"),
       credits: exactSum(sql`case when ${movement.amount} > 0 then ${movement.amount} else 0 end`, "credits"),
-      ...pageColumns(sql`${customer.name}, ${transactionMonth}, ${movement.currency}, ${movement.customerId}`),
+      ...pageColumns(sql`${customer.name}, ${movement.currency}, ${movement.customerId}`),
     })
     .from(movement)
     .innerJoin(appointment, eq(appointment.id, movement.appointmentId))
@@ -131,10 +130,9 @@ export async function personnelAllocationRows(database: Db = db, input: Personne
               ),
           ),
         ),
-        input.personnelId ? eq(movement.customerId, input.personnelId) : undefined,
       ),
     )
-    .groupBy(customer.name, personnel.type, transactionMonth, movement.currency, movement.customerId)
+    .groupBy(customer.name, personnel.type, movement.currency, movement.customerId)
     .as("personnel_groups")
   const rows = await database
     .select()

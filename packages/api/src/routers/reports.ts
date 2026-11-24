@@ -42,9 +42,7 @@ export const reportsRouter = router({
     list: ownerProcedure.input(financePeriod).query(({ input }) => getMonthlyAppointmentFinance(input)),
   }),
   personnelFinance: router({
-    list: ownerProcedure
-      .input(personnelFinancePeriod.extend({ personnelId: z.string().min(1).optional() }))
-      .query(({ input }) => listPersonnelFinance(input)),
+    list: ownerProcedure.input(personnelFinancePeriod).query(({ input }) => listPersonnelFinance(input)),
   }),
   bankAccountMonthlyBreakdown: protectedProcedure.input(yearSchema).query(async ({ input }) => {
     return await bankAccountMonthlyBreakdown({ year: input.year, legalEntityId: input.legalEntityId })

@@ -1,4 +1,4 @@
-import { Badge, Button, Card, Container, Group, Pagination, SimpleGrid, Stack, Table, Text, Title } from "@mantine/core"
+import { Badge, Card, Container, Group, Pagination, SimpleGrid, Stack, Table, Text, Title } from "@mantine/core"
 import { DatePickerInput } from "@mantine/dates"
 import { useMediaQuery } from "@mantine/hooks"
 import dayjs from "dayjs"
@@ -107,15 +107,9 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
                 if (nextPeriod) changePeriod(nextPeriod)
               }}
             />
-            {search.personnelId ? (
-              <Button variant="subtle" onClick={() => changePeriod({ personnelId: undefined })}>
-                Show everyone
-              </Button>
-            ) : (
-              <Text size="sm" c="dimmed" pb={8}>
-                {personnel.totalCount} personnel with transactions
-              </Text>
-            )}
+            <Text size="sm" c="dimmed" pb={8}>
+              {personnel.totalCount} personnel with transactions
+            </Text>
           </Group>
         </Card>
 
@@ -153,7 +147,6 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
                 <Table highlightOnHover>
                   <Table.Thead>
                     <Table.Tr>
-                      <Table.Th>Month</Table.Th>
                       <Table.Th>Personnel</Table.Th>
                       <Table.Th>Role</Table.Th>
                       <Table.Th>Appointments</Table.Th>
@@ -164,17 +157,8 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
                   </Table.Thead>
                   <Table.Tbody>
                     {personnel.items.map((row) => (
-                      <Table.Tr key={JSON.stringify([row.personnelId, row.currency, row.month])}>
-                        <Table.Td>{row.month}</Table.Td>
-                        <Table.Td>
-                          <Button
-                            variant="subtle"
-                            size="compact-sm"
-                            onClick={() => changePeriod({ personnelId: row.personnelId ?? undefined })}
-                          >
-                            {row.personnelName ?? "Unknown personnel"}
-                          </Button>
-                        </Table.Td>
+                      <Table.Tr key={JSON.stringify([row.personnelId, row.currency])}>
+                        <Table.Td>{row.personnelName ?? "Unknown personnel"}</Table.Td>
                         <Table.Td>
                           <Badge variant="light" color={row.personnelType === "master" ? "indigo" : "teal"}>
                             {roleLabel(row.personnelType)}

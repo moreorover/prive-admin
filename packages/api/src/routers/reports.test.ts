@@ -39,10 +39,9 @@ describe("owner finance transport", () => {
     expect(services.getAppointmentFinance).toHaveBeenCalledWith("a")
     expect(await api.monthlyAppointmentFinance.list(period)).toEqual(report)
     expect(services.getMonthlyAppointmentFinance).toHaveBeenCalledWith({ ...period, page: 1, pageSize: 10 })
-    await api.personnelFinance.list({ ...personnelPeriod, personnelId: "a", page: 3, pageSize: 5 })
+    await api.personnelFinance.list({ ...personnelPeriod, page: 3, pageSize: 5 })
     expect(services.listPersonnelFinance).toHaveBeenCalledWith({
       ...personnelPeriod,
-      personnelId: "a",
       page: 3,
       pageSize: 5,
     })

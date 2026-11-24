@@ -83,7 +83,6 @@ describe("appointment finance SQL", () => {
       totalCount: 3,
       items: [
         {
-          month: 2,
           personnelId: "assistant",
           personnelName: "Assistant",
           personnelType: "assistant",
@@ -93,7 +92,6 @@ describe("appointment finance SQL", () => {
           credits: "0",
         },
         {
-          month: 2,
           personnelId: "master",
           personnelName: "Master",
           personnelType: "master",
@@ -103,7 +101,6 @@ describe("appointment finance SQL", () => {
           credits: "500",
         },
         {
-          month: 2,
           personnelId: "master",
           personnelName: "Master",
           personnelType: "master",
@@ -116,28 +113,26 @@ describe("appointment finance SQL", () => {
     })
   })
 
-  it("supports personnel filters and bounded pagination", async () => {
+  it("supports bounded personnel pagination", async () => {
     expect(
       await personnelAllocationRows(db, {
         from: "2026-02-01",
         to: "2026-02-28",
-        personnelId: "master",
         currency: "EUR",
         pageSize: 1,
         offset: 0,
       }),
     ).toEqual({
-      totalCount: 1,
+      totalCount: 2,
       items: [
         {
-          month: 2,
-          personnelId: "master",
-          personnelName: "Master",
-          personnelType: "master",
+          personnelId: "assistant",
+          personnelName: "Assistant",
+          personnelType: "assistant",
           currency: "EUR",
-          appointmentCount: 2,
-          paid: "6400",
-          credits: "500",
+          appointmentCount: 1,
+          paid: "1000",
+          credits: "0",
         },
       ],
     })

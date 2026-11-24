@@ -29,7 +29,6 @@ describe("owner appointment finance route", () => {
     const search = financeSearchSchema.parse({
       from: "2025-09-01",
       to: "2025-09-30",
-      personnelId: "p",
       personnelPage: 2,
     })
     const ensureQueryData = vi
@@ -48,7 +47,6 @@ describe("owner appointment finance route", () => {
     const search = financeSearchSchema.parse({
       from: "2025-09-01",
       to: "2025-09-30",
-      personnelId: "p",
       personnelPage: 2,
     })
     const cached = getStaleFinanceSearch(search, { totalCount: 12, pageSize: 10 })
@@ -95,7 +93,6 @@ describe("owner appointment finance route", () => {
     const search = financeSearchSchema.parse({
       from: "2025-09-01",
       to: "2025-09-30",
-      personnelId: "p",
       personnelPage: 1,
     })
     const deps = Route.options.loaderDeps?.({ search } as never)
@@ -104,14 +101,12 @@ describe("owner appointment finance route", () => {
     const personnel = trpc.reports.personnelFinance.list.queryOptions({
       from: "2025-09-01",
       to: "2025-09-30",
-      personnelId: "p",
       page: 1,
       pageSize: 100,
     })
     client.setQueryData(personnel.queryKey, {
       items: [
         {
-          month: 9,
           personnelId: "p",
           personnelName: "Avery",
           personnelType: "assistant",

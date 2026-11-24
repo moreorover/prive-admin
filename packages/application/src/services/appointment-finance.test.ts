@@ -43,7 +43,6 @@ describe("owner finance reports", () => {
           personnelId: "master",
           personnelName: "Master",
           personnelType: "master",
-          month: 2,
           currency: "EUR",
           appointmentCount: 2,
           paid: "6400",
@@ -52,15 +51,12 @@ describe("owner finance reports", () => {
       ],
       totalCount: 1,
     })
-    expect(
-      await listPersonnelFinance({ from: "2026-02-01", to: "2026-02-28", page: 1, personnelId: "master" }),
-    ).toEqual({
+    expect(await listPersonnelFinance({ from: "2026-02-01", to: "2026-02-28", page: 1 })).toEqual({
       items: [
         {
           personnelId: "master",
           personnelName: "Master",
           personnelType: "master",
-          month: 2,
           currency: "EUR",
           appointmentCount: 2,
           paid: 6400,

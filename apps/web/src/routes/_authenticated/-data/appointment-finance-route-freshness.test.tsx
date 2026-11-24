@@ -12,7 +12,6 @@ it("replaces personnelPage after its mounted query refetches", async () => {
   const search = financeSearchSchema.parse({
     from: "2025-09-01",
     to: "2025-09-30",
-    personnelId: "p",
     personnelPage: 2,
   })
   const history = createMemoryHistory({
@@ -31,7 +30,6 @@ it("replaces personnelPage after its mounted query refetches", async () => {
   })
   const pageTwo = { page: 2, pageSize: 10, totalCount: 11 }
   const personRow = {
-    month: 9,
     personnelId: "p",
     personnelName: "Avery",
     personnelType: "assistant" as const,
