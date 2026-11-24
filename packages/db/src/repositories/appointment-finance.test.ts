@@ -27,7 +27,8 @@ describe("appointment finance SQL", () => {
       INSERT INTO personnel (id,customer_id,type,active) VALUES ('m','master','master',1), ('as','assistant','assistant',1);
       INSERT INTO salon (id, name) VALUES ('s','Salon');
       INSERT INTO appointment (id,name,starts_at,client_id,master_id,salon_id)
-        VALUES ('a','Cut',1,'client','master','s'), ('b','Style',1,'client','master','s');
+        VALUES ('a','Cut',${Date.parse("2026-02-01")},'client','master','s'),
+          ('b','Style',${Date.parse("2026-02-28")},'client','master','s');
       INSERT INTO appointment_personnel (appointment_id, personnel_id) VALUES ('a','assistant');
     `)
     const insert = sqlite.prepare(
@@ -97,7 +98,7 @@ describe("appointment finance SQL", () => {
           personnelType: "master",
           currency: "EUR",
           appointmentCount: 2,
-          paid: "6400",
+          paid: "6600",
           credits: "500",
         },
         {
@@ -135,6 +136,35 @@ describe("appointment finance SQL", () => {
           credits: "0",
         },
       ],
+    })
+  })
+
+  it("filters personnel payouts by appointment date instead of transaction creation date", async () => {
+    sqlite.exec(`
+      INSERT INTO appointment (id,name,starts_at,client_id,master_id,salon_id)
+        VALUES ('october','October appointment',${Date.parse("2026-10-31")},'client','master','s');
+    `)
+    sqlite
+      .prepare(
+        `INSERT INTO "transaction" (id,appointment_id,customer_id,amount,currency,created_at) VALUES (?,?,?,?,?,?)`,
+      )
+      .run("october-master", "october", "master", -300, "EUR", Date.parse("2026-11-05"))
+    sqlite.exec(`
+      UPDATE appointment SET starts_at = ${Date.parse("2026-11-01")} WHERE id = 'a';
+      UPDATE appointment SET starts_at = ${Date.parse("2026-11-28")} WHERE id = 'b';
+    `)
+
+    const result = await personnelAllocationRows(db, {
+      from: "2026-11-01",
+      to: "2026-11-30",
+      currency: "EUR",
+      pageSize: 10,
+      offset: 0,
+    })
+
+    expect(result.items.find((item) => item.personnelId === "master")).toMatchObject({
+      appointmentCount: 2,
+      paid: "6600",
     })
   })
 })

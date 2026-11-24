@@ -31,8 +31,8 @@ function dateRangeFilter({ from, to, currency }: PersonnelFinanceFilter) {
   end.setUTCDate(end.getUTCDate() + 1)
   return and(
     isNotNull(movement.appointmentId),
-    gte(movement.createdAt, start),
-    lt(movement.createdAt, end),
+    gte(appointment.startsAt, start),
+    lt(appointment.startsAt, end),
     currency ? eq(movement.currency, currency) : undefined,
   )
 }
