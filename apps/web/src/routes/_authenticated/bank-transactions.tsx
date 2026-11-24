@@ -109,7 +109,6 @@ function RouteComponent() {
         setOpenAttachmentEntryId(null)
         return navigate({ search: (current) => ({ ...current, page }) })
       }}
-      onViewAllTransactions={() => navigate({ search: (current) => ({ ...current, status: "ALL", page: 1 }) })}
     />
   )
 }
