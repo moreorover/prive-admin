@@ -2,7 +2,7 @@ import { and, asc, count, desc, eq, like, or, sql } from "drizzle-orm"
 
 import { db, type Db } from "../index"
 import { customer } from "../schema"
-import { appointment } from "../schema/appointment"
+import { appointment, personnelOnAppointments } from "../schema/appointment"
 import { hairAssigned } from "../schema/hair"
 import { note } from "../schema/note"
 
@@ -63,13 +63,23 @@ export async function listCustomerAppointments(
   database: Db = db,
   input: { customerId: string; pageSize: number; offset: number; search?: string },
 ) {
+  const customerRoleWhere = or(
+    eq(appointment.clientId, input.customerId),
+    eq(appointment.masterId, input.customerId),
+    sql<boolean>`exists (
+      select 1
+      from ${personnelOnAppointments}
+      where "appointment_personnel"."appointment_id" = ${appointment.id}
+        and "appointment_personnel"."personnel_id" = ${input.customerId}
+    )`,
+  )
   const where = input.search
-    ? and(eq(appointment.clientId, input.customerId), like(appointment.name, `%${escapeLikePattern(input.search)}%`))
-    : eq(appointment.clientId, input.customerId)
+    ? and(customerRoleWhere, like(appointment.name, `%${escapeLikePattern(input.search)}%`))
+    : customerRoleWhere
 
   const items = await database.query.appointment.findMany({
     where,
-    with: { client: true, master: true, salon: true },
+    with: { client: true, master: true, salon: true, personnel: { with: { personnel: true } } },
     orderBy: (a) => [desc(a.startsAt)],
     limit: input.pageSize,
     offset: input.offset,
