@@ -49,7 +49,6 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
                 const nextMonth = new Date(`${value}-01T00:00:00Z`)
                 changePeriod({ year: nextMonth.getUTCFullYear(), month: nextMonth.getUTCMonth() + 1 })
               }}
-              popoverProps={{ withinPortal: false }}
             />
             {search.personnelId ? (
               <Button variant="subtle" onClick={() => changePeriod({ personnelId: undefined })}>
