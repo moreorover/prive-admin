@@ -3,7 +3,11 @@ import { MonthPickerInput } from "@mantine/dates"
 
 import { formatTransactionAmount } from "@/lib/currency"
 
-import type { FinanceSearch, PersonnelFinance } from "../-data/appointment-finance-data"
+import {
+  financePeriodFromMonthPickerValue,
+  type FinanceSearch,
+  type PersonnelFinance,
+} from "../-data/appointment-finance-data"
 
 type Props = {
   search: FinanceSearch
@@ -45,9 +49,8 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
               value={selectedMonth}
               valueFormat="MMMM YYYY"
               onChange={(value) => {
-                if (!value) return
-                const nextMonth = new Date(`${value}-01T00:00:00Z`)
-                changePeriod({ year: nextMonth.getUTCFullYear(), month: nextMonth.getUTCMonth() + 1 })
+                const nextPeriod = financePeriodFromMonthPickerValue(value)
+                if (nextPeriod) changePeriod(nextPeriod)
               }}
             />
             {search.personnelId ? (

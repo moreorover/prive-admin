@@ -26,6 +26,12 @@ export type AppointmentTotals = Reports["appointmentFinance"]["get"]["totals"]
 
 type FinancePageResult = { totalCount: number; pageSize: number }
 
+export function financePeriodFromMonthPickerValue(value: string | null) {
+  if (!value) return undefined
+  const date = new Date(`${value}T00:00:00Z`)
+  return { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1 }
+}
+
 export function appointmentFinanceQueryOptions(appointmentId: string, isAdmin: boolean) {
   return trpc.reports.appointmentFinance.get.queryOptions({ appointmentId }, { enabled: isAdmin })
 }

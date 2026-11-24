@@ -9,9 +9,19 @@ import { trpc } from "@/utils/trpc"
 
 import { Route } from "../appointment-finance"
 import { Route as AppointmentRoute } from "../appointments/$appointmentId"
-import { appointmentFinanceQueryOptions, financeSearchSchema, getStaleFinanceSearch } from "./appointment-finance-data"
+import {
+  appointmentFinanceQueryOptions,
+  financePeriodFromMonthPickerValue,
+  financeSearchSchema,
+  getStaleFinanceSearch,
+} from "./appointment-finance-data"
 
 describe("owner appointment finance route", () => {
+  it("converts a Mantine month picker date into a finance period", () => {
+    expect(financePeriodFromMonthPickerValue("2026-11-01")).toEqual({ year: 2026, month: 11 })
+    expect(financePeriodFromMonthPickerValue(null)).toBeUndefined()
+  })
+
   it("replaces a stale personnel page while preserving filters", async () => {
     const search = financeSearchSchema.parse({
       year: 2025,
