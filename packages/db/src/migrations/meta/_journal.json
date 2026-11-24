@@ -57,6 +57,13 @@
       "when": 1795380435088,
       "tag": "0007_married_star_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1795505453000,
+      "tag": "0008_historical_personnel_backfill",
+      "breakpoints": true
     }
   ]
 }
