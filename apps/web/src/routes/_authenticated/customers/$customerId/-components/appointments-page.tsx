@@ -9,9 +9,11 @@ import { BreadcrumbItem } from "@/components/breadcrumbs"
 import { ClientDate } from "@/components/client-date"
 import { Section } from "@/components/section"
 
+import type { CustomerAppointmentRole } from "../-data/appointments-data"
+
 import { PAGE_SIZE } from "../-data/appointments-data"
 
-type AppointmentRow = { id: string; name: string; startsAt: string | Date }
+type AppointmentRow = { id: string; name: string; startsAt: string | Date; role: CustomerAppointmentRole }
 type OptionData = { items: { id: string; name: string }[] }
 
 export function CustomerAppointmentsPage({
@@ -94,6 +96,7 @@ export function CustomerAppointmentsPage({
                 <Table.Tr>
                   <Table.Th>Name</Table.Th>
                   <Table.Th>Date</Table.Th>
+                  <Table.Th>Role</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -116,6 +119,7 @@ export function CustomerAppointmentsPage({
                     <Table.Td c="dimmed">
                       <ClientDate date={appointment.startsAt} />
                     </Table.Td>
+                    <Table.Td c="dimmed">{appointment.role}</Table.Td>
                   </Table.Tr>
                 ))}
               </Table.Tbody>
