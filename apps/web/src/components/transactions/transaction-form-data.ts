@@ -27,4 +27,5 @@ export const transactionFormSchema = z
     currency: values.currency,
   }))
 
+export type TransactionFormValues = z.input<typeof transactionFormSchema>
 export type TransactionFormSubmit = z.output<typeof transactionFormSchema>

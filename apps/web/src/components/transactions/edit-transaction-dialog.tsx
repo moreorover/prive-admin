@@ -2,7 +2,7 @@ import { Button, Modal, NativeSelect, Stack, Text } from "@mantine/core"
 import { useState } from "react"
 
 import { TransactionForm, type TransactionFormSubmit } from "@/components/transactions/transaction-form"
-import { CURRENCY_OPTIONS, formatTransactionAmount, isCurrency, minorToDecimal, type Currency } from "@/lib/currency"
+import { CURRENCY_OPTIONS, formatTransactionAmount, isCurrency, type Currency } from "@/lib/currency"
 
 type EditTransactionDialogProps = {
   open: boolean
@@ -77,7 +77,7 @@ export function EditTransactionDialog({
         initialValues={{
           name: transaction.name ?? "",
           notes: transaction.notes ?? "",
-          amountMajor: minorToDecimal(transaction.amount),
+          amountMajor: transaction.amount / 100,
           currency: transaction.currency,
         }}
         submitLabel="Save Changes"

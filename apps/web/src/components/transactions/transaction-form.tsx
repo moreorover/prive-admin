@@ -1,16 +1,9 @@
-import { Button, Group, NativeSelect, Stack, Textarea, TextInput } from "@mantine/core"
+import { Button, Group, NativeSelect, NumberInput, Stack, Textarea, TextInput } from "@mantine/core"
 import { schemaResolver, useForm } from "@mantine/form"
 
-import { CURRENCY_OPTIONS, type Currency, currencySymbol } from "@/lib/currency"
+import { CURRENCY_OPTIONS, currencySymbol } from "@/lib/currency"
 
-import { transactionFormSchema, type TransactionFormSubmit } from "./transaction-form-data"
-
-export type TransactionFormValues = {
-  name: string
-  notes: string
-  amountMajor: string | number
-  currency: Currency
-}
+import { transactionFormSchema, type TransactionFormSubmit, type TransactionFormValues } from "./transaction-form-data"
 
 export type { TransactionFormSubmit } from "./transaction-form-data"
 
@@ -39,11 +32,14 @@ export function TransactionForm({ initialValues, submitLabel, onSubmit, loading 
         <Group grow>
           <NativeSelect label="Currency" data={CURRENCY_OPTIONS} {...form.getInputProps("currency")} />
         </Group>
-        <TextInput
+        <NumberInput
           label="Amount"
           description="Use a positive amount for money received and a negative amount for money paid out."
-          leftSection={currencySymbol(form.values.currency)}
-          inputMode="decimal"
+          prefix={currencySymbol(form.values.currency)}
+          decimalScale={2}
+          fixedDecimalScale
+          step={0.01}
+          allowNegative
           {...form.getInputProps("amountMajor")}
         />
         <Group justify="flex-end">
