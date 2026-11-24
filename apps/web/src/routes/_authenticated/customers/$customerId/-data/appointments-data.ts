@@ -6,6 +6,24 @@ export const PAGE_SIZE = 25
 
 const APPOINTMENT_OPTION_PAGE_SIZE = 100
 
+export type CustomerAppointmentRole = "Client" | "Master" | "Personnel"
+
+export type CustomerAppointmentRoleRow = {
+  client?: { id: string } | null
+  master?: { id: string } | null
+  personnel?: Array<{ personnelId: string }> | null
+}
+
+export function getCustomerAppointmentRole(
+  appointment: CustomerAppointmentRoleRow,
+  customerId: string,
+): CustomerAppointmentRole | undefined {
+  if (appointment.client?.id === customerId) return "Client"
+  if (appointment.master?.id === customerId) return "Master"
+  if (appointment.personnel?.some((person) => person.personnelId === customerId)) return "Personnel"
+  return undefined
+}
+
 export const searchSchema = z.object({
   page: z.coerce.number().int().min(1).optional(),
   search: z.string().optional(),

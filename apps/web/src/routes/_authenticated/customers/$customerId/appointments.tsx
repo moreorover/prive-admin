@@ -12,6 +12,7 @@ import {
   appointmentMasterOptionsQueryOptions,
   appointmentSalonOptionsQueryOptions,
   appointmentsQueryOptions,
+  getCustomerAppointmentRole,
   searchSchema,
 } from "./-data/appointments-data"
 
@@ -51,6 +52,15 @@ function RouteComponent() {
   const [masterSearch, setMasterSearch] = useState("")
   const [debouncedMasterSearch] = useDebouncedValue(masterSearch, searchDebounceMs)
   const data = useQuery(appointmentsQueryOptions(customerId, page, searchValue)).data
+  const roleAwareData = data
+    ? {
+        ...data,
+        items: data.items.flatMap((appointment) => {
+          const role = getCustomerAppointmentRole(appointment, customerId)
+          return role ? [{ ...appointment, role }] : []
+        }),
+      }
+    : undefined
   const masterCustomersData = useQuery({
     ...appointmentMasterOptionsQueryOptions(debouncedMasterSearch),
     enabled: createDialogOpen,
@@ -83,7 +93,7 @@ function RouteComponent() {
       customerId={customerId}
       page={page}
       searchValue={draftSearch}
-      data={data}
+      data={roleAwareData}
       createDialogOpen={createDialogOpen}
       masterSearch={masterSearch}
       masterCustomersData={masterCustomersData}
