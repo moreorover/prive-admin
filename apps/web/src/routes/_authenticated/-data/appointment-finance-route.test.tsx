@@ -15,7 +15,6 @@ describe("owner appointment finance route", () => {
   it("replaces a stale personnel page while preserving filters", async () => {
     const search = financeSearchSchema.parse({
       year: 2025,
-      currency: "GBP",
       month: 9,
       personnelId: "p",
       personnelPage: 2,
@@ -35,7 +34,6 @@ describe("owner appointment finance route", () => {
   it("clamps a cached page after an invalidated query refreshes to one page", () => {
     const search = financeSearchSchema.parse({
       year: 2025,
-      currency: "GBP",
       personnelId: "p",
       personnelPage: 2,
     })
@@ -84,7 +82,6 @@ describe("owner appointment finance route", () => {
       year: 2025,
       month: 9,
       personnelId: "p",
-      currency: "GBP",
       personnelPage: 1,
     })
     const deps = Route.options.loaderDeps?.({ search } as never)
@@ -92,7 +89,6 @@ describe("owner appointment finance route", () => {
     const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
     const personnel = trpc.reports.personnelFinance.list.queryOptions({
       year: 2025,
-      currency: "GBP",
       month: 9,
       personnelId: "p",
       page: 1,
@@ -134,6 +130,8 @@ describe("owner appointment finance route", () => {
     expect(html).toContain("£60.00")
     expect(html).toContain("Assistant")
     expect(html).toContain("Paid")
+    expect(html).not.toContain("All currencies")
+    expect(html).not.toContain("Previous year")
     vi.restoreAllMocks()
     client.clear()
   })

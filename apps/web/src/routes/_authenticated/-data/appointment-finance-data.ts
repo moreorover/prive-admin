@@ -3,7 +3,6 @@ import type { inferRouterOutputs } from "@trpc/server"
 
 import { z } from "zod"
 
-import { currencySchema } from "@/lib/currency"
 import { trpc } from "@/utils/trpc"
 
 const page = z.coerce.number().int().min(1).max(1000).default(1)
@@ -15,7 +14,6 @@ export const financeSearchSchema = z.object({
     .min(2000)
     .max(3000)
     .default(() => new Date().getUTCFullYear()),
-  currency: currencySchema.optional(),
   month: z.coerce.number().int().min(1).max(12).default(currentMonth),
   personnelId: z.string().min(1).optional(),
   personnelPage: page,
@@ -32,10 +30,9 @@ export function appointmentFinanceQueryOptions(appointmentId: string, isAdmin: b
   return trpc.reports.appointmentFinance.get.queryOptions({ appointmentId }, { enabled: isAdmin })
 }
 
-export function personnelFinanceQueryOptions({ year, currency, month, personnelId, personnelPage }: FinanceSearch) {
+export function personnelFinanceQueryOptions({ year, month, personnelId, personnelPage }: FinanceSearch) {
   return trpc.reports.personnelFinance.list.queryOptions({
     year,
-    currency,
     month,
     personnelId,
     page: personnelPage,

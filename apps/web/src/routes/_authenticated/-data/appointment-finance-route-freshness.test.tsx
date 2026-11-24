@@ -11,7 +11,6 @@ import { financeSearchSchema, personnelFinanceQueryOptions } from "./appointment
 it("replaces personnelPage after its mounted query refetches", async () => {
   const search = financeSearchSchema.parse({
     year: 2025,
-    currency: "GBP",
     month: 9,
     personnelId: "p",
     personnelPage: 2,

@@ -1,19 +1,7 @@
-import {
-  Badge,
-  Button,
-  Card,
-  Container,
-  Group,
-  NativeSelect,
-  Pagination,
-  SimpleGrid,
-  Stack,
-  Table,
-  Text,
-  Title,
-} from "@mantine/core"
+import { Badge, Button, Card, Container, Group, Pagination, SimpleGrid, Stack, Table, Text, Title } from "@mantine/core"
+import { MonthPickerInput } from "@mantine/dates"
 
-import { CURRENCIES, formatTransactionAmount, type Currency } from "@/lib/currency"
+import { formatTransactionAmount } from "@/lib/currency"
 
 import type { FinanceSearch, PersonnelFinance } from "../-data/appointment-finance-data"
 
@@ -23,18 +11,14 @@ type Props = {
   onSearch: (changes: Partial<FinanceSearch>) => void
 }
 
-const MONTHS = Array.from({ length: 12 }, (_, index) => ({
-  value: String(index + 1),
-  label: new Date(Date.UTC(2026, index, 1)).toLocaleString("en", { month: "long", timeZone: "UTC" }),
-}))
-
 function roleLabel(type: string) {
   return type === "master" ? "Master" : "Assistant"
 }
 
 export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
   const changePeriod = (changes: Partial<FinanceSearch>) => onSearch({ ...changes, personnelPage: 1 })
-  const monthLabel = MONTHS.find((month) => month.value === String(search.month))?.label ?? "Selected month"
+  const selectedMonth = new Date(Date.UTC(search.year, search.month - 1, 1))
+  const monthLabel = selectedMonth.toLocaleString("en", { month: "long", timeZone: "UTC" })
   const totals = personnel.items.reduce<Record<string, { paid: number; credits: number }>>((result, row) => {
     const current = result[row.currency] ?? { paid: 0, credits: 0 }
     current.paid += row.paid
@@ -46,50 +30,26 @@ export function AppointmentFinancePage({ search, personnel, onSearch }: Props) {
   return (
     <Container size="xl">
       <Stack gap="xl">
-        <Group justify="space-between" align="end">
-          <div>
-            <Text size="xs" fw={700} tt="uppercase" c="dimmed" lts="0.08em">
-              Owner finance
-            </Text>
-            <Title order={2}>Personnel payouts</Title>
-            <Text c="dimmed">What was paid to each master and assistant during a selected month.</Text>
-          </div>
-          <Group align="end">
-            <Button
-              variant="default"
-              disabled={search.year <= 2000}
-              onClick={() => changePeriod({ year: search.year - 1 })}
-            >
-              Previous year
-            </Button>
-            <Text fw={700} pb={7} aria-label="Selected year">
-              {search.year}
-            </Text>
-            <Button
-              variant="default"
-              disabled={search.year >= 3000}
-              onClick={() => changePeriod({ year: search.year + 1 })}
-            >
-              Next year
-            </Button>
-          </Group>
-        </Group>
+        <div>
+          <Text size="xs" fw={700} tt="uppercase" c="dimmed" lts="0.08em">
+            Owner finance
+          </Text>
+          <Title order={2}>Personnel payouts</Title>
+          <Text c="dimmed">What was paid to each master and assistant during a selected month.</Text>
+        </div>
 
         <Card withBorder radius="md" padding="md">
           <Group grow align="end">
-            <NativeSelect
-              label="Month"
-              value={String(search.month)}
-              data={MONTHS}
-              onChange={(event) => changePeriod({ month: Number(event.currentTarget.value) })}
-            />
-            <NativeSelect
-              label="Currency"
-              value={search.currency ?? ""}
-              data={[{ value: "", label: "All currencies" }, ...CURRENCIES]}
-              onChange={(event) =>
-                changePeriod({ currency: (event.currentTarget.value || undefined) as Currency | undefined })
-              }
+            <MonthPickerInput
+              label="Period"
+              value={selectedMonth}
+              valueFormat="MMMM YYYY"
+              onChange={(value) => {
+                if (!value) return
+                const nextMonth = new Date(`${value}-01T00:00:00Z`)
+                changePeriod({ year: nextMonth.getUTCFullYear(), month: nextMonth.getUTCMonth() + 1 })
+              }}
+              popoverProps={{ withinPortal: false }}
             />
             {search.personnelId ? (
               <Button variant="subtle" onClick={() => changePeriod({ personnelId: undefined })}>
