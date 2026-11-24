@@ -69,8 +69,8 @@ export async function listCustomerAppointments(
     sql<boolean>`exists (
       select 1
       from ${personnelOnAppointments}
-      where ${personnelOnAppointments.appointmentId} = ${appointment.id}
-        and ${personnelOnAppointments.personnelId} = ${input.customerId}
+      where "appointment_personnel"."appointment_id" = ${appointment.id}
+        and "appointment_personnel"."personnel_id" = ${input.customerId}
     )`,
   )
   const where = input.search
