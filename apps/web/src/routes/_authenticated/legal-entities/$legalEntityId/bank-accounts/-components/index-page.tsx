@@ -33,11 +33,7 @@ export function BankAccountsTab({
               size="sm"
               variant="default"
               renderRoot={(props) => (
-                <Link
-                  to="/bank-transactions"
-                  search={{ entityId: legalEntityId, status: "PENDING", page: 1 }}
-                  {...props}
-                />
+                <Link to="/bank-transactions" search={{ entityId: legalEntityId, page: 1 }} {...props} />
               )}
             >
               Bank transactions
@@ -89,7 +85,7 @@ export function BankAccountsTab({
                     renderRoot={(props) => (
                       <Link
                         to="/bank-transactions"
-                        search={{ entityId: legalEntityId, bankAccountId: a.id, status: "PENDING", page: 1 }}
+                        search={{ entityId: legalEntityId, bankAccountId: a.id, page: 1 }}
                         {...props}
                       />
                     )}
