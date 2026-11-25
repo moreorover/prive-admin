@@ -14,9 +14,9 @@ catalog:
   "@mantine/modals": 9.8.1
   "@mantine/notifications": 9.8.1
   "@mantine/schedule": 9.8.1
-  "@trpc/client": 11.28.6
-  "@trpc/server": 11.28.6
-  "@trpc/tanstack-react-query": 11.28.6
+  "@trpc/client": 11.29.5
+  "@trpc/server": 11.29.5
+  "@trpc/tanstack-react-query": 11.29.5
   "@types/node": 26.6.6
   "@types/react": 19.3.0
   "@types/react-dom": 19.3.0
